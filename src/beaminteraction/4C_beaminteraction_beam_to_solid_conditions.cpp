@@ -28,12 +28,12 @@
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_line_to_surface_evaluation_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_so3_base.hpp"
 
@@ -44,8 +44,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
-    const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
     const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamInteractionConditionBase(condition_line),
       geometry_evaluation_data_(Teuchos::null),
@@ -125,8 +125,8 @@ BEAMINTERACTION::BeamToSolidCondition::CreateIndirectAssemblyManager(
  *
  */
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolumeMeshtying(
-    const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
     const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params)
 {
@@ -319,8 +319,8 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
  *
  */
 BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
-    const Teuchos::RCP<const DRT::Condition>& condition_line,
-    const Teuchos::RCP<const DRT::Condition>& condition_other,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
     const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params, const bool is_mesh_tying)
     : BeamToSolidCondition(condition_line, condition_other, beam_to_solid_params),
       is_mesh_tying_(is_mesh_tying)

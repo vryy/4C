@@ -174,7 +174,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputProblemSpecific()
 void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
 {
   // extract conditions for oxygen partial pressure
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
 
   // perform all following operations only if there is at least one condition for oxygen partial

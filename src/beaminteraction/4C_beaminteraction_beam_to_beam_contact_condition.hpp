@@ -40,8 +40,9 @@ namespace BEAMINTERACTION
      * @param condition_line_1 (in) The first line condition containing the beam elements.
      * @param condition_line_2 (in) The other line condition containing the beam elements.
      */
-    BeamToBeamContactCondition(const Teuchos::RCP<const DRT::Condition>& condition_line_1,
-        const Teuchos::RCP<const DRT::Condition>& condition_line_2);
+    BeamToBeamContactCondition(
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_1,
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_2);
 
     /**
      * \brief Build the ID sets for this condition.
@@ -77,7 +78,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Pointer to the other line condition.
-    Teuchos::RCP<const DRT::Condition> condition_other_;
+    Teuchos::RCP<const CORE::Conditions::Condition> condition_other_;
 
     //! Vector containing all beam contact pairs created by this condition.
     std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;

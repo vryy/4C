@@ -13,6 +13,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_poro.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
@@ -20,7 +21,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -17,11 +17,11 @@
 #include "4C_fpsi_utils.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
-#include "4C_lib_condition_selector.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_scatra_utils_setup.hpp"
@@ -198,7 +198,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
   bool condition_exists = true;
 
-  DRT::Condition* slavecond = slavedis.GetCondition(condname);
+  CORE::Conditions::Condition* slavecond = slavedis.GetCondition(condname);
   if (slavecond == nullptr)
   {
     condition_exists = false;
@@ -207,7 +207,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
               << std::endl;
   }
 
-  DRT::Condition* mastercond = masterdis.GetCondition(condname);
+  CORE::Conditions::Condition* mastercond = masterdis.GetCondition(condname);
   if (mastercond == nullptr)
   {
     condition_exists = false;
@@ -639,12 +639,12 @@ void FPSI::UTILS::MapExtractor::Setup(
     const DRT::Discretization& dis, bool withpressure, bool overlapping)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
+  CORE::Conditions::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
+      new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "FPSICoupling", 0, ndim + withpressure)));
+      new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim + withpressure)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
@@ -684,9 +684,10 @@ void FPSI::UTILS::MapExtractor::Setup(
 Teuchos::RCP<std::set<int>> FPSI::UTILS::MapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements = DRT::UTILS::ConditionedElementMap(dis, "FSICoupling");
+  Teuchos::RCP<std::set<int>> condelements =
+      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      DRT::UTILS::ConditionedElementMap(dis, "FPSICoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "FPSICoupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   return condelements;

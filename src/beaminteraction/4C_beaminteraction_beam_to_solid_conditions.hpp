@@ -60,8 +60,8 @@ namespace BEAMINTERACTION
      * interacting with the beam.
      * @param beam_to_solid_params (in) Pointer to the beam-to-solid parameters.
      */
-    BeamToSolidCondition(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other,
+    BeamToSolidCondition(const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
 
@@ -85,7 +85,10 @@ namespace BEAMINTERACTION
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
      * @return
      */
-    Teuchos::RCP<const DRT::Condition> GetOtherCondition() const { return condition_other_; }
+    Teuchos::RCP<const CORE::Conditions::Condition> GetOtherCondition() const
+    {
+      return condition_other_;
+    }
 
     /**
      * \brief Create the indirect assembly manager for this condition.
@@ -125,7 +128,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase> geometry_evaluation_data_;
 
     //! Pointer to the solid condition.
-    Teuchos::RCP<const DRT::Condition> condition_other_;
+    Teuchos::RCP<const CORE::Conditions::Condition> condition_other_;
 
     //! Vector containing all beam contact pairs created by this condition.
     std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
@@ -144,8 +147,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor (derived).
      */
-    BeamToSolidConditionVolumeMeshtying(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other,
+    BeamToSolidConditionVolumeMeshtying(
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params);
 
 
@@ -187,8 +191,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor (derived).
      */
-    BeamToSolidConditionSurface(const Teuchos::RCP<const DRT::Condition>& condition_line,
-        const Teuchos::RCP<const DRT::Condition>& condition_other,
+    BeamToSolidConditionSurface(
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_other,
         const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
         const bool is_mesh_tying);
 

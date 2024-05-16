@@ -304,7 +304,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface kinetics
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   for (const auto& kinetics_slave_cond :
       MeshtyingStrategyScaTra()->KineticsConditionsMeshtyingSlaveSide())
   {
@@ -643,7 +643,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
       INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
 
   // extract scatra-scatra interface kinetics conditions
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
@@ -653,7 +653,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
     if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
     {
       // add condition to parameter list
-      condparams.set<DRT::Condition*>("condition", condition);
+      condparams.set<CORE::Conditions::Condition*>("condition", condition);
 
       // collect condition specific data and store to scatra boundary parameter class
       MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*condition);
@@ -788,7 +788,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
       INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
 
   // extract scatra-scatra interface kinetics conditions
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   ThermoField()->Discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
@@ -798,7 +798,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
     if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
     {
       // add condition to parameter list
-      condparams.set<DRT::Condition*>("condition", condition);
+      condparams.set<CORE::Conditions::Condition*>("condition", condition);
 
       // collect condition specific data and store to scatra boundary parameter class
       MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*condition);

@@ -384,7 +384,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+          CORE::Conditions::Condition* condition =
+              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
 
@@ -449,7 +450,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
          **/
         else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
         {
-          const DRT::Condition* condition =
+          const CORE::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
@@ -516,7 +517,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
          **/
         else if (ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
         {
-          DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
+          CORE::Conditions::Condition* condition =
+              ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("phase1"));
 
@@ -569,7 +571,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            DRT::Condition* pplCond =
+            CORE::Conditions::Condition* pplCond =
                 ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
@@ -910,7 +912,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
     {
       if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+        const CORE::Conditions::Condition* condition =
+            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
@@ -1121,7 +1124,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
         myrank == ele->Nodes()[i]->Owner())
     {
       double scnp = 0.0;
-      DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
+      CORE::Conditions::Condition* condition =
+          ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
       // Get the type of prescribed bc
 
       const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");

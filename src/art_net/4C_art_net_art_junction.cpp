@@ -84,7 +84,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
     // (1) Get the junction boundary conditions
     //----------------------------------------------------------------------
 
-    std::vector<DRT::Condition *> myConditions;
+    std::vector<CORE::Conditions::Condition *> myConditions;
     discret_->GetCondition("ArtJunctionCond", myConditions);
     int numofcond = myConditions.size();
 
@@ -129,7 +129,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       // (3) Group all of the conditions that belong to the same junction
       //----------------------------------------------------------------------
 
-      DRT::Condition *cond_i;
+      CORE::Conditions::Condition *cond_i;
 
       // first, sort the condition list according to there IDs
       // In this case the bubble sort algorithm is used
@@ -153,8 +153,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       }
 
       // second, group all the similar conditions in one vector
-      std::vector<std::vector<DRT::Condition *>> SortedConds;
-      std::vector<DRT::Condition *> grouped_cond;
+      std::vector<std::vector<CORE::Conditions::Condition *>> SortedConds;
+      std::vector<CORE::Conditions::Condition *> grouped_cond;
 
       std::vector<std::vector<int>> SortedIOarts;
       std::vector<int> grouped_IO;
@@ -262,7 +262,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis,
-    IO::DiscretizationWriter &output, std::vector<DRT::Condition *> conds,
+    IO::DiscretizationWriter &output, std::vector<CORE::Conditions::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
 {

@@ -235,7 +235,8 @@ namespace DRT
 
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /// Read input for this element
@@ -389,7 +390,8 @@ namespace DRT
 
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
@@ -540,7 +542,8 @@ namespace DRT
 
       //! @name Evaluate methods
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}

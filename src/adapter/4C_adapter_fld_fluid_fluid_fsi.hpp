@@ -23,11 +23,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
-{
-  class Condition;
-}
-
 namespace CORE::LINALG
 {
   class Solver;

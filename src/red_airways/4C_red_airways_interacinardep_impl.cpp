@@ -195,7 +195,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+          CORE::Conditions::Condition* condition =
+              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
 
@@ -264,7 +265,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            DRT::Condition* pplCond =
+            CORE::Conditions::Condition* pplCond =
                 ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)

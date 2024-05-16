@@ -512,8 +512,9 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)  seitz 11/14 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoHex18::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");

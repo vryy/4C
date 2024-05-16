@@ -98,8 +98,8 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   GLOBAL::ProblemType probtype = problem->GetProblemType();
 
   // get mortar information
-  std::vector<DRT::Condition*> mtcond(0);
-  std::vector<DRT::Condition*> ccond(0);
+  std::vector<CORE::Conditions::Condition*> mtcond(0);
+  std::vector<CORE::Conditions::Condition*> ccond(0);
   actdis->GetCondition("Mortar", mtcond);
   actdis->GetCondition("Contact", ccond);
   bool onlymeshtying = false;
@@ -508,8 +508,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
   bool onlycontact = false;
   bool meshtyingandcontact = false;
   {
-    std::vector<DRT::Condition*> mtcond(0);
-    std::vector<DRT::Condition*> ccond(0);
+    std::vector<CORE::Conditions::Condition*> mtcond(0);
+    std::vector<CORE::Conditions::Condition*> ccond(0);
     actdis->GetCondition("Mortar", mtcond);
     actdis->GetCondition("Contact", ccond);
     if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;

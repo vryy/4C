@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_stru_multi_microstatic.hpp"
@@ -27,7 +27,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
                // creation of vectors and matrices for homogenization
                // procedure
 
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
@@ -103,7 +103,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
 
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {

@@ -135,7 +135,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
@@ -297,7 +297,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     int err3 = sysvec2->SumIntoGlobalValues(1, &s_0, &gindex[2]);
     if (err1 or err2 or err3) FOUR_C_THROW("SumIntoGlobalValues failed!");
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;

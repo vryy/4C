@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_Map.h>
@@ -82,35 +82,37 @@ namespace STR
     int GetUniqueId(int tagged_id, CORE::Conditions::GeometryType gtype) const;
 
     void CreateReactionForceCondition(
-        const DRT::Condition& tagged_cond, DRT::Discretization& discret) const;
+        const CORE::Conditions::Condition& tagged_cond, DRT::Discretization& discret) const;
 
-    void GetTaggedCondition(std::vector<const DRT::Condition*>& tagged_conds,
+    void GetTaggedCondition(std::vector<const CORE::Conditions::Condition*>& tagged_conds,
         const std::string& cond_name, const std::string& tag_name,
         const DRT::Discretization& discret) const;
 
-    void CreateReactionMaps(const DRT::Discretization& discret, const DRT::Condition& rcond,
-        Teuchos::RCP<Epetra_Map>* react_maps) const;
+    void CreateReactionMaps(const DRT::Discretization& discret,
+        const CORE::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     void ReadResultsPriorRestartStepAndWriteToFile(
         const std::vector<std::string>& full_restart_filepaths, int restart_step) const;
 
-    void GetArea(double area_ref[], const DRT::Condition* rcond) const;
+    void GetArea(double area_ref[], const CORE::Conditions::Condition* rcond) const;
 
     double GetReactionForce(
         CORE::LINALG::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     double GetReactionMoment(CORE::LINALG::Matrix<3, 1>& rmoment_xyz,
-        const Teuchos::RCP<Epetra_Map>* react_maps, const DRT::Condition* rcond) const;
+        const Teuchos::RCP<Epetra_Map>* react_maps, const CORE::Conditions::Condition* rcond) const;
 
     std::vector<std::string> CreateFilePaths(
-        const std::vector<Teuchos::RCP<DRT::Condition>>& rconds, const std::string& full_dirpath,
-        const std::string& filename_only_prefix, const std::string& file_type) const;
+        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
+        const std::string& full_dirpath, const std::string& filename_only_prefix,
+        const std::string& file_type) const;
 
-    void ClearFilesAndWriteHeader(const std::vector<Teuchos::RCP<DRT::Condition>>& rconds,
+    void ClearFilesAndWriteHeader(
+        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
         std::vector<std::string>& full_filepaths, bool write_condition_header);
 
-    void WriteConditionHeader(
-        std::ostream& os, const int col_width, const DRT::Condition* cond = nullptr) const;
+    void WriteConditionHeader(std::ostream& os, const int col_width,
+        const CORE::Conditions::Condition* cond = nullptr) const;
 
     void WriteColumnHeader(std::ostream& os, const int col_width) const;
 
@@ -118,7 +120,7 @@ namespace STR
         const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
-    void WriteResultsToScreen(const Teuchos::RCP<DRT::Condition>& rcond_ptr,
+    void WriteResultsToScreen(const Teuchos::RCP<CORE::Conditions::Condition>& rcond_ptr,
         const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 

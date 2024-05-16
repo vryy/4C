@@ -17,9 +17,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_immersed_node.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -72,7 +72,7 @@ namespace DRT
       //! Base class version for creation of matching discretization without material
       Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
           const DRT::Discretization& sourcedis,  ///< discretization with condition
-          const DRT::Condition&
+          const CORE::Conditions::Condition&
               cond,  ///< condition, from which the derived discretization is derived
           const std::string& discret_name,  ///< name of the new discretization
           const std::string& element_name,  ///< name/type of the elements to be created
@@ -117,7 +117,7 @@ namespace DRT
         // We need to test for all elements (including ghosted ones) to
         // catch all nodes
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
-        DRT::UTILS::FindConditionObjects(sourcedis, sourceelements, condname, label);
+        CORE::Conditions::FindConditionObjects(sourcedis, sourceelements, condname, label);
 
         return CreateMatchingDiscretizationFromCondition(
             sourcedis, sourceelements, discret_name, element_name, conditions_to_copy);
@@ -159,8 +159,8 @@ namespace DRT
           // check if element has nodes which are not in col map on this proc.
           // this should not be the case since each proc should have all nodes of
           // all owned or ghosted elements in the col map.
-          if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcedis.NodeColMap())) !=
-              (int)(nids.size()))
+          if (std::count_if(nids.begin(), nids.end(),
+                  CORE::Conditions::MyGID(sourcedis.NodeColMap())) != (int)(nids.size()))
           {
             FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", sourceele->Id(),
                 sourceele->Owner());
@@ -171,7 +171,7 @@ namespace DRT
           // copy node ids of condition ele to rownodeset but leave those that do
           // not belong to this processor
           remove_copy_if(nids.begin(), nids.end(), inserter(rownodeset_, rownodeset_.begin()),
-              std::not_fn(DRT::UTILS::MyGID(sourcenoderowmap)));
+              std::not_fn(CORE::Conditions::MyGID(sourcenoderowmap)));
 
           // Do not clone ghost elements here! Those will be handled by the
           // discretization itself.
@@ -218,7 +218,7 @@ namespace DRT
         // copy selected conditions to the new discretization
         for (const auto& cond_name : conditions_to_copy)
         {
-          std::vector<DRT::Condition*> conds;
+          std::vector<CORE::Conditions::Condition*> conds;
           sourcedis.GetCondition(cond_name, conds);
           for (const auto& cond : conds)
           {
@@ -397,7 +397,7 @@ namespace DRT
       /// condition
       void CreateMatchingDiscretizationFromCondition(
           const DRT::Discretization& sourcedis,  ///< ref. to source discretization
-          const std::vector<DRT::Condition*>&
+          const std::vector<CORE::Conditions::Condition*>&
               conds,  ///< vector of conditions containing the elements to clone
           DRT::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
           const std::map<int, int>&
@@ -407,7 +407,7 @@ namespace DRT
         // check and analyze source and target discretization
         InitialChecks(sourcedis, targetdis);
 
-        std::vector<DRT::Condition*>::const_iterator cit;
+        std::vector<CORE::Conditions::Condition*>::const_iterator cit;
         for (cit = conds.begin(); cit != conds.end(); ++cit)
         {
           // check the source condition
@@ -417,7 +417,7 @@ namespace DRT
 
         // get this condition vector's elements
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
-        DRT::UTILS::FindConditionObjects(sourceelements, conds);
+        CORE::Conditions::FindConditionObjects(sourceelements, conds);
 
         CreateMatchingDiscretizationFromCondition(sourcedis, sourceelements, targetdis, matmap);
         return;
@@ -436,7 +436,7 @@ namespace DRT
         // check and analyze source discretization
         InitialChecks(sourcedis, targetdis);
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
-        DRT::UTILS::FindConditionObjects(sourcedis, sourceelements, condname);
+        CORE::Conditions::FindConditionObjects(sourcedis, sourceelements, condname);
 
         CreateMatchingDiscretizationFromCondition(sourcedis, sourceelements, targetdis, matmap);
         return;
@@ -516,7 +516,7 @@ namespace DRT
             // not belong to this processor
             remove_copy_if(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
                 inserter(rownodeset, rownodeset.begin()),
-                std::not_fn(DRT::UTILS::MyGID(noderowmap)));
+                std::not_fn(CORE::Conditions::MyGID(noderowmap)));
 
             copy(actele->NodeIds(), actele->NodeIds() + actele->NumNode(),
                 inserter(colnodeset, colnodeset.begin()));
@@ -571,8 +571,8 @@ namespace DRT
             // check if element has nodes, which are not in col map on this proc.
             // this should not be, since each proc should have all nodes of all
             // owned, or ghosted elements in the col map.
-            if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenodecolmap)) !=
-                (int)(nids.size()))
+            if (std::count_if(nids.begin(), nids.end(),
+                    CORE::Conditions::MyGID(sourcenodecolmap)) != (int)(nids.size()))
             {
               FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", actele->Id(),
                   actele->Owner());
@@ -584,7 +584,7 @@ namespace DRT
             // copy node ids of condition ele to rownodeset except for those which do
             // not belong to this processor
             remove_copy_if(nids.begin(), nids.end(), inserter(rownodeset, rownodeset.begin()),
-                std::not_fn(DRT::UTILS::MyGID(sourcenoderowmap)));
+                std::not_fn(CORE::Conditions::MyGID(sourcenoderowmap)));
           }
         }
 
@@ -855,9 +855,9 @@ namespace DRT
     /// clone target discretization from a given condition of the source discretization
     template <class CloneStrategy>
     void CloneDiscretizationFromCondition(
-        const DRT::Discretization& sourcedis,      ///< source discretization
-        DRT::Discretization& targetdis,            ///< target discretization
-        const std::vector<DRT::Condition*>& conds  ///< source conditions to clone from
+        const DRT::Discretization& sourcedis,                   ///< source discretization
+        DRT::Discretization& targetdis,                         ///< target discretization
+        const std::vector<CORE::Conditions::Condition*>& conds  ///< source conditions to clone from
     )
     {
       const DRT::Discretization* sourcedis_ptr =

@@ -144,7 +144,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // setup mortar coupling
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::tsi)
   {
-    DRT::Condition* mrtrcond = StructureField()->Discretization()->GetCondition("MortarMulti");
+    CORE::Conditions::Condition* mrtrcond =
+        StructureField()->Discretization()->GetCondition("MortarMulti");
     if (mrtrcond != nullptr)
     {
       mortar_coupling_ = Teuchos::rcp(new MORTAR::MultiFieldCoupling());
@@ -469,7 +470,7 @@ void TSI::Algorithm::PrepareContactStrategy()
           "structure should not have a Lagrange strategy ... as long as condensed"
           "contact formulations are not moved to the new structural time integration");
 
-    std::vector<DRT::Condition*> ccond(0);
+    std::vector<CORE::Conditions::Condition*> ccond(0);
     StructureField()->Discretization()->GetCondition("Contact", ccond);
     if (ccond.size() == 0) return;
 

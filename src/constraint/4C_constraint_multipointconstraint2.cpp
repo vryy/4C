@@ -10,8 +10,8 @@
 
 #include "4C_constraint_multipointconstraint2.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -89,7 +89,7 @@ void CONSTRAINTS::MPConstraint2::Initialize(
   // read data of the input files
   for (unsigned int i = 0; i < constrcond_.size(); i++)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
     int condID = cond.parameters().Get<int>("ConditionID");
     if (inittimes_.find(condID)->second <= time)
     {
@@ -144,8 +144,9 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
  *------------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
 CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
-    Teuchos::RCP<DRT::Discretization> actdisc, std::vector<DRT::Condition*> constrcondvec,
-    const std::string& discret_name, const std::string& element_name, int& startID)
+    Teuchos::RCP<DRT::Discretization> actdisc,
+    std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
+    const std::string& element_name, int& startID)
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
@@ -177,7 +178,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
     ReorderConstraintNodes(ngid, constrcondvec[j]);
 
     remove_copy_if(ngid.data(), ngid.data() + numnodes, inserter(rownodeset, rownodeset.begin()),
-        std::not_fn(DRT::UTILS::MyGID(actnoderowmap)));
+        std::not_fn(CORE::Conditions::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
     copy(ngid.data(), ngid.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
@@ -233,7 +234,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
  |reorder MPC nodes based on condition input                            |
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::ReorderConstraintNodes(
-    std::vector<int>& nodeids, const DRT::Condition* cond)
+    std::vector<int>& nodeids, const CORE::Conditions::Condition* cond)
 {
   // get this condition's nodes
   std::vector<int> temp = nodeids;
@@ -289,7 +290,7 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
   for (int i = 0; i < numcolele; ++i)
   {
     DRT::Element* actele = disc->lColElement(i);
-    DRT::Condition& cond = *(constrcond_[actele->Id()]);
+    CORE::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
     int condID = cond.parameters().Get<int>("ConditionID");
 
     // computation only if time is larger or equal than initialization time for constraint
@@ -328,7 +329,8 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
       if (assemblevec3) elevector3.size(1);  // elevector3 always contains a scalar
 
       params.set("ConditionID", condID);
-      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+      params.set<Teuchos::RCP<CORE::Conditions::Condition>>(
+          "condition", Teuchos::rcp(&cond, false));
       // call the element evaluate method
       int err = actele->Evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);

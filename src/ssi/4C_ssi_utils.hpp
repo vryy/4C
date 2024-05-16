@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -30,7 +31,6 @@ namespace CORE::ADAPTER
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -62,7 +62,7 @@ namespace SSI
 
     //! check for a consistent input file definition of the SSIInterfaceContact condition
     void CheckConsistencyOfSSIInterfaceContactCondition(
-        const std::vector<DRT::Condition*>& conditionsToBeTested,
+        const std::vector<CORE::Conditions::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
     /// Function for checking that the different time steps are a

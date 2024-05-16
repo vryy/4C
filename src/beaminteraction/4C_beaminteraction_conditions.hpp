@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -29,7 +30,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
   class Element;
 }  // namespace DRT
 namespace BEAMINTERACTION
@@ -67,7 +67,8 @@ namespace BEAMINTERACTION
      *
      * @param condition_line (in) The line condition containing the beam elements.
      */
-    BeamInteractionConditionBase(const Teuchos::RCP<const DRT::Condition>& condition_line);
+    BeamInteractionConditionBase(
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line);
 
     /**
      * \brief Destructor.
@@ -131,7 +132,7 @@ namespace BEAMINTERACTION
 
    protected:
     //! Pointer to the beam condition.
-    Teuchos::RCP<const DRT::Condition> condition_line_;
+    Teuchos::RCP<const CORE::Conditions::Condition> condition_line_;
 
     //! Set containing the beam element IDs.
     std::set<int> line_ids_;
@@ -271,8 +272,8 @@ namespace BEAMINTERACTION
    * @param condition (in) A pointer to the condition.
    * @param element_ids (out) A vector with all global element IDs.
    */
-  void ConditionToElementIds(
-      const Teuchos::RCP<const DRT::Condition>& condition, std::vector<int>& element_ids);
+  void ConditionToElementIds(const Teuchos::RCP<const CORE::Conditions::Condition>& condition,
+      std::vector<int>& element_ids);
 
 }  // namespace BEAMINTERACTION
 

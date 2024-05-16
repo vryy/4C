@@ -12,6 +12,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -25,7 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
   class FaceElement;
 
   namespace ELEMENTS
@@ -50,7 +50,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) = 0;
 
       virtual int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition,
+          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) = 0;
     };

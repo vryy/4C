@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_lib_conditiondefinition.hpp"
+#include "4C_io_condition_definition.hpp"
 
 #include "4C_io_line_parser.hpp"
 #include "4C_io_linecomponent.hpp"
@@ -53,7 +53,7 @@ void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComp
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void INPUT::ConditionDefinition::Read(
-    DatFileReader& reader, std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
+    DatFileReader& reader, std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap)
 {
   std::vector<const char*> section = reader.Section("--" + sectionname_);
 
@@ -112,8 +112,9 @@ void INPUT::ConditionDefinition::Read(
     const int dobjid = parser.Read<int>(*condline) - 1;
     parser.Consume(*condline, "-");
 
-    Teuchos::RCP<DRT::Condition> condition = Teuchos::rcp(new DRT::Condition(
-        dobjid, condtype_, CORE::Conditions::to_string(condtype_).data(), buildgeometry_, gtype_));
+    Teuchos::RCP<CORE::Conditions::Condition> condition =
+        Teuchos::rcp(new CORE::Conditions::Condition(dobjid, condtype_,
+            CORE::Conditions::to_string(condtype_).data(), buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {
@@ -121,7 +122,7 @@ void INPUT::ConditionDefinition::Read(
     }
 
     //------------------------------- put condition in map of conditions
-    cmap.insert(std::pair<int, Teuchos::RCP<DRT::Condition>>(dobjid, condition));
+    cmap.insert(std::pair<int, Teuchos::RCP<CORE::Conditions::Condition>>(dobjid, condition));
   }
 }
 
@@ -159,7 +160,7 @@ std::ostream& INPUT::ConditionDefinition::Print(
   int count = 0;
   if (dis != nullptr)
   {
-    std::vector<DRT::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
     for (auto& cond : conds)
     {
@@ -187,7 +188,7 @@ std::ostream& INPUT::ConditionDefinition::Print(
 
   if (dis != nullptr)
   {
-    std::vector<DRT::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
 
     for (auto& cond : conds)

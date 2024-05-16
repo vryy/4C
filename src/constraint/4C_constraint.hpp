@@ -14,6 +14,8 @@ Thomas Kloeppel
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -23,7 +25,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -119,7 +120,7 @@ namespace CONSTRAINTS
 
    protected:
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    std::vector<DRT::Condition*>
+    std::vector<CORE::Conditions::Condition*>
         constrcond_;         ///< conditions, that define the constraint (all of the same kind)
     ConstrType constrtype_;  ///< constraint type
     std::map<int, double>

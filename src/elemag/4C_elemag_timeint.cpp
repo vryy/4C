@@ -756,7 +756,7 @@ void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool do_rhs)
 
   // absorbing boundary conditions
   std::string condname = "Silver-Mueller";
-  std::vector<DRT::Condition *> absorbingBC;
+  std::vector<CORE::Conditions::Condition *> absorbingBC;
   discret_->GetCondition(condname, absorbingBC);
 
   // Check if there are Silver-Mueller BC

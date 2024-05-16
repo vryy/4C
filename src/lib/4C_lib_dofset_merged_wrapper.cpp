@@ -14,7 +14,7 @@
 #include "4C_lib_dofset_merged_wrapper.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_Export.h>
@@ -77,9 +77,9 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
 
   // get nodes to be coupled
   std::vector<int> masternodes;
-  DRT::UTILS::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
+  CORE::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
   std::vector<int> slavenodes;
-  DRT::UTILS::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  CORE::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   auto tree = CORE::COUPLING::NodeMatchingOctree();
@@ -136,9 +136,9 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
 
   // get nodes to be coupled
   masternodes.clear();
-  DRT::UTILS::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
+  CORE::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
   slavenodes.clear();
-  DRT::UTILS::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  CORE::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   tree.Init(*sourcedis_, masternodes, 150);

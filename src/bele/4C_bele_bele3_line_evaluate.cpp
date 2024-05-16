@@ -80,8 +80,9 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;

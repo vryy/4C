@@ -14,8 +14,8 @@
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
+#include "4C_io_condition_definition.hpp"
 #include "4C_io_materialdefinition.hpp"
-#include "4C_lib_conditiondefinition.hpp"
 
 #include <Teuchos_RCP.hpp>
 

@@ -60,7 +60,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 

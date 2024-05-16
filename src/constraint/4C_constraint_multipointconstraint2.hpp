@@ -99,14 +99,15 @@ namespace CONSTRAINTS
     //! creating a new discretization based on conditions containing constraint elements
     std::map<int, Teuchos::RCP<DRT::Discretization>> CreateDiscretizationFromCondition(
         Teuchos::RCP<DRT::Discretization> actdisc,
-        std::vector<DRT::Condition*> constrcond,  ///< conditions as discretization basis
-        const std::string& discret_name,          ///< name of new discretization
-        const std::string& element_name,          ///< name of element type to create
+        std::vector<CORE::Conditions::Condition*>
+            constrcond,                   ///< conditions as discretization basis
+        const std::string& discret_name,  ///< name of new discretization
+        const std::string& element_name,  ///< name of element type to create
         int& startID) override;
 
     //! Reorder MPC nodes based on condition input
     void ReorderConstraintNodes(std::vector<int>& nodeids,  ///< reordered node ids
-        const DRT::Condition* condname);                    ///< condition to deal with
+        const CORE::Conditions::Condition* condname);       ///< condition to deal with
 
 
   };  // class

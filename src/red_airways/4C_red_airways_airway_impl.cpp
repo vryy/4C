@@ -84,7 +84,7 @@ namespace
     // check if condition exists
     if (node->GetCondition(condName))
     {
-      DRT::Condition* condition = node->GetCondition(condName);
+      CORE::Conditions::Condition* condition = node->GetCondition(condName);
       // Get the type of prescribed bc
       std::string Bc = (condition->parameters().Get<std::string>(optionName));
       if (Bc == condType)
@@ -1009,14 +1009,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+          CORE::Conditions::Condition* condition =
+              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
 
           if (Bc == "switchFlowPressure")
           {
             // get switch condition variables
-            DRT::Condition* switchCondition =
+            CORE::Conditions::Condition* switchCondition =
                 ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
 
             const int funct_id_flow = switchCondition->parameters().Get<int>("FUNCT_ID_FLOW");
@@ -1115,7 +1116,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         }
         else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
         {
-          const DRT::Condition* condition =
+          const CORE::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
@@ -1179,7 +1180,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         }
         else if (ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
         {
-          DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
+          CORE::Conditions::Condition* condition =
+              ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("phase1"));
 
@@ -1591,7 +1593,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
     {
       if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+        const CORE::Conditions::Condition* condition =
+            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
@@ -1814,7 +1817,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
     if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond"))
     {
       double scnp = 0.0;
-      DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
+      CORE::Conditions::Condition* condition =
+          ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
       // Get the type of prescribed bc
 
       const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");

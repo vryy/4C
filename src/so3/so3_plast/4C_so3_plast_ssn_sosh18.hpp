@@ -89,7 +89,8 @@ namespace DRT
         return SoSh18::VisData(name, data);
       }
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
         return SoSh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);

@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<DRT::Condition>> springdashpots;
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> springdashpots;
   Discret().GetCondition("RobinSpringDashpot", springdashpots);
 
   // new instance of spring dashpot BC for each condition

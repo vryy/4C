@@ -1270,8 +1270,9 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition

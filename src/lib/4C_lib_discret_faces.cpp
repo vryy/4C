@@ -264,7 +264,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         // number of pairs of periodic boundary conditions
         int numpbcpairs;
         // vector of periodic surface boundary conditions
-        std::vector<DRT::Condition*> mypbcs;
+        std::vector<CORE::Conditions::Condition*> mypbcs;
         GetCondition("SurfacePeriodic", mypbcs);
         if (mypbcs.empty())
         {

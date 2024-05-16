@@ -158,9 +158,9 @@ namespace DRT
       int EvaluateNeumann(
           Teuchos::ParameterList& params,  //!< (in/out) ParameterList for communication between
                                            //!< control routine and elements
-          DRT::Discretization& discretization,  //!< A reference to the underlying discretization
-          DRT::Condition& condition,            //!<  The condition to be evaluated
-          std::vector<int>& lm,                 //!< location vector of this element
+          DRT::Discretization& discretization,     //!< A reference to the underlying discretization
+          CORE::Conditions::Condition& condition,  //!<  The condition to be evaluated
+          std::vector<int>& lm,                    //!< location vector of this element
           CORE::LINALG::SerialDenseVector& elevec1,  //!< vector to be filled by element.
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 

@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_coupling_adapter_mortar.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -74,9 +74,9 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "MortarMulti")
   {
-    std::vector<DRT::Condition*> conds;
-    std::vector<DRT::Condition*> conds_master(0);
-    std::vector<DRT::Condition*> conds_slave(0);
+    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds_master(0);
+    std::vector<CORE::Conditions::Condition*> conds_slave(0);
     masterdis->GetCondition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
@@ -90,11 +90,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -103,11 +103,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   else
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 

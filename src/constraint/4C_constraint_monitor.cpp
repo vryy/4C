@@ -110,7 +110,7 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
     // Get ConditionID of current condition if defined and write value in parameterlist
     const int condID = cond->parameters().Get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;

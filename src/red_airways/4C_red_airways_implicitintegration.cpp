@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------*/
 #include "4C_red_airways_implicitintegration.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -407,7 +407,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     }
   }
 
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   discret_->GetCondition("RedAirwayScatraExchangeCond", conds);
 }  // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
@@ -2420,7 +2420,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetAirwayFluxFromTissue(Teuchos::RCP<Epet
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
-    DRT::Condition* cond = coupcond_[condID];
+    CORE::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
     newval[0] = (*coupflux)[i];
     cond->parameters().Add("val", newval);
@@ -2433,7 +2433,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetAirwayFluxFromTissue(Teuchos::RCP<Epet
  *----------------------------------------------------------------------*/
 void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
 {
-  std::vector<DRT::Condition*> nodecond;
+  std::vector<CORE::Conditions::Condition*> nodecond;
   discret_->GetCondition("RedAirwayPrescribedCond", nodecond);
   unsigned int numnodecond = nodecond.size();
   if (numnodecond == 0) FOUR_C_THROW("no redairway prescribed conditions");
@@ -2441,7 +2441,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   std::vector<int> tmp;
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
-    DRT::Condition* actcond = nodecond[i];
+    CORE::Conditions::Condition* actcond = nodecond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue)
     {
       auto condID = actcond->parameters().Get<int>("coupling id");
@@ -2464,7 +2464,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
   for (int i = 0; i < coupmap_->NumMyElements(); i++)
   {
     int condgid = coupmap_->GID(i);
-    DRT::Condition* cond = coupcond_[condgid];
+    CORE::Conditions::Condition* cond = coupcond_[condgid];
     const std::vector<int>* nodes = cond->GetNodes();
     if (nodes->size() != 1)
       FOUR_C_THROW("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);

@@ -19,10 +19,10 @@
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_dofset_gidbased_wrapper.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -134,7 +134,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     // access the problem-specific parameter lists
     const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
-    std::vector<DRT::Condition*> porocoupl;
+    std::vector<CORE::Conditions::Condition*> porocoupl;
     FluidField()->Discretization()->GetCondition("PoroCoupling", porocoupl);
     if (porocoupl.size() == 0)
       FOUR_C_THROW(
@@ -521,17 +521,17 @@ void POROELAST::PoroBase::ReplaceDofSets()
 
 void POROELAST::PoroBase::CheckForPoroConditions()
 {
-  std::vector<DRT::Condition*> nopencond;
+  std::vector<CORE::Conditions::Condition*> nopencond;
   FluidField()->Discretization()->GetCondition("NoPenetration", nopencond);
   nopen_handle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
 
   part_int_cond_ = false;
-  std::vector<DRT::Condition*> poroPartInt;
+  std::vector<CORE::Conditions::Condition*> poroPartInt;
   FluidField()->Discretization()->GetCondition("PoroPartInt", poroPartInt);
   if (poroPartInt.size()) part_int_cond_ = true;
 
   pres_int_cond_ = false;
-  std::vector<DRT::Condition*> poroPresInt;
+  std::vector<CORE::Conditions::Condition*> poroPresInt;
   FluidField()->Discretization()->GetCondition("PoroPresInt", poroPresInt);
   if (poroPresInt.size()) pres_int_cond_ = true;
 }

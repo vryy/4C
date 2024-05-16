@@ -121,7 +121,7 @@ void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
   // determine impl type from manifold condition by identifying the condition for this element
   auto struct_dis = GLOBAL::Problem::Instance()->GetDis("structure");
 
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   struct_dis->GetCondition("SSISurfaceManifold", conditions);
 
   auto impltype = INPAR::SCATRA::impltype_undefined;

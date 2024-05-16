@@ -44,7 +44,7 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
   // as early as possible
   if (killcond)
   {
-    std::multimap<std::string, Teuchos::RCP<DRT::Condition>>::iterator fool;
+    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::iterator fool;
     for (fool = condition_.begin(); fool != condition_.end(); ++fool)
     {
       fool->second->ClearGeometry();

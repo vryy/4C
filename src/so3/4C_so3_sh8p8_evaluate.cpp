@@ -500,8 +500,9 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoSh8p8::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // build 24x1 location vector
   std::vector<int> lm_d(NUMDISP_);
@@ -2318,11 +2319,11 @@ void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_
     CORE::LINALG::Matrix<NUMDOF_, 1> adjele(true);
     DRT::Node** nodes = Nodes();
 
-    std::vector<DRT::Condition*> cond0;
+    std::vector<CORE::Conditions::Condition*> cond0;
     int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3
     bool current0 = false;  // layer with nodes 0..4 to be scaled
     (nodes[0])->GetCondition("STC Layer", cond0);
-    std::vector<DRT::Condition*> cond1;
+    std::vector<CORE::Conditions::Condition*> cond1;
     int condnum1 = 1000;    // minimun STCid of layer with nodes 4..7
     bool current1 = false;  // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_ / 2])->GetCondition("STC Layer", cond1);

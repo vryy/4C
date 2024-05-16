@@ -107,11 +107,12 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
  | evaluate Neumann boundary condition on boundary element   fang 01/15 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // add Neumann boundary condition to parameter list
-  params.set<DRT::Condition*>("condition", &condition);
+  params.set<CORE::Conditions::Condition*>("condition", &condition);
 
   LocationArray la(discretization.NumDofSets());
   DRT::Element::LocationVector(discretization, la, false);

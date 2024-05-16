@@ -16,6 +16,7 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
@@ -25,7 +26,6 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_selector.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -334,7 +334,7 @@ void FS3I::PartFPS3I::Setup()
 
   // in case of FPS3I we have to handle the conductivity, too
   Teuchos::RCP<DRT::Discretization> dis = scatravec_[0]->ScaTraField()->Discretization();
-  std::vector<DRT::Condition*> coupcond;
+  std::vector<CORE::Conditions::Condition*> coupcond;
   dis->GetCondition("ScaTraCoupling", coupcond);
   double myconduct = coupcond[0]->parameters().Get<double>(
       "hydraulic conductivity");  // here we assume the conductivity to be the same in every BC
@@ -434,9 +434,9 @@ void FS3I::PartFPS3I::SetupSystem()
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
+        new CORE::Conditions::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
     mcs.SetupExtractor(*currdis, *currdis->DofRowMap(), *mapex);
     scatrafieldexvec_.push_back(mapex);
   }

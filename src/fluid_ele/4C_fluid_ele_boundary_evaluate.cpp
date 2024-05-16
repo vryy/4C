@@ -115,8 +115,9 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
       ->EvaluateNeumann(this, params, discretization, condition, lm, elevec1, elemat1);

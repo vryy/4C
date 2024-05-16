@@ -12,6 +12,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -28,7 +29,6 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class Condition;
   class Element;
 }  // namespace DRT
 
@@ -82,7 +82,8 @@ namespace BEAMINTERACTION
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
         CORE::LINALG::SerialDenseMatrix* stiffmat22,
-        const std::vector<DRT::Condition*> linechargeconds, const double k, const double m) = 0;
+        const std::vector<CORE::Conditions::Condition*> linechargeconds, const double k,
+        const double m) = 0;
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both

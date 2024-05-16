@@ -57,7 +57,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition,
+          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;
 
@@ -65,9 +65,10 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-          Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
-          const int nume, const std::vector<int> stoich, const int kinetics, const double pot0,
-          const double frt, const double scalar) override;
+          Teuchos::RCP<const CORE::MAT::Material> material,
+          Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume,
+          const std::vector<int> stoich, const int kinetics, const double pot0, const double frt,
+          const double scalar) override;
 
       void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,

@@ -9,8 +9,8 @@
 #include "4C_constraint_multipointconstraint3penalty.hpp"
 
 #include "4C_constraint_element3.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -193,8 +193,9 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
 CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
-    Teuchos::RCP<DRT::Discretization> actdisc, std::vector<DRT::Condition*> constrcondvec,
-    const std::string& discret_name, const std::string& element_name, int& startID)
+    Teuchos::RCP<DRT::Discretization> actdisc,
+    std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
+    const std::string& element_name, int& startID)
 {
   // start with empty map
   std::map<int, Teuchos::RCP<DRT::Discretization>> newdiscmap;
@@ -212,7 +213,7 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
   // Loop all conditions in constrcondvec and build discretization for any condition ID
 
   int index = 0;  // counter for the index of condition in vector
-  std::vector<DRT::Condition*>::iterator conditer;
+  std::vector<CORE::Conditions::Condition*>::iterator conditer;
   for (conditer = constrcondvec.begin(); conditer != constrcondvec.end(); conditer++)
   {
     // initialize a new discretization
@@ -268,7 +269,8 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
       ngid_ele.push_back(ngid[nodeiter]);
       const int numnodes = ngid_ele.size();
       remove_copy_if(ngid_ele.data(), ngid_ele.data() + numnodes,
-          inserter(rownodeset, rownodeset.begin()), std::not_fn(DRT::UTILS::MyGID(actnoderowmap)));
+          inserter(rownodeset, rownodeset.begin()),
+          std::not_fn(CORE::Conditions::MyGID(actnoderowmap)));
       // copy node ids specified in condition to colnodeset
       copy(ngid_ele.data(), ngid_ele.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
@@ -360,8 +362,8 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
     DRT::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
-    DRT::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -447,8 +449,8 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discreti
     DRT::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
-    DRT::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

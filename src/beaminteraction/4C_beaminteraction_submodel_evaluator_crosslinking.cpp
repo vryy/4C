@@ -249,7 +249,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentTypes()
   {
     DRT::Node* currnode = Discret().lColNode(coln);
     // get filament number of current node ( requirement: node belongs to only one filament)
-    DRT::Condition* cond = currnode->GetCondition("BeamLineFilamentCondition");
+    CORE::Conditions::Condition* cond = currnode->GetCondition("BeamLineFilamentCondition");
 
     // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to next
     // node

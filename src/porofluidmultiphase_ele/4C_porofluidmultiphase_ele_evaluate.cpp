@@ -83,8 +83,9 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
  |  dummy                                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("EvaluateNeumann for PoroFluidMultiPhase  not yet implemented!");
   //    The function is just a dummy. For PoroFluidMultiPhase elements, the integration

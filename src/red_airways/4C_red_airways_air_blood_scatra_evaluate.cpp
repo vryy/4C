@@ -172,8 +172,9 @@ int DRT::ELEMENTS::RedAirBloodScatra::Evaluate(Teuchos::ParameterList& params,
 
 
 int DRT::ELEMENTS::RedAirBloodScatra::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -184,8 +185,8 @@ int DRT::ELEMENTS::RedAirBloodScatra::EvaluateNeumann(Teuchos::ParameterList& pa
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirBloodScatra::EvaluateDirichlet(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {
   return 0;
 }

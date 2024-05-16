@@ -13,9 +13,9 @@
 #include "4C_red_airways_tissue.hpp"
 
 #include "4C_adapter_str_redairway.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
@@ -33,7 +33,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 {
   // Before setting up the structure time integrator, manipulate coupling conditions -> turn them
   // into neumann orthopressure conditions
-  std::vector<DRT::Condition*> surfneumcond;
+  std::vector<CORE::Conditions::Condition*> surfneumcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
@@ -44,10 +44,10 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
 
   // Now filter those Neumann conditions that are due to the coupling
-  std::vector<DRT::Condition*> coupcond;
+  std::vector<CORE::Conditions::Condition*> coupcond;
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
-    DRT::Condition* actcond = surfneumcond[i];
+    CORE::Conditions::Condition* actcond = surfneumcond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayTissue) coupcond.push_back(actcond);
   }
   unsigned int numcond = coupcond.size();
@@ -55,7 +55,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 
   for (unsigned int i = 0; i < numcond; ++i)
   {
-    DRT::Condition* cond = coupcond[i];
+    CORE::Conditions::Condition* cond = coupcond[i];
     std::string type = "neum_orthopressure";
     cond->parameters().Add("type", type);
     std::vector<int> onoff(6, 0);
@@ -68,7 +68,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     tmp.push_back(condID);
   }
 
-  std::vector<DRT::Condition*> nodecond;
+  std::vector<CORE::Conditions::Condition*> nodecond;
   Teuchos::RCP<DRT::Discretization> redairwaydis =
       GLOBAL::Problem::Instance()->GetDis("red_airway");
   if (redairwaydis == Teuchos::null) FOUR_C_THROW("no redairway discretization available");
@@ -80,10 +80,10 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     FOUR_C_THROW("no redairway prescribed conditions on redairway discretization");
 
   // Now filter those node conditions that are due to the coupling
-  std::vector<DRT::Condition*> nodecoupcond;
+  std::vector<CORE::Conditions::Condition*> nodecoupcond;
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
-    DRT::Condition* actcond = nodecond[i];
+    CORE::Conditions::Condition* actcond = nodecond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
   }
   unsigned int numnodecoupcond = nodecoupcond.size();
@@ -91,7 +91,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 
   for (unsigned int i = 0; i < numnodecoupcond; ++i)
   {
-    DRT::Condition* cond = nodecoupcond[i];
+    CORE::Conditions::Condition* cond = nodecoupcond[i];
     std::string bc_data = "flow";
     cond->parameters().Add("boundarycond", bc_data);
     std::vector<double> val(1, 0.0);

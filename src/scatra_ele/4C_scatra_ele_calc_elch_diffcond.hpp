@@ -302,14 +302,15 @@ namespace DRT
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
-              ehist,                          ///< history variables at element nodes
-          double timefac,                     ///< time factor
-          Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-          const int nume,                     ///< number of transferred electrons
-          const std::vector<int> stoich,      ///< stoichiometry of the reaction
-          const int kinetics,                 ///< desired electrode kinetics model
-          const double pot0,                  ///< electrode potential on metal side
-          const double frt,                   ///< factor F/RT
+              ehist,       ///< history variables at element nodes
+          double timefac,  ///< time factor
+          Teuchos::RCP<CORE::Conditions::Condition>
+              cond,                       ///< electrode kinetics boundary condition
+          const int nume,                 ///< number of transferred electrons
+          const std::vector<int> stoich,  ///< stoichiometry of the reaction
+          const int kinetics,             ///< desired electrode kinetics model
+          const double pot0,              ///< electrode potential on metal side
+          const double frt,               ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
           ) override;
@@ -322,7 +323,7 @@ namespace DRT
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
           double timefac,                                           ///< time factor
-          Teuchos::RCP<DRT::Condition> cond,                        ///< the condition
+          Teuchos::RCP<CORE::Conditions::Condition> cond,           ///< the condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int kinetics,             ///< desired electrode kinetics model
@@ -379,7 +380,7 @@ namespace DRT
       void EvaluateElectrodeStatus(const DRT::Element* ele,  ///< the actual boundary element
           CORE::LINALG::SerialDenseVector& scalars,          ///< scalars to be computed
           Teuchos::ParameterList& params,                    ///< the parameter list
-          Teuchos::RCP<DRT::Condition> cond,                 ///< the condition
+          Teuchos::RCP<CORE::Conditions::Condition> cond,    ///< the condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&

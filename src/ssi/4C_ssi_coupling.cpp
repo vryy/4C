@@ -14,8 +14,8 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_dofset_definedmapping_wrapper.hpp"
 #include "4C_lib_dofset_gidbased_wrapper.hpp"
 #include "4C_lib_dofset_predefineddofnumber.hpp"
@@ -444,11 +444,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   {
     {
       // get condition which defines the coupling on target discretization
-      std::vector<DRT::Condition*> conds_struct;
+      std::vector<CORE::Conditions::Condition*> conds_struct;
       structdis->GetCondition("SSICouplingSolidToScatra", conds_struct);
 
       // get condition which defines the coupling on source discretization
-      std::vector<DRT::Condition*> conds_scatra;
+      std::vector<CORE::Conditions::Condition*> conds_scatra;
       scatradis->GetCondition("SSICouplingSolidToScatra", conds_scatra);
 
       // at least one condition needs to be defined on each discretization
@@ -476,11 +476,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
     {
       // get condition which defines the coupling on target discretization
-      std::vector<DRT::Condition*> conds_struct;
+      std::vector<CORE::Conditions::Condition*> conds_struct;
       structdis->GetCondition("SSICouplingScatraToSolid", conds_struct);
 
       // get condition which defines the coupling on source discretization
-      std::vector<DRT::Condition*> conds_scatra;
+      std::vector<CORE::Conditions::Condition*> conds_scatra;
       scatradis->GetCondition("SSICouplingScatraToSolid", conds_scatra);
 
       // at least one condition needs to be defined on each discretization

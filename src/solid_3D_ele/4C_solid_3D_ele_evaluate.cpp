@@ -256,8 +256,9 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
 

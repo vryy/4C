@@ -17,6 +17,7 @@ parenchyma balloon
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -27,10 +28,6 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace DRT
-{
-  class Condition;
-}
 
 namespace CORE::LINALG
 {
@@ -77,7 +74,7 @@ namespace ADAPTER
 
    private:
     /// conditions, that define the lung volume constraints
-    std::vector<DRT::Condition*> constrcond_;
+    std::vector<CORE::Conditions::Condition*> constrcond_;
 
     /// map extractor for fsi <-> full map
     /// this is needed since otherwise "OtherMap" contains only dofs

@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_inpar_elch.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -36,7 +36,8 @@ namespace SCATRA
   {
    public:
     //! constructor
-    CCCVHalfCycleCondition(const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
+    CCCVHalfCycleCondition(
+        const CORE::Conditions::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
 
     //! Get phase of half cycle
     INPAR::ELCH::CCCVHalfCyclePhase GetCCCVHalfCyclePhase() const { return phase_cccv_; };
@@ -102,9 +103,9 @@ namespace SCATRA
   {
    public:
     //! constructor
-    CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-        const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping,
-        int num_dofs);
+    CCCVCondition(const CORE::Conditions::Condition& cccvcyclingcondition,
+        const std::vector<CORE::Conditions::Condition*>& cccvhalfcycleconditions,
+        bool adaptivetimestepping, int num_dofs);
 
     //! true, when all half cylces are completed
     bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };

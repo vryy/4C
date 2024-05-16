@@ -1302,7 +1302,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
       DRT::Node* fluidlnode = discret_->lRowNode(lnodeid);
 
       // do we have a dirichlet boundary conditions in the fluid
-      std::vector<DRT::Condition*> dbccond;
+      std::vector<CORE::Conditions::Condition*> dbccond;
       fluidlnode->GetCondition("Dirichlet", dbccond);
 
       // yes, we have a dirichlet boundary condition

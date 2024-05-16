@@ -14,6 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
@@ -25,7 +27,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
 }  // namespace DRT
 namespace IO
 {
@@ -118,7 +119,7 @@ namespace FLD
       \brief Standard Constructor
       */
       FluidImpedanceBc(const Teuchos::RCP<DRT::Discretization> actdis, const int condid,
-          DRT::Condition* impedancecond);
+          CORE::Conditions::Condition* impedancecond);
 
       /*!
       \brief Empty Constructor

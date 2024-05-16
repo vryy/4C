@@ -57,10 +57,10 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
   // ---------------------------------------------------------------------
   // Read in all conditions
   // ---------------------------------------------------------------------
-  std::vector<DRT::Condition*> couplingcond;
+  std::vector<CORE::Conditions::Condition*> couplingcond;
   discret3_d_->GetCondition("Art_3D_redD_CouplingCond", couplingcond);
 
-  std::vector<DRT::Condition*> couplingcond2;
+  std::vector<CORE::Conditions::Condition*> couplingcond2;
   discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", couplingcond2);
 
   // the number of lines of coupling boundary conditions found in the input
@@ -285,11 +285,11 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
   // ---------------------------------------------------------------------
 
   // Read in the 3D coupling conditions
-  std::vector<DRT::Condition*> conds3D;
+  std::vector<CORE::Conditions::Condition*> conds3D;
   discret3_d_->GetCondition("Art_3D_redD_CouplingCond", conds3D);
 
   // Read in the reduced-D coupling conditions
-  std::vector<DRT::Condition*> conds_redD;
+  std::vector<CORE::Conditions::Condition*> conds_redD;
   discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", conds_redD);
 
   int condID;
@@ -708,7 +708,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> d
   // ---------------------------------------------------------------------
   // read in all 3D to reducedD boundary conditions
   // ---------------------------------------------------------------------
-  std::vector<DRT::Condition*> couplingcond;
+  std::vector<CORE::Conditions::Condition*> couplingcond;
   dis_redD->GetCondition("Art_redD_3D_CouplingCond", couplingcond);
 
 
@@ -1092,7 +1092,7 @@ void FLD::UTILS::FluidCouplingBc::InflowBoundary(
     printf("3D/reduced-D coupling condition Id: %d flowrate = %f\n", condid, flowrate);
 
 
-  std::vector<DRT::Condition*> cond3D;
+  std::vector<CORE::Conditions::Condition*> cond3D;
   discret_3_d_->GetCondition("Art_3D_redD_CouplingCond", cond3D);
 
   double area = 0.0;
@@ -1142,10 +1142,10 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
   // FOUR_C_THROW("Dirichlet coupling is not fixed yet, if you see the message then something is
   // wrong!");
   //  std::cout<<"3D discretization:"<<std::endl<<*discret_3D_<<std::endl;
-  std::vector<DRT::Condition*> conds_red;
+  std::vector<CORE::Conditions::Condition*> conds_red;
   discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", conds_red);
 
-  DRT::Condition* cond_red = nullptr;
+  CORE::Conditions::Condition* cond_red = nullptr;
   for (unsigned int i = 0; i != conds_red.size(); i++)
   {
     if (conds_red[i]->parameters().Get<int>("ConditionID") == condid_)
@@ -1161,10 +1161,10 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
   }
 
   //  residual->Update(1.0,*couplingbc_,1.0);
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   discret_3_d_->GetCondition("Art_3D_redD_CouplingCond", conds);
 
-  DRT::Condition* cond;
+  CORE::Conditions::Condition* cond;
   for (unsigned int i = 0; i != conds.size(); i++)
   {
     if (conds[i]->parameters().Get<int>("ConditionID") == condid_)

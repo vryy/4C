@@ -11,6 +11,7 @@
 
 #include "4C_fluid_ele_calc.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_fluid_ele.hpp"
@@ -23,7 +24,6 @@
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_immersed_base.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_immersed_node.hpp"
 #include "4C_mat_arrhenius_pv.hpp"
 #include "4C_mat_carreauyasuda.hpp"
@@ -1405,13 +1405,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
     CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
     CORE::LINALG::Matrix<nen_, 1>& escabofoaf)
 {
-  std::vector<DRT::Condition*> myneumcond;
+  std::vector<CORE::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   if (nsd_ == 3)
-    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+    CORE::Conditions::FindElementConditions(ele, "VolumeNeumann", myneumcond);
   else if (nsd_ == 2)
-    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+    CORE::Conditions::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
   else
     FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
@@ -1508,13 +1508,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
   // at low Mach number
   if (physicaltype == INPAR::FLUID::loma)
   {
-    std::vector<DRT::Condition*> myscatraneumcond;
+    std::vector<CORE::Conditions::Condition*> myscatraneumcond;
 
     // check whether all nodes have a unique Neumann condition
     if (nsd_ == 3)
-      DRT::UTILS::FindElementConditions(ele, "TransportVolumeNeumann", myscatraneumcond);
+      CORE::Conditions::FindElementConditions(ele, "TransportVolumeNeumann", myscatraneumcond);
     else if (nsd_ == 2)
-      DRT::UTILS::FindElementConditions(ele, "TransportSurfaceNeumann", myscatraneumcond);
+      CORE::Conditions::FindElementConditions(ele, "TransportSurfaceNeumann", myscatraneumcond);
     else
       FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
@@ -8763,10 +8763,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InflowElement(DRT::Element* 
 {
   is_inflow_ele_ = false;
 
-  std::vector<DRT::Condition*> myinflowcond;
+  std::vector<CORE::Conditions::Condition*> myinflowcond;
 
   // check whether all nodes have a unique inflow condition
-  DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+  CORE::Conditions::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
   if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
   if (myinflowcond.size() == 1) is_inflow_ele_ = true;

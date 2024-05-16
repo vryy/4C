@@ -12,12 +12,12 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretization> manifolddis,
-    Teuchos::RCP<DRT::Discretization> scatradis, DRT::Condition* condition_manifold,
-    DRT::Condition* condition_kinetics, const int ndof_per_node)
+    Teuchos::RCP<DRT::Discretization> scatradis, CORE::Conditions::Condition* condition_manifold,
+    CORE::Conditions::Condition* condition_kinetics, const int ndof_per_node)
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new CORE::ADAPTER::Coupling())),
@@ -111,11 +111,11 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())
     FOUR_C_THROW("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
-  std::vector<DRT::Condition*> conditions_manifold;
+  std::vector<CORE::Conditions::Condition*> conditions_manifold;
   scatra_manifold_->ScaTraField()->Discretization()->GetCondition(
       "SSISurfaceManifold", conditions_manifold);
 
-  std::vector<DRT::Condition*> conditions_manifold_kinetics_scatra;
+  std::vector<CORE::Conditions::Condition*> conditions_manifold_kinetics_scatra;
   scatra_->ScaTraField()->Discretization()->GetCondition(
       "SSISurfaceManifoldKinetics", conditions_manifold_kinetics_scatra);
 

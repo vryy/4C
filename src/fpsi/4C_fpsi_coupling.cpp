@@ -17,13 +17,13 @@ Fluid-Poro-Coupling Matrixes!
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_condition_selector.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -114,43 +114,43 @@ void FPSI::FPSICoupling::SetupInterfaceCoupling()
 
   {
     porofluid_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*porofluiddis, "FPSICoupling", 0, ndim + 1)));
+        new CORE::Conditions::NDimConditionSelector(*porofluiddis, "FPSICoupling", 0, ndim + 1)));
     mcs.SetupExtractor(*porofluiddis, *(porofluiddis->DofRowMap()), *porofluid_extractor_);
   }
 
   {
     porostruct_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*porostructdis, "FPSICoupling", 0, ndim)));
+        new CORE::Conditions::NDimConditionSelector(*porostructdis, "FPSICoupling", 0, ndim)));
     mcs.SetupExtractor(*porostructdis, *(porostructdis->DofRowMap()), *porostruct_extractor_);
   }
 
   {
     fluidvelpres_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim + 1)));
+        new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim + 1)));
     mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluidvelpres_extractor_);
   }
 
   {
     fluidvel_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(
-        Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
+    CORE::Conditions::MultiConditionSelector mcs;
+    mcs.AddSelector(Teuchos::rcp(
+        new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
     mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluidvel_extractor_);
   }
 
   {
     fluid_fsifpsi_extractor_ = Teuchos::rcp(new FPSI::UTILS::MapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(
-        Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*fluiddis, "FSICoupling", 0, ndim)));
-    mcs.AddSelector(
-        Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
+    CORE::Conditions::MultiConditionSelector mcs;
+    mcs.AddSelector(Teuchos::rcp(
+        new CORE::Conditions::NDimConditionSelector(*fluiddis, "FSICoupling", 0, ndim)));
+    mcs.AddSelector(Teuchos::rcp(
+        new CORE::Conditions::NDimConditionSelector(*fluiddis, "FPSICoupling", 0, ndim)));
     mcs.SetupExtractor(*fluiddis, *(fluiddis->DofRowMap()), *fluid_fsifpsi_extractor_);
   }
 

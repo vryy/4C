@@ -516,7 +516,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<DRT::Condition> fdp_cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> fdp_cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
 
   // find out whether there is a time curve and get factor:
   // usable as a time-curve factor for fixed pressure as well as
@@ -1838,7 +1839,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<DRT::Condition> wdbc_cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> wdbc_cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
 
   // type of consistency (default: adjoint-consistent)
   const std::string& consistency =
@@ -4345,8 +4347,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
   //--------------------------------------------------
   // get the condition information
-  Teuchos::RCP<DRT::Condition> hixhybdbc_cond =
-      params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> hixhybdbc_cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
 
   // get value for boundary condition
   const auto& val = (*hixhybdbc_cond).parameters().Get<std::vector<double>>("val");

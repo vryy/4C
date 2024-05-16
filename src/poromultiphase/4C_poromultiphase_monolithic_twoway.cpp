@@ -146,7 +146,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
 
-  std::vector<DRT::Condition*> locsysconditions(0);
+  std::vector<CORE::Conditions::Condition*> locsysconditions(0);
   (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
 
   // if there are inclined structural Dirichlet BC, get the structural LocSysManager

@@ -78,7 +78,7 @@ void STR::Dbc::Setup()
   // ---------------------------------------------------------------------------
   // Create local coordinate system manager
   // ---------------------------------------------------------------------------
-  std::vector<DRT::Condition*> locsysconditions(0);
+  std::vector<CORE::Conditions::Condition*> locsysconditions(0);
   discret_ptr_->GetCondition("Locsys", locsysconditions);
   if (locsysconditions.size())
   {

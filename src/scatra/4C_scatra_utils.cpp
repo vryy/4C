@@ -9,11 +9,11 @@
 
 #include "4C_scatra_utils.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_inpar_s2i.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -26,7 +26,7 @@ void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
     Teuchos::RCP<DRT::Discretization> discretization)
 {
   // check if the number of s2i condition definition is correct
-  std::vector<DRT::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
+  std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
       s2imeshtying_conditions, s2inoevaluation_conditions;
   discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
   discretization->GetCondition("S2ISCLCoupling", s2isclcoupling_condition);
@@ -42,16 +42,17 @@ void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
   }
 
   // combine conditions that define the physics and the evaluation type
-  std::vector<DRT::Condition*> s2ievaluation_conditions(s2imeshtying_conditions);
+  std::vector<CORE::Conditions::Condition*> s2ievaluation_conditions(s2imeshtying_conditions);
   s2ievaluation_conditions.insert(s2ievaluation_conditions.end(),
       s2inoevaluation_conditions.begin(), s2inoevaluation_conditions.end());
-  std::vector<DRT::Condition*> s2iphysics_conditions(s2ikinetics_conditions);
+  std::vector<CORE::Conditions::Condition*> s2iphysics_conditions(s2ikinetics_conditions);
   s2iphysics_conditions.insert(s2iphysics_conditions.end(), s2isclcoupling_condition.begin(),
       s2isclcoupling_condition.end());
 
   std::vector<int> s2ievaluation_nodes, s2iphysics_nodes;
-  DRT::UTILS::FindConditionedNodes(*discretization, s2ievaluation_conditions, s2ievaluation_nodes);
-  DRT::UTILS::FindConditionedNodes(*discretization, s2iphysics_conditions, s2iphysics_nodes);
+  CORE::Conditions::FindConditionedNodes(
+      *discretization, s2ievaluation_conditions, s2ievaluation_nodes);
+  CORE::Conditions::FindConditionedNodes(*discretization, s2iphysics_conditions, s2iphysics_nodes);
 
   if (s2iphysics_nodes != s2ievaluation_nodes)
   {
@@ -70,9 +71,9 @@ void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
 void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
     const std::string& condition_to_be_tested, Teuchos::RCP<DRT::Discretization> discretization)
 {
-  std::vector<DRT::Condition*> allConditionsToBeTested;
+  std::vector<CORE::Conditions::Condition*> allConditionsToBeTested;
   discretization->GetCondition(condition_to_be_tested, allConditionsToBeTested);
-  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions;
   discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
   // loop over all conditions to be tested and check for a consistent initialization of the s2i
@@ -116,13 +117,14 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
       {
         case INPAR::S2I::side_slave:
         {
-          if (isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+          if (isslave) CORE::Conditions::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
 
           break;
         }
         case INPAR::S2I::side_master:
         {
-          if (!isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+          if (!isslave)
+            CORE::Conditions::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
 
           break;
         }

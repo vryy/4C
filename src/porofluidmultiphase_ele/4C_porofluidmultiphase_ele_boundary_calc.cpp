@@ -156,7 +156,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
     case POROFLUIDMULTIPHASE::bd_calc_Neumann:
     {
       // check if the neumann conditions were set
-      DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+      CORE::Conditions::Condition* condition =
+          params.get<CORE::Conditions::Condition*>("condition");
       if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       // evaluate neumann loads
@@ -174,8 +175,9 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(

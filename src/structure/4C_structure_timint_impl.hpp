@@ -14,6 +14,7 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_structure_timint.hpp"
 
@@ -23,12 +24,6 @@
 #include <NOX_Epetra_Interface_Preconditioner.H>
 
 FOUR_C_NAMESPACE_OPEN
-
-// forward declarations
-namespace DRT
-{
-  class Condition;
-}
 
 namespace CORE::LINALG
 {
@@ -196,7 +191,7 @@ namespace STR
     void PredictTangDisConsistVelAcc();
 
     //!
-    void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond);
     //!
     void UpdateKrylovSpaceProjection();
 

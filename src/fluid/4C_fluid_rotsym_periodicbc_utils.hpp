@@ -16,6 +16,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
@@ -26,7 +28,6 @@ namespace DRT
 {
   class Discretization;
   class Node;
-  class Condition;
 }  // namespace DRT
 
 namespace FLD
@@ -45,7 +46,7 @@ namespace FLD
 
   //! Access angle of rotation and convert it to RAD
   inline double GetRotAngleFromCondition(
-      const DRT::Condition* cond  ///< pointer to desired periodic boundary condition
+      const CORE::Conditions::Condition* cond  ///< pointer to desired periodic boundary condition
   );
 
   //! Get all relevant slave nodes of rotationally symmetric periodic bc's

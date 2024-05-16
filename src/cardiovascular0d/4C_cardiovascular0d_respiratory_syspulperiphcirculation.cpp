@@ -930,10 +930,10 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
+    CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     const std::string conditiontype =
         cardiovascular0dcond_[i]->parameters().Get<std::string>("type");
@@ -9095,7 +9095,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
     int condID = cond->parameters().Get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;

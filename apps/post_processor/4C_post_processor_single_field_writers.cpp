@@ -11,7 +11,7 @@
 
 #include "4C_post_processor_single_field_writers.hpp"
 
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_post_common.hpp"
 

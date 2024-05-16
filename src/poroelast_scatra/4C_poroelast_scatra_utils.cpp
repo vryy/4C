@@ -9,7 +9,7 @@
 
 #include "4C_poroelast_scatra_utils.hpp"
 
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

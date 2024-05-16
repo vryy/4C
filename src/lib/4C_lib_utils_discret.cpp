@@ -28,7 +28,7 @@ void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
     const std::vector<int>& locids)
 {
   // get initial field conditions
-  std::vector<DRT::Condition*> initfieldconditions;
+  std::vector<CORE::Conditions::Condition*> initfieldconditions;
   discret.GetCondition("Initfield", initfieldconditions);
 
   //--------------------------------------------------------
@@ -61,8 +61,8 @@ void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Condition& cond,
-    Epetra_Vector& fieldvector, const std::vector<int>& locids)
+void DRT::UTILS::DoInitialField(const DRT::Discretization& discret,
+    CORE::Conditions::Condition& cond, Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.GetNodes();
   if (cond_nodeids.empty()) FOUR_C_THROW("Initfield condition does not have nodal cloud.");

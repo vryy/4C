@@ -98,7 +98,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeumann(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Condition& condition, DRT::Element::LocationArray& la,
+    CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
 {
   // call base class routine
@@ -153,12 +153,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
     Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
-    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                     ///< number of transferred electrons
-    const std::vector<int> stoich,      ///< stoichiometry of the reaction
-    const int kinetics,                 ///< desired electrode kinetics model
-    const double pot0,                  ///< electrode potential on metal side
-    const double frt,                   ///< factor F/RT
+    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                  ///< number of transferred electrons
+    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
+    const int kinetics,                              ///< desired electrode kinetics model
+    const double pot0,                               ///< electrode potential on metal side
+    const double frt,                                ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {

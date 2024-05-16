@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include "4C_lib_element.hpp"
 
@@ -18,19 +18,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::Condition::Condition(const int id, const CORE::Conditions::ConditionType type,
+CORE::Conditions::Condition::Condition(const int id, const CORE::Conditions::ConditionType type,
     const std::string name, const bool buildgeometry, const CORE::Conditions::GeometryType gtype)
     : id_(id), buildgeometry_(buildgeometry), type_(type), name_(std::move(name)), gtype_(gtype)
 {
 }
 
-std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond)
+std::ostream& operator<<(std::ostream& os, const CORE::Conditions::Condition& cond)
 {
   cond.Print(os);
   return os;
 }
 
-std::string DRT::Condition::Name() const
+std::string CORE::Conditions::Condition::Name() const
 {
   std::stringstream condition_name;
   condition_name << "Condition " << id_ << " " << name_ << ": ";
@@ -38,9 +38,9 @@ std::string DRT::Condition::Name() const
   return condition_name.str();
 }
 
-void DRT::Condition::Print(std::ostream& os) const
+void CORE::Conditions::Condition::Print(std::ostream& os) const
 {
-  os << DRT::Condition::Name();
+  os << CORE::Conditions::Condition::Name();
   container_.Print(os);
   os << std::endl;
   if (nodes_.size() != 0)
@@ -57,7 +57,7 @@ void DRT::Condition::Print(std::ostream& os) const
   }
 }
 
-void DRT::Condition::AdjustId(const int shift)
+void CORE::Conditions::Condition::AdjustId(const int shift)
 {
   std::map<int, Teuchos::RCP<DRT::Element>> geometry;
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter;
@@ -71,9 +71,9 @@ void DRT::Condition::AdjustId(const int shift)
   swap(*geometry_, geometry);
 }
 
-Teuchos::RCP<DRT::Condition> DRT::Condition::copy_without_geometry() const
+Teuchos::RCP<CORE::Conditions::Condition> CORE::Conditions::Condition::copy_without_geometry() const
 {
-  Teuchos::RCP<Condition> copy(new Condition(*this));
+  Teuchos::RCP<CORE::Conditions::Condition> copy(new Condition(*this));
   copy->ClearGeometry();
   return copy;
 }

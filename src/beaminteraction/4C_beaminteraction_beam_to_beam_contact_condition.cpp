@@ -13,7 +13,7 @@
 #include "4C_beaminteraction_beam_to_beam_contact_pair.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
-    const Teuchos::RCP<const DRT::Condition>& condition_line_1,
-    const Teuchos::RCP<const DRT::Condition>& condition_line_2)
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_1,
+    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_2)
     : BeamInteractionConditionBase(condition_line_1),
       condition_other_(condition_line_2),
       condition_contact_pairs_(),

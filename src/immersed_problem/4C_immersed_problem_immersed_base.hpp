@@ -493,7 +493,7 @@ namespace IMMERSED
     int datalength = (int)vectofill->length();
 
     // get possible elements being intersected by immersed structure
-    DRT::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
+    CORE::Conditions::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
     std::map<int, Teuchos::RCP<DRT::Element>>& searchboxgeom = searchbox->Geometry();
     int mysearchboxgeomsize = searchboxgeom.size();
 

@@ -35,7 +35,6 @@ namespace DRT
 {
   // forward declaration
   class Discretization;
-  class Condition;
 
   namespace ELEMENTS
   {

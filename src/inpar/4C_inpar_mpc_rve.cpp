@@ -10,7 +10,7 @@
 #include "4C_inpar_mpc_rve.hpp"
 
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_conditiondefinition.hpp"
+#include "4C_io_condition_definition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters

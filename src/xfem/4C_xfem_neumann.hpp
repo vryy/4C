@@ -18,6 +18,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
@@ -30,7 +32,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
   class Element;
 }  // namespace DRT
@@ -52,7 +53,7 @@ namespace XFEM
       Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions
-  void EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& condition,
+  void EvaluateNeumannStandard(std::multimap<std::string, CORE::Conditions::Condition*>& condition,
       const double time, bool assemblemat, Teuchos::ParameterList& params,
       Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
       CORE::LINALG::SparseOperator* systemmatrix);

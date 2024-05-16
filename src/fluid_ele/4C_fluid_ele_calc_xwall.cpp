@@ -11,6 +11,7 @@
 
 #include "4C_fluid_ele_calc_xwall.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_fluid_ele.hpp"
@@ -18,7 +19,6 @@
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_CONDITION_HPP
-#define FOUR_C_LIB_CONDITION_HPP
+#ifndef FOUR_C_DISCRETIZATION_CONDITION_HPP
+#define FOUR_C_DISCRETIZATION_CONDITION_HPP
 
 
 #include "4C_config.hpp"
@@ -30,6 +30,10 @@ namespace DRT
   // forward declarations
   class Element;
   class Discretization;
+}  // namespace DRT
+
+namespace CORE::Conditions
+{
 
   /*!
    * A condition is mainly used to realize boundary conditions. Parameters for the condition
@@ -106,7 +110,7 @@ namespace DRT
     [[nodiscard]] bool ContainsNode(int ngid) const
     {
       const std::vector<int>* n = GetNodes();
-      // DRT::Condition nodes are ordered by design! So we can perform a binary
+      // CORE::Conditions::Condition nodes are ordered by design! So we can perform a binary
       // search here.
       return std::binary_search(n->begin(), n->end(), ngid);
     }
@@ -175,7 +179,7 @@ namespace DRT
     /**
      * Create a copy of this object but do not copy the geometry.
      */
-    [[nodiscard]] Teuchos::RCP<Condition> copy_without_geometry() const;
+    [[nodiscard]] Teuchos::RCP<CORE::Conditions::Condition> copy_without_geometry() const;
 
     //! Comparison operator.
     friend bool operator<(const Condition& lhs, const Condition& rhs);
@@ -219,7 +223,7 @@ namespace DRT
 
     //@}
 
-    Condition(const DRT::Condition& old) = default;
+    Condition(const Condition& old) = default;
 
     Condition& operator=(const Condition& old) = default;
 
@@ -247,16 +251,16 @@ namespace DRT
     IO::InputParameterContainer container_;
   };  // class Condition
 
-  inline bool operator<(const DRT::Condition& lhs, const DRT::Condition& rhs)
+  inline bool operator<(const Condition& lhs, const Condition& rhs)
   {
     return std::tie(lhs.type_, lhs.id_) < std::tie(rhs.type_, rhs.id_);
   }
 
-}  // namespace DRT
+}  // namespace CORE::Conditions
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond);
+std::ostream& operator<<(std::ostream& os, const CORE::Conditions::Condition& cond);
 
 
 FOUR_C_NAMESPACE_CLOSE

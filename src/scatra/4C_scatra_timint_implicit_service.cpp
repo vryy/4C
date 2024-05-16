@@ -277,7 +277,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     std::endl;
     }*/
 
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ScaTraFluxCalc", cond);
 
     Teuchos::ParameterList params;
@@ -296,7 +296,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // for OUTPUT standard -> last entry is not used
   std::vector<double> normfluxsum(NumDofPerNode());
 
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ScaTraFluxCalc", cond);
 
   // safety check
@@ -2206,7 +2206,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     case INPAR::SCATRA::calcerror_bycondition:
     {
       // extract conditions from discretization
-      std::vector<DRT::Condition*> relerrorconditions;
+      std::vector<CORE::Conditions::Condition*> relerrorconditions;
       discret_->GetCondition("ScatraRelError", relerrorconditions);
       const unsigned ncond = relerrorconditions.size();
 
@@ -2845,7 +2845,7 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
     FOUR_C_THROW("Invalid condition name!");
 
   // extract conditions for computation of domain or boundary integrals
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   Teuchos::RCP<DRT::Discretization> discret = scatratimint->Discretization();
   const int myrank = discret->Comm().MyPID();
   discret->GetCondition(condstring, conditions);
@@ -3057,8 +3057,8 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 /*-------------------------------------------------------------------------*
 |  Determine number of DoFs per node in given condition       vuong   04/16|
  *-------------------------------------------------------------------------*/
-int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
-    const DRT::Condition& condition, const Teuchos::RCP<const DRT::Discretization>& discret) const
+int SCATRA::ScalarHandler::NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition,
+    const Teuchos::RCP<const DRT::Discretization>& discret) const
 {
   CheckIsSetup();
 

@@ -20,6 +20,7 @@ attached parenchyma balloon
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -33,11 +34,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace CORE::LINALG
 {
   class MapExtractor;
-}
-
-namespace DRT
-{
-  class Condition;
 }
 
 
@@ -82,10 +78,10 @@ namespace ADAPTER
 
    private:
     /// conditions that define the lung volume constraints
-    std::vector<DRT::Condition*> constrcond_;
+    std::vector<CORE::Conditions::Condition*> constrcond_;
 
     /// conditions that define the structure ale coupling at the outlets
-    std::vector<DRT::Condition*> asicond_;
+    std::vector<CORE::Conditions::Condition*> asicond_;
 
     /// map containing all dofs related to volume coupling (i.e. dofs of the
     /// enclosing boundary)

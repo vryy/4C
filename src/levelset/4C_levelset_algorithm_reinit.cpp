@@ -587,9 +587,9 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
   // - minimum in planenormaldirection
   // - maximum in planenormaldirection
   //========================================================================
-  // std::vector<DRT::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
+  // std::vector<CORE::Conditions::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
   // get periodic surface boundary conditions
-  std::vector<DRT::Condition*> surfacepbcs;
+  std::vector<CORE::Conditions::Condition*> surfacepbcs;
   discret_->GetCondition("SurfacePeriodic", surfacepbcs);
   if (surfacepbcs.empty()) discret_->GetCondition("LinePeriodic", surfacepbcs);
 

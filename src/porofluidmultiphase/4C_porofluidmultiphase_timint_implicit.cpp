@@ -1984,7 +1984,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
       const int numdof = discret_->NumDof(0, discret_->lRowNode(0));
 
       // get initial field conditions
-      std::vector<DRT::Condition*> initfieldconditions(0);
+      std::vector<CORE::Conditions::Condition*> initfieldconditions(0);
       discret_->GetCondition("Initfield", initfieldconditions);
 
       if (not initfieldconditions.size())

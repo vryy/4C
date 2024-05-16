@@ -72,7 +72,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   // setup mortar coupling
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::thermo)
   {
-    DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
+    CORE::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(

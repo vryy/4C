@@ -141,7 +141,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
             if (doDirichlet)
             {
               const std::vector<int>* flag = nullptr;
-              DRT::Condition* dirich = node->GetCondition("Dirichlet");
+              CORE::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
               if (dirich)
               {
                 if (dirich->Type() != CORE::Conditions::PointDirichlet &&
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         //      if (doDirichlet)
         //      {
         //        const std::vector<int>* flag = nullptr;
-        //        DRT::Condition* dirich = GetCondition("Dirichlet");
+        //        CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
         //        if (dirich)
         //        {
         //          if (dirich->Type()!=CORE::Conditions::geometry_type_pointDirichlet &&

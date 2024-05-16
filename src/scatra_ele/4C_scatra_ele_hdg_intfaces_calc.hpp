@@ -32,7 +32,6 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
   class DiscretizationFaces;
 

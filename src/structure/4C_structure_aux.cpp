@@ -11,9 +11,9 @@
 
 #include "4C_structure_aux.hpp"
 
+#include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_selector.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,20 +65,22 @@ void STR::MapExtractor::Setup(
     const DRT::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
+  CORE::Conditions::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "AleWear", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "IMMERSEDCoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "ParticleWall", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "IMMERSEDCoupling", 0, ndim)));
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "ParticleWall", 0, ndim)));
 
   mcs.SetupExtractor(dis, fullmap, *this);
 }
@@ -89,18 +91,20 @@ void STR::MapExtractor::Setup(
 Teuchos::RCP<std::set<int>> STR::MapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements = DRT::UTILS::ConditionedElementMap(dis, "FSICoupling");
+  Teuchos::RCP<std::set<int>> condelements =
+      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      DRT::UTILS::ConditionedElementMap(dis, "StructAleCoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "StructAleCoupling");
   Teuchos::RCP<std::set<int>> condelements3 =
-      DRT::UTILS::ConditionedElementMap(dis, "BioGrCoupling");
-  Teuchos::RCP<std::set<int>> condelements4 = DRT::UTILS::ConditionedElementMap(dis, "AleWear");
+      CORE::Conditions::ConditionedElementMap(dis, "BioGrCoupling");
+  Teuchos::RCP<std::set<int>> condelements4 =
+      CORE::Conditions::ConditionedElementMap(dis, "AleWear");
   Teuchos::RCP<std::set<int>> condelements5 =
-      DRT::UTILS::ConditionedElementMap(dis, "FPSICoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "FPSICoupling");
   Teuchos::RCP<std::set<int>> condelements6 =
-      DRT::UTILS::ConditionedElementMap(dis, "IMMERSEDCoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "IMMERSEDCoupling");
   Teuchos::RCP<std::set<int>> condelements7 =
-      DRT::UTILS::ConditionedElementMap(dis, "ParticleWall");
+      CORE::Conditions::ConditionedElementMap(dis, "ParticleWall");
 
 
   std::copy(condelements2->begin(), condelements2->end(),

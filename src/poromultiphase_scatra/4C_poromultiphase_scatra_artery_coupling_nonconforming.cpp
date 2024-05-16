@@ -149,7 +149,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplingIdsfromInput()
 {
   // get 1D coupling IDs from Input
-  std::vector<DRT::Condition*> artCoupcond;
+  std::vector<CORE::Conditions::Condition*> artCoupcond;
 
   arterydis_->GetCondition(condname_, artCoupcond);
 
@@ -327,7 +327,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
         if (artnodes[i]->Id() == couplingnodes_ntp_[j])
         {
           // get coupling type (ARTERY or AIRWAY ?)
-          std::vector<DRT::Condition*> coupcond;
+          std::vector<CORE::Conditions::Condition*> coupcond;
           arterydis_->GetCondition(condname_, coupcond);
           std::string coupling_element_type_ =
               (coupcond[j])->parameters().Get<std::string>("coupling_type");

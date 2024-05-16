@@ -88,7 +88,7 @@ void FS3I::ACFSI::Init()
         "You need to specify a LARGE_TIMESCALE_TIMESTEP and it must be larger than the 'normal' "
         "fs3i TIMESTEP!");
 
-  std::vector<DRT::Condition*> ImpCond;
+  std::vector<CORE::Conditions::Condition*> ImpCond;
   GLOBAL::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
   for (auto& i : ImpCond)
   {

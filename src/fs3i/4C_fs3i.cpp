@@ -17,6 +17,8 @@
 #include "4C_adapter_structure_scatra_ele.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_result_test.hpp"
 #include "4C_fluid_utils.hpp"
@@ -28,8 +30,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fs3i.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_condition_selector.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -275,7 +275,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<DRT::Discretization> disscatra = (scatravec_[i])->ScaTraField()->Discretization();
-    std::vector<DRT::Condition*> coupcond;
+    std::vector<CORE::Conditions::Condition*> coupcond;
     disscatra->GetCondition("ScaTraCoupling", coupcond);
 
     for (auto& iter : coupcond)
@@ -309,7 +309,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
 
         if ((bool)params->at(3))  // if we have WSS depended interface permeabiliy
         {
-          std::vector<DRT::Condition*> FSCCond;
+          std::vector<CORE::Conditions::Condition*> FSCCond;
           problem->GetDis("fluid")->GetCondition("FluidStressCalc", FSCCond);
 
           if (FSCCond.size() == 0)

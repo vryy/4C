@@ -31,7 +31,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
 
   namespace UTILS
   {

@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
       ExtendGhostingForFilamentBspotSetup(relevantfilaments, discret);
 
       // get pointers to all filament number conditions set
-      std::vector<DRT::Condition*> filamentconditions(0);
+      std::vector<CORE::Conditions::Condition*> filamentconditions(0);
       discret->GetCondition("BeamLineFilamentCondition", filamentconditions);
 
       // compute number of linker types
@@ -384,7 +384,8 @@ namespace BEAMINTERACTION
       for (int rown = 0; rown < discret->NumMyRowNodes(); ++rown)
       {
         // get filament number of current node ( requirement: node belongs to only one filament)
-        DRT::Condition* cond = discret->lRowNode(rown)->GetCondition("BeamLineFilamentCondition");
+        CORE::Conditions::Condition* cond =
+            discret->lRowNode(rown)->GetCondition("BeamLineFilamentCondition");
 
         // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to
         // next node

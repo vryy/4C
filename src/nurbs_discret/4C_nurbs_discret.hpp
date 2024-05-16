@@ -197,9 +197,9 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        * \author vuong */
-      void DoDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
-          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle,
+      void DoDirichletCondition(const DRT::Discretization& discret,
+          const CORE::Conditions::Condition& cond, double time,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
      private:

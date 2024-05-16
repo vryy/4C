@@ -27,6 +27,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_scatra_wrapper.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
@@ -60,7 +61,6 @@ namespace DRT
 {
   class Discretization;
   class DofSet;
-  class Condition;
   class ResultTest;
 }  // namespace DRT
 
@@ -681,7 +681,7 @@ namespace SCATRA
      * @param[out] blockmaps               empty vector for maps to be built
      */
     virtual void BuildBlockMaps(
-        const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
 
     //! build null spaces associated with blocks of global system matrix. Hand in solver to access
@@ -725,10 +725,10 @@ namespace SCATRA
     int NumDofPerNode() const;
 
     //! return number of dofs per node in condition
-    int NumDofPerNodeInCondition(const DRT::Condition& condition) const;
+    int NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition) const;
 
     //! return number of transported scalars per node in condition
-    virtual int NumScalInCondition(const DRT::Condition& condition) const
+    virtual int NumScalInCondition(const CORE::Conditions::Condition& condition) const
     {
       return NumDofPerNodeInCondition(condition);
     };
@@ -931,7 +931,7 @@ namespace SCATRA
     virtual void SetOldPartOfRighthandside();
 
     //! create Krylov space projector
-    void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond);
     //! update Krylov space projector
     void UpdateKrylovSpaceProjection();
 
@@ -1638,11 +1638,11 @@ namespace SCATRA
     /*========================================================================*/
 
     //! return maximum number of dofs per node
-    int NumDofPerNodeInCondition(const DRT::Condition& condition,
+    int NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition,
         const Teuchos::RCP<const DRT::Discretization>& discret) const;
 
     //! return maximum number of transported scalars per node
-    virtual int NumScalInCondition(const DRT::Condition& condition,
+    virtual int NumScalInCondition(const CORE::Conditions::Condition& condition,
         const Teuchos::RCP<const DRT::Discretization>& discret) const
     {
       return NumDofPerNodeInCondition(condition, discret);
@@ -1815,7 +1815,7 @@ namespace SCATRA
 
    private:
     //! vector of 'TotalAndMeanScalar'-conditions
-    std::vector<DRT::Condition*> conditions_;
+    std::vector<CORE::Conditions::Condition*> conditions_;
 
     //! number of degrees of freedom per node per 'TotalAndMeanScalar'-conditions
     std::map<int, int> numdofpernodepercondition_;
@@ -1876,9 +1876,9 @@ namespace SCATRA
 
    private:
     //! vector of 'DomainIntegral'-conditions
-    std::vector<DRT::Condition*> conditionsdomain_;
+    std::vector<CORE::Conditions::Condition*> conditionsdomain_;
     //! vector of 'BoundaryIntegral'-conditions
-    std::vector<DRT::Condition*> conditionsboundary_;
+    std::vector<CORE::Conditions::Condition*> conditionsboundary_;
     //! vector of 'DomainIntegral'-values
     std::vector<double> domainintegralvalues_;
     //! vector of 'BoundaryIntegral'-values

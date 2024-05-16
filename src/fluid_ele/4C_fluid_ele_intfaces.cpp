@@ -610,8 +610,9 @@ int DRT::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition    schott 03/12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("not available");
 

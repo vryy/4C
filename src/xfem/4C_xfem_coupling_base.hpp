@@ -40,7 +40,7 @@ namespace DRT
 
 namespace XFEM
 {
-  typedef std::pair<INPAR::XFEM::EleCouplingCondType, DRT::Condition*> EleCoupCond;
+  typedef std::pair<INPAR::XFEM::EleCouplingCondType, CORE::Conditions::Condition*> EleCoupCond;
 
   INPAR::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condname);
 
@@ -126,8 +126,8 @@ namespace XFEM
       step_ += 1;
     }
 
-    void GetConditionByCouplingId(const std::vector<DRT::Condition*>& mycond, const int coupling_id,
-        std::vector<DRT::Condition*>& mynewcond);
+    void GetConditionByCouplingId(const std::vector<CORE::Conditions::Condition*>& mycond,
+        const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
 
     void Status(const int coupling_idx, const int side_start_gid);
 
@@ -224,21 +224,21 @@ namespace XFEM
 
     virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond)
+        const CORE::Conditions::Condition* cond)
     {
       FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
     };
 
     virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond)
+        const CORE::Conditions::Condition* cond)
     {
       FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
     };
 
     virtual void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond)
+        const CORE::Conditions::Condition* cond)
     {
       FOUR_C_THROW("EvaluateCouplingConditionsOldState should be implemented by derived class");
     };
@@ -251,23 +251,23 @@ namespace XFEM
     }
 
     /// get the sliplength for the specific coupling condition
-    virtual void GetSlipCoefficient(
-        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    virtual void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
+        const CORE::Conditions::Condition* cond)
     {
       slipcoeff = 0.0;
     }
 
     std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& GetConfigurationmap(
-        double& kappa_m,                      //< fluid sided weighting
-        double& visc_m,                       //< master sided dynamic viscosity
-        double& visc_s,                       //< slave sided dynamic viscosity
-        double& density_m,                    //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+        double& kappa_m,                          //< fluid sided weighting
+        double& visc_m,                           //< master sided dynamic viscosity
+        double& visc_s,                           //< slave sided dynamic viscosity
+        double& density_m,                        //< master sided density
+        double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
+        double& full_stab,                        //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,      //< Position x
+        const CORE::Conditions::Condition* cond,  //< Condition
+        DRT::Element* ele,                        //< Element
+        DRT::Element* bele,                       //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -482,12 +482,12 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+        double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
+        double& full_stab,                        //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,  //< Condition
+        DRT::Element* ele,                        //< Element
+        DRT::Element* bele,                       //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -501,19 +501,19 @@ namespace XFEM
     virtual void PerpareCutterOutput(){};
 
     void EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
-        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
+        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
     void EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
-        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
+        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
     void EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
-        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
+        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
     void EvaluateFunction(std::vector<double>& final_values, const double* x,
-        const DRT::Condition* cond, const double time);
+        const CORE::Conditions::Condition* cond, const double time);
 
     void EvaluateScalarFunction(double& final_value, const double* x, const double& val,
-        const DRT::Condition* cond, const double time);
+        const CORE::Conditions::Condition* cond, const double time);
 
     //! @name Sets up a projection matrix
     /*!
@@ -558,8 +558,8 @@ namespace XFEM
     ///< for MeshCoupling)
     Teuchos::RCP<DRT::Discretization> cutter_dis_;
 
-    ///< pairs of condition type and pointer to DRT::Condition for all column elements of the cutter
-    ///< discretization (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
+    ///< pairs of condition type and pointer to CORE::Conditions::Condition for all column elements
+    ///< of the cutter discretization (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
     std::vector<EleCoupCond> cutterele_conds_;
 
     std::vector<std::string>

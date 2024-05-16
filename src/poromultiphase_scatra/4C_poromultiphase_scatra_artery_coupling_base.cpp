@@ -84,7 +84,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::RecomputeCoupledDOFsForNTP(
-    std::vector<DRT::Condition*> coupcond, unsigned int couplingnode)
+    std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode)
 {
   coupleddofs_art_ =
       (coupcond[couplingnode]->parameters().Get<std::vector<int>>("COUPLEDDOF_REDUCED"));

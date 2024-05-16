@@ -19,9 +19,9 @@
 #include "4C_contact_integrator.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -160,9 +160,9 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "Contact" || couplingcond == "EHLCoupling")
   {
-    std::vector<DRT::Condition*> conds;
-    std::vector<DRT::Condition*> conds_master(0);
-    std::vector<DRT::Condition*> conds_slave(0);
+    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds_master(0);
+    std::vector<CORE::Conditions::Condition*> conds_slave(0);
     masterdis->GetCondition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
@@ -175,11 +175,11 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -189,12 +189,12 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
     //    if(masterdis!=Teuchos::null)
-    //      DRT::UTILS::FindConditionObjects(*masterdis, masternodes, mastergnodes, masterelements,
-    //      couplingcond);
+    //      CORE::Conditions::FindConditionObjects(*masterdis, masternodes, mastergnodes,
+    //      masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
     if (slavedis != Teuchos::null)
-      DRT::UTILS::FindConditionObjects(
+      CORE::Conditions::FindConditionObjects(
           *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
@@ -576,7 +576,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
  | setup contact elements for spring dashpot condition     pfaller Apr15|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discretization> masterdis,
-    Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Condition> spring,
+    Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<CORE::Conditions::Condition> spring,
     const int coupling_id, const Epetra_Comm& comm)
 {
   if (comm.MyPID() == 0)
@@ -596,11 +596,11 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
 
   // get the conditions for the current evaluation we use the SpringDashpot condition as a
   // substitute for the mortar slave surface
-  std::vector<DRT::Condition*> conds_master(0);
-  std::vector<DRT::Condition*> conds_slave(0);
+  std::vector<CORE::Conditions::Condition*> conds_master(0);
+  std::vector<CORE::Conditions::Condition*> conds_slave(0);
 
   // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
-  std::vector<DRT::Condition*> coup_conds;
+  std::vector<CORE::Conditions::Condition*> coup_conds;
   slavedis->GetCondition("RobinSpringDashpotCoupling", coup_conds);
 
   // number of coupling conditions
@@ -621,8 +621,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   }
   if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
 
-  DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
+      *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
+  CORE::Conditions::FindConditionObjects(
       *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
   // get mortar coupling parameters

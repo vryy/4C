@@ -128,7 +128,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
-    std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
+    std::vector<Teuchos::RCP<CORE::Conditions::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
@@ -195,7 +195,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
-    std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
+    std::vector<Teuchos::RCP<CORE::Conditions::Condition>> porocondvec;
     masterdis->GetCondition("PoroCoupling", porocondvec);
 
     for (unsigned int i = 0; i < porocondvec.size(); ++i)

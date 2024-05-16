@@ -13,6 +13,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_utils_pairedvector.hpp"
 
 #include <Epetra_MultiVector.h>
@@ -25,7 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
   class Element;
 }  // namespace DRT
@@ -61,7 +61,8 @@ namespace CONSTRAINTS
     /*!
     \brief constructor
      */
-    SpringDashpot(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond);
+    SpringDashpot(
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
@@ -143,8 +144,8 @@ namespace CONSTRAINTS
     //! initialize prestr offset
     void InitializePrestrOffset();
 
-    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    Teuchos::RCP<DRT::Condition> spring_;        ///< spring dashpot condition
+    Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
+    Teuchos::RCP<CORE::Conditions::Condition> spring_;  ///< spring dashpot condition
 
     /// Mortar interface in case of curnormal springs
     Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_;

@@ -504,7 +504,7 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions
   // get the set of ids of all xfem nodes
-  std::vector<DRT::Condition*> xfemcnd;
+  std::vector<CORE::Conditions::Condition*> xfemcnd;
   cond_dis_->GetCondition(cond_name_, xfemcnd);
 
   std::set<int> xfemnodeset;
@@ -639,10 +639,10 @@ bool XFEM::MeshCouplingBC::HasMovingInterface()
 
   DRT::Node* lnode = cutter_dis_->lColNode(0);
 
-  std::vector<DRT::Condition*> mycond;
+  std::vector<CORE::Conditions::Condition*> mycond;
   lnode->GetCondition("XFEMSurfDisplacement", mycond);
 
-  DRT::Condition* cond = mycond[0];
+  CORE::Conditions::Condition* cond = mycond[0];
 
   const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -665,11 +665,11 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
     const int numdof = nodedofset.size();
 
     if (numdof == 0) FOUR_C_THROW("node has no dofs");
-    std::vector<DRT::Condition*> mycond;
+    std::vector<CORE::Conditions::Condition*> mycond;
     lnode->GetCondition(condname, mycond);
 
     // filter out the ones with right coupling id
-    std::vector<DRT::Condition*> mycond_by_coupid;
+    std::vector<CORE::Conditions::Condition*> mycond_by_coupid;
 
     for (auto* cond : mycond)
     {
@@ -688,7 +688,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
 
     if (numconds == 0) FOUR_C_THROW("no condition available!");
 
-    DRT::Condition* cond = mycond_by_coupid[numconds - 1];  // take the last condition
+    CORE::Conditions::Condition* cond = mycond_by_coupid[numconds - 1];  // take the last condition
 
     // initial value for all nodal dofs to zero
     std::vector<double> final_values(numdof, 0.0);
@@ -714,7 +714,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_values,
-    DRT::Node* node, DRT::Condition* cond, const double time, const double dt)
+    DRT::Node* node, CORE::Conditions::Condition* cond, const double time, const double dt)
 {
   const std::string* evaltype = &cond->parameters().Get<std::string>("evaltype");
 
@@ -755,8 +755,8 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
-    std::vector<double>& final_values, DRT::Node* node, DRT::Condition* cond, const double time)
+void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(std::vector<double>& final_values,
+    DRT::Node* node, CORE::Conditions::Condition* cond, const double time)
 {
   const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -821,7 +821,8 @@ void XFEM::MeshCouplingBC::ComputeInterfaceVelocityFromDisplacement(
 }
 
 void XFEM::MeshCouplingBC::EvaluateImplementation(std::vector<double>& final_values,
-    const double* x, DRT::Condition* cond, const double time, const std::string& function_name)
+    const double* x, CORE::Conditions::Condition* cond, const double time,
+    const std::string& function_name)
 {
   const int numdof = final_values.size();
 
@@ -967,7 +968,7 @@ void XFEM::MeshCouplingWeakDirichlet::DoConditionSpecificSetup()
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    const CORE::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cond, time_);
@@ -980,7 +981,7 @@ void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(CORE::LINALG::M
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cond, time_ - dt_);
@@ -1027,7 +1028,7 @@ void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -1053,11 +1054,11 @@ void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
-  DRT::Condition* cond = (cutterele_conds_[0]).second;
+  CORE::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = cond->parameters().Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
   {
-    DRT::Condition* cond = cutterele_cond.second;
+    CORE::Conditions::Condition* cond = cutterele_cond.second;
     auto this_inflow = cond->parameters().Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
@@ -1094,7 +1095,7 @@ void XFEM::MeshCouplingNeumann::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -1135,7 +1136,7 @@ void XFEM::MeshCouplingNeumann::UpdateConfigurationMap_GP(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    const CORE::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1148,7 +1149,7 @@ void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    const CORE::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1161,7 +1162,7 @@ void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    const CORE::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1229,7 +1230,7 @@ void XFEM::MeshCouplingNavierSlip::SetInterfaceVelocity()
 void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<3, 1>& itraction, CORE::LINALG::Matrix<3, 3>& proj_matrix,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::LINALG::Matrix<3, 1>& normal,
-    const DRT::Condition* cond, const bool& eval_dirich_at_gp,
+    const CORE::Conditions::Condition* cond, const bool& eval_dirich_at_gp,
     double& kappa_m,  ///< fluid sided weighting
     double& visc_m,   ///< fluid sided weighting
     double& visc_s    ///< slave sided dynamic viscosity
@@ -1318,7 +1319,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
 
 void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditionsOldState(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // TODO: Add parameters as in call above!!!
   //  //Create normal projection matrix.
@@ -1359,7 +1360,7 @@ void XFEM::MeshCouplingNavierSlip::PrepareSolve()
 }
 
 void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
-    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // Extract correct slip length - bool pair for this condition ID.
   std::pair<double, bool>& tmp_pair = sliplength_map_.find(cond->Id())->second;
@@ -1371,9 +1372,10 @@ void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
 }
 
 void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
-    const std::vector<DRT::Condition*>& conditions_NS,
-    const std::vector<DRT::Condition*>& conditions_robin, const std::string& robin_id_name,
-    std::map<int, DRT::Condition*>& conditionsmap_robin)
+    const std::vector<CORE::Conditions::Condition*>& conditions_NS,
+    const std::vector<CORE::Conditions::Condition*>& conditions_robin,
+    const std::string& robin_id_name,
+    std::map<int, CORE::Conditions::Condition*>& conditionsmap_robin)
 {
   // Loop over all Navier Slip conditions
   for (unsigned i = 0; i < conditions_NS.size(); ++i)
@@ -1384,7 +1386,7 @@ void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
     // Is this robin id active? I.e. is it not 0 or negative?
     if (!(tmp_robin_id < 0))
     {
-      std::vector<DRT::Condition*> mynewcond;
+      std::vector<CORE::Conditions::Condition*> mynewcond;
       GetConditionByRobinId(conditions_robin, tmp_robin_id, mynewcond);
 
       // The robin id should be unique. I.e. For one Coupling ID only a robin id can only exist
@@ -1417,10 +1419,10 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
   // Build necessary maps to limit getting integers and strings on Gausspoint level.
 
   // Get conditions based on cutter discretization.
-  std::vector<DRT::Condition*> conditions_dirich;
+  std::vector<CORE::Conditions::Condition*> conditions_dirich;
   cutter_dis_->GetCondition("XFEMRobinDirichletSurf", conditions_dirich);
 
-  std::vector<DRT::Condition*> conditions_neumann;
+  std::vector<CORE::Conditions::Condition*> conditions_neumann;
   cutter_dis_->GetCondition("XFEMRobinNeumannSurf", conditions_neumann);
 
   if (conditions_neumann.size())
@@ -1440,7 +1442,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
               << std::endl;
   }
 
-  std::vector<DRT::Condition*> conditions_NS;
+  std::vector<CORE::Conditions::Condition*> conditions_NS;
   cutter_dis_->GetCondition(cond_name_, conditions_NS);
 
   // Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
@@ -1485,8 +1487,9 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
   }
 }
 
-void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(const std::vector<DRT::Condition*>& mycond,
-    const int coupling_id, std::vector<DRT::Condition*>& mynewcond)
+void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(
+    const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
+    std::vector<CORE::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
 
@@ -1531,7 +1534,7 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -1674,7 +1677,7 @@ void XFEM::MeshCouplingFSI::ReadRestart(const int step)
 }
 
 void XFEM::MeshCouplingFSI::GetSlipCoefficient(
-    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // Extract correct slip length - bool pair for this condition ID.
   std::pair<double, bool>& tmp_pair = sliplength_map_.find(cond->Id())->second;
@@ -1782,7 +1785,7 @@ void XFEM::MeshCouplingFSI::Output(const int step, const double time, const bool
 
 void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
 {
-  std::vector<DRT::Condition*> conditions_XFSI;
+  std::vector<CORE::Conditions::Condition*> conditions_XFSI;
   cutter_dis_->GetCondition(cond_name_, conditions_XFSI);
 
   // Create maps for easy extraction at gausspoint level
@@ -2085,7 +2088,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -2194,7 +2197,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -2562,7 +2565,7 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)

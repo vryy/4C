@@ -14,10 +14,10 @@
 #include "4C_stru_multi_microstatic.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -796,7 +796,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
 void STRUMULTI::MicroStatic::EvaluateMicroBC(
     CORE::LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {

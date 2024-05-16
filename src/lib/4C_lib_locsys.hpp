@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -135,13 +135,13 @@ namespace DRT
        * \brief Get local system conditions
        *
        */
-      inline std::vector<DRT::Condition*> Conditions() const { return locsysconds_; };
+      inline std::vector<CORE::Conditions::Condition*> Conditions() const { return locsysconds_; };
 
       /*!
        * \brief Get a specific local system condition
        *
        */
-      inline DRT::Condition* Conditions(int k) const
+      inline CORE::Conditions::Condition* Conditions(int k) const
       {
         if (k >= numlocsys_)
         {
@@ -262,7 +262,7 @@ namespace DRT
       int dim_;
 
       /// local system conditions
-      std::vector<DRT::Condition*> locsysconds_;
+      std::vector<CORE::Conditions::Condition*> locsysconds_;
 
       /// number of local systems
       int numlocsys_;

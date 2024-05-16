@@ -810,20 +810,20 @@ Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::StructureDofRowMap() const
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
-    const std::vector<DRT::Condition*>& conditionsToBeTested,
+    const std::vector<CORE::Conditions::Condition*>& conditionsToBeTested,
     Teuchos::RCP<DRT::Discretization>& structdis)
 {
   // get conditions to check against
-  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions;
   structdis->GetCondition("S2IKinetics", s2ikinetics_conditions);
-  std::vector<DRT::Condition*> contactconditions;
+  std::vector<CORE::Conditions::Condition*> contactconditions;
   structdis->GetCondition("Contact", contactconditions);
 
   // loop over all ssi conditions and check them
   for (const auto* conditionToBeTested : conditionsToBeTested)
   {
-    std::vector<DRT::Condition*> InterfaceS2IConditions;
-    std::vector<DRT::Condition*> InterfaceContactConditions;
+    std::vector<CORE::Conditions::Condition*> InterfaceS2IConditions;
+    std::vector<CORE::Conditions::Condition*> InterfaceContactConditions;
 
     const int S2IKineticsID = conditionToBeTested->parameters().Get<int>("S2IKineticsID");
     const int contactconditionID = conditionToBeTested->parameters().Get<int>("ContactConditionID");
@@ -863,8 +863,9 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     // now get the nodes
     std::vector<int> InterfaceS2INodes;
     std::vector<int> InterfaceContactNodes;
-    DRT::UTILS::FindConditionedNodes(*structdis, InterfaceS2IConditions, InterfaceS2INodes);
-    DRT::UTILS::FindConditionedNodes(*structdis, InterfaceContactConditions, InterfaceContactNodes);
+    CORE::Conditions::FindConditionedNodes(*structdis, InterfaceS2IConditions, InterfaceS2INodes);
+    CORE::Conditions::FindConditionedNodes(
+        *structdis, InterfaceContactConditions, InterfaceContactNodes);
 
     // and compare whether same nodes are defined
     for (const auto InterfaceS2INode : InterfaceS2INodes)
@@ -1095,7 +1096,7 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
   std::vector<std::pair<int, int>> my_coupling_pairs;
 
   // get all mesh tying conditions
-  std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
+  std::vector<CORE::Conditions::Condition*> meshtying_conditons(0, nullptr);
   dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   // match nodes between all mesh tying conditons (named with "a" and "b")
@@ -1256,7 +1257,7 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
     std::map<int, int>& slave_master_pair, const bool check_over_constrained) const
 {
   // get Dirichlet nodes -> they define the master side
-  std::vector<DRT::Condition*> dbc_conds;
+  std::vector<CORE::Conditions::Condition*> dbc_conds;
   dis->GetCondition("Dirichlet", dbc_conds);
   std::set<int> dbc_nodes;
   for (auto* dbc_cond : dbc_conds)
@@ -1330,7 +1331,7 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
     std::vector<int>& all_coupled_original_slave_gids) const
 {
   // store nodes that are slave nodes from the input
-  std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
+  std::vector<CORE::Conditions::Condition*> meshtying_conditons(0, nullptr);
   dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   std::vector<int> original_slave_gids;

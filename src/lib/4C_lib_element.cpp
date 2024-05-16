@@ -12,10 +12,10 @@
 #include "4C_lib_element.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_geometric_search_bounding_volume.hpp"
 #include "4C_discretization_geometric_search_params.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element_append_visualization.hpp"
 #include "4C_lib_node.hpp"
@@ -146,7 +146,7 @@ DRT::Element::Element(const DRT::Element& old)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
-  std::map<std::string, Teuchos::RCP<Condition>>::const_iterator fool;
+  std::map<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
     SetCondition(fool->first, fool->second);
 
@@ -422,14 +422,15 @@ void DRT::Element::NodalConnectivity(
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const
+void DRT::Element::GetCondition(
+    const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
   auto startit = condition_.lower_bound(name);
   auto endit = condition_.upper_bound(name);
   int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
+  std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
   return;
@@ -439,7 +440,7 @@ void DRT::Element::GetCondition(const std::string& name, std::vector<DRT::Condit
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Element::GetCondition(const std::string& name) const
+CORE::Conditions::Condition* DRT::Element::GetCondition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;
@@ -494,7 +495,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          DRT::Condition* dirich = node->GetCondition("Dirichlet");
+          CORE::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
             if (dirich->Type() != CORE::Conditions::PointDirichlet &&
@@ -544,7 +545,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      DRT::Condition* dirich = GetCondition("Dirichlet");
+      CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
         if (dirich->Type() != CORE::Conditions::PointDirichlet &&
@@ -613,7 +614,7 @@ void DRT::Element::LocationVector(
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          DRT::Condition* dirich = node->GetCondition("Dirichlet");
+          CORE::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
             if (dirich->Type() != CORE::Conditions::PointDirichlet &&
@@ -660,9 +661,9 @@ void DRT::Element::LocationVector(
 
         if (doDirichlet)
         {
-          std::vector<DRT::Condition*> dirich_vec;
+          std::vector<CORE::Conditions::Condition*> dirich_vec;
           dis.GetCondition("Dirichlet", dirich_vec);
-          DRT::Condition* dirich;
+          CORE::Conditions::Condition* dirich;
           bool dirichRelevant = false;
           // Check if there exist a dirichlet condition
           if (!dirich_vec.empty())
@@ -726,7 +727,7 @@ void DRT::Element::LocationVector(
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      DRT::Condition* dirich = GetCondition("Dirichlet");
+      CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
         if (dirich->Type() != CORE::Conditions::PointDirichlet &&
@@ -786,7 +787,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   {
     for (int i = 0; i < numnode; ++i)
     {
-      DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
+      CORE::Conditions::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
       const std::vector<int>* flag = nullptr;
       if (dirich)
       {
@@ -839,7 +840,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
 
   // do dirichlet BCs
   const std::vector<int>* flag = nullptr;
-  DRT::Condition* dirich = GetCondition("Dirichlet");
+  CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
   {
     if (dirich->Type() != CORE::Conditions::PointDirichlet &&

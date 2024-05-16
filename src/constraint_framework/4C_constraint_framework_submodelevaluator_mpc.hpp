@@ -66,9 +66,9 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     std::array<double, 2> r_xmxp_, r_ymyp_;
 
     //! Vector with all Conditions
-    std::vector<Teuchos::RCP<DRT::Condition>> point_linear_coupled_equation_conditions_,
-        point_periodic_rve_ref_conditions_, line_periodic_rve_conditions_,
-        surface_periodic_rve_conditions_;
+    std::vector<Teuchos::RCP<CORE::Conditions::Condition>>
+        point_linear_coupled_equation_conditions_, point_periodic_rve_ref_conditions_,
+        line_periodic_rve_conditions_, surface_periodic_rve_conditions_;
 
     //! Tolerance for the opposing edge node search
     double node_search_toler_ = 0.25;  // #ToDo: Add .dat parameter

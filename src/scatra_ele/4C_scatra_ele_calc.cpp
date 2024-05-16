@@ -10,12 +10,12 @@
 
 #include "4C_scatra_ele_calc.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_gder2.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_list.hpp"
@@ -829,19 +829,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Element* ele)
 {
-  std::vector<DRT::Condition*> myneumcond;
+  std::vector<CORE::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   switch (nsd_ele_)
   {
     case 3:
-      DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "VolumeNeumann", myneumcond);
       break;
     case 2:
-      DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
       break;
     case 1:
-      DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "LineNeumann", myneumcond);
       break;
     default:
       FOUR_C_THROW("Illegal number of spatial dimensions: %d", nsd_ele_);

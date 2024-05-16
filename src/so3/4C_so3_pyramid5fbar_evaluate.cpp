@@ -546,8 +546,9 @@ void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoPyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::Discretization& discret,
-    const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
@@ -36,7 +36,7 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::Discretization& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 
 {
@@ -137,8 +137,9 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::Discretization& discret,
-    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const CORE::Conditions::Condition& cond, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
@@ -151,8 +152,8 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::Discretization& di
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
-    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-    const Epetra_IntVector& toggle) const
+    const CORE::Conditions::Condition& cond, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, nullptr);

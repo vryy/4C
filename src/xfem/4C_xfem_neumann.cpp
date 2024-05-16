@@ -58,11 +58,11 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   // get the current time
   const double time = params.get("total time", -1.0);
 
-  std::multimap<std::string, DRT::Condition*>::iterator fool;
-  std::multimap<std::string, DRT::Condition*> condition;
+  std::multimap<std::string, CORE::Conditions::Condition*>::iterator fool;
+  std::multimap<std::string, CORE::Conditions::Condition*> condition;
 
   // vector for conditions of one special type
-  std::vector<DRT::Condition*> condition_vec;
+  std::vector<CORE::Conditions::Condition*> condition_vec;
 
   //================================================
   // Load Neumann conditions from discretization
@@ -76,8 +76,8 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   // copy conditions to a condition multimap
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(
-        std::pair<std::string, DRT::Condition*>(std::string("PointNeumann"), condition_vec[i]));
+    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+        std::string("PointNeumann"), condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -85,8 +85,8 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   discret->GetCondition("LineNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(
-        std::pair<std::string, DRT::Condition*>(std::string("LineNeumann"), condition_vec[i]));
+    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+        std::string("LineNeumann"), condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -94,8 +94,8 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   discret->GetCondition("SurfaceNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(
-        std::pair<std::string, DRT::Condition*>(std::string("SurfaceNeumann"), condition_vec[i]));
+    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+        std::string("SurfaceNeumann"), condition_vec[i]));
   }
 
   // NOTE: WE SKIP VolumeNeumann conditions -> there are evaluated at the fluid element level
@@ -116,14 +116,14 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& condition,
-    const double time, bool assemblemat, Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-    CORE::LINALG::SparseOperator* systemmatrix)
+void XFEM::EvaluateNeumannStandard(
+    std::multimap<std::string, CORE::Conditions::Condition*>& condition, const double time,
+    bool assemblemat, Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
+    Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
-  std::multimap<std::string, DRT::Condition*>::iterator fool;
+  std::multimap<std::string, CORE::Conditions::Condition*>::iterator fool;
 
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
@@ -133,7 +133,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     if (fool->first != (std::string) "PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
-    DRT::Condition& cond = *(fool->second);
+    CORE::Conditions::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.GetNodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
@@ -179,7 +179,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
   for (fool = condition.begin(); fool != condition.end(); ++fool)
     if (fool->first == (std::string) "LineNeumann" || fool->first == (std::string) "SurfaceNeumann")
     {
-      DRT::Condition& cond = *(fool->second);
+      CORE::Conditions::Condition& cond = *(fool->second);
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
       CORE::LINALG::SerialDenseVector elevector;

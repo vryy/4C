@@ -167,7 +167,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 
   // Decide whether multiple structural bodies or not.
   // Bodies need to be labeled with "ImmersedSearchbox" condition.
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   structdis_->GetCondition("ImmersedSearchbox", conditions);
   if ((int)conditions.size() > 0)
   {
@@ -699,7 +699,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   {
     // get searchbox conditions on bodies
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     structdis_->GetCondition("ImmersedSearchbox", conditions);
 
     // build element list

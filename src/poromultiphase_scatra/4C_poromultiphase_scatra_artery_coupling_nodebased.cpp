@@ -11,7 +11,7 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_condition_selector.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 
@@ -53,7 +53,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   // check if conditions are defined on both discretizations --------------------------
   // 1) 1D artery discretization
-  std::vector<DRT::Condition*> artCoupcond;
+  std::vector<CORE::Conditions::Condition*> artCoupcond;
   arterydis_->GetCondition(condname_, artCoupcond);
 
   for (auto& iter : artCoupcond)
@@ -63,7 +63,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   }
 
   // 2) 2D, 3D continuous field discretization
-  std::vector<DRT::Condition*> contfieldCoupcond;
+  std::vector<CORE::Conditions::Condition*> contfieldCoupcond;
   contdis_->GetCondition(condname_, contfieldCoupcond);
 
   for (auto& iter : contfieldCoupcond)
@@ -129,11 +129,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
   // build coupled maps for all coupled dofs
   for (int idof = 0; idof < num_coupled_dofs_; idof++)
   {
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dummy =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     // selector for coupleddofs[idof]
-    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(
+    mcs.AddSelector(Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(
         *dis, condname_, coupleddofs[idof], coupleddofs[idof] + 1)));
     mcs.SetupExtractor(*dis, *dis->DofRowMap(), *dummy);
 

@@ -11,9 +11,9 @@ attached parenchyma balloon
 
 #include "4C_adapter_str_lung.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -33,11 +33,11 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
 
   //----------------------------------------------------------------------
   // get lung fluid-structure volume and asi constraints
-  std::vector<DRT::Condition*> temp;
+  std::vector<CORE::Conditions::Condition*> temp;
   Discretization()->GetCondition("StructFluidSurfCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
-    DRT::Condition& cond = *(temp[i]);
+    CORE::Conditions::Condition& cond = *(temp[i]);
     if ((cond.parameters().Get<std::string>("field")) == "structure")
     {
       constrcond_.push_back(temp[i]);
@@ -49,7 +49,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   Discretization()->GetCondition("StructAleCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
-    DRT::Condition& cond = *(temp[i]);
+    CORE::Conditions::Condition& cond = *(temp[i]);
     if ((cond.parameters().Get<std::string>("field")) == "structure") asicond_.push_back(temp[i]);
   }
   if (asicond_.size() == 0)
@@ -113,7 +113,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
   std::vector<int> dofmapvec;
   std::vector<int> nodes;
-  DRT::UTILS::FindConditionedNodes(*Discretization(), "StructFluidSurfCoupling", nodes);
+  CORE::Conditions::FindConditionedNodes(*Discretization(), "StructFluidSurfCoupling", nodes);
   const int numnode = nodes.size();
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
@@ -176,13 +176,14 @@ void ADAPTER::StructureLung::InitializeVolCon(
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
 
     {
       // Get ConditionID of current condition if defined and write value in parameterlist
       int condID = cond.parameters().Get<int>("coupling id");
       params.set("ConditionID", condID);
-      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+      params.set<Teuchos::RCP<CORE::Conditions::Condition>>(
+          "condition", Teuchos::rcp(&cond, false));
 
       // define element matrices and vectors
       CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -280,14 +281,14 @@ void ADAPTER::StructureLung::EvaluateVolCon(
   //---------------------------------------------------------------------
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID = cond.parameters().Get<int>("coupling id");
     params.set("ConditionID", condID);
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // global and local ID of this bc in the redundant vectors
     const int gindex = condID - offsetID;

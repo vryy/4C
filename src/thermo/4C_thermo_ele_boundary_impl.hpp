@@ -62,7 +62,7 @@ namespace DRT
       //! This class does not provide a definition for this function, it
       //! must be defined in TemperBoundaryImpl.
       virtual int EvaluateNeumann(const DRT::Element* ele, Teuchos::ParameterList& params,
-          const DRT::Discretization& discretization, const DRT::Condition& condition,
+          const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for thermo elements
@@ -131,7 +131,7 @@ namespace DRT
 
       //! Evaluate a Neumann boundary condition
       int EvaluateNeumann(const DRT::Element* ele, Teuchos::ParameterList& params,
-          const DRT::Discretization& discretization, const DRT::Condition& condition,
+          const DRT::Discretization& discretization, const CORE::Conditions::Condition& condition,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:

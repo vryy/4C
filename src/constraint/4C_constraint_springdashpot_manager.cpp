@@ -25,7 +25,7 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discre
     : actdisc_(dis), havespringdashpot_(false)
 {
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<DRT::Condition>> springdashpots;
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> springdashpots;
   actdisc_->GetCondition("RobinSpringDashpot", springdashpots);
 
   // number of spring dashpot conditions

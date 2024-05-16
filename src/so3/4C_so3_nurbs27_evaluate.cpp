@@ -536,8 +536,9 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition

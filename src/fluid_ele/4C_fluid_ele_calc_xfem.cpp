@@ -13,10 +13,10 @@
 #include "4C_cut_boundarycell.hpp"
 #include "4C_cut_position.hpp"
 #include "4C_cut_volumecell.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_fluid_functions.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_newtonianfluid.hpp"
@@ -4002,8 +4002,8 @@ namespace DRT
       // [| v |] := vm - vs
 
       const INPAR::XFEM::EleCouplingCondType& cond_type =
-          coupcond.first;                            ///< condition type for given interface side
-      const DRT::Condition* cond = coupcond.second;  ///< condition to be evaluated
+          coupcond.first;  ///< condition type for given interface side
+      const CORE::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
 
       switch (cond_type)
       {
@@ -4179,8 +4179,8 @@ namespace DRT
       // [| v |] := vm - vs
 
       const INPAR::XFEM::EleCouplingCondType& cond_type =
-          coupcond.first;                            ///< condition type for given interface side
-      const DRT::Condition* cond = coupcond.second;  ///< condition to be evaluated
+          coupcond.first;  ///< condition type for given interface side
+      const CORE::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
 
       switch (cond_type)
       {

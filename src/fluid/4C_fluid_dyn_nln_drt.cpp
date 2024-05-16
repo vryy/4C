@@ -23,9 +23,9 @@
 #include "4C_fluid_dyn_nln_drt.hpp"
 
 #include "4C_adapter_fld_base_algorithm.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_turbulence_turbulent_flow_algorithm.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 

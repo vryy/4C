@@ -19,18 +19,12 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_wrapper.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
-
-namespace DRT
-{
-  class Condition;
-}
-
 
 namespace ADAPTER
 {
@@ -58,7 +52,7 @@ namespace ADAPTER
 
    private:
     /// map between coupling ID and conditions on structure
-    std::map<int, DRT::Condition*> coupcond_;
+    std::map<int, CORE::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
     Teuchos::RCP<Epetra_Map> coupmap_;

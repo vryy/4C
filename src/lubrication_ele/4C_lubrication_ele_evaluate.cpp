@@ -72,8 +72,9 @@ int DRT::ELEMENTS::Lubrication::Evaluate(Teuchos::ParameterList& params,
  |  dummy                                                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Lubrication::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   //    The function is just a dummy. For Lubrication elements, the integration
   //    integration of volume Neumann conditions (body forces) takes place

@@ -75,7 +75,7 @@ namespace DRT
 
       //! evaluate Neumann boundary condition
       virtual int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition,
+          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point

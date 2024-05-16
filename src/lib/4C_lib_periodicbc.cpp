@@ -251,8 +251,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     std::map<int, std::vector<int>> midtosid;
 
     // pointers to master and slave condition
-    DRT::Condition* mastercond = nullptr;
-    DRT::Condition* slavecond = nullptr;
+    CORE::Conditions::Condition* mastercond = nullptr;
+    CORE::Conditions::Condition* slavecond = nullptr;
 
     // global master node Ids and global slave node Ids
     std::vector<int> masternodeids;
@@ -753,7 +753,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
           DRT::Node* actnode = discret_->gNode(masterid);
 
           // get all periodic boundary conditions on this node
-          std::vector<DRT::Condition*> thiscond;
+          std::vector<CORE::Conditions::Condition*> thiscond;
           actnode->GetCondition("SurfacePeriodic", thiscond);
 
           if (thiscond.empty())
@@ -970,20 +970,20 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     // remove all node gids of slave nodes on this proc
 
     // get all periodic boundary conditions on this node
-    std::vector<DRT::Condition*> thiscond;
+    std::vector<CORE::Conditions::Condition*> thiscond;
 
-    std::vector<DRT::Condition*> linecond;
+    std::vector<CORE::Conditions::Condition*> linecond;
     discret_->GetCondition("LinePeriodic", linecond);
 
-    for (std::vector<DRT::Condition*>::iterator cond = linecond.begin(); cond != linecond.end();
-         ++cond)
+    for (std::vector<CORE::Conditions::Condition*>::iterator cond = linecond.begin();
+         cond != linecond.end(); ++cond)
     {
       thiscond.push_back(*cond);
     }
-    std::vector<DRT::Condition*> surfcond;
+    std::vector<CORE::Conditions::Condition*> surfcond;
     discret_->GetCondition("SurfacePeriodic", surfcond);
-    for (std::vector<DRT::Condition*>::iterator cond = surfcond.begin(); cond != surfcond.end();
-         ++cond)
+    for (std::vector<CORE::Conditions::Condition*>::iterator cond = surfcond.begin();
+         cond != surfcond.end(); ++cond)
     {
       thiscond.push_back(*cond);
     }

@@ -483,7 +483,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
         int firstglobaldofid = discret_->Dof(node, 0);
         int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
 
-        std::vector<DRT::Condition*> nodedircond;
+        std::vector<CORE::Conditions::Condition*> nodedircond;
         node->GetCondition("FluidStressCalc", nodedircond);
 
         if (not nodedircond.empty())
@@ -613,7 +613,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
   bool axis_for_moment = false;
 
   // allocate and initialise LiftDrag conditions
-  std::vector<DRT::Condition*> ldconds;
+  std::vector<CORE::Conditions::Condition*> ldconds;
   dis->GetCondition("LIFTDRAG", ldconds);
 
   // there is an L&D condition if it has a size
@@ -883,14 +883,14 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
   std::map<int, double> volumeflowrateperline;
 
   // get condition
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   dis.GetCondition(condstring, conds);
 
   // each condition is on every proc , but might not have condition elements there
-  for (std::vector<DRT::Condition*>::const_iterator conditer = conds.begin();
+  for (std::vector<CORE::Conditions::Condition*>::const_iterator conditer = conds.begin();
        conditer != conds.end(); ++conditer)
   {
-    const DRT::Condition* cond = *conditer;
+    const CORE::Conditions::Condition* cond = *conditer;
     const int condID = cond->parameters().Get<int>("ConditionID");
 
     // get a vector layout from the discretization to construct matching
@@ -972,14 +972,14 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
   std::map<int, CORE::LINALG::Matrix<3, 1>> volumeflowratepersurface;
 
   // get condition
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   dis.GetCondition("SurfImpulsRate", conds);
 
   // collect elements by xfem coupling label
-  for (std::vector<DRT::Condition*>::const_iterator conditer = conds.begin();
+  for (std::vector<CORE::Conditions::Condition*>::const_iterator conditer = conds.begin();
        conditer != conds.end(); ++conditer)
   {
-    const DRT::Condition* cond = *conditer;
+    const CORE::Conditions::Condition* cond = *conditer;
 
     const int condID = cond->parameters().Get<int>("ConditionID");
 

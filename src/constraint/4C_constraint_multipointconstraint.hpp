@@ -117,9 +117,10 @@ namespace CONSTRAINTS
     //! creating a new discretization based on conditions containing constraint elements
     virtual std::map<int, Teuchos::RCP<DRT::Discretization>> CreateDiscretizationFromCondition(
         Teuchos::RCP<DRT::Discretization> actdisc,
-        std::vector<DRT::Condition*> constrcond,  ///< conditions as discretization basis
-        const std::string& discret_name,          ///< name of new discretization
-        const std::string& element_name,          ///< name of element type to create
+        std::vector<CORE::Conditions::Condition*>
+            constrcond,                   ///< conditions as discretization basis
+        const std::string& discret_name,  ///< name of new discretization
+        const std::string& element_name,  ///< name of element type to create
         int& startID) = 0;
 
 

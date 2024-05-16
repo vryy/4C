@@ -12,8 +12,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "4C_xfem_coupling_base.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_xfem_interface_utils.hpp"
@@ -282,13 +282,13 @@ void XFEM::CouplingBase::SetElementConditions()
       if (cond_type == INPAR::XFEM::CouplingCond_NONE) continue;
 
       // get all conditions with given condition name
-      std::vector<DRT::Condition*> mycond;
-      DRT::UTILS::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
+      std::vector<CORE::Conditions::Condition*> mycond;
+      CORE::Conditions::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
 
-      std::vector<DRT::Condition*> mynewcond;
+      std::vector<CORE::Conditions::Condition*> mynewcond;
       GetConditionByCouplingId(mycond, coupling_id_, mynewcond);
 
-      DRT::Condition* cond_unique = nullptr;
+      CORE::Conditions::Condition* cond_unique = nullptr;
 
       // safety checks
       if (mynewcond.size() == 0)
@@ -332,8 +332,9 @@ void XFEM::CouplingBase::SetElementConditions()
   }
 }
 
-void XFEM::CouplingBase::GetConditionByCouplingId(const std::vector<DRT::Condition*>& mycond,
-    const int coupling_id, std::vector<DRT::Condition*>& mynewcond)
+void XFEM::CouplingBase::GetConditionByCouplingId(
+    const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
+    std::vector<CORE::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
 
@@ -484,7 +485,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
 }
 
 void XFEM::CouplingBase::EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
-    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
 
@@ -496,7 +497,7 @@ void XFEM::CouplingBase::EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& i
 }
 
 void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
 
@@ -516,7 +517,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itr
 }
 
 void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(6, 0.0);
 
@@ -534,7 +535,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
 }
 
 void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, const double* x,
-    const DRT::Condition* cond, const double time)
+    const CORE::Conditions::Condition* cond, const double time)
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
@@ -552,7 +553,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
   // uniformly distributed random noise
 
-  auto& secondary = const_cast<DRT::Condition&>(*cond);
+  auto& secondary = const_cast<CORE::Conditions::Condition&>(*cond);
   const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
@@ -598,7 +599,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 }
 
 void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const double* x,
-    const double& val, const DRT::Condition* cond, const double time)
+    const double& val, const CORE::Conditions::Condition* cond, const double time)
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
@@ -609,7 +610,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
   const auto* function = cond->parameters().GetIf<int>("funct");
 
   // uniformly distributed random noise
-  auto& secondary = const_cast<DRT::Condition&>(*cond);
+  auto& secondary = const_cast<CORE::Conditions::Condition&>(*cond);
   const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);

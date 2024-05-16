@@ -14,6 +14,7 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -35,8 +36,6 @@ namespace ADAPTER
 
 namespace DRT
 {
-  class Condition;
-
   namespace ELEMENTS
   {
     class ScaTraEleParameterBoundary;
@@ -195,13 +194,17 @@ namespace SCATRA
 
     //! return the slave-side scatra-scatra interface kinetics conditions applied to a mesh tying
     //! interface
-    const std::map<const int, DRT::Condition* const>& KineticsConditionsMeshtyingSlaveSide() const
+    const std::map<const int, CORE::Conditions::Condition* const>&
+    KineticsConditionsMeshtyingSlaveSide() const
     {
       return kinetics_conditions_meshtying_slaveside_;
     }
 
     //! corresponding master conditions to kinetics condiditions
-    std::map<const int, DRT::Condition* const>& MasterConditions() { return master_conditions_; }
+    std::map<const int, CORE::Conditions::Condition* const>& MasterConditions()
+    {
+      return master_conditions_;
+    }
 
     //! return vector of Lagrange multiplier dofs
     Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
@@ -245,7 +248,7 @@ namespace SCATRA
      * @param[in] s2icondition Scatra-scatra interface condition of which parameters are read and
      * stored to the parameter class
      */
-    void SetConditionSpecificScaTraParameters(DRT::Condition& s2icondition) const;
+    void SetConditionSpecificScaTraParameters(CORE::Conditions::Condition& s2icondition) const;
 
     /*!
      * \brief Writes S2IKinetics condition specific parameters to parameter list that is stored to
@@ -256,7 +259,8 @@ namespace SCATRA
      * @param[out] s2icouplingparameters  parameter list filled with condition specific parameters
      */
     static void WriteS2IKineticsSpecificScaTraParametersToParameterList(
-        DRT::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters);
+        CORE::Conditions::Condition& s2ikinetics_cond,
+        Teuchos::ParameterList& s2icouplingparameters);
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
@@ -701,10 +705,11 @@ namespace SCATRA
     bool has_capacitive_contributions_;
 
     //! slave-side scatra-scatra interface kinetics conditions applied to a mesh tying interface
-    std::map<const int, DRT::Condition* const> kinetics_conditions_meshtying_slaveside_;
+    std::map<const int, CORE::Conditions::Condition* const>
+        kinetics_conditions_meshtying_slaveside_;
 
     //! corresponding master conditions to kinetics condiditions
-    std::map<const int, DRT::Condition* const> master_conditions_;
+    std::map<const int, CORE::Conditions::Condition* const> master_conditions_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;
@@ -909,8 +914,8 @@ namespace SCATRA
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     virtual void EvaluateConditionNTS(
-        DRT::Condition& condition,      //!< scatra-scatra interface coupling condition
-        const MORTAR::Node& slavenode,  //!< slave-side node
+        CORE::Conditions::Condition& condition,  //!< scatra-scatra interface coupling condition
+        const MORTAR::Node& slavenode,           //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::Element& slaveelement,   //!< slave-side mortar element

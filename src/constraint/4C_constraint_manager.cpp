@@ -228,7 +228,7 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
-  std::vector<DRT::Condition*> constrcond(0);
+  std::vector<CORE::Conditions::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
   constr_matrix_->Reset();  //=Teuchos::rcp(new
                             // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
@@ -300,7 +300,7 @@ void CONSTRAINTS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_V
   CheckIsInit();
   CheckIsSetup();
 
-  std::vector<DRT::Condition*> constrcond(0);
+  std::vector<CORE::Conditions::Condition*> constrcond(0);
   Teuchos::ParameterList p;
   p.set("total time", time);
   actdisc_->SetState("displacement", disp);
@@ -401,7 +401,7 @@ void CONSTRAINTS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> v
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
 {
-  std::vector<DRT::Condition*> monitcond(0);
+  std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   Teuchos::ParameterList p;
   actdisc_->SetState("displacement", disp);
@@ -421,7 +421,7 @@ void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
 {
-  std::vector<DRT::Condition*> monitcond(0);
+  std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   Teuchos::ParameterList p;
   if (not actdisc_->DofRowMap()->SameAs(disp->Map()))

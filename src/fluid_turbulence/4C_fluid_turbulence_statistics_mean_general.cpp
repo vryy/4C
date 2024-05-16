@@ -268,7 +268,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       DRT::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      std::vector<DRT::Condition*> mypbcs;
+      std::vector<CORE::Conditions::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -525,7 +525,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         DRT::Node* lnode = discret_->lRowNode(nn);
 
         // check for slave nodes  to skip them
-        std::vector<DRT::Condition*> mypbcs;
+        std::vector<CORE::Conditions::Condition*> mypbcs;
         lnode->GetCondition("SurfacePeriodic", mypbcs);
 
         // check whether a periodic boundary condition is active on this node
@@ -536,7 +536,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           // yes, we have one
           for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
           {
-            DRT::Condition* pbc = mypbcs[numcond];
+            CORE::Conditions::Condition* pbc = mypbcs[numcond];
 
             // see whether pbc is active in plane orthogonal to sampling plane
             const std::string& dofsforpbcplanename =
@@ -827,7 +827,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       DRT::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      std::vector<DRT::Condition*> mypbcs;
+      std::vector<CORE::Conditions::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -838,7 +838,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         // yes, we have one
         for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
         {
-          DRT::Condition* pbc = mypbcs[numcond];
+          CORE::Conditions::Condition* pbc = mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
           const std::string& dofsforpbcplanename =

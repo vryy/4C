@@ -12,8 +12,8 @@
 
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -40,12 +40,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   //--------------------------------------------------------------------
 
   // Get the surfaces to whome the Womersley flow profile must be applied
-  std::vector<DRT::Condition*> womersleycond;
+  std::vector<CORE::Conditions::Condition*> womersleycond;
   discret_->GetCondition("VolumetricSurfaceFlowCond", womersleycond);
   int num_of_wom_conds = womersleycond.size();
 
   // Get the lines which define the surrounding nodes of the womersley surface
-  std::vector<DRT::Condition*> womersley_border_nodes_cond;
+  std::vector<CORE::Conditions::Condition*> womersley_border_nodes_cond;
   discret_->GetCondition("VolumetricFlowBorderNodesCond", womersley_border_nodes_cond);
   int num_of_borders = womersley_border_nodes_cond.size();
 
@@ -211,7 +211,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // get condition
   // -------------------------------------------------------------------
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition(ds_condname, conditions);
   // -------------------------------------------------------------------
   // some standard initialized variables
@@ -344,7 +344,8 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   this->BuildConditionNodeRowMap(discret_, ds_condname, condid_, condnum_s_, cond_surfnoderowmap_);
 
   // evaluate the line node row map
-  //  cond_linenoderowmap_ = DRT::UTILS::ConditionNodeRowMap(*discret_,"WomersleyBorderNodesCond");
+  //  cond_linenoderowmap_ =
+  //  CORE::Conditions::ConditionNodeRowMap(*discret_,"WomersleyBorderNodesCond");
   const std::string border_cond_name = dl_condname;
   this->BuildConditionNodeRowMap(discret_, ds_condname, condid_, condnum_l_, cond_linenoderowmap_);
 
@@ -476,10 +477,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   //--------------------------------------------------------------------
   // get all of the border nodes
   //--------------------------------------------------------------------
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition(dl_condname, conditions);
 
-  DRT::Condition* cond = conditions[condnum_l_];
+  CORE::Conditions::Condition* cond = conditions[condnum_l_];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
@@ -743,10 +744,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   //--------------------------------------------------------------------
   // read in the condition
   //--------------------------------------------------------------------
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition(condname, conditions);
 
-  DRT::Condition* cond = conditions[condnum];
+  CORE::Conditions::Condition* cond = conditions[condnum];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
@@ -799,10 +800,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   // read in the condition
   //--------------------------------------------------------------------
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition(condname, conditions);
 
-  DRT::Condition* cond = conditions[condnum];
+  CORE::Conditions::Condition* cond = conditions[condnum];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
@@ -1050,9 +1051,9 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   // -------------------------------------------------------------------
 
   // get condition
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   discret_->GetCondition(ds_condname, conditions);
-  DRT::Condition* condition = conditions[condnum_s_];
+  CORE::Conditions::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
   const int functnum = condition->parameters().Get<int>("Funct");
@@ -1941,12 +1942,12 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
   //--------------------------------------------------------------------
 
   // Get the surfaces to whome the traction flow profile must be applied
-  std::vector<DRT::Condition*> tractioncond;
+  std::vector<CORE::Conditions::Condition*> tractioncond;
   discret_->GetCondition("TotalTractionCorrectionCond", tractioncond);
   int num_of_tr_conds = tractioncond.size();
 
   // Get the lines which define the surrounding nodes of the traction surface
-  std::vector<DRT::Condition*> traction_border_nodes_cond;
+  std::vector<CORE::Conditions::Condition*> traction_border_nodes_cond;
   discret_->GetCondition("TotalTractionCorrectionBorderNodesCond", traction_border_nodes_cond);
   int num_of_borders = traction_border_nodes_cond.size();
 

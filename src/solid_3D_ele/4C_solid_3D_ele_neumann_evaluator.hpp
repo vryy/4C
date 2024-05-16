@@ -19,7 +19,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
 }  // namespace DRT
 
 namespace DRT::ELEMENTS
@@ -55,7 +54,7 @@ namespace DRT::ELEMENTS
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
   void EvaluateNeumannByElement(DRT::Element& element, const DRT::Discretization& discretization,
-      DRT::Condition& condition, const std::vector<int>& dof_index_array,
+      CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
   /*!
@@ -89,7 +88,7 @@ namespace DRT::ELEMENTS
    */
   template <CORE::FE::CellType celltype>
   void EvaluateNeumann(DRT::Element& element, const DRT::Discretization& discretization,
-      DRT::Condition& condition, const std::vector<int>& dof_index_array,
+      CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
       CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
 }  // namespace DRT::ELEMENTS

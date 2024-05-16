@@ -112,8 +112,9 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    CORE::Conditions::Condition& condition, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   return 0;

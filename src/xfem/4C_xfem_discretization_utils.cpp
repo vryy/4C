@@ -10,8 +10,8 @@
 
 #include "4C_xfem_discretization_utils.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_dofset_fixed_size.hpp"
@@ -215,7 +215,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!xdis->Filled()) xdis->FillComplete();
 
   // get fluid mesh conditions: hereby we specify standalone embedded discretizations
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   xdis->GetCondition(embedded_cond_name, conditions);
 
   std::vector<std::string> conditions_to_copy;
@@ -236,7 +236,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> src_dis,
     Teuchos::RCP<DRT::Discretization> target_dis,
-    const std::vector<DRT::Condition*>& boundary_conds) const
+    const std::vector<CORE::Conditions::Condition*>& boundary_conds) const
 {
   if (!target_dis->Filled()) target_dis->FillComplete();
 
@@ -268,7 +268,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByCondition(
     Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
-    std::vector<DRT::Condition*>& conditions,
+    std::vector<CORE::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
 {
   // row node map (id -> pointer)
@@ -281,7 +281,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByCondition(
   std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
   SplitDiscretization(
@@ -347,11 +347,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
   for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end(); ++conditername)
   {
-    std::vector<DRT::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds;
     sourcedis->GetCondition(*conditername, conds);
     for (unsigned i = 0; i < conds.size(); ++i)
     {
-      Teuchos::RCP<DRT::Condition> cond_to_copy =
+      Teuchos::RCP<CORE::Conditions::Condition> cond_to_copy =
           SplitCondition(conds[i], targetnodecolvec, targetdis->Comm());
       if (not cond_to_copy.is_null()) targetdis->SetCondition(*conditername, cond_to_copy);
     }
@@ -420,9 +420,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
   for (std::vector<std::string>::const_iterator conditername = src_conditions.begin();
        conditername != src_conditions.end(); ++conditername)
   {
-    std::vector<DRT::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds;
     sourcedis->GetCondition(*conditername, conds);
-    std::vector<Teuchos::RCP<DRT::Condition>> src_conds(conds.size(), Teuchos::null);
+    std::vector<Teuchos::RCP<CORE::Conditions::Condition>> src_conds(conds.size(), Teuchos::null);
     for (unsigned i = 0; i < conds.size(); ++i)
       src_conds[i] = SplitCondition(conds[i], othernodecolvec, sourcedis->Comm());
     sourcedis->ReplaceConditions(*conditername, src_conds);
@@ -473,7 +473,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
 void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondition(
     const Teuchos::RCP<DRT::Discretization>& sourcedis,
     const Teuchos::RCP<DRT::Discretization>& targetdis,
-    const std::vector<DRT::Condition*>& boundary_conds,
+    const std::vector<CORE::Conditions::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (not sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
@@ -483,7 +483,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
   std::map<int, Teuchos::RCP<DRT::Element>> src_cond_elements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  DRT::UTILS::FindConditionObjects(src_cond_elements, boundary_conds);
+  CORE::Conditions::FindConditionObjects(src_cond_elements, boundary_conds);
 
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator cit;
   std::map<int, Teuchos::RCP<DRT::Element>> src_elements;
@@ -527,8 +527,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondition(
-    const DRT::Condition* src_cond, const std::vector<int>& nodecolvec,
+Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondition(
+    const CORE::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {
   const std::vector<int>* cond_node_gids = src_cond->GetNodes();

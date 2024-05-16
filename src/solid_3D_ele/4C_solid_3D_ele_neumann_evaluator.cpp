@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
-    const DRT::Discretization& discretization, DRT::Condition& condition,
+    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
@@ -70,7 +70,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 
 template <CORE::FE::CellType celltype>
 void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
-    const DRT::Discretization& discretization, DRT::Condition& condition,
+    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {

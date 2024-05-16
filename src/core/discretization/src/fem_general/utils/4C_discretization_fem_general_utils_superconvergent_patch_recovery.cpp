@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
   // solution vector based on reduced node row map
   Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap, numvec));
 
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   dis.GetCondition("SPRboundary", conds);
 
   // SPR boundary condition must be set for all boundaries except pbc

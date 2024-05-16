@@ -49,10 +49,10 @@ namespace XFEM
     */
     template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
-    void EvaluateCouplingConditions(V1& ivel,  ///< prescribed velocity at interface
-        V2& itraction,                         ///< prescribed traction at interface
-        X1& x,                                 ///< coordinates of gauss point
-        const DRT::Condition* cond,            ///< condition prescribed to this surface
+    void EvaluateCouplingConditions(V1& ivel,     ///< prescribed velocity at interface
+        V2& itraction,                            ///< prescribed traction at interface
+        X1& x,                                    ///< coordinates of gauss point
+        const CORE::Conditions::Condition* cond,  ///< condition prescribed to this surface
         T1& proj_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
         int eid,          ///< element ID
         M1& funct,        ///< local shape function for Gauss Point (from fluid element)
@@ -156,7 +156,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)

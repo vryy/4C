@@ -9,8 +9,8 @@
 
 #include "4C_art_net_art_terminal_bc.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
-    const DRT::Condition* condition, Teuchos::ParameterList& params)
+    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC name std::string (e.g: BC   = "flow")
   std::string BC;
@@ -538,7 +538,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
-    const DRT::Condition* condition, Teuchos::ParameterList& params)
+    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // Define the reflection cooficient
   double Rf;
@@ -615,7 +615,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
-    const DRT::Condition* condition, Teuchos::ParameterList& params)
+    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")
   std::string int_type = (condition->parameters().Get<std::string>("intigrationType"));
