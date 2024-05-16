@@ -29,11 +29,6 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace GLOBAL
-{
-  class Problem;
-}
-
 namespace INPUT
 {
   /// Definition of a valid material in 4C input

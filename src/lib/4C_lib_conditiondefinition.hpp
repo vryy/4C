@@ -35,11 +35,6 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace GLOBAL
-{
-  class Problem;
-}
-
 namespace INPUT
 {
 
@@ -96,8 +91,7 @@ namespace INPUT
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(const GLOBAL::Problem& problem, DatFileReader& reader,
-        std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap);
+    void Read(DatFileReader& reader, std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the Discretization
     std::ostream& Print(std::ostream& stream, const DRT::Discretization* dis = nullptr);

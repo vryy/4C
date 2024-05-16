@@ -2191,7 +2191,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
     std::multimap<int, Teuchos::RCP<DRT::Condition>> cond;
 
     // read conditions from dat file
-    condition->Read(problem, reader, cond);
+    condition->Read(reader, cond);
 
     // add nodes to conditions
     std::multimap<int, Teuchos::RCP<DRT::Condition>>::const_iterator curr;

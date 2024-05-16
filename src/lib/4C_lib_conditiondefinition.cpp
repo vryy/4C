@@ -12,11 +12,9 @@
 
 #include "4C_lib_conditiondefinition.hpp"
 
-#include "4C_global_data.hpp"
 #include "4C_io_line_parser.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <algorithm>
@@ -54,8 +52,8 @@ void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileReader& reader,
-    std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
+void INPUT::ConditionDefinition::Read(
+    DatFileReader& reader, std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
 {
   std::vector<const char*> section = reader.Section("--" + sectionname_);
 
