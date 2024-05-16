@@ -113,6 +113,9 @@ namespace Inpar::SOLVER
       Core::UTILS::IntParameter("AZGRAPH", 0, "unused", &list);
       Core::UTILS::IntParameter("AZBDIAG", 0, "unused", &list);
       Core::UTILS::DoubleParameter("AZOMEGA", 0.0, "unused", &list);
+
+      Core::UTILS::StringParameter(
+          "SOLVER_XML_FILE", "none", "xml file defining any linear solver", &list);
     }
 
     // ML options

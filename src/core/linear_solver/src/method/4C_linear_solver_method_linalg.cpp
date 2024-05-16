@@ -600,6 +600,10 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   outparams.set("solver", "belos");
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
+  // try to get an xml file if possible
+  std::string xmlfile = inparams.get<std::string>("SOLVER_XML_FILE");
+  if (xmlfile != "none") beloslist.set("SOLVER_XML_FILE", xmlfile);
+
   switch (verbosity)
   {
     case Core::IO::minimal:
