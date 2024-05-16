@@ -50,7 +50,10 @@ void STRUMULTI::np_support_drt()
 
   // this call is needed in order to increment the unique ids that are distributed
   // by HDF5; the macro procs call output->WriteMesh(0, 0.0) in ADAPTER::Structure
-  H5Fcreate("xxxdummyHDF5file", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  const int someUniqueNumber =
+      GLOBAL::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
+  std::string uniqueDummyName = "dummyHDF5file_p" + someUniqueNumber;
+  H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
   Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
