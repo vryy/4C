@@ -23,6 +23,7 @@
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_discretization_condition_selector.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
@@ -30,7 +31,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -352,12 +352,12 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObjec
   const int ndofpernode_struct = masterdis->NumDof(0, masterdis->lRowNode(0));
   const int ndofperelement_struct = 0;
 
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+      ndofpernode_scatra, ndofperelement_scatra, 0, true));
   if (masterdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
+  dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+      ndofpernode_struct, ndofperelement_struct, 0, true));
   if (slavedis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets

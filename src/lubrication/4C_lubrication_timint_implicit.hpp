@@ -41,10 +41,10 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace DRT
+namespace CORE::Dofsets
 {
   class DofSet;
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 namespace IO
 {

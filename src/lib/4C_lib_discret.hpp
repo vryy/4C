@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset_interface.hpp"
 #include "4C_discretization_fem_general_shape_function_type.hpp"
-#include "4C_lib_dofset_interface.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -56,6 +56,11 @@ namespace CORE::LINALG
   class SerialDenseVector;
 }  // namespace CORE::LINALG
 
+namespace CORE::Dofsets
+{
+  class DofSetProxy;
+}
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -69,7 +74,6 @@ namespace GLOBAL
 namespace DRT
 {
   class AssembleStrategy;
-  class DofSetProxy;
 
   /*!
   \brief A class to manage a discretization in parallel
@@ -314,7 +318,7 @@ namespace DRT
     @param[in] replaceinstatdofsets Replace also in static dofsets?
     */
     virtual void ReplaceDofSet(
-        Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+        Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, bool replaceinstatdofsets = false);
 
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
@@ -610,20 +614,20 @@ namespace DRT
     \brief Replace the dofset associated with the discretisation by a new dofset.
                    Sets havedof_ to false.
     */
-    virtual void ReplaceDofSet(
-        unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+    virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset,
+        bool replaceinstatdofsets = false);
 
     /*!
     \brief Add a new dofset to the discretisation.
 
     Sets havedof_ to false only if the new dofset is not properly filled yet.
     */
-    virtual int AddDofSet(Teuchos::RCP<DofSetInterface> newdofset);
+    virtual int AddDofSet(Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset);
 
     /*!
     \brief Get proxy to dof set.
     */
-    virtual Teuchos::RCP<DofSetInterface> GetDofSetProxy(int nds = 0);
+    virtual Teuchos::RCP<CORE::Dofsets::DofSetInterface> GetDofSetProxy(int nds = 0);
 
     /*!
     \brief Get degree of freedom row map (Filled()==true prerequisite)
@@ -2251,7 +2255,7 @@ namespace DRT
     std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 
     //! Vector of DofSets
-    std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;
+    std::vector<Teuchos::RCP<CORE::Dofsets::DofSetInterface>> dofsets_;
   };  // class Discretization
 }  // namespace DRT
 

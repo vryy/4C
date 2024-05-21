@@ -24,11 +24,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace CORE::Dofsets
 {
   class DofSet;
   class DofSetInterface;
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 namespace CORE::LINALG
 {

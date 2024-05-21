@@ -12,8 +12,8 @@
 
 #include "4C_lib_utils_createdis.hpp"
 
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -169,7 +169,8 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   }
 
   // make auxiliary discretization have the same dofs as the coupling discretization
-  if (clonedofs) targetdis->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()), false);
+  if (clonedofs)
+    targetdis->ReplaceDofSet(Teuchos::rcp(new CORE::Dofsets::IndependentDofSet()), false);
   targetdis->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   // at the end, we do several checks to ensure that we really have generated

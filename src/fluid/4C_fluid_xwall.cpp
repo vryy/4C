@@ -12,6 +12,7 @@
 #include "4C_fluid_xwall.hpp"
 
 #include "4C_discretization_condition.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_xwall.hpp"
 #include "4C_fluid_implicit_integration.hpp"
@@ -21,7 +22,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_transparent.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_lib_periodicbc.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -623,8 +623,8 @@ void FLD::XWall::SetupXWallDis()
   bool parallel = (xwdiscret_->Comm().NumProc() == 1) ? false : true;
 
   // dofs of the original discretization are used to set same dofs for the new discretization
-  Teuchos::RCP<DRT::DofSet> newdofset =
-      Teuchos::rcp(new DRT::TransparentDofSet(discret_, parallel));
+  Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+      Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(discret_, parallel));
 
   xwdiscret_->ReplaceDofSet(newdofset);
   xwdiscret_->FillComplete(true, true, true);

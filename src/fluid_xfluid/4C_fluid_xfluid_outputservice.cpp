@@ -15,6 +15,7 @@
 #include "4C_cut_integrationcell.hpp"
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_fluid_xfluid_state.hpp"
 #include "4C_fluid_xfluid_state_creator.hpp"
@@ -23,7 +24,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret_xfem.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -39,7 +39,7 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::Discretiza
 {
   // Vector & map extractor for paraview output,
   // mapped to initial fluid dofmap
-  dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
+  dofset_out_ = Teuchos::rcp(new CORE::Dofsets::IndependentDofSet());
   velpressplitter_out_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   PrepareOutput();
 }

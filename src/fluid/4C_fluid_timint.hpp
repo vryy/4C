@@ -37,7 +37,6 @@ namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
-  class DofSet;
 }  // namespace DRT
 
 namespace IO
@@ -198,7 +197,7 @@ namespace FLD
       return Teuchos::null;
     }
     const Teuchos::RCP<DRT::Discretization>& Discretization() override { return discret_; }
-    Teuchos::RCP<const DRT::DofSet> DofSet() override
+    Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;

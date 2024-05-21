@@ -9,10 +9,10 @@ transport problems
 /*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_multiscale_gp.hpp"
 
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
@@ -170,8 +170,9 @@ void MAT::ScatraMultiScaleGP::Init()
     }
 
     // add proxy of velocity related degrees of freedom to scatra discretization
-    Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
-        GLOBAL::Problem::Instance(microdisnum_)->NDim() + 1, 0, 0, true));
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+        Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            GLOBAL::Problem::Instance(microdisnum_)->NDim() + 1, 0, 0, true));
     if (microdis->AddDofSet(dofsetaux) != 1)
       FOUR_C_THROW("Micro-scale discretization has illegal number of dofsets!");
 

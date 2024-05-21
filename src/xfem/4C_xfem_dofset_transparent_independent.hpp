@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_transparent_independent.hpp"
+#include "4C_discretization_dofset_transparent_independent.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,7 +40,8 @@ namespace XFEM
     of xfem dofs.
 
    */
-  class XFEMTransparentIndependentDofSet : public virtual DRT::TransparentIndependentDofSet
+  class XFEMTransparentIndependentDofSet
+      : public virtual CORE::Dofsets::TransparentIndependentDofSet
   {
    public:
     /*!

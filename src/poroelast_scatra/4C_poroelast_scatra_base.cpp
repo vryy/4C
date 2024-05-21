@@ -15,9 +15,9 @@
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_dofset_gidbased_wrapper.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_lib_dofset_gidbased_wrapper.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_base.hpp"
 #include "4C_poroelast_scatra_utils.hpp"
@@ -238,12 +238,12 @@ void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretiz
 
     if (PoroField()->HasSubmeshes())
     {
-      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
-          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
-      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
-          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
-      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatrasubdofset =
-          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
+      Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
+          new CORE::Dofsets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+      Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
+          new CORE::Dofsets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
+      Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> scatrasubdofset = Teuchos::rcp(
+          new CORE::Dofsets::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
 
       scatradis->ReplaceDofSet(1, structsubdofset);
       scatradis->ReplaceDofSet(2, fluidsubdofset);
@@ -253,11 +253,11 @@ void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretiz
     else
     {
       // build a proxy of the structure discretization for the scatra field
-      Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+      Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
       // build a proxy of the fluid discretization for the scatra field
-      Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+      Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
       // build a proxy of the fluid discretization for the structure/fluid field
-      Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+      Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
       scatradis->ReplaceDofSet(1, structdofset);
       scatradis->ReplaceDofSet(2, fluiddofset);

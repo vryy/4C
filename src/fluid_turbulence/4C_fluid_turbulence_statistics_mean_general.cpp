@@ -14,9 +14,9 @@ means are computed as time averages
 #include "4C_fluid_turbulence_statistics_mean_general.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_discretization_dofset.hpp"
 #include "4C_io.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -78,8 +78,9 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<const DRT::DofSet> standarddofset,
-    std::string homdir, CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset, std::string homdir,
+    CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(standarddofset),
       velpressplitter_(velpressplitter),
@@ -1228,7 +1229,8 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
-    Teuchos::RCP<const DRT::DofSet> standarddofset, Teuchos::RCP<DRT::Discretization> discret)
+    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset,
+    Teuchos::RCP<DRT::Discretization> discret)
 {
   standarddofset_ = Teuchos::null;
   standarddofset_ = standarddofset;

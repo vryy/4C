@@ -141,7 +141,7 @@ void LOMA::Algorithm::Setup()
           "solver, for the time being!");
 
     // generate proxy of scatra dof set to be used by fluid field
-    Teuchos::RCP<DRT::DofSetInterface> scatradofset =
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset =
         ScaTraField()->Discretization()->GetDofSetProxy();
 
     // check number of dof sets in respective fields

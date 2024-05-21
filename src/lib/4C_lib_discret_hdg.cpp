@@ -12,9 +12,9 @@
 #include "4C_lib_discret_hdg.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_dg_element.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_lib_elementtype.hpp"
 #include "4C_lib_utils_discret.hpp"
@@ -125,8 +125,8 @@ int DRT::DiscretizationHDG::FillComplete(
             this->NumMyRowElements() > 0
                 ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerElementAuxiliary()
                 : 0;
-        Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
-            Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
+        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_ele =
+            Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
         this->AddDofSet(dofset_ele);
       }
@@ -138,8 +138,8 @@ int DRT::DiscretizationHDG::FillComplete(
             this->NumMyRowElements() > 0
                 ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerNodeAuxiliary()
                 : 0;
-        Teuchos::RCP<DRT::DofSetInterface> dofset_node =
-            Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
+        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_node =
+            Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
 
         this->AddDofSet(dofset_node);
       }

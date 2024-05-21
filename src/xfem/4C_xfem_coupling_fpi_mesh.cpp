@@ -11,13 +11,13 @@ xfluid class and the cut-library
 
 #include "4C_xfem_coupling_fpi_mesh.hpp"
 
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

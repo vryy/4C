@@ -9,7 +9,7 @@
 #include "4C_poromultiphase_scatra_utils.hpp"
 
 #include "4C_art_net_utils.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 #include "4C_poroelast_utils.hpp"
@@ -164,11 +164,11 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the fluid discretization for the scatra field
-  Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
   // build a proxy of the fluid discretization for the structure/fluid field
-  Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
   if (scatradis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -196,8 +196,8 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis, artscatradis);
     artscatradis->FillComplete();
 
-    Teuchos::RCP<DRT::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
-    Teuchos::RCP<DRT::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
 
     // get MAXNUMSEGPERARTELE
     const int maxnumsegperele = problem->PoroFluidMultiPhaseDynamicParams()
@@ -205,8 +205,9 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
                                     .get<int>("MAXNUMSEGPERARTELE");
 
     // curr_seg_lengths: defined as element-wise quantity
-    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+    dofsetaux =
+        Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery-scatra discretization
     artscatradis->AddDofSet(dofsetaux);
 

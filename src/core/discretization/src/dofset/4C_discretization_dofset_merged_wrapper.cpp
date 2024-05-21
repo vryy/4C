@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_lib_dofset_merged_wrapper.hpp"
+#include "4C_discretization_dofset_merged_wrapper.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
 #include "4C_discretization_condition_utils.hpp"
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
+CORE::Dofsets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
     Teuchos::RCP<const DRT::Discretization> sourcedis, const std::string& couplingcond_master,
     const std::string& couplingcond_slave)
     : DofSetBase(),
@@ -43,14 +43,14 @@ DRT::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sour
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetMergedWrapper::~DofSetMergedWrapper()
+CORE::Dofsets::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
   if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSetMergedWrapper::DofRowMap() const
+const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofRowMap() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
@@ -59,7 +59,7 @@ const Epetra_Map* DRT::DofSetMergedWrapper::DofRowMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSetMergedWrapper::DofColMap() const
+const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofColMap() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
@@ -68,8 +68,8 @@ const Epetra_Map* DRT::DofSetMergedWrapper::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
-    const Discretization& dis, const unsigned dspos, const int start)
+int CORE::Dofsets::DofSetMergedWrapper::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");
   if (sourcedis_ == Teuchos::null)
@@ -198,7 +198,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetMergedWrapper::Reset()
+void CORE::Dofsets::DofSetMergedWrapper::Reset()
 {
   master_nodegids_col_layout_ = Teuchos::null;
   slave_nodegids_col_layout_ = Teuchos::null;
@@ -211,7 +211,7 @@ void DRT::DofSetMergedWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
+void CORE::Dofsets::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {

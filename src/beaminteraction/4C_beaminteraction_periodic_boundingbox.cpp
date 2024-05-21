@@ -13,13 +13,13 @@
 
 #include "4C_binstrategy_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
+#include "4C_discretization_dofset_independent.hpp"
 #include "4C_discretization_geometry_intersection_math.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
-#include "4C_lib_dofset_independent.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -221,8 +221,8 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
   }
 
   // build independent dof set
-  Teuchos::RCP<DRT::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new DRT::IndependentDofSet(true));
+  Teuchos::RCP<CORE::Dofsets::IndependentDofSet> independentdofset =
+      Teuchos::rcp(new CORE::Dofsets::IndependentDofSet(true));
   boxdiscret_->ReplaceDofSet(independentdofset);
   boxdiscret_->FillComplete();
 }

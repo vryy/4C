@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "4C_lib_dofset_proxy.hpp"
+#include "4C_discretization_dofset_proxy.hpp"
 
 #include "4C_utils_exceptions.hpp"
 
@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
+CORE::Dofsets::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
     : dofset_(dofset), isassigned_(dofset->Filled())
 {
   dofset->Register(this);
@@ -28,7 +28,7 @@ DRT::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetProxy::~DofSetProxy()
+CORE::Dofsets::DofSetProxy::~DofSetProxy()
 {
   if (dofset_ != nullptr) dofset_->Unregister(this);
 }
@@ -36,7 +36,7 @@ DRT::DofSetProxy::~DofSetProxy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::AddDofSettoList()
+void CORE::Dofsets::DofSetProxy::AddDofSettoList()
 {
   // We do nothing here as a proxy does not show up in the dof set list.
   return;
@@ -45,8 +45,8 @@ void DRT::DofSetProxy::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetProxy::AssignDegreesOfFreedom(
-    const Discretization& dis, const unsigned dspos, const int start)
+int CORE::Dofsets::DofSetProxy::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // This method does nothing, because the DofSetProxy is not supposed to assign dofs itself.
   // Instead, the original dofset assigns dofs when FillComplete() is called on its discretization.
@@ -60,20 +60,20 @@ int DRT::DofSetProxy::AssignDegreesOfFreedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::NotifyAssigned()
+void CORE::Dofsets::DofSetProxy::NotifyAssigned()
 {
   if (dofset_ == nullptr)
     FOUR_C_THROW("dofset_ pointer is nullptr");
   else
     isassigned_ = dofset_->Filled();
 
-  DRT::DofSetBase::NotifyAssigned();
+  DofSetBase::NotifyAssigned();
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::Reset()
+void CORE::Dofsets::DofSetProxy::Reset()
 {
   isassigned_ = false;
   NotifyReset();
@@ -81,7 +81,7 @@ void DRT::DofSetProxy::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::Disconnect(DofSetInterface* dofset)
+void CORE::Dofsets::DofSetProxy::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == dofset_)
     dofset_ = nullptr;
@@ -95,7 +95,7 @@ void DRT::DofSetProxy::Disconnect(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::DofSetProxy::Filled() const
+bool CORE::Dofsets::DofSetProxy::Filled() const
 {
   if (dofset_) return dofset_->Filled();
 
@@ -105,7 +105,7 @@ bool DRT::DofSetProxy::Filled() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetProxy::CheckIsAssigned() const
+void CORE::Dofsets::DofSetProxy::CheckIsAssigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,

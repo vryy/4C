@@ -10,13 +10,13 @@
 #include "4C_scatra_timint_hdg.hpp"
 
 #include "4C_binstrategy.hpp"
+#include "4C_discretization_dofset.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_dofset.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_hdg.hpp"
@@ -76,8 +76,8 @@ void SCATRA::TimIntHDG::Setup()
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   if (discret_->AddDofSet(dofsetaux) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   discret_->FillComplete();
@@ -450,8 +450,8 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
-  Teuchos::RCP<DRT::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetPredefinedDoFNumber> eledofs_new =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
   discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
 
@@ -1190,8 +1190,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
-  Teuchos::RCP<DRT::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetPredefinedDoFNumber> eledofs_new =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
   discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
 

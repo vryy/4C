@@ -15,8 +15,8 @@
 
 #include "4C_coupling_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -166,10 +166,12 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretiz
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+  dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
   if (dis2->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
-  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
+  dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
   if (dis1->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets

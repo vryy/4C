@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_fixed_size.hpp"
+#include "4C_discretization_dofset_fixed_size.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +30,7 @@ namespace XFEM
      *  by returning the maximum number of DoF's at one coupling node.
      *
      *  \author hiermeier \date 09/16 */
-    class CouplingDofSet : public DRT::FixedSizeDofSet
+    class CouplingDofSet : public CORE::Dofsets::FixedSizeDofSet
     {
      public:
       /** \brief constructor of the coupling DoF set

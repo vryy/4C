@@ -20,10 +20,10 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_gidbased_wrapper.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_dofset_gidbased_wrapper.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -496,10 +496,10 @@ void POROELAST::PoroBase::ReplaceDofSets()
    */
   if (submeshes_)
   {
-    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
-    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
+    Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
+        new CORE::Dofsets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+    Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
+        new CORE::Dofsets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
 
     fluiddis->ReplaceDofSet(1, structsubdofset);
     structdis->ReplaceDofSet(1, fluidsubdofset);
@@ -507,9 +507,9 @@ void POROELAST::PoroBase::ReplaceDofSets()
   else
   {
     // build a proxy of the structure discretization for the fluid field
-    Teuchos::RCP<DRT::DofSetInterface> structdofsetproxy = structdis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofsetproxy = structdis->GetDofSetProxy();
     // build a proxy of the fluid discretization for the structure field
-    Teuchos::RCP<DRT::DofSetInterface> fluiddofsetproxy = fluiddis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofsetproxy = fluiddis->GetDofSetProxy();
 
     fluiddis->ReplaceDofSet(1, structdofsetproxy);
     structdis->ReplaceDofSet(1, fluiddofsetproxy);

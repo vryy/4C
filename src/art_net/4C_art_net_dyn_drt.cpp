@@ -114,7 +114,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     // the problem is one way coupled, scatra needs only artery
 
     // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSetInterface> arterydofset = actdis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> arterydofset = actdis->GetDofSetProxy();
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
     if (scatradis->AddDofSet(arterydofset) != 1)

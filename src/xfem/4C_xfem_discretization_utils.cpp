@@ -11,10 +11,10 @@
 #include "4C_xfem_discretization_utils.hpp"
 
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_fixed_size.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_xfem.hpp"
-#include "4C_lib_dofset_fixed_size.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -185,8 +185,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   int nodeindexrange =
       noderowmap->MaxAllGID() - noderowmap->MinAllGID() + 1;  // if id's are not continuous numbered
   int maxNumMyReservedDofsperNode = (xgen_params.get<int>("MAX_NUM_DOFSETS")) * numdof;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset =
-      Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode, nodeindexrange));
+  Teuchos::RCP<CORE::Dofsets::FixedSizeDofSet> maxdofset =
+      Teuchos::rcp(new CORE::Dofsets::FixedSizeDofSet(maxNumMyReservedDofsperNode, nodeindexrange));
 
   const int fluid_nds = 0;
   xdis->ReplaceDofSet(fluid_nds, maxdofset, true);  // fluid dofset has nds = 0

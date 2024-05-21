@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset.hpp"
 #include "4C_mor_pod.hpp"
 
 #include <Epetra_IntVector.h>
@@ -51,7 +51,7 @@ namespace UTILS
 
 
   \author tk     */
-  class Cardiovascular0DDofSet : public DRT::DofSet
+  class Cardiovascular0DDofSet : public CORE::Dofsets::DofSet
   {
    public:
     /*!

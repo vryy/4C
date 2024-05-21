@@ -10,20 +10,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_MERGED_WRAPPER_HPP
-#define FOUR_C_LIB_DOFSET_MERGED_WRAPPER_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_MERGED_WRAPPER_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_MERGED_WRAPPER_HPP
 
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset_proxy.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_proxy.hpp"
 
 #include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Dofsets
 {
   /*!
   \brief A dofset that adds additional, existing degrees of freedom from the same
@@ -58,7 +58,7 @@ namespace DRT
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start) override;
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -80,7 +80,7 @@ namespace DRT
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(const Node* node) const override
+    int NumDof(const DRT::Node* node) const override
     {
       const DRT::Node* masternode = GetMasterNode(node->LID());
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
@@ -88,10 +88,14 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Element* element) const override { return sourcedofset_->NumDof(element); }
+    int NumDof(const DRT::Element* element) const override
+    {
+      return sourcedofset_->NumDof(element);
+    }
 
     /// get number of nodal dofs
-    int NumDofPerNode(const Node& node  ///< node, for which you want to know the number of dofs
+    int NumDofPerNode(
+        const DRT::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       const DRT::Node* masternode = GetMasterNode(node.LID());
@@ -105,7 +109,7 @@ namespace DRT
      vector! Thus all definitions in the input file concerning dof numbering have to be set
      accordingly (e.g. for reactions in MAT_scatra_reaction and MAT_scatra_reaction, see test case
      'ssi_3D_tet4_tet4_tri3.dat')  */
-    std::vector<int> Dof(const Node* node) const override
+    std::vector<int> Dof(const DRT::Node* node) const override
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
       std::vector<int> slavedof = sourcedofset_->Dof(slavenode);
@@ -122,7 +126,7 @@ namespace DRT
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,            ///< node, for which you want the dof positions
+        const DRT::Node* node,       ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
@@ -139,13 +143,13 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Element* element) const override
+    std::vector<int> Dof(const DRT::Element* element) const override
     {
       return sourcedofset_->Dof(element);
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Node* node, int dof) const override
+    int Dof(const DRT::Node* node, int dof) const override
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
       const int numslavedofs = sourcedofset_->NumDof(slavenode);
@@ -159,13 +163,13 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Element* element, int dof) const override
+    int Dof(const DRT::Element* element, int dof) const override
     {
       return sourcedofset_->Dof(element, dof);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node, std::vector<int>& lm) const override
+    void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
       const DRT::Node* masternode = GetMasterNode(node->LID());
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
@@ -176,9 +180,9 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node,      ///< node, for which you want the dof positions
-        const unsigned startindex,  ///< first index of vector at which will be written to end
-        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    void Dof(const DRT::Node* node,  ///< node, for which you want the dof positions
+        const unsigned startindex,   ///< first index of vector at which will be written to end
+        std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
@@ -190,16 +194,16 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const Element* element, std::vector<int>& lm) const override
+    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
     {
       sourcedofset_->Dof(element, lm);
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(
-        const Element* element,  ///< element which provides its expected number of DOFs per node
-        const Node* node,        ///< node, for which you want the DOF positions
-        std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
+    void Dof(const DRT::Element*
+                 element,       ///< element which provides its expected number of DOFs per node
+        const DRT::Node* node,  ///< node, for which you want the DOF positions
+        std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       const DRT::Node* slavenode = GetSlaveNode(node->LID());
@@ -268,7 +272,7 @@ namespace DRT
     /// filled flag
     bool filled_;
   };
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 
 FOUR_C_NAMESPACE_CLOSE

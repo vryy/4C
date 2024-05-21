@@ -11,6 +11,7 @@
 #include "4C_fluid_xfluid_fluid.hpp"
 
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -24,7 +25,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"

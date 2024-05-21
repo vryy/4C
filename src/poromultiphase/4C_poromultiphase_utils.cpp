@@ -9,8 +9,8 @@
 #include "4C_poromultiphase_utils.hpp"
 
 #include "4C_adapter_poromultiphase.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
@@ -63,8 +63,9 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
                                     .get<int>("MAXNUMSEGPERARTELE");
 
     // curr_seg_lengths: defined as element-wise quantity
-    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+    dofsetaux =
+        Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery discretization
     arterydis->AddDofSet(dofsetaux);
 
@@ -106,9 +107,9 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   fluiddis->FillComplete();
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
 
   // assign structure dof set to fluid and save the dofset number
   nds_disp = fluiddis->AddDofSet(structdofset);
@@ -120,8 +121,8 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(1, 0, 0, false));
   nds_solidpressure = fluiddis->AddDofSet(dofsetaux);
   // add it also to the solid field
   structdis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure));

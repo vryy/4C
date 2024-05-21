@@ -10,27 +10,27 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "4C_lib_dofset_transparent_independent.hpp"
+#include "4C_discretization_dofset_transparent_independent.hpp"
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 
-DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
+CORE::Dofsets::TransparentIndependentDofSet::TransparentIndependentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
     : TransparentDofSet(sourcedis, parallel)
 {
   return;
 }
 
-int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::TransparentIndependentDofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  int count = IndependentDofSet::AssignDegreesOfFreedom(dis, dspos, start);
 
   if (!parallel_)
   {
@@ -47,9 +47,9 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(
   return count;
 }
 
-int DRT::TransparentIndependentDofSet::NumDofPerNode(const DRT::Node& node) const
+int CORE::Dofsets::TransparentIndependentDofSet::NumDofPerNode(const DRT::Node& node) const
 {
-  return DRT::DofSet::NumDofPerNode(node);
+  return DofSet::NumDofPerNode(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -14,10 +14,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset.hpp"
+#include "4C_discretization_dofset_interface.hpp"
+#include "4C_discretization_dofset_proxy.hpp"
 #include "4C_lib_discret_faces.hpp"
-#include "4C_lib_dofset.hpp"
-#include "4C_lib_dofset_interface.hpp"
-#include "4C_lib_dofset_proxy.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -165,17 +165,17 @@ namespace DRT
 
 
     /// Access to initial dofset
-    const DofSetInterface& InitialDofSet(unsigned int nds = 0) const
+    const CORE::Dofsets::DofSetInterface& InitialDofSet(unsigned int nds = 0) const
     {
       Initialized();
       return *initialdofsets_[nds];
     }
 
 
-    Teuchos::RCP<DRT::DofSetInterface> GetInitialDofSetProxy(int nds)
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> GetInitialDofSetProxy(int nds)
     {
       FOUR_C_ASSERT(nds < (int)initialdofsets_.size(), "undefined dof set");
-      return Teuchos::rcp(new DofSetProxy(&*initialdofsets_[nds]));
+      return Teuchos::rcp(new CORE::Dofsets::DofSetProxy(&*initialdofsets_[nds]));
     }
 
     /*!
@@ -261,7 +261,7 @@ namespace DRT
         const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering);
 
     /// initial set of dofsets
-    std::vector<Teuchos::RCP<DofSetInterface>> initialdofsets_;
+    std::vector<Teuchos::RCP<CORE::Dofsets::DofSetInterface>> initialdofsets_;
 
     /// bool if discretisation is initialized
     bool initialized_;

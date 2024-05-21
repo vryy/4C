@@ -11,8 +11,8 @@
 #include "4C_lib_discret.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_lib_dofset_pbc.hpp"
-#include "4C_lib_dofset_proxy.hpp"
+#include "4C_discretization_dofset_pbc.hpp"
+#include "4C_discretization_dofset_proxy.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 DRT::Discretization::Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm)
     : name_(name), comm_(comm), writer_(Teuchos::null), filled_(false), havedof_(false)
 {
-  dofsets_.emplace_back(Teuchos::rcp(new DofSet()));
+  dofsets_.emplace_back(Teuchos::rcp(new CORE::Dofsets::DofSet()));
 }
 
 /*----------------------------------------------------------------------*
@@ -475,8 +475,8 @@ const Epetra_Map* DRT::Discretization::DofColMap(const unsigned nds) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(
-    const unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, const bool replaceinstatdofsets)
+void DRT::Discretization::ReplaceDofSet(const unsigned nds,
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
   // if we already have our dofs here and we add a properly filled (proxy)
@@ -489,7 +489,7 @@ void DRT::Discretization::ReplaceDofSet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSetInterface> newdofset)
+int DRT::Discretization::AddDofSet(Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset)
 {
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
@@ -501,16 +501,16 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSetInterface> newdofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSetInterface> DRT::Discretization::GetDofSetProxy(const int nds)
+Teuchos::RCP<CORE::Dofsets::DofSetInterface> DRT::Discretization::GetDofSetProxy(const int nds)
 {
   FOUR_C_ASSERT(nds < (int)dofsets_.size(), "undefined dof set");
-  return Teuchos::rcp(new DofSetProxy(&*dofsets_[nds]));
+  return Teuchos::rcp(new CORE::Dofsets::DofSetProxy(&*dofsets_[nds]));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ReplaceDofSet(
-    Teuchos::RCP<DofSetInterface> newdofset, const bool replaceinstatdofsets)
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
   havedof_ = false;
@@ -525,7 +525,8 @@ std::map<int, std::vector<int>>* DRT::Discretization::GetAllPBCCoupledColNodes()
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
   {
-    Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet>(dofsets_[nds]);
+    Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset =
+        Teuchos::rcp_dynamic_cast<CORE::Dofsets::PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
     {
@@ -545,7 +546,8 @@ Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeCon
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
   {
-    Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet>(dofsets_[nds]);
+    Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset =
+        Teuchos::rcp_dynamic_cast<CORE::Dofsets::PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
     {

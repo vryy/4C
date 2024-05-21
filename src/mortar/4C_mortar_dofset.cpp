@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-MORTAR::DofSet::DofSet() : DRT::DofSet() {}
+MORTAR::DofSet::DofSet() : CORE::Dofsets::DofSet() {}
 
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
@@ -26,7 +26,7 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  const int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  const int count = CORE::Dofsets::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("Point coupling conditions not yet implemented for MORTAR::DofSet");
 

@@ -1037,7 +1037,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoTimeSample(int step, Teuchos::RCP<Epetra_Vector> velnp,
       Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
-      Teuchos::RCP<const DRT::DofSet> stddofset)
+      Teuchos::RCP<const CORE::Dofsets::DofSet> stddofset)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)

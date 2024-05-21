@@ -14,6 +14,7 @@
 #include "4C_binstrategy_meshfree_multibin.hpp"
 #include "4C_binstrategy_utils.hpp"
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_dofset_independent.hpp"
 #include "4C_discretization_geometry_intersection_math.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
@@ -21,7 +22,6 @@
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_independent.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -761,8 +761,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   }
 
   // complete new dis
-  Teuchos::RCP<DRT::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new DRT::IndependentDofSet(true));
+  Teuchos::RCP<CORE::Dofsets::IndependentDofSet> independentdofset =
+      Teuchos::rcp(new CORE::Dofsets::IndependentDofSet(true));
   visbindis_->ReplaceDofSet(independentdofset);
   visbindis_->FillComplete(true, true, false);
 

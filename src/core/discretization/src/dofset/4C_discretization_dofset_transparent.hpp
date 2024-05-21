@@ -9,20 +9,20 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_TRANSPARENT_HPP
-#define FOUR_C_LIB_DOFSET_TRANSPARENT_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_TRANSPARENT_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_TRANSPARENT_HPP
 
 
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_discretization_dofset.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace CORE::Dofsets
 {
   /// Alias dofset that shares dof numbers with another dofset
   /*!
@@ -33,7 +33,7 @@ namespace DRT
   according to the dofs of the source.
 
   */
-  class TransparentDofSet : public virtual DRT::DofSet
+  class TransparentDofSet : public virtual CORE::Dofsets::DofSet
   {
    public:
     /*!
@@ -95,7 +95,7 @@ namespace DRT
     bool parallel_;  ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
 
   };  // class TransparentDofSet
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

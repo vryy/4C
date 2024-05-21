@@ -12,6 +12,8 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_dofset_independent.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_timeint.hpp"
 #include "4C_elemag_utils_clonestrategy.hpp"
@@ -21,8 +23,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_dofset_independent.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_stat.hpp"
@@ -81,8 +81,8 @@ void electromagnetics_drt()
   // DofSet
   int eledofs = dynamic_cast<DRT::ELEMENTS::Elemag*>(elemagdishdg->lColElement(0))
                     ->NumDofPerElementAuxiliary();
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   elemagdishdg->AddDofSet(dofsetaux);
 
   // call fill complete on discretization
@@ -228,8 +228,8 @@ void electromagnetics_drt()
               FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
             // add proxy of velocity related degrees of freedom to scatra discretization
-            Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-                Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
+            Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+                Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
                     GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
             if (scatradis->AddDofSet(dofsetaux) != 1)
               FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");

@@ -11,9 +11,9 @@
 #include "4C_constraint_multipointconstraint2.hpp"
 
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -40,7 +40,8 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
     Teuchos::RCP<Epetra_Map> newcolnodemap =
         CORE::REBALANCE::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
+    Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+        Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->FillComplete();

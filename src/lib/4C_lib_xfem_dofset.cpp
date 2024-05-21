@@ -27,7 +27,7 @@ void XFEM::XFEMDofSet::Dof(
 {
   const int lid = node->LID();
   if (lid == -1) return;
-  int numdf = DRT::DofSet::NumDofPerNode(*node);
+  int numdf = CORE::Dofsets::DofSet::NumDofPerNode(*node);
   const int idx = (*idxcolnodes_)[lid] + nodal_dofset_id * numdf;
   dofs.reserve(numdf);
   for (int i = 0; i < numdf; ++i)
@@ -44,10 +44,10 @@ int XFEM::XFEMDofSet::NumDofPerNode(const DRT::Node& node) const
   CORE::GEO::CUT::Node* n = wizard_.GetNode(node.Id());
   if (n != nullptr)
   {
-    int numdofpernode = DRT::DofSet::NumDofPerNode(node);
+    int numdofpernode = CORE::Dofsets::DofSet::NumDofPerNode(node);
     return numdofpernode * n->NumDofSets();
   }
-  return DRT::DofSet::NumDofPerNode(node);
+  return CORE::Dofsets::DofSet::NumDofPerNode(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_dofset_independent.hpp"
+#include "4C_discretization_dofset_independent.hpp"
 
 #include "4C_lib_discret.hpp"
 
@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
-    : DRT::DofSet(), ignoreminnodegid_(ignoreminnodegid)
+CORE::Dofsets::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
+    : CORE::Dofsets::DofSet(), ignoreminnodegid_(ignoreminnodegid)
 {
   return;
 }
@@ -26,8 +26,8 @@ DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
-    : DRT::DofSet(old), ignoreminnodegid_(old.ignoreminnodegid_)
+CORE::Dofsets::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
+    : CORE::Dofsets::DofSet(old), ignoreminnodegid_(old.ignoreminnodegid_)
 {
   return;
 }
@@ -36,7 +36,7 @@ DRT::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::IndependentDofSet::AddDofSettoList()
+void CORE::Dofsets::IndependentDofSet::AddDofSettoList()
 {
   // We do nothing here as an independent DofSet should not show up in the dof set list.
   return;
@@ -45,7 +45,8 @@ void DRT::IndependentDofSet::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::IndependentDofSet::GetFirstGIDNumberToBeUsed(const Discretization& dis) const
+int CORE::Dofsets::IndependentDofSet::GetFirstGIDNumberToBeUsed(
+    const DRT::Discretization& dis) const
 {
   // always start from zero here, as this is an independent DofSet
   return 0;
@@ -54,7 +55,8 @@ int DRT::IndependentDofSet::GetFirstGIDNumberToBeUsed(const Discretization& dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::IndependentDofSet::GetMinimalNodeGIDIfRelevant(const Discretization& dis) const
+int CORE::Dofsets::IndependentDofSet::GetMinimalNodeGIDIfRelevant(
+    const DRT::Discretization& dis) const
 {
   return ignoreminnodegid_ ? 0 : dis.NodeRowMap()->MinAllGID();
 }

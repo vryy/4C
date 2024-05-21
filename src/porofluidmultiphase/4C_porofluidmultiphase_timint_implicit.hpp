@@ -33,9 +33,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class DofSet;
   class ResultTest;
 }  // namespace DRT
+
+namespace CORE::Dofsets
+{
+  class DofSet;
+}  // namespace CORE::Dofsets
+
 
 namespace IO
 {

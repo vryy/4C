@@ -15,11 +15,11 @@
 #include "4C_tsi_utils.hpp"
 
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_dofset.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_fem_general_element_center.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_periodicbc.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_so3_plast_ssn.hpp"
@@ -178,9 +178,9 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // TSI must know the other discretization
     // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
 
     // check if ThermoField has 2 discretizations, so that coupling is possible
     if (thermdis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
@@ -209,13 +209,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     const int ndofperelement_thermo = 0;
     const int ndofpernode_struct = GLOBAL::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
-    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(
-        new DRT::DofSetPredefinedDoFNumber(ndofpernode_thermo, ndofperelement_thermo, 0, true));
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        ndofpernode_thermo, ndofperelement_thermo, 0, true));
     if (structdis->AddDofSet(dofsetaux) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
-    dofsetaux = Teuchos::rcp(
-        new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
+    dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        ndofpernode_struct, ndofperelement_struct, 0, true));
     if (thermdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
     // call AssignDegreesOfFreedom also for auxiliary dofsets

@@ -60,7 +60,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DofSet;
   class ResultTest;
 }  // namespace DRT
 
@@ -89,6 +88,12 @@ namespace CORE::LINALG
   enum class EquilibrationMethod;
   enum class MatrixType;
 }  // namespace CORE::LINALG
+
+namespace CORE::Dofsets
+{
+  class DofSet;
+}  // namespace CORE::Dofsets
+
 
 namespace FLD
 {

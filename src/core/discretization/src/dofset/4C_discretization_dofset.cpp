@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 
 #include "4C_comm_exporter.hpp"
 #include "4C_lib_discret.hpp"
@@ -26,7 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-DRT::DofSet::DofSet() : DRT::DofSetBase(), filled_(false), dspos_(0), pccdofhandling_(false)
+CORE::Dofsets::DofSet::DofSet()
+    : CORE::Dofsets::DofSetBase(), filled_(false), dspos_(0), pccdofhandling_(false)
 {
   return;
 }
@@ -36,7 +37,7 @@ DRT::DofSet::DofSet() : DRT::DofSetBase(), filled_(false), dspos_(0), pccdofhand
 /*----------------------------------------------------------------------*
  |  << operator                                               ukue 04/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset)
+std::ostream& operator<<(std::ostream& os, const CORE::Dofsets::DofSet& dofset)
 {
   dofset.Print(os);
   return os;
@@ -46,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset)
 /*----------------------------------------------------------------------*
  |  print this  (public)                                      ukue 04/07|
  *----------------------------------------------------------------------*/
-void DRT::DofSet::Print(std::ostream& os) const
+void CORE::Dofsets::DofSet::Print(std::ostream& os) const
 {
   for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {
@@ -105,7 +106,7 @@ void DRT::DofSet::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void DRT::DofSet::Reset()
+void CORE::Dofsets::DofSet::Reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;
@@ -125,8 +126,8 @@ void DRT::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int DRT::DofSet::AssignDegreesOfFreedom(
-    const Discretization& dis, const unsigned dspos, const int start)
+int CORE::Dofsets::DofSet::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
@@ -162,8 +163,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(
   int count = GetFirstGIDNumberToBeUsed(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
-  Teuchos::RCP<const DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis, false));
+  Teuchos::RCP<const DRT::DiscretizationHDG> facedis =
+      Teuchos::rcp_dynamic_cast<const DRT::DiscretizationHDG>(Teuchos::rcp(&dis, false));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
   if (facedis != Teuchos::null && dspos_ == 2) count = 0;
@@ -570,7 +571,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::DofSet::Initialized() const
+bool CORE::Dofsets::DofSet::Initialized() const
 {
   if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
     return false;
@@ -580,56 +581,56 @@ bool DRT::DofSet::Initialized() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSet::DofRowMap() const
+const Epetra_Map* CORE::Dofsets::DofSet::DofRowMap() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("DRT::DofSet::DofRowMap(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("CORE::Dofsets::DofSet::DofRowMap(): dofrowmap_ not initialized, yet");
   return dofrowmap_.get();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DofSet::DofColMap() const
+const Epetra_Map* CORE::Dofsets::DofSet::DofColMap() const
 {
   if (dofcolmap_ == Teuchos::null)
-    FOUR_C_THROW("DRT::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
+    FOUR_C_THROW("CORE::Dofsets::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
   return dofcolmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSet::NumGlobalElements() const
+int CORE::Dofsets::DofSet::NumGlobalElements() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("DRT::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("CORE::Dofsets::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
   return dofrowmap_->NumGlobalElements();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSet::MaxAllGID() const
+int CORE::Dofsets::DofSet::MaxAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("DRT::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("CORE::Dofsets::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MaxAllGID();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSet::MinAllGID() const
+int CORE::Dofsets::DofSet::MinAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("DRT::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("CORE::Dofsets::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MinAllGID();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSet::GetFirstGIDNumberToBeUsed(const Discretization& dis) const
+int CORE::Dofsets::DofSet::GetFirstGIDNumberToBeUsed(const DRT::Discretization& dis) const
 {
   return MaxGIDinList(dis.Comm()) + 1;
 }
@@ -637,7 +638,7 @@ int DRT::DofSet::GetFirstGIDNumberToBeUsed(const Discretization& dis) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSet::GetMinimalNodeGIDIfRelevant(const Discretization& dis) const
+int CORE::Dofsets::DofSet::GetMinimalNodeGIDIfRelevant(const DRT::Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }

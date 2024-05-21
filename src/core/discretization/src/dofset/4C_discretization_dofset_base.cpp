@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_dofset_base.hpp"
+#include "4C_discretization_dofset_base.hpp"
 
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
@@ -22,18 +22,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // list of all dof sets
-std::list<DRT::DofSetInterface*> DRT::DofSetBase::static_dofsets_;
+std::list<CORE::Dofsets::DofSetInterface*> CORE::Dofsets::DofSetBase::static_dofsets_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-DRT::DofSetBase::DofSetBase() : DofSetInterface() { return; }
+CORE::Dofsets::DofSetBase::DofSetBase() : DofSetInterface() { return; }
 
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-DRT::DofSetBase::~DofSetBase()
+CORE::Dofsets::DofSetBase::~DofSetBase()
 {
   // disconnect from proxies
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
@@ -49,7 +49,7 @@ DRT::DofSetBase::~DofSetBase()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::AddDofSettoList()
+void CORE::Dofsets::DofSetBase::AddDofSettoList()
 {
   if (std::find(static_dofsets_.begin(), static_dofsets_.end(), this) == static_dofsets_.end())
   {
@@ -61,9 +61,9 @@ void DRT::DofSetBase::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset)
+void CORE::Dofsets::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset)
 {
-  std::list<DRT::DofSetInterface*>::iterator iterold =
+  std::list<CORE::Dofsets::DofSetInterface*>::iterator iterold =
       std::find(static_dofsets_.begin(), static_dofsets_.end(), &(*olddofset));
   if (iterold == static_dofsets_.end())
   {
@@ -80,7 +80,7 @@ void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
+int CORE::Dofsets::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
 {
   int count = -1;
   for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
@@ -99,7 +99,7 @@ int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
   return max;
 }
 
-void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
+void CORE::Dofsets::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
 {
   if (comm.MyPID() == 0)
   {
@@ -177,17 +177,23 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::Register(DofSetInterface* dofset) { registered_dofsets_.push_back(dofset); }
+void CORE::Dofsets::DofSetBase::Register(DofSetInterface* dofset)
+{
+  registered_dofsets_.push_back(dofset);
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::Unregister(DofSetInterface* dofset) { registered_dofsets_.remove(dofset); }
+void CORE::Dofsets::DofSetBase::Unregister(DofSetInterface* dofset)
+{
+  registered_dofsets_.remove(dofset);
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::NotifyAssigned()
+void CORE::Dofsets::DofSetBase::NotifyAssigned()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
        i != registered_dofsets_.end(); ++i)
@@ -197,7 +203,7 @@ void DRT::DofSetBase::NotifyAssigned()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::NotifyReset()
+void CORE::Dofsets::DofSetBase::NotifyReset()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
        i != registered_dofsets_.end(); ++i)
@@ -206,7 +212,7 @@ void DRT::DofSetBase::NotifyReset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetBase::Print(std::ostream& os) const
+void CORE::Dofsets::DofSetBase::Print(std::ostream& os) const
 {
   FOUR_C_THROW("Print() is not implemented in base class. Override Print() in subclass");
 }

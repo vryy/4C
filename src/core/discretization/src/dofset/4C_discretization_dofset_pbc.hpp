@@ -15,12 +15,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_PBC_HPP
-#define FOUR_C_LIB_DOFSET_PBC_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_PBC_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_PBC_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_IntVector.h>
@@ -36,6 +36,10 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
+
+namespace CORE::Dofsets
+{
 
 
   /*!
@@ -43,7 +47,7 @@ namespace DRT
 
   \author gammi
   */
-  class PBCDofSet : virtual public DRT::DofSet
+  class PBCDofSet : virtual public DofSet
   {
    public:
     /*!
@@ -95,7 +99,7 @@ namespace DRT
     {
       if (slavenodeids_->count(node.Id()) == 0)
       {
-        return DRT::DofSet::NumDofPerNode(node);
+        return DofSet::NumDofPerNode(node);
       }
       return 0;
     }
@@ -121,7 +125,7 @@ namespace DRT
 
   };  // class PBCDofSet
 
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

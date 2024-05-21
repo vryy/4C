@@ -11,12 +11,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_FIXED_SIZE_HPP
-#define FOUR_C_LIB_DOFSET_FIXED_SIZE_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_FIXED_SIZE_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_FIXED_SIZE_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_IntVector.h>
@@ -33,6 +33,10 @@ namespace DRT
 {
   class Discretization;
 
+}
+
+namespace CORE::Dofsets
+{
   /*!
   \brief A set of degrees of freedom
 
@@ -118,7 +122,7 @@ namespace DRT
    private:
   };  // class FixedSizeDofSet
 
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

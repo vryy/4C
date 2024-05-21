@@ -10,13 +10,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef FOUR_C_LIB_DOFSET_GIDBASED_WRAPPER_HPP
-#define FOUR_C_LIB_DOFSET_GIDBASED_WRAPPER_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_GIDBASED_WRAPPER_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_GIDBASED_WRAPPER_HPP
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset_base.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_base.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 
@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Dofsets
 {
   /*! \brief This class extends a standard DofSet to a DofSet whose mapping uses global IDs
 
@@ -56,15 +56,15 @@ namespace DRT
   {
    public:
     //! Standard Constructor
-    DofSetGIDBasedWrapper(Teuchos::RCP<DRT::Discretization> sourcedis,
-        Teuchos::RCP<DRT::DofSetInterface> sourcedofset);
+    DofSetGIDBasedWrapper(
+        Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DofSetInterface> sourcedofset);
 
     //! Destructor
     ~DofSetGIDBasedWrapper() override;
 
     //! original DofSet has new dofs
     int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start) override;
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! original DofSet has been reset
     void Reset() override;
@@ -81,7 +81,8 @@ namespace DRT
     //! @name Access methods
 
     /// get number of nodal dofs
-    int NumDofPerNode(const Node& node  ///< node, for which you want to know the number of dofs
+    int NumDofPerNode(
+        const DRT::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
@@ -91,7 +92,7 @@ namespace DRT
     };
 
     /// Get number of dofs for given node
-    int NumDof(const Node* node) const override
+    int NumDof(const DRT::Node* node) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return 0;
@@ -100,7 +101,7 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Element* element) const override
+    int NumDof(const DRT::Element* element) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->NumDof(element);
@@ -110,7 +111,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Node* node, int dof) const override
+    int Dof(const DRT::Node* node, int dof) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return -1;
@@ -119,7 +120,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const Node* node) const override
+    std::vector<int> Dof(const DRT::Node* node) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return std::vector<int>();
@@ -129,7 +130,7 @@ namespace DRT
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,            ///< the node
+        const DRT::Node* node,       ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
@@ -140,7 +141,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Element* element) const override
+    std::vector<int> Dof(const DRT::Element* element) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element);
@@ -150,7 +151,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node, std::vector<int>& lm) const override
+    void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -159,9 +160,9 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node,      ///< node, for which you want the dof positions
-        const unsigned startindex,  ///< first index of vector at which will be written to end
-        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    void Dof(const DRT::Node* node,  ///< node, for which you want the dof positions
+        const unsigned startindex,   ///< first index of vector at which will be written to end
+        std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
       CheckIsAssigned();
@@ -171,10 +172,10 @@ namespace DRT
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(
-        const Element* element,  ///< element which provides its expected number of DOFs per node
-        const Node* node,        ///< node, for which you want the DOF positions
-        std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
+    void Dof(const DRT::Element*
+                 element,       ///< element which provides its expected number of DOFs per node
+        const DRT::Node* node,  ///< node, for which you want the DOF positions
+        std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       CheckIsAssigned();
@@ -185,7 +186,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Element* element, int dof) const override
+    int Dof(const DRT::Element* element, int dof) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, dof);
@@ -196,7 +197,7 @@ namespace DRT
 
 
     /// Get the gid of all dofs of a element
-    void Dof(const Element* element, std::vector<int>& lm) const override
+    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, lm);
@@ -274,11 +275,11 @@ namespace DRT
     Teuchos::RCP<DRT::Discretization> sourcedis_;
 
     //! source dofset wrapped in this class
-    Teuchos::RCP<DRT::DofSetInterface> sourcedofset_;
+    Teuchos::RCP<DofSetInterface> sourcedofset_;
 
     bool isassigned_;
   };
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 
 FOUR_C_NAMESPACE_CLOSE

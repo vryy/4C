@@ -35,10 +35,14 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
+namespace CORE::Dofsets
+{
+  class DofSet;
+}
+
 namespace DRT
 {
   class Discretization;
-  class DofSet;
   class ResultTest;
   class Element;
 }  // namespace DRT
@@ -201,7 +205,7 @@ namespace ADAPTER
     virtual const Teuchos::RCP<DRT::Discretization>& Discretization() = 0;
 
     /// direct access to dofset
-    virtual Teuchos::RCP<const DRT::DofSet> DofSet() = 0;
+    virtual Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
