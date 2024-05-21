@@ -10,7 +10,7 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_xfem_dofset.hpp"
+#include "4C_xfem_dofset.hpp"
 
 #include "4C_cut_cutwizard.hpp"
 #include "4C_cut_node.hpp"

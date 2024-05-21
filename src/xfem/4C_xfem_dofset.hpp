@@ -11,8 +11,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 /*----------------------------------------------------------------------*/
 
 
-#ifndef FOUR_C_LIB_XFEM_DOFSET_HPP
-#define FOUR_C_LIB_XFEM_DOFSET_HPP
+#ifndef FOUR_C_XFEM_DOFSET_HPP
+#define FOUR_C_XFEM_DOFSET_HPP
 
 
 #include "4C_config.hpp"

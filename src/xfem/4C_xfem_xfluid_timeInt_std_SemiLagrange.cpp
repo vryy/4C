@@ -16,8 +16,8 @@
 #include "4C_cut_integrationcell.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_xfem_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

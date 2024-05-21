@@ -11,9 +11,9 @@
 
 #include "4C_lib_discret_xfem.hpp"
 
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_xfem_dofset.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
