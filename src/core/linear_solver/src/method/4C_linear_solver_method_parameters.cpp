@@ -15,6 +15,8 @@
 #include "4C_lib_elementtype.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Xpetra_EpetraIntMultiVector.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
@@ -101,6 +103,8 @@ void CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(
   }
 }
 
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epetra_Map& oldmap,
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
 {
@@ -158,6 +162,39 @@ void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epet
 
   params.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspaceNew);
   params.set("null space: vectors", nullspaceNew->Values());
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+    const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& row_map,
+    Teuchos::ParameterList& list)
+{
+  if (!list.isParameter("null space: dimension"))
+    FOUR_C_THROW(
+        "CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist: Multigrid parameter "
+        "'null space: dimension' missing  in solver parameter list.");
+
+  const int nullspace_dimension = list.get<int>("null space: dimension");
+  if (nullspace_dimension < 1)
+    FOUR_C_THROW(
+        "CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist: Multigrid parameter "
+        "'null space: dimension' wrong. It has to be > 0.");
+
+  Teuchos::RCP<Epetra_MultiVector> nullspace_data =
+      list.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+  if (nullspace_data.is_null())
+    FOUR_C_THROW(
+        "CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist: Nullspace data is "
+        "null.");
+
+  Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace =
+      Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>(nullspace_data));
+
+  nullspace->replaceMap(row_map);
+
+  return nullspace;
 }
 
 FOUR_C_NAMESPACE_CLOSE

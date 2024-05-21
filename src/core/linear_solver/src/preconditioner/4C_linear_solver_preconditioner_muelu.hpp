@@ -260,26 +260,6 @@ namespace CORE::LINEAR_SOLVER
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> pmatrix_;
   };
-
-  namespace MUELU::UTILS
-  {
-    /*!
-     * \brief Extract nullspace from 4C-provided ML list and convert to Xpetra::MultiVector
-     *
-     * \pre The input parameter list \c mllist needs to contain these entries:
-     *   - "null space: dimension" (type: \c int )
-     *   - "nullspace" (type: \c RCP<std::vector<double>> )
-     *
-     * @param[in] rowMap Map to be used to create the null space vectors
-     * @param[in] mllist Parameter list, where 4C has stored the null space data in ML style
-     * @return MultiVector with nullspace data
-     */
-    Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-    ExtractNullspaceFromParameterlist(
-        const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& rowMap,
-        Teuchos::ParameterList& muelulist);
-
-  }  // namespace MUELU::UTILS
 }  // namespace CORE::LINEAR_SOLVER
 
 FOUR_C_NAMESPACE_CLOSE
