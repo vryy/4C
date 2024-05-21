@@ -1316,7 +1316,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       // -----------------------------------------------------------------------------
       if (ele->Nodes()[i]->GetCondition("ArtPrescribedCond"))
       {
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
+        const CORE::Conditions::Condition* condition =
+            ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
         ART::UTILS::SolvePrescribedTerminalBC(
             Teuchos::rcp(&discretization, false), condition, Cparams);
@@ -1329,7 +1330,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       {
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+        const CORE::Conditions::Condition* condition =
+            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Cparams.set<Teuchos::RCP<Teuchos::ParameterList>>(
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
@@ -1343,7 +1345,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       // -----------------------------------------------------------------------------
       if (ele->Nodes()[i]->GetCondition("ArtRfCond"))
       {
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
+        const CORE::Conditions::Condition* condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
         ART::UTILS::SolveReflectiveTerminal(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
@@ -1353,7 +1355,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       // -----------------------------------------------------------------------------
       if (ele->Nodes()[i]->GetCondition("ArtWkCond"))
       {
-        const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtWkCond");
+        const CORE::Conditions::Condition* condition = ele->Nodes()[i]->GetCondition("ArtWkCond");
         Cparams.set<double>("time step size", dt);
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
@@ -1482,7 +1484,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
 
       //
       // calculating Q at node i
-      const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
+      const CORE::Conditions::Condition* condition =
+          ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
 
       const auto* curve = condition->parameters().GetIf<int>("curve");
 

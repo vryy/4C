@@ -9,15 +9,15 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_CONDITIONDEFINITION_HPP
-#define FOUR_C_LIB_CONDITIONDEFINITION_HPP
+#ifndef FOUR_C_IO_CONDITION_DEFINITION_HPP
+#define FOUR_C_IO_CONDITION_DEFINITION_HPP
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_linecomponent.hpp"
-#include "4C_lib_condition.hpp"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
@@ -35,11 +35,6 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace GLOBAL
-{
-  class Problem;
-}
-
 namespace INPUT
 {
 
@@ -53,7 +48,7 @@ namespace INPUT
     like, how to read it and how to write it. In particular given a
     ConditionDefinition object it is possible to (a) write an empty dat file
     section that describes this condition, (b) read a dat file and create
-    DRT::Condition objects for each line in this section and (c) write the dat
+    CORE::Conditions::Condition objects for each line in this section and (c) write the dat
     file section filled with all corresponding conditions from a given
     DRT::Discretization.
 
@@ -61,7 +56,7 @@ namespace INPUT
     introduce a new condition to 4C, all you have to do is add an
     appropriate definition in ValidConditions(). This will take care of the
     reading part and you will get your DRT::Discretization filled with proper
-    DRT::Condition objects.
+    CORE::Conditions::Condition objects.
 
     \author u.kue
     \date 01/08
@@ -96,8 +91,8 @@ namespace INPUT
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(const GLOBAL::Problem& problem, DatFileReader& reader,
-        std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap);
+    void Read(
+        DatFileReader& reader, std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the Discretization
     std::ostream& Print(std::ostream& stream, const DRT::Discretization* dis = nullptr);

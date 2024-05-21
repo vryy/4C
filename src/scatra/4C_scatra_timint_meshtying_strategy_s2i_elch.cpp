@@ -68,7 +68,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     condparams.set<double>("etagrowthmax", -std::numeric_limits<double>::infinity());
 
     // extract boundary conditions for scatra-scatra interface layer growth
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
@@ -382,7 +382,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
   {
     // extract boundary conditions for scatra-scatra interface layer growth
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // loop over all conditions
@@ -593,7 +593,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
-  DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+  CORE::Conditions::Condition* condition = params.get<CORE::Conditions::Condition*>("condition");
   if (condition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
@@ -643,9 +643,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
-    const MORTAR::Node& slavenode, const double& lumpedarea, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement,
+void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
+    CORE::Conditions::Condition& condition, const MORTAR::Node& slavenode, const double& lumpedarea,
+    MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
     const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
     CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
@@ -826,7 +826,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
-  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
@@ -1042,7 +1042,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
-  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
@@ -1119,7 +1119,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
-  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
@@ -1203,7 +1203,7 @@ SCATRA::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
 void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
+  std::vector<CORE::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
   scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
 
   std::set<int> islavenodegidset;

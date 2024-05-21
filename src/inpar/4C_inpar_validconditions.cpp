@@ -37,7 +37,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_thermo.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_conditiondefinition.hpp"
+#include "4C_io_condition_definition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

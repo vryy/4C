@@ -27,7 +27,8 @@ namespace BEAMINTERACTION
   class BeamToBeamPointCouplingCondition : public BeamInteractionConditionBase
   {
    public:
-    BeamToBeamPointCouplingCondition(const Teuchos::RCP<const DRT::Condition>& condition_line,
+    BeamToBeamPointCouplingCondition(
+        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
         double positional_penalty_parameter, double rotational_penalty_parameter)
         : BeamInteractionConditionBase(condition_line),
           positional_penalty_parameter_(positional_penalty_parameter),

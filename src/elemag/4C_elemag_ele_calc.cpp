@@ -1406,7 +1406,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   if (do_rhs)
   {
     // Get the user defined functions
-    auto* cond = params.getPtr<Teuchos::RCP<DRT::Condition>>("condition");
+    auto* cond = params.getPtr<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
     const auto& funct = (*cond)->parameters().Get<std::vector<int>>("funct");
     const double time = params.get<double>("time");
 

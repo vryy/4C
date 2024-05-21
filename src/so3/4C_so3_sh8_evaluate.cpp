@@ -6,10 +6,10 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -1832,14 +1832,14 @@ void DRT::ELEMENTS::SoSh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDO
     CORE::LINALG::Matrix<NUMDOF_SOH8, 1> adjele(true);
     DRT::Node** nodes = Nodes();
 
-    std::vector<DRT::Condition*> cond0;
-    std::vector<DRT::Condition*> condFSI0;
+    std::vector<CORE::Conditions::Condition*> cond0;
+    std::vector<CORE::Conditions::Condition*> condFSI0;
     int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3
     bool current0 = false;  // layer with nodes 0..4 to be scaled
     (nodes[0])->GetCondition("STC Layer", cond0);
     (nodes[0])->GetCondition("FSICoupling", condFSI0);
-    std::vector<DRT::Condition*> cond1;
-    std::vector<DRT::Condition*> condFSI1;
+    std::vector<CORE::Conditions::Condition*> cond1;
+    std::vector<CORE::Conditions::Condition*> condFSI1;
     int condnum1 = 1000;    // minimun STCid of layer with nodes 4..7
     bool current1 = false;  // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_SOH8 / 2])->GetCondition("STC Layer", cond1);

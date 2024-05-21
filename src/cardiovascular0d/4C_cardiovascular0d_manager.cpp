@@ -18,9 +18,9 @@
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 #include "4C_cardiovascular0d_resulttest.hpp"
 #include "4C_cardiovascular0d_syspulcirculation.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -569,8 +569,8 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   const bool assvec = systemvector != Teuchos::null;
   const bool assmat = systemmatrix != Teuchos::null;
 
-  std::vector<DRT::Condition*> surfneumcond;
-  std::vector<DRT::Condition*> cardvasc0dstructcoupcond;
+  std::vector<CORE::Conditions::Condition*> surfneumcond;
+  std::vector<CORE::Conditions::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("No structure discretization available!");
@@ -586,7 +586,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   {
     int id_strcoupcond = cardvasc0dstructcoupcond[i]->parameters().Get<int>("coupling_id");
 
-    DRT::Condition* coupcond = cardvasc0dstructcoupcond[i];
+    CORE::Conditions::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6, 0.0);
     if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
       newval[0] = -(*actpres)[3 * id_strcoupcond];
@@ -598,7 +598,8 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       for (unsigned int j = 0;
            j < cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition().size(); ++j)
       {
-        DRT::Condition& cond = *(cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]);
+        CORE::Conditions::Condition& cond =
+            *(cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]);
         int id_cardvasc0d = cond.parameters().Get<int>("id");
 
         if (id_strcoupcond == id_cardvasc0d)
@@ -622,7 +623,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
            j < cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition().size();
            ++j)
       {
-        DRT::Condition& cond =
+        CORE::Conditions::Condition& cond =
             *(cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition()[j]);
         int id_cardvasc0d = cond.parameters().Get<int>("id");
 

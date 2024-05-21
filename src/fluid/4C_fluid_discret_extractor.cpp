@@ -30,7 +30,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     : parentdiscret_(actdis)
 {
   // get condition, i.e., do we have nodes that belong to a separate section of the domain
-  std::vector<DRT::Condition*> sepcond;
+  std::vector<CORE::Conditions::Condition*> sepcond;
   parentdiscret_->GetCondition(condition, sepcond);
 
   std::vector<int> allcnd_sepcondnodeids;
@@ -278,7 +278,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
       {
         // get condition
-        std::vector<DRT::Condition*> actcond;
+        std::vector<CORE::Conditions::Condition*> actcond;
         parentdiscret_->GetCondition(allcond[numcond], actcond);
         // loop all condition of the current type
         for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)

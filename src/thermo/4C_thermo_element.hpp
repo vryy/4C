@@ -328,7 +328,8 @@ namespace DRT
       //!
       //! \return 0 if successful, negative otherwise
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       //@}
@@ -575,7 +576,8 @@ namespace DRT
       //!
       //! \return 0 if successful, negative otherwise
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       //@}

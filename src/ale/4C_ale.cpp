@@ -91,7 +91,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
 
   // ensure that the ALE string was removed from conditions
   {
-    DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
+    CORE::Conditions::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) FOUR_C_THROW("Found a ALE Dirichlet condition. Remove ALE string!");
   }
 
@@ -110,7 +110,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   // Create LocSysManager, if needed (used for LocSys-Dirichlet BCs)
   // ---------------------------------------------------------------------
   {
-    std::vector<DRT::Condition*> locsysconditions(0);
+    std::vector<CORE::Conditions::Condition*> locsysconditions(0);
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {

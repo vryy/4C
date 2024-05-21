@@ -9,6 +9,7 @@
 
 #include "4C_thermo_ele_impl.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
@@ -16,7 +17,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_thermo.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
@@ -2670,19 +2670,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::Radiation(const DRT::Element* ele, const double time)
 {
-  std::vector<DRT::Condition*> myneumcond;
+  std::vector<CORE::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
   switch (nsd_)
   {
     case 3:
-      DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "VolumeNeumann", myneumcond);
       break;
     case 2:
-      DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
       break;
     case 1:
-      DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
+      CORE::Conditions::FindElementConditions(ele, "LineNeumann", myneumcond);
       break;
     default:
       FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);

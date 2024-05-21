@@ -12,7 +12,7 @@
 
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_node.hpp"
 
@@ -55,7 +55,7 @@ double FLD::GetComponentOfRotatedVectorField(const int idf,
 bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
 {
   // get periodic surface/line boundary conditions
-  std::vector<DRT::Condition*> pbc;
+  std::vector<CORE::Conditions::Condition*> pbc;
   node->GetCondition("SurfacePeriodic", pbc);
   if (pbc.empty()) node->GetCondition("LinePeriodic", pbc);
 
@@ -80,7 +80,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
+double FLD::GetRotAngleFromCondition(const CORE::Conditions::Condition* cond)
 {
   const double rotangle_deg = cond->parameters().Get<double>("Angle of rotation");
 
@@ -93,7 +93,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
     std::map<int, double>& pbcslavenodemap, Teuchos::RCP<DRT::Discretization> dis)
 {
   // get all periodic boundary conditions
-  std::vector<DRT::Condition*> mypbccond;
+  std::vector<CORE::Conditions::Condition*> mypbccond;
   dis->GetCondition("SurfacePeriodic", mypbccond);
   if (mypbccond.empty())
   {

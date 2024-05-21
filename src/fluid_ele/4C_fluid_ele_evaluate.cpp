@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_evaluate_utils.hpp"
@@ -23,7 +24,6 @@
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_fluid_ele_tds.hpp"
 #include "4C_fluid_ele_xwall.hpp"
-#include "4C_lib_condition_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -602,10 +602,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
 
         bool is_inflow_ele = false;
 
-        std::vector<DRT::Condition*> myinflowcond;
+        std::vector<CORE::Conditions::Condition*> myinflowcond;
 
         // check whether all nodes have a unique inflow condition
-        DRT::UTILS::FindElementConditions(this, "TurbulentInflowSection", myinflowcond);
+        CORE::Conditions::FindElementConditions(this, "TurbulentInflowSection", myinflowcond);
         if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
         if (myinflowcond.size() == 1) is_inflow_ele = true;
@@ -748,8 +748,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }

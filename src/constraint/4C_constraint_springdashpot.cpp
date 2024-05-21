@@ -12,10 +12,10 @@
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_contact_interface.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"  // has to go before io.hpp
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_truss3.hpp"
@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::SpringDashpot::SpringDashpot(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond)
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
       stiff_tens_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),

@@ -14,7 +14,7 @@
 #include "4C_lib_dofset_definedmapping_wrapper.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_dofset_base.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -59,19 +59,19 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
     FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get condition which defines the coupling on target discretization
-  std::vector<DRT::Condition*> conds;
+  std::vector<CORE::Conditions::Condition*> conds;
   dis.GetCondition(couplingcond_, conds);
 
   // get condition which defines the coupling on source discretization
-  std::vector<DRT::Condition*> conds_source;
+  std::vector<CORE::Conditions::Condition*> conds_source;
   sourcedis_->GetCondition(couplingcond_, conds_source);
 
   // get the respective nodes which are in the condition
   const bool use_coupling_id = condids_.size() != 1;
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes;
-  DRT::UTILS::FindConditionedNodes(dis, conds, nodes, use_coupling_id);
+  CORE::Conditions::FindConditionedNodes(dis, conds, nodes, use_coupling_id);
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes_source;
-  DRT::UTILS::FindConditionedNodes(*sourcedis_, conds_source, nodes_source, use_coupling_id);
+  CORE::Conditions::FindConditionedNodes(*sourcedis_, conds_source, nodes_source, use_coupling_id);
 
   // map that will be filled with coupled nodes
   // mapping: target node gid to (source node gid, distance)

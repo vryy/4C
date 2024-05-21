@@ -13,11 +13,11 @@ parenchyma balloon
 
 #include "4C_adapter_fld_lung.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -47,11 +47,11 @@ void ADAPTER::FluidLung::Init()
 
   // get lung fluid-structure volume constraints
 
-  std::vector<DRT::Condition*> temp;
+  std::vector<CORE::Conditions::Condition*> temp;
   Discretization()->GetCondition("StructFluidSurfCoupling", temp);
   for (unsigned i = 0; i < temp.size(); ++i)
   {
-    DRT::Condition& cond = *(temp[i]);
+    CORE::Conditions::Condition& cond = *(temp[i]);
     if ((cond.parameters().Get<std::string>("field")) == "fluid") constrcond_.push_back(temp[i]);
   }
   if (constrcond_.size() == 0)
@@ -74,10 +74,10 @@ void ADAPTER::FluidLung::Init()
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
   std::vector<int> fsinodes;
-  DRT::UTILS::FindConditionedNodes(*Discretization(), "FSICoupling", fsinodes);
+  CORE::Conditions::FindConditionedNodes(*Discretization(), "FSICoupling", fsinodes);
 
   std::set<int> outflownodes;
-  DRT::UTILS::FindConditionedNodes(*Discretization(), "StructAleCoupling", outflownodes);
+  CORE::Conditions::FindConditionedNodes(*Discretization(), "StructAleCoupling", outflownodes);
 
   std::vector<int> outflowfsinodes;
 
@@ -119,7 +119,7 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
 
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
     int condID = cond.parameters().Get<int>("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
@@ -148,7 +148,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
 
@@ -156,7 +156,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
 
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
     params.set<int>("action", FLD::flowratederiv);
     params.set("flowrateonly", true);
     const double dt = Dt();
@@ -229,7 +229,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
   //---------------------------------------------------------------------
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
+    CORE::Conditions::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID = cond.parameters().Get<int>("coupling id");
@@ -246,7 +246,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     const double lagraval = (*lagrMultVecRed)[lindex];
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)

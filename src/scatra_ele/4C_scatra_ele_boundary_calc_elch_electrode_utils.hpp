@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

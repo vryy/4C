@@ -31,7 +31,8 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else if (action == "calc_MPC_stiff")
   {
-    Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+    Teuchos::RCP<CORE::Conditions::Condition> condition =
+        params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
     const std::string& type = condition->parameters().Get<std::string>("control value");
 
     if (type == "dist")
@@ -105,8 +106,9 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
 int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("You called Evaluate Neumann of constraint element.");
   return 0;

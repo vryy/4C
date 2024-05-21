@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -231,7 +231,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
 bool DRT::Discretization::BuildLinesinCondition(
-    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   /* First: Create the line objects that belong to the condition. */
 
@@ -333,7 +333,7 @@ bool DRT::Discretization::BuildLinesinCondition(
  |  Build surface geometry in a condition (public)          rauch 10/16 |
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::BuildSurfacesinCondition(
-    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
   // to be considered.
@@ -562,7 +562,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::BuildVolumesinCondition(
-    const std::string& name, Teuchos::RCP<DRT::Condition> cond)
+    const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->GetNodes();
@@ -573,7 +573,7 @@ bool DRT::Discretization::BuildVolumesinCondition(
   std::set<int> mynodes;
 
   std::remove_copy_if(nodeids->begin(), nodeids->end(), std::inserter(mynodes, mynodes.begin()),
-      std::not_fn(DRT::UTILS::MyGID(colmap)));
+      std::not_fn(CORE::Conditions::MyGID(colmap)));
 
   // this is the map we want to construct
   auto geom = Teuchos::rcp(new std::map<int, Teuchos::RCP<DRT::Element>>());
@@ -611,13 +611,13 @@ bool DRT::Discretization::BuildVolumesinCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::FindAssociatedEleIDs(
-    Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name)
+void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<CORE::Conditions::Condition> cond,
+    std::set<int>& VolEleIDs, const std::string& name)
 {
   // determine constraint number
   int condID = cond->parameters().Get<int>("coupling id");
 
-  std::vector<DRT::Condition*> volconds;
+  std::vector<CORE::Conditions::Condition*> volconds;
   GetCondition(name, volconds);
 
   for (auto& actvolcond : volconds)
@@ -633,7 +633,7 @@ void DRT::Discretization::FindAssociatedEleIDs(
       std::set<int> mynodes;
 
       std::remove_copy_if(nodeids->begin(), nodeids->end(), std::inserter(mynodes, mynodes.begin()),
-          std::not_fn(DRT::UTILS::MyGID(colmap)));
+          std::not_fn(CORE::Conditions::MyGID(colmap)));
 
       for (const auto& [ele_id, actele] : element_)
       {

@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
         CORE::LINALG::SerialDenseMatrix* stiffmat22,
-        const std::vector<DRT::Condition*> linechargeconds, const double k,
+        const std::vector<CORE::Conditions::Condition*> linechargeconds, const double k,
         const double m) override;
 
     /*
@@ -169,7 +169,7 @@ namespace BEAMINTERACTION
     DRT::ELEMENTS::Rigidsphere const* sphere_element_;
 
     //! line and point charge condition
-    std::vector<DRT::Condition*> chargeconds_;
+    std::vector<CORE::Conditions::Condition*> chargeconds_;
 
     //! current time
     double time_;

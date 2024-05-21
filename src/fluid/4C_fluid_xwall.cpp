@@ -11,6 +11,7 @@
 
 #include "4C_fluid_xwall.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_xwall.hpp"
 #include "4C_fluid_implicit_integration.hpp"
@@ -19,7 +20,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_dofset_transparent.hpp"
 #include "4C_lib_element.hpp"
@@ -317,7 +317,7 @@ void FLD::XWall::InitXWallMaps()
   }
 
   // get Dirichlet conditions
-  std::vector<DRT::Condition*> dircond;
+  std::vector<CORE::Conditions::Condition*> dircond;
   discret_->GetCondition("FluidStressCalc", dircond);
 
   if (not dircond.empty())
@@ -517,7 +517,7 @@ void FLD::XWall::InitToggleVector()
       bool fullyenriched = true;
 
       // Mortar interface
-      std::vector<DRT::Condition*> mortarcond;
+      std::vector<CORE::Conditions::Condition*> mortarcond;
       xwallnode->GetCondition("Mortar", mortarcond);
       if (not mortarcond.empty()) fullyenriched = false;
 
@@ -607,7 +607,7 @@ void FLD::XWall::SetupXWallDis()
     for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
     {
       // get condition
-      std::vector<DRT::Condition*> actcond;
+      std::vector<CORE::Conditions::Condition*> actcond;
       discret_->GetCondition(allcond[numcond], actcond);
       // loop all condition of the current type
       for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
@@ -677,7 +677,7 @@ void FLD::XWall::SetupL2Projection()
         DRT::Node* node = xwdiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
         // make sure that periodic nodes are not assembled twice
-        std::vector<DRT::Condition*> periodiccond;
+        std::vector<CORE::Conditions::Condition*> periodiccond;
         node->GetCondition("SurfacePeriodic", periodiccond);
         // make sure that slave periodic bc are not included
         bool includedofs = true;
@@ -1393,13 +1393,13 @@ void FLD::XWall::OverwriteTransferredValues()
       int xwallgid = discret_->NodeRowMap()->GID(i);
       DRT::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<DRT::Condition*> nodecloudstocouple;
+      std::vector<CORE::Conditions::Condition*> nodecloudstocouple;
       xwallnode->GetCondition("TransferTurbulentInflow", nodecloudstocouple);
       if (not nodecloudstocouple.empty())
       {
         // usually we will only have one condition in nodecloudstocouple
         // but it doesn't hurt if there are several ones
-        for (std::vector<DRT::Condition*>::iterator cond = nodecloudstocouple.begin();
+        for (std::vector<CORE::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
              cond != nodecloudstocouple.end(); ++cond)
         {
           const std::string& mytoggle = (*cond)->parameters().Get<std::string>("toggle");
@@ -1458,7 +1458,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 
       DRT::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<DRT::Condition*> periodiccond;
+      std::vector<CORE::Conditions::Condition*> periodiccond;
       xwallnode->GetCondition("SurfacePeriodic", periodiccond);
 
       bool includedofs = true;
@@ -1479,10 +1479,10 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
       {
         if (discret_->NodeRowMap()->MyGID(xwallgid))
         {
-          std::vector<DRT::Condition*> dircond;
+          std::vector<CORE::Conditions::Condition*> dircond;
           xwallnode->GetCondition("Dirichlet", dircond);
 
-          std::vector<DRT::Condition*> stresscond;
+          std::vector<CORE::Conditions::Condition*> stresscond;
           xwallnode->GetCondition("FluidStressCalc", stresscond);
 
           int numdf = discret_->NumDof(xwallnode);
@@ -1501,7 +1501,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
             {
               //
               // the new node has to be on these as well
-              //  std::vector<DRT::Condition*> dircond;
+              //  std::vector<CORE::Conditions::Condition*> dircond;
               //    discret_->GetCondition("FluidStressCalc",dircond);
               DRT::Element** surrele = xwallnode->Elements();
 
@@ -1518,12 +1518,12 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
                   // it has to be on fluidstresscalc
                   // it may not be a dirichlet inflow node
                   // get Dirichlet conditions
-                  std::vector<DRT::Condition*> stresscond;
+                  std::vector<CORE::Conditions::Condition*> stresscond;
                   test[l]->GetCondition("FluidStressCalc", stresscond);
                   int numdf = discret_->NumDof(test[l]);
                   if (not stresscond.empty() and numdf > 5)
                   {
-                    std::vector<DRT::Condition*> dircond;
+                    std::vector<CORE::Conditions::Condition*> dircond;
                     test[l]->GetCondition("Dirichlet", dircond);
                     bool isuglydirnode = false;
                     if (dircond.empty())

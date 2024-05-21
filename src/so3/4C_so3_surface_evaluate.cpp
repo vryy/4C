@@ -38,8 +38,9 @@ FOUR_C_NAMESPACE_OPEN
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
 int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
   ParentElement()->SetParamsInterfacePtr(params);
@@ -963,8 +964,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // get projection method
-      Teuchos::RCP<DRT::Condition> condition =
-          params.get<Teuchos::RCP<DRT::Condition>>("condition");
+      Teuchos::RCP<CORE::Conditions::Condition> condition =
+          params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
       const auto* projtype = condition->parameters().GetIf<std::string>("projection");
 
       if (projtype != nullptr)
@@ -1101,8 +1102,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
 
-        Teuchos::RCP<DRT::Condition> condition =
-            params.get<Teuchos::RCP<DRT::Condition>>("condition");
+        Teuchos::RCP<CORE::Conditions::Condition> condition =
+            params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
         const auto* projtype = condition->parameters().GetIf<std::string>("projection");
 
         // To compute monitored area consider required projection method

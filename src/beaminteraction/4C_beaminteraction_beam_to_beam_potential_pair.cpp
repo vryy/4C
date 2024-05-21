@@ -102,7 +102,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
     CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
     CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22,
-    const std::vector<DRT::Condition*> linechargeconds, const double k, const double m)
+    const std::vector<CORE::Conditions::Condition*> linechargeconds, const double k, const double m)
 {
   // no need to evaluate this pair in case of separation by far larger than cutoff or prefactor zero
   if ((Params()->CutoffRadius() != -1.0 and AreElementsMuchMoreSeparatedThanCutoffDistance()) or

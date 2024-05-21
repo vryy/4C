@@ -178,14 +178,15 @@ namespace DRT
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
-              ehist,                          ///< history variables at element nodes
-          double timefac,                     ///< time factor
-          Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-          const int nume,                     ///< number of transferred electrons
-          const std::vector<int> stoich,      ///< stoichiometry of the reaction
-          const int kinetics,                 ///< desired electrode kinetics model
-          const double pot0,                  ///< electrode potential on metal side
-          const double frt,                   ///< factor F/RT
+              ehist,       ///< history variables at element nodes
+          double timefac,  ///< time factor
+          Teuchos::RCP<CORE::Conditions::Condition>
+              cond,                       ///< electrode kinetics boundary condition
+          const int nume,                 ///< number of transferred electrons
+          const std::vector<int> stoich,  ///< stoichiometry of the reaction
+          const int kinetics,             ///< desired electrode kinetics model
+          const double pot0,              ///< electrode potential on metal side
+          const double frt,               ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
@@ -194,7 +195,7 @@ namespace DRT
       void EvaluateElectrodeStatusPoint(const DRT::Element* ele,  ///< current element
           CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be integrated
           Teuchos::ParameterList& params,                         ///< parameter list
-          Teuchos::RCP<DRT::Condition> cond,                      ///< condition
+          Teuchos::RCP<CORE::Conditions::Condition> cond,         ///< condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&

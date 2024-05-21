@@ -40,7 +40,6 @@ namespace ADAPTER
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -74,8 +73,9 @@ namespace SSI
   {
    public:
     ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretization> manifolddis,
-        Teuchos::RCP<DRT::Discretization> scatradis, DRT::Condition* condition_manifold,
-        DRT::Condition* condition_kinetics, int ndof_per_node);
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        CORE::Conditions::Condition* condition_manifold,
+        CORE::Conditions::Condition* condition_kinetics, int ndof_per_node);
 
     //! Check if graph of matrix has changed compared to last evaluation. Afterwards, store new size
     //! of graph
@@ -85,10 +85,10 @@ namespace SSI
     bool CheckAndSetSizeOfMatrixGraph(BlockMatrixType block, int size);
 
     //! Kinetics condition on scatra dis
-    DRT::Condition* ConditionKinetics() const { return condition_kinetics_; }
+    CORE::Conditions::Condition* ConditionKinetics() const { return condition_kinetics_; }
 
     //! manifold condition
-    DRT::Condition* ConditionManifold() const { return condition_manifold_; }
+    CORE::Conditions::Condition* ConditionManifold() const { return condition_manifold_; }
 
     //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<CORE::ADAPTER::Coupling> CouplingAdapter() const { return coupling_adapter_; }
@@ -122,10 +122,10 @@ namespace SSI
 
    private:
     //! Kinetics condition on scatra dis
-    DRT::Condition* condition_kinetics_;
+    CORE::Conditions::Condition* condition_kinetics_;
 
     //! manifold condition
-    DRT::Condition* condition_manifold_;
+    CORE::Conditions::Condition* condition_manifold_;
 
     //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<CORE::ADAPTER::Coupling> coupling_adapter_;

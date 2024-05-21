@@ -27,6 +27,7 @@
 #include "4C_beam3_kirchhoff.hpp"
 #include "4C_beam3_reissner.hpp"
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"
@@ -38,7 +39,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -306,7 +306,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
   // --- contact conditions
-  std::vector<DRT::Condition*> ccond(0);
+  std::vector<CORE::Conditions::Condition*> ccond(0);
   actdis_->GetCondition("Contact", ccond);
   if (ccond.size())
   {
@@ -327,16 +327,16 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       modeltypes.insert(INPAR::STR::model_contact);
   }
   // --- meshtying conditions
-  std::vector<DRT::Condition*> mtcond(0);
+  std::vector<CORE::Conditions::Condition*> mtcond(0);
   actdis_->GetCondition("Mortar", mtcond);
   if (mtcond.size()) modeltypes.insert(INPAR::STR::model_meshtying);
 
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
-  std::vector<DRT::Condition*> cardiovasc0dcond_4elementwindkessel(0);
-  std::vector<DRT::Condition*> cardiovasc0dcond_arterialproxdist(0);
-  std::vector<DRT::Condition*> cardiovasc0dcond_syspulcirculation(0);
-  std::vector<DRT::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
+  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_4elementwindkessel(0);
+  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_arterialproxdist(0);
+  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_syspulcirculation(0);
+  std::vector<CORE::Conditions::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
   actdis_->GetCondition(
       "Cardiovascular0D4ElementWindkesselStructureCond", cardiovasc0dcond_4elementwindkessel);
   actdis_->GetCondition(
@@ -356,12 +356,12 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   bool have_lag_constraint = false;
   bool have_pen_constraint = false;
   // --- enforcement by Lagrange multiplier
-  std::vector<DRT::Condition*> lagcond_volconstr3d(0);
-  std::vector<DRT::Condition*> lagcond_areaconstr3d(0);
-  std::vector<DRT::Condition*> lagcond_areaconstr2d(0);
-  std::vector<DRT::Condition*> lagcond_mpconline2d(0);
-  std::vector<DRT::Condition*> lagcond_mpconplane3d(0);
-  std::vector<DRT::Condition*> lagcond_mpcnormcomp3d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_volconstr3d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr3d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr2d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_mpconline2d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_mpconplane3d(0);
+  std::vector<CORE::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
   actdis_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
   actdis_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
   actdis_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
@@ -372,9 +372,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       lagcond_mpconline2d.size() or lagcond_mpconplane3d.size() or lagcond_mpcnormcomp3d.size())
     have_lag_constraint = true;
   // --- enforcement by penalty law
-  std::vector<DRT::Condition*> pencond_volconstr3d(0);
-  std::vector<DRT::Condition*> pencond_areaconstr3d(0);
-  std::vector<DRT::Condition*> pencond_mpcnormcomp3d(0);
+  std::vector<CORE::Conditions::Condition*> pencond_volconstr3d(0);
+  std::vector<CORE::Conditions::Condition*> pencond_areaconstr3d(0);
+  std::vector<CORE::Conditions::Condition*> pencond_mpcnormcomp3d(0);
   actdis_->GetCondition("VolumeConstraint_3D_Pen", pencond_volconstr3d);
   actdis_->GetCondition("AreaConstraint_3D_Pen", pencond_areaconstr3d);
   actdis_->GetCondition("MPC_NormalComponent_3D_Pen", pencond_mpcnormcomp3d);
@@ -386,7 +386,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
-  std::vector<DRT::Condition*> sdp_cond(0);
+  std::vector<CORE::Conditions::Condition*> sdp_cond(0);
   actdis_->GetCondition("RobinSpringDashpot", sdp_cond);
   if (sdp_cond.size()) modeltypes.insert(INPAR::STR::model_springdashpot);
   // ---------------------------------------------------------------------------
@@ -479,11 +479,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
 
   // conditions for potential-based beam interaction
-  std::vector<DRT::Condition*> beampotconditions(0);
+  std::vector<CORE::Conditions::Condition*> beampotconditions(0);
   actdis_->GetCondition("BeamPotentialLineCharge", beampotconditions);
 
   // conditions for beam penalty point coupling
-  std::vector<DRT::Condition*> beampenaltycouplingconditions(0);
+  std::vector<CORE::Conditions::Condition*> beampenaltycouplingconditions(0);
   actdis_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
 
 
@@ -530,7 +530,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for constraints
   // ---------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<DRT::Condition>> linePeriodicRve, surfPeriodicRve,
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
   actdis_->GetCondition("LinePeriodicRve", linePeriodicRve);
   actdis_->GetCondition("SurfacePeriodicRve", surfPeriodicRve);

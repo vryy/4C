@@ -123,13 +123,13 @@ void XFEM::ConditionManager::GetCouplingIds(const DRT::Discretization& cond_dis,
 {
   // get all conditions of this type, if several conditions with different coupling ids
   // create an own coupling object for each coupling id
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   cond_dis.GetCondition(condition_name, conditions);
 
   // CompositeByCouplingId
   for (size_t s = 0; s < conditions.size(); ++s)
   {
-    DRT::Condition* cond = conditions[s];
+    CORE::Conditions::Condition* cond = conditions[s];
     const int couplingID = cond->parameters().Get<int>("label");
 
     coupling_ids.insert(couplingID);

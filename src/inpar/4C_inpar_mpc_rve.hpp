@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_conditiondefinition.hpp"
+#include "4C_io_condition_definition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

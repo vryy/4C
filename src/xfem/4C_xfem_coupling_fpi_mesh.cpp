@@ -260,7 +260,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -397,7 +397,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
@@ -721,7 +721,7 @@ void XFEM::MeshCouplingFPI::Output(const int step, const double time, const bool
 
 void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
 {
-  std::vector<DRT::Condition*> conditions_XFPI;
+  std::vector<CORE::Conditions::Condition*> conditions_XFPI;
   cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
 
   // Create maps for easy extraction at gausspoint level

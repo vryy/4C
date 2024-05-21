@@ -500,7 +500,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       }
     }
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, "FSICoupling");
+    Teuchos::RCP<Epetra_Map> condnodemap =
+        CORE::Conditions::ConditionNodeRowMap(*strudis, "FSICoupling");
     for (int nodei = 0; nodei < condnodemap->NumMyElements(); nodei++)
     {
       // Here we rely on the fact that the structure scatra discretization is a clone of the
@@ -624,7 +625,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
 
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, "FSICoupling");
+    Teuchos::RCP<Epetra_Map> condnodemap =
+        CORE::Conditions::ConditionNodeRowMap(*strudis, "FSICoupling");
     for (int i = 0; i < condnodemap->NumMyElements(); i++)
     {
       // get the processor's local node with the same lnodeid
@@ -673,7 +675,8 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
       Teuchos::null, biogrcondname);
 
   // select row map with nodes from condition
-  Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondname);
+  Teuchos::RCP<Epetra_Map> condnodemap =
+      CORE::Conditions::ConditionNodeRowMap(*strudis, biogrcondname);
 
   // loop all conditioned nodes
   for (int i = 0; i < condnodemap->NumMyElements(); ++i)

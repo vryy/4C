@@ -435,7 +435,7 @@ void DRT::Discretization::Print(std::ostream& os) const
         if (numcond)
         {
           os << numcond << " Conditions:\n";
-          std::map<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
+          std::map<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator curr;
           for (curr = condition_.begin(); curr != condition_.end(); ++curr)
           {
             os << curr->first << " ";
@@ -628,26 +628,28 @@ void DRT::Discretization::SetState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+void DRT::Discretization::SetCondition(
+    const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
-  condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
+  condition_.insert(std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, cond));
   filled_ = false;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ReplaceConditions(
-    const std::string& name, const std::vector<Teuchos::RCP<Condition>>& conds)
+    const std::string& name, const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds)
 {
   if (condition_.count(name) > 0) condition_.erase(name);
 
-  std::vector<Teuchos::RCP<Condition>>::const_iterator cit;
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator cit;
   for (cit = conds.begin(); cit != conds.end(); ++cit)
   {
     // skip null pointers (these conditions will be deleted only and
     // therefore may disappear completely from this discretization)
     if (not cit->is_null())
-      condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, *cit));
+      condition_.insert(
+          std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, *cit));
   }
   filled_ = false;
 }
@@ -655,7 +657,7 @@ void DRT::Discretization::ReplaceConditions(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::GetCondition(
-    const std::string& name, std::vector<DRT::Condition*>& out) const
+    const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const
 {
   const unsigned num = condition_.count(name);
   out.resize(num);
@@ -671,7 +673,7 @@ void DRT::Discretization::GetCondition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::GetCondition(
-    const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const
+    const std::string& name, std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& out) const
 {
   const unsigned num = condition_.count(name);
   out.resize(num);
@@ -687,7 +689,7 @@ void DRT::Discretization::GetCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Discretization::GetCondition(const std::string& name) const
+CORE::Conditions::Condition* DRT::Discretization::GetCondition(const std::string& name) const
 {
   auto it_cond = condition_.find(name);
   if (it_cond == condition_.end()) return nullptr;

@@ -9,10 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 
-#include "4C_global_data.hpp"
-#include "4C_lib_condition_selector.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 
@@ -32,7 +31,7 @@ namespace
   {
     std::set<int> condnodeset;
 
-    DRT::UTILS::ConditionSelector conds(dis, condname);
+    CORE::Conditions::ConditionSelector conds(dis, condname);
 
     for (const DRT::Node* node : nodeRange)
     {
@@ -49,10 +48,10 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(
+void CORE::Conditions::FindConditionedNodes(
     const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
   FindConditionedNodes(dis, conds, nodes);
 }
@@ -60,10 +59,10 @@ void DRT::UTILS::FindConditionedNodes(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(
+void CORE::Conditions::FindConditionedNodes(
     const DRT::Discretization& dis, const std::string& condname, std::set<int>& nodeset)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
   FindConditionedNodes(dis, conds, nodeset);
 }
@@ -71,18 +70,18 @@ void DRT::UTILS::FindConditionedNodes(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(
+void CORE::Conditions::FindConditionedNodes(
     const DRT::Discretization& dis, const std::string& condname, std::map<int, DRT::Node*>& nodes)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
   FindConditionedNodes(dis, conds, nodes);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::vector<int>& nodes)
+void CORE::Conditions::FindConditionedNodes(
+    const DRT::Discretization& dis, const std::vector<Condition*>& conds, std::vector<int>& nodes)
 {
   std::set<int> nodeset;
   const int myrank = dis.Comm().MyPID();
@@ -105,8 +104,8 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::set<int>& nodeset)
+void CORE::Conditions::FindConditionedNodes(
+    const DRT::Discretization& dis, const std::vector<Condition*>& conds, std::set<int>& nodeset)
 {
   const int myrank = dis.Comm().MyPID();
   for (auto cond : conds)
@@ -124,8 +123,8 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::map<int, DRT::Node*>& nodes)
+void CORE::Conditions::FindConditionedNodes(const DRT::Discretization& dis,
+    const std::vector<Condition*>& conds, std::map<int, DRT::Node*>& nodes)
 {
   const int myrank = dis.Comm().MyPID();
   for (auto cond : conds)
@@ -142,8 +141,8 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::map<int, Teuchos::RCP<std::vector<int>>>& nodes,
+void CORE::Conditions::FindConditionedNodes(const DRT::Discretization& dis,
+    const std::vector<Condition*>& conds, std::map<int, Teuchos::RCP<std::vector<int>>>& nodes,
     bool use_coupling_id)
 {
   std::map<int, std::set<int>> nodeset;
@@ -170,8 +169,8 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::map<int, std::map<int, DRT::Node*>>& nodes)
+void CORE::Conditions::FindConditionedNodes(const DRT::Discretization& dis,
+    const std::vector<Condition*>& conds, std::map<int, std::map<int, DRT::Node*>>& nodes)
 {
   const int myrank = dis.Comm().MyPID();
   for (auto* cond : conds)
@@ -189,12 +188,12 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
     std::map<int, DRT::Node*>& nodes, std::map<int, Teuchos::RCP<DRT::Element>>& elements,
     const std::string& condname)
 {
   int myrank = dis.Comm().MyPID();
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
 
   FindConditionedNodes(dis, conds, nodes);
@@ -217,9 +216,9 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
     std::map<int, DRT::Node*>& nodes, std::map<int, DRT::Node*>& gnodes,
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::vector<DRT::Condition*>& conds)
+    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::vector<Condition*>& conds)
 {
   FindConditionedNodes(dis, conds, nodes);
 
@@ -250,8 +249,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(
-    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::vector<DRT::Condition*>& conds)
+void CORE::Conditions::FindConditionObjects(
+    std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::vector<Condition*>& conds)
 {
   for (auto cond : conds)
   {
@@ -270,11 +269,11 @@ void DRT::UTILS::FindConditionObjects(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
     std::map<int, DRT::Node*>& nodes, std::map<int, DRT::Node*>& gnodes,
     std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::string& condname)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
 
   FindConditionedNodes(dis, conds, nodes);
@@ -306,12 +305,12 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
     std::map<int, std::map<int, DRT::Node*>>& nodes,
     std::map<int, std::map<int, DRT::Node*>>& gnodes,
     std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>& elements, const std::string& condname)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
 
   FindConditionedNodes(dis, conds, nodes);
@@ -344,11 +343,11 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+void CORE::Conditions::FindConditionObjects(const DRT::Discretization& dis,
     std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::string& condname,
     const int label)
 {
-  std::vector<DRT::Condition*> conds;
+  std::vector<Condition*> conds;
   dis.GetCondition(condname, conds);
 
   bool checklabel = (label >= 0);
@@ -376,8 +375,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindElementConditions(
-    const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition)
+void CORE::Conditions::FindElementConditions(
+    const DRT::Element* ele, const std::string& condname, std::vector<Condition*>& condition)
 {
   const DRT::Node* const* nodes = ele->Nodes();
 
@@ -385,15 +384,15 @@ void DRT::UTILS::FindElementConditions(
   // those.
 
   // the final set of conditions all nodes of this elements have in common
-  std::set<DRT::Condition*> fcond;
+  std::set<Condition*> fcond;
 
   // we assume to always have at least one node
   // the first vector of conditions
-  std::vector<DRT::Condition*> neumcond0;
+  std::vector<Condition*> neumcond0;
   nodes[0]->GetCondition(condname, neumcond0);
 
   // the first set of conditions (copy vector to set)
-  std::set<DRT::Condition*> cond0;
+  std::set<Condition*> cond0;
   std::copy(neumcond0.begin(), neumcond0.end(), std::inserter(cond0, cond0.begin()));
 
 
@@ -401,11 +400,11 @@ void DRT::UTILS::FindElementConditions(
   int iel = ele->NumNode();
   for (int inode = 1; inode < iel; ++inode)
   {
-    std::vector<DRT::Condition*> neumcondn;
+    std::vector<Condition*> neumcondn;
     nodes[inode]->GetCondition(condname, neumcondn);
 
     // the current set of conditions (copy vector to set)
-    std::set<DRT::Condition*> condn;
+    std::set<Condition*> condn;
     std::copy(neumcondn.begin(), neumcondn.end(), std::inserter(condn, condn.begin()));
 
     // intersect the first and the current conditions
@@ -430,7 +429,7 @@ void DRT::UTILS::FindElementConditions(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
+Teuchos::RCP<Epetra_Map> CORE::Conditions::ConditionNodeRowMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
   return FillConditionMap(dis, dis.MyRowNodeRange(), condname);
@@ -439,7 +438,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeRowMap(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(
+Teuchos::RCP<Epetra_Map> CORE::Conditions::ConditionNodeColMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
   return FillConditionMap(dis, dis.MyColNodeRange(), condname);
@@ -448,7 +447,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeColMap(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> DRT::UTILS::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> CORE::Conditions::ConditionedElementMap(
     const DRT::Discretization& dis, const std::string& condname)
 {
   ConditionSelector conds(dis, condname);
@@ -478,8 +477,8 @@ Teuchos::RCP<std::set<int>> DRT::UTILS::ConditionedElementMap(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
-    const DRT::Condition* const condition2, const bool mustmatch)
+bool CORE::Conditions::HaveSameNodes(
+    const Condition* const condition1, const Condition* const condition2, const bool mustmatch)
 {
   // indicates, if both conditions match
   bool matching_conditions = true;

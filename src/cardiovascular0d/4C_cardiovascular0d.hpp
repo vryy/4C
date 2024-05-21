@@ -13,6 +13,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 
@@ -28,7 +29,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -121,8 +121,11 @@ namespace UTILS
     /// Return type of Cardiovascular0D function
     Cardiovascular0DType Type() { return cardiovascular0dtype_; }
 
-    std::vector<DRT::Condition*> GetCardiovascular0DCondition() { return cardiovascular0dcond_; }
-    std::vector<DRT::Condition*> GetCardiovascular0DStructureCouplingCondition()
+    std::vector<CORE::Conditions::Condition*> GetCardiovascular0DCondition()
+    {
+      return cardiovascular0dcond_;
+    }
+    std::vector<CORE::Conditions::Condition*> GetCardiovascular0DStructureCouplingCondition()
     {
       return cardiovascular0dstructcoupcond_;
     }
@@ -141,9 +144,10 @@ namespace UTILS
     );
 
    protected:
-    Teuchos::RCP<DRT::Discretization> actdisc_;          ///< standard discretization
-    std::vector<DRT::Condition*> cardiovascular0dcond_;  ///< 0D cardiovascular conditions
-    std::vector<DRT::Condition*>
+    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
+    std::vector<CORE::Conditions::Condition*>
+        cardiovascular0dcond_;  ///< 0D cardiovascular conditions
+    std::vector<CORE::Conditions::Condition*>
         cardiovascular0dstructcoupcond_;  ///< 0D cardiovascular structure coupling conditions
     Cardiovascular0DType cardiovascular0dtype_;  ///< Cardiovascular0D type
     const INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel atrium_model_;

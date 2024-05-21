@@ -18,6 +18,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
@@ -71,8 +72,9 @@ namespace ADAPTER
         const std::string& couplingcond);
 
     virtual void SetupSpringDashpot(Teuchos::RCP<DRT::Discretization> masterdis,
-        Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Condition> spring,
-        const int coupling_id, const Epetra_Comm& comm);
+        Teuchos::RCP<DRT::Discretization> slavedis,
+        Teuchos::RCP<CORE::Conditions::Condition> spring, const int coupling_id,
+        const Epetra_Comm& comm);
 
     virtual void IntegrateLinD(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<Epetra_Vector> veclm);

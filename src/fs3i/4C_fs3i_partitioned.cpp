@@ -21,6 +21,8 @@
 #include "4C_adapter_structure_scatra_ele.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
@@ -28,8 +30,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_selector.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -464,9 +464,9 @@ void FS3I::PartFS3I::SetupSystem()
     const int numscal = currscatra->ScaTraField()->NumScal();
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
-    DRT::UTILS::MultiConditionSelector mcs;
+    CORE::Conditions::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
+        new CORE::Conditions::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
     mcs.SetupExtractor(*currdis, *currdis->DofRowMap(), *mapex);
     scatrafieldexvec_.push_back(mapex);
   }

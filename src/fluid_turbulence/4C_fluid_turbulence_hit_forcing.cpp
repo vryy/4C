@@ -2032,7 +2032,7 @@ namespace FLD
     if (discret_->Comm().MyPID() == 0)
       std::cout << "\nforcing for periodic hill such that a mass flow of " << idealmassflow_
                 << " is achieved" << std::endl;
-    std::vector<DRT::Condition*> bodycond;
+    std::vector<CORE::Conditions::Condition*> bodycond;
     discret_->GetCondition("VolumeNeumann", bodycond);
     const auto& val = bodycond[0]->parameters().Get<std::vector<double>>("val");
     oldforce_ = val.at(0);

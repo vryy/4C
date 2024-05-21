@@ -121,8 +121,8 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
           Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // get projection method
-      Teuchos::RCP<DRT::Condition> condition =
-          params.get<Teuchos::RCP<DRT::Condition>>("condition");
+      Teuchos::RCP<CORE::Conditions::Condition> condition =
+          params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
       const std::string* projtype = condition->parameters().GetIf<std::string>("projection");
 
       if (projtype != nullptr)
@@ -167,8 +167,9 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }

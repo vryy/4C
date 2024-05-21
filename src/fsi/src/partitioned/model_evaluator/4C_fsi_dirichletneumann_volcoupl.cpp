@@ -19,6 +19,7 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
@@ -26,7 +27,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -398,8 +398,8 @@ void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::F
   std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int>> FSIaleeles =
-      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(), "FSICoupling");
+  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::ConditionedElementMap(
+      *fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search
   for (int i = 0; i < fluidale->AleField()->Discretization()->NumMyColElements(); ++i)
@@ -471,8 +471,8 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int>> FSIaleeles =
-      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(), "FSICoupling");
+  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::ConditionedElementMap(
+      *fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search
   for (int i = 0; i < fluidale->AleField()->Discretization()->NumMyColElements(); ++i)
@@ -487,8 +487,8 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
     fluidaleelemap_[gid] = Search(*aleele, CurrentDOPs);
   }  // end node loop
 
-  Teuchos::RCP<Epetra_Map> FSIfluidnodes =
-      DRT::UTILS::ConditionNodeColMap(*fluidale->FluidField()->Discretization(), "FSICoupling");
+  Teuchos::RCP<Epetra_Map> FSIfluidnodes = CORE::Conditions::ConditionNodeColMap(
+      *fluidale->FluidField()->Discretization(), "FSICoupling");
 
   std::set<int> globalnodeids;
   // loop over ale eles

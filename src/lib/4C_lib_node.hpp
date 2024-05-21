@@ -17,7 +17,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -210,9 +210,10 @@ namespace DRT
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
     {
-      condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
+      condition_.insert(
+          std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, cond));
     }
 
     /*!
@@ -226,7 +227,8 @@ namespace DRT
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    void GetCondition(
+        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -240,7 +242,7 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    DRT::Condition* GetCondition(const std::string& name) const;
+    CORE::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node
@@ -326,7 +328,7 @@ namespace DRT
     //! pointers to adjacent elements
     std::vector<Element*> element_;
     //! some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 
   };  // class Node
 }  // namespace DRT

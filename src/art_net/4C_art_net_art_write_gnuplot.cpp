@@ -61,7 +61,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
   // -------------------------------------------------------------------
   // Get all gnuplot export conditions
   // -------------------------------------------------------------------
-  std::vector<DRT::Condition*> myConditions;
+  std::vector<CORE::Conditions::Condition*> myConditions;
   discret_->GetCondition("ArtWriteGnuplotCond", myConditions);
   int numofcond = myConditions.size();
 

@@ -612,7 +612,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementFilamentIdAndType()
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // get filament number (note so far only one filament for each element and node)
-    DRT::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
+    CORE::Conditions::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
     if (cond == nullptr)
       FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->Id());
 

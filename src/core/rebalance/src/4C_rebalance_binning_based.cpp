@@ -438,7 +438,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
       DRT::Node** nodes = ele->Nodes();
       for (int node = 0; node < ele->NumNode(); node++)
       {
-        DRT::Condition* nodal_cond = nodes[node]->GetCondition(condname_rebalance);
+        CORE::Conditions::Condition* nodal_cond = nodes[node]->GetCondition(condname_rebalance);
         if (nodal_cond != nullptr)
         {
           conditionedele = true;
@@ -479,7 +479,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     }
 
     // fill vec with processor local node gids of dis to be rebalanced
-    std::vector<DRT::Condition*> rebalance_conds;
+    std::vector<CORE::Conditions::Condition*> rebalance_conds;
     dis_to_rebalance.GetCondition(condname_rebalance, rebalance_conds);
 
     for (auto* const rebalance_cond : rebalance_conds)
@@ -537,8 +537,9 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     // add row nodes
     for (int lid = 0; lid < dis_to_rebalance.NodeRowMap()->NumMyElements(); lid++)
     {
-      DRT::Condition* testcond = dis_to_rebalance.gNode(dis_to_rebalance.NodeRowMap()->GID(lid))
-                                     ->GetCondition(condname_rebalance);
+      CORE::Conditions::Condition* testcond =
+          dis_to_rebalance.gNode(dis_to_rebalance.NodeRowMap()->GID(lid))
+              ->GetCondition(condname_rebalance);
       if (testcond == nullptr)
         rebalance_rownodegid_vec.push_back(
             dis_to_rebalance.gNode(dis_to_rebalance.NodeRowMap()->GID(lid))->Id());
@@ -546,8 +547,9 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     // add col nodes
     for (int lid = 0; lid < dis_to_rebalance.NodeColMap()->NumMyElements(); lid++)
     {
-      DRT::Condition* testcond = dis_to_rebalance.gNode(dis_to_rebalance.NodeColMap()->GID(lid))
-                                     ->GetCondition(condname_rebalance);
+      CORE::Conditions::Condition* testcond =
+          dis_to_rebalance.gNode(dis_to_rebalance.NodeColMap()->GID(lid))
+              ->GetCondition(condname_rebalance);
       if (testcond == nullptr)
         rebalance_colnodegid_vec.push_back(
             dis_to_rebalance.gNode(dis_to_rebalance.NodeColMap()->GID(lid))->Id());

@@ -59,8 +59,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
-  std::vector<DRT::Condition*> mtcond(0);
-  std::vector<DRT::Condition*> ccond(0);
+  std::vector<CORE::Conditions::Condition*> mtcond(0);
+  std::vector<CORE::Conditions::Condition*> ccond(0);
 
   Discret().GetCondition("Mortar", mtcond);
   Discret().GetCondition("Contact", ccond);
@@ -319,7 +319,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     fflush(stdout);
   }
 
-  std::vector<DRT::Condition*> contactconditions(0);
+  std::vector<CORE::Conditions::Condition*> contactconditions(0);
   Discret().GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
@@ -342,8 +342,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = nullptr;
+    std::vector<CORE::Conditions::Condition*> currentgroup(0);
+    CORE::Conditions::Condition* tempcond = nullptr;
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -479,7 +479,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         }
 
         // get edge and corner information:
-        std::vector<DRT::Condition*> contactcornercond(0);
+        std::vector<CORE::Conditions::Condition*> contactcornercond(0);
         Discret().GetCondition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
@@ -488,7 +488,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
             mtnode->SetOnCorner() = true;
           }
         }
-        std::vector<DRT::Condition*> contactedgecond(0);
+        std::vector<CORE::Conditions::Condition*> contactedgecond(0);
         Discret().GetCondition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
@@ -499,7 +499,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-        std::vector<DRT::Condition*> contactSymconditions(0);
+        std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
         Discret().GetCondition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)

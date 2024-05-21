@@ -105,8 +105,8 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double t
   dbc_cond_names[0] = "Dirichlet";
   dbc_cond_names[1] = "NurbsLSDirichlet";
 
-  std::vector<Teuchos::RCP<DRT::Condition>> conds(0);
-  std::vector<Teuchos::RCP<DRT::Condition>> curr_conds(0);
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conds(0);
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> curr_conds(0);
   for (std::vector<std::string>::const_iterator cit_name = dbc_cond_names.begin();
        cit_name != dbc_cond_names.end(); ++cit_name)
   {
@@ -143,8 +143,9 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double t
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discret,
-    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const CORE::Conditions::Condition& cond, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
   if (dbcgids[set_col].is_null())

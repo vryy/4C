@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "4C_lib_condition_selector.hpp"
+#include "4C_discretization_condition_selector.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ConditionSelector::ConditionSelector(
+CORE::Conditions::ConditionSelector::ConditionSelector(
     const DRT::Discretization& dis, std::string condname)
     : dis_(dis)
 {
@@ -34,9 +34,9 @@ DRT::UTILS::ConditionSelector::ConditionSelector(
 /*----------------------------------------------------------------------*
  | construct a selector from a given vector of conditions    fang 07/16 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::ConditionSelector::ConditionSelector(
-    const DRT::Discretization& dis,            //!< discretization
-    const std::vector<DRT::Condition*>& conds  //!< given vector of conditions
+CORE::Conditions::ConditionSelector::ConditionSelector(
+    const DRT::Discretization& dis,       //!< discretization
+    const std::vector<Condition*>& conds  //!< given vector of conditions
     )
     : dis_(dis), conds_(conds)
 {
@@ -46,7 +46,7 @@ DRT::UTILS::ConditionSelector::ConditionSelector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::ConditionSelector::SelectDofs(DRT::Node* node, std::set<int>& conddofset)
+bool CORE::Conditions::ConditionSelector::SelectDofs(DRT::Node* node, std::set<int>& conddofset)
 {
   bool found = false;
 
@@ -69,7 +69,7 @@ bool DRT::UTILS::ConditionSelector::SelectDofs(DRT::Node* node, std::set<int>& c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::ConditionSelector::ContainsNode(int ngid)
+bool CORE::Conditions::ConditionSelector::ContainsNode(int ngid)
 {
   for (const auto& cond : conds_)
   {
@@ -83,11 +83,11 @@ bool DRT::UTILS::ConditionSelector::ContainsNode(int ngid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
+CORE::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
+void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
     const Epetra_Map& fullmap, CORE::LINALG::MultiMapExtractor& extractor)
 {
   SetupCondDofSets(dis);
@@ -126,7 +126,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretization& dis)
+void CORE::Conditions::MultiConditionSelector::SetupCondDofSets(const DRT::Discretization& dis)
 {
   // we get as many sets as we have selectors
   conddofset_.resize(selectors_.size());

@@ -258,7 +258,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
@@ -376,7 +377,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
     const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
+    Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0, const double frt, const double scalar)
 {
   // call base class routine
@@ -428,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
     const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
+    Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0)
 {
   // for pre-multiplication of i0 with 1/(F z_k)
@@ -520,7 +521,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectrodeStatus(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
-    Teuchos::ParameterList& params, Teuchos::RCP<DRT::Condition> cond,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::Conditions::Condition> cond,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
     const std::vector<int> stoich, const int nume, const double pot0, const double timefac)

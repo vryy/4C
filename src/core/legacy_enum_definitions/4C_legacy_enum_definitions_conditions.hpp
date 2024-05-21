@@ -14,6 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include <string_view>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::Conditions
@@ -244,6 +246,8 @@ namespace CORE::Conditions
     ElementTag,
     NodeTag
   };
+
+  std::string_view to_string(ConditionType condition_type);
 
   /*!
   \brief Type of geometry this conditions lives on

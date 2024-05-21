@@ -9,9 +9,9 @@
 
 #include "4C_poroelast_utils.hpp"
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_element_center.hpp"
 #include "4C_fluid_ele_poro.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

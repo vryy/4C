@@ -15,6 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_fluid_discretization_runtime_output_params.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -37,7 +38,6 @@ namespace DRT
 {
   class Discretization;
   class DofSet;
-  class Condition;
 }  // namespace DRT
 
 namespace IO
@@ -282,7 +282,7 @@ namespace FLD
     }
 
     /// preparations for Krylov space projection
-    virtual void SetupKrylovSpaceProjection(DRT::Condition* kspcond)
+    virtual void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond)
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }

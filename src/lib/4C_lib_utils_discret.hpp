@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 
 #include <Epetra_IntVector.h>
@@ -151,7 +151,7 @@ namespace DRT
     This is the actual evaluation method.
 
     */
-    void DoInitialField(const DRT::Discretization& discret, DRT::Condition& cond,
+    void DoInitialField(const DRT::Discretization& discret, CORE::Conditions::Condition& cond,
         Epetra_Vector& fieldvector, const std::vector<int>& locids);
 
     /** \brief Build a Dbc object
@@ -322,13 +322,13 @@ namespace DRT
        *  definition of a lower entity.
        */
       void ReadDirichletCondition(const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
       void ReadDirichletCondition(const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids,
+          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum CORE::Conditions::ConditionType& type) const;
 
       /** \brief Determine dofs subject to Dirichlet condition from input file
@@ -358,7 +358,7 @@ namespace DRT
        *  corresponding entries in the systemvectors remain untouched.
        */
       virtual void ReadDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, DbcInfo& info,
+          const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
@@ -369,13 +369,13 @@ namespace DRT
        *  (4) Assign PointDirichlet DBC GIDs
        */
       void DoDirichletCondition(const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void DoDirichletCondition(const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum CORE::Conditions::ConditionType& type) const;
@@ -419,8 +419,9 @@ namespace DRT
        *  DoDirichletCondition(...).
        */
       virtual void DoDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const CORE::Conditions::Condition& cond, double time,
+          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */

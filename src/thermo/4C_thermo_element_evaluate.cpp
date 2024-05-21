@@ -42,8 +42,9 @@ int DRT::ELEMENTS::Thermo::Evaluate(Teuchos::ParameterList& params,
  | in the element. We need it there for the stabilisation terms!        |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, lm, elevec1, elemat1);

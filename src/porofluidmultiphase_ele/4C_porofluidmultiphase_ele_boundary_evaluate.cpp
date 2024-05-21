@@ -66,11 +66,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList&
  | evaluate Neumann boundary condition on boundary element   vuong 08/16 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // add Neumann boundary condition to parameter list
-  params.set<DRT::Condition*>("condition", &condition);
+  params.set<CORE::Conditions::Condition*>("condition", &condition);
 
   // build the location array
   LocationArray la(discretization.NumDofSets());

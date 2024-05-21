@@ -209,8 +209,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
   // get mortar information
-  std::vector<DRT::Condition*> mtcond(0);
-  std::vector<DRT::Condition*> ccond(0);
+  std::vector<CORE::Conditions::Condition*> mtcond(0);
+  std::vector<CORE::Conditions::Condition*> ccond(0);
   actdis.GetCondition("Mortar", mtcond);
   actdis.GetCondition("Contact", ccond);
   bool onlymeshtying = false;

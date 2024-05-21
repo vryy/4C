@@ -667,14 +667,14 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   // begin: determine surface elements and their nodes
 
   // vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
+  std::vector<CORE::Conditions::Condition*> beamandsolidcontactconditions(0);
   ProblemDiscret().GetCondition("Contact", beamandsolidcontactconditions);
 
   // vector that solely contains beam-to-solid contact pairs
-  std::vector<DRT::Condition*> btscontactconditions(0);
+  std::vector<CORE::Conditions::Condition*> btscontactconditions(0);
 
   // vector that solely contains beam-to-solid meshtying pairs
-  std::vector<DRT::Condition*> btsmeshtyingconditions(0);
+  std::vector<CORE::Conditions::Condition*> btsmeshtyingconditions(0);
 
   // sort out solid-to-solid contact pairs, since these are treated in the contact framework
   for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
@@ -1494,7 +1494,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
 
     // get the conditions applied to both elements of the pair and decide whether they need to be
     // evaluated
-    std::vector<DRT::Condition*> conds1, conds2;
+    std::vector<CORE::Conditions::Condition*> conds1, conds2;
 
     // since only the nodes know about their conditions, we need this workaround
     // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it

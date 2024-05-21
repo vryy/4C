@@ -528,7 +528,7 @@ namespace AIRWAY
     //! @name Additional stuff related to coupling with 3D tissue models
 
     /// map between coupling ID and conditions on structure
-    std::map<int, DRT::Condition*> coupcond_;
+    std::map<int, CORE::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
     Teuchos::RCP<Epetra_Map> coupmap_;

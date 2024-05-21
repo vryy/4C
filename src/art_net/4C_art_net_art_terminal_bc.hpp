@@ -40,19 +40,19 @@ namespace ART
     \brief Standard solver for 1d artery inlet
     */
     void SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
-        const DRT::Condition* condition, Teuchos::ParameterList& params);
+        const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery reflective outlet
     */
     void SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
-        const DRT::Condition* condition, Teuchos::ParameterList& params);
+        const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery explicit windkessel BC outlet
     */
     void SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
-        const DRT::Condition* condition, Teuchos::ParameterList& params);
+        const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
   }  // namespace UTILS
 }  // namespace ART

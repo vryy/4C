@@ -9,6 +9,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -18,7 +20,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -82,7 +83,7 @@ namespace CONSTRAINTS
 
    protected:
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    std::vector<DRT::Condition*>
+    std::vector<CORE::Conditions::Condition*>
         moncond_;       ///< conditions, that define the monitor (all of the same kind)
     MoniType montype_;  ///< monitor type
     std::map<int, double>

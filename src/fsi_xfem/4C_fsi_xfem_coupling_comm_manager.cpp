@@ -12,7 +12,7 @@ transform matrixes, vectors, ...
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_condition_selector.hpp"
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -231,11 +231,11 @@ void XFEM::CouplingCommManager::SetupMultiMapExtractors(
   for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<DRT::UTILS::MultiConditionSelector> mcs =
-        Teuchos::rcp(new DRT::UTILS::MultiConditionSelector());
+    Teuchos::RCP<CORE::Conditions::MultiConditionSelector> mcs =
+        Teuchos::rcp(new CORE::Conditions::MultiConditionSelector());
     mme_[dit->first] = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     mcs->AddSelector(Teuchos::rcp(
-        new DRT::UTILS::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
+        new CORE::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
     mcs->SetupExtractor(*dit->second, *dit->second->DofRowMap(), *mme_[dit->first]);
   }
 }

@@ -16,6 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid_fpsi.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
 
@@ -23,11 +24,6 @@
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace DRT
-{
-  class Condition;
-}
 
 namespace ADAPTER
 {
@@ -76,7 +72,8 @@ namespace ADAPTER
     /// fluid field
     const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
-    std::vector<DRT::Condition*> nopencond_;  ///< vector containing no penetration conditions
+    std::vector<CORE::Conditions::Condition*>
+        nopencond_;  ///< vector containing no penetration conditions
   };
 }  // namespace ADAPTER
 

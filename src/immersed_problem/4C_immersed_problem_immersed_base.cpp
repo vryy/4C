@@ -32,14 +32,15 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
     const std::string condname, bool buildgeometry)
 {
   // determine id of condition
-  std::multimap<std::string, Teuchos::RCP<DRT::Condition>> allconditions;
+  std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> allconditions;
   allconditions = dis->GetAllConditions();
   int id = (int)allconditions.size();
   id += 1;
 
   // build condition
-  Teuchos::RCP<DRT::Condition> condition = Teuchos::rcp(
-      new DRT::Condition(id, condtype, buildgeometry, CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<CORE::Conditions::Condition> condition =
+      Teuchos::rcp(new CORE::Conditions::Condition(
+          id, condtype, buildgeometry, CORE::Conditions::geometry_type_volume));
 
   // add nodes to conditions
   condition->SetNodes(dvol_fenode);
@@ -73,7 +74,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
   std::vector<int> mydirichdofs(0);
 
   // get condition and conditioned nodes
-  DRT::Condition* condition = dis->GetCondition(condname);
+  CORE::Conditions::Condition* condition = dis->GetCondition(condname);
   const std::vector<int>* cond_nodes = condition->GetNodes();
   int cond_nodes_size = cond_nodes->size();
 
@@ -441,7 +442,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
 
   DRT::Element::LocationArray la(evaldis->NumDofSets());
 
-  std::multimap<std::string, Teuchos::RCP<DRT::Condition>>::iterator fool;
+  std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::iterator fool;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -451,7 +452,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
   {
     if (fool->first == condstring)
     {
-      DRT::Condition& cond = *(fool->second);
+      CORE::Conditions::Condition& cond = *(fool->second);
       if (condid == -1 || condid == cond.parameters().Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
@@ -486,7 +487,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         {
           params.set("LoadCurveFactor", curvefac);
         }
-        params.set<Teuchos::RCP<DRT::Condition>>("condition", fool->second);
+        params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", fool->second);
 
         int mygeometrysize = -1234;
         if (geom.empty() == true)

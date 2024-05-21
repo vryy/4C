@@ -2533,7 +2533,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
 
           // now check whether we have a pbc condition on this node
-          std::vector<DRT::Condition*> mypbc;
+          std::vector<CORE::Conditions::Condition*> mypbc;
 
           node->GetCondition("SurfacePeriodic", mypbc);
 

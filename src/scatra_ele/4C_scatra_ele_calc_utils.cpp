@@ -11,7 +11,7 @@
 
 #include "4C_scatra_ele_calc_utils.hpp"
 
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -72,10 +72,10 @@ namespace SCATRA
   {
     bool inflow_ele = false;
 
-    std::vector<DRT::Condition*> myinflowcond;
+    std::vector<CORE::Conditions::Condition*> myinflowcond;
 
     // check whether all nodes have a unique inflow condition
-    DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+    CORE::Conditions::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
     if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
     if (myinflowcond.size() == 1) inflow_ele = true;

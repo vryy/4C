@@ -146,8 +146,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<DRT::Condition*> conditions_element1;
-    std::vector<DRT::Condition*> conditions_element2;
+    std::vector<CORE::Conditions::Condition*> conditions_element1;
+    std::vector<CORE::Conditions::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -161,7 +161,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<DRT::Condition*> currconds;
+          std::vector<CORE::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(k);
           currconds.push_back(j);
@@ -235,8 +235,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<DRT::Condition*> conditions_element1;
-    std::vector<DRT::Condition*> conditions_element2;
+    std::vector<CORE::Conditions::Condition*> conditions_element1;
+    std::vector<CORE::Conditions::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -250,7 +250,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<DRT::Condition*> currconds;
+          std::vector<CORE::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -335,8 +335,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
     elegids[1] = elepairptr->Element2()->Id();
 
     // conditions applied to the elements of this pair
-    std::vector<DRT::Condition*> conditions_element1;
-    std::vector<DRT::Condition*> conditions_element2;
+    std::vector<CORE::Conditions::Condition*> conditions_element1;
+    std::vector<CORE::Conditions::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -350,7 +350,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<DRT::Condition*> currconds;
+          std::vector<CORE::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -654,7 +654,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     {
       // get the conditions applied to both elements of the pair and decide whether they need to be
       // evaluated
-      std::vector<DRT::Condition*> conds1, conds2;
+      std::vector<CORE::Conditions::Condition*> conds1, conds2;
 
       // since only the nodes know about their conditions, we need this workaround
       // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
@@ -786,8 +786,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintActiveBeamPotential
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     GetBeamPotentialConditionsAppliedToThisElementPair(
         BEAMINTERACTION::BeamPotentialPair const& elementpair,
-        std::vector<DRT::Condition*>& conditions_element1,
-        std::vector<DRT::Condition*>& conditions_element2) const
+        std::vector<CORE::Conditions::Condition*>& conditions_element1,
+        std::vector<CORE::Conditions::Condition*>& conditions_element2) const
 {
   // since only the nodes know about their conditions, we need this workaround
   // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is

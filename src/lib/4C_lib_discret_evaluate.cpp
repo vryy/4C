@@ -409,7 +409,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         {
           params.set("LoadCurveFactor", curvefac);
         }
-        params.set<Teuchos::RCP<DRT::Condition>>("condition", cond);
+        params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", cond);
 
         for (const auto& [_, ele] : geom)
         {
@@ -549,7 +549,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
         std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition->Geometry();
 
         // add condition to parameter list for elements
-        params.set<Teuchos::RCP<DRT::Condition>>("condition", condition);
+        params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", condition);
 
         // loop over all elements associated with current condition
         for (auto& [_, element] : geometry)

@@ -110,7 +110,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
   // copy selected conditions to the new discretization (and rename them if desired)
   for (const auto& condition_pair : conditions_to_copy)
   {
-    std::vector<DRT::Condition*> conds;
+    std::vector<CORE::Conditions::Condition*> conds;
     sourcedis.GetCondition(condition_pair.first, conds);
     for (const auto& cond : conds)
     {
@@ -160,7 +160,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
   {
     // get condition
-    std::vector<DRT::Condition*> actcond;
+    std::vector<CORE::Conditions::Condition*> actcond;
     sourcedis->GetCondition(allcond[numcond], actcond);
 
     // loop all condition of the current type

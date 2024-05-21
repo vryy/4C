@@ -10,6 +10,7 @@
 
 #include "4C_fluid_xfluid_fluid.hpp"
 
+#include "4C_discretization_condition_selector.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -22,7 +23,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition_selector.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_lib_xfem_dofset.hpp"

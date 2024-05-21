@@ -24,13 +24,13 @@
 #include "4C_contact_meshtying_abstract_strategy.hpp"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_meshtying_manager.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret_nullspace.hpp"
 #include "4C_lib_locsys.hpp"
 #include "4C_linalg_krylov_projector.hpp"
@@ -264,12 +264,12 @@ void STR::TimIntImpl::Setup()
   // in this case, we need a basis vector for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  std::vector<DRT::Condition*> KSPcond;
+  std::vector<CORE::Conditions::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection", KSPcond);
   int numcond = KSPcond.size();
   int numsolid = 0;
 
-  DRT::Condition* kspcond = nullptr;
+  CORE::Conditions::Condition* kspcond = nullptr;
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -756,7 +756,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 /*--------------------------------------------------------------------------*
  | setup Krylov projector including first fill                    nis Feb13 |
  *--------------------------------------------------------------------------*/
-void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
+void STR::TimIntImpl::SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond)
 {
   // get number of mode flags in dat-file
   const int nummodes = kspcond->parameters().Get<int>("NUMMODES");

@@ -325,16 +325,16 @@ namespace XFEM
 
    private:
     void EvaluateInterfaceDisplacement(std::vector<double>& final_values, DRT::Node* node,
-        DRT::Condition* cond, const double time);
+        CORE::Conditions::Condition* cond, const double time);
 
     void EvaluateInterfaceVelocity(std::vector<double>& final_values, DRT::Node* node,
-        DRT::Condition* cond, const double time, const double dt);
+        CORE::Conditions::Condition* cond, const double time, const double dt);
 
     void ComputeInterfaceVelocityFromDisplacement(std::vector<double>& final_values,
         DRT::Node* node, const double dt, const std::string* evaltype);
 
     void EvaluateImplementation(std::vector<double>& final_values, const double* x,
-        DRT::Condition* cond, const double time, const std::string& function_name);
+        CORE::Conditions::Condition* cond, const double time, const std::string& function_name);
 
    protected:
     void DoConditionSpecificSetup() override;
@@ -371,11 +371,11 @@ namespace XFEM
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     void PrepareSolve() override;
 
@@ -393,7 +393,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
@@ -432,16 +432,16 @@ namespace XFEM
     //! Evaluate Neumann traction 3 components
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     //! Evaluate Neumann traction 6 components
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     void PrepareSolve() override;
 
@@ -460,7 +460,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
@@ -500,7 +500,7 @@ namespace XFEM
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, CORE::LINALG::Matrix<3, 3>& proj_matrix,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::LINALG::Matrix<3, 1>& normal,
-        const DRT::Condition* cond, const bool& eval_dirich_at_gp,
+        const CORE::Conditions::Condition* cond, const bool& eval_dirich_at_gp,
         double& kappa_m,  ///< fluid sided weighting
         double& visc_m,   ///< fluid sided weighting
         double& visc_s    ///< slave sided dynamic viscosity
@@ -509,11 +509,11 @@ namespace XFEM
     /// this function has to be reviewed for usage with OST new.
     void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     /// get the slip coefficient for this coupling
     void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     void PrepareSolve() override;
 
@@ -524,12 +524,13 @@ namespace XFEM
 
     void SetInterfaceVelocity() override;
 
-    void GetConditionByRobinId(const std::vector<DRT::Condition*>& mycond, const int coupling_id,
-        std::vector<DRT::Condition*>& mynewcond);
+    void GetConditionByRobinId(const std::vector<CORE::Conditions::Condition*>& mycond,
+        const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
 
-    void CreateRobinIdMap(const std::vector<DRT::Condition*>& conditions_NS,
-        const std::vector<DRT::Condition*>& conditions_robin, const std::string& robin_id_name,
-        std::map<int, DRT::Condition*>& conditionsmap_robin);
+    void CreateRobinIdMap(const std::vector<CORE::Conditions::Condition*>& conditions_NS,
+        const std::vector<CORE::Conditions::Condition*>& conditions_robin,
+        const std::string& robin_id_name,
+        std::map<int, CORE::Conditions::Condition*>& conditionsmap_robin);
 
     //! Initializes configurationmap
     void SetupConfigurationMap() override;
@@ -542,7 +543,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
@@ -557,8 +558,8 @@ namespace XFEM
     // Condition map. Corelating robin_id from Navier Slip condition and
     //                 Robin Dirichlet/Neumann input sections
     //        robin_id    Robin_cond
-    std::map<int, DRT::Condition*> conditionsmap_robin_dirch_;
-    std::map<int, DRT::Condition*> conditionsmap_robin_neumann_;
+    std::map<int, CORE::Conditions::Condition*> conditionsmap_robin_dirch_;
+    std::map<int, CORE::Conditions::Condition*> conditionsmap_robin_neumann_;
 
     //       Coupling Surface (E 1)          slip length    is slip length constant?
     std::map<int, std::pair<double, bool>> sliplength_map_;
@@ -601,7 +602,7 @@ namespace XFEM
     void ReadRestart(const int step) override;
 
     void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond) override;
+        const CORE::Conditions::Condition* cond) override;
 
     // interface foces
     Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
@@ -683,7 +684,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
@@ -699,12 +700,12 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
-        double& full_stab,                    //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,           //< Condition
-        DRT::Element* ele,                    //< Element
-        DRT::Element* bele,                   //< Boundary Element
+        double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
+        double& full_stab,                        //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,  //< Condition
+        DRT::Element* ele,                        //< Element
+        DRT::Element* bele,                       //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -813,7 +814,7 @@ namespace XFEM
         double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
         double& full_stab,                           //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const DRT::Condition* cond,                  //< Condition
+        const CORE::Conditions::Condition* cond,     //< Condition
         DRT::Element* ele,                           //< Element
         DRT::Element* bele,                          //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)

@@ -126,7 +126,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   }
 
   // conditions for beam penalty point coupling
-  std::vector<DRT::Condition*> beampenaltycouplingconditions(0);
+  std::vector<CORE::Conditions::Condition*> beampenaltycouplingconditions(0);
   Discret().GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
   {

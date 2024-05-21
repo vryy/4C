@@ -222,7 +222,7 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
   if (com.MyPID() == 0) std::cout << " Sanity check for HeterogeneousReactionStrategy ...";
 
-  DRT::Condition* slave_cond =
+  CORE::Conditions::Condition* slave_cond =
       scatratimint_->Discretization()->GetCondition("ScatraHeteroReactionSlave");
 
   const Epetra_Map* element_row_map = scatratimint_->Discretization()->ElementRowMap();

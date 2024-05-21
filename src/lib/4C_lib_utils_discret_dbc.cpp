@@ -143,7 +143,7 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::Discretization& discret, double time,
   // --------------------------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   // --------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<DRT::Condition>> conds(0);
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conds(0);
   discret.GetCondition("Dirichlet", conds);
   ReadDirichletCondition(discret, conds, time, info, dbcgids);
   // --------------------------------------------------------------------------
@@ -156,7 +156,7 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::Discretization& discret, double time,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
+    const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // read the DBC in descending order of the geometrical hierarchy.
@@ -173,7 +173,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
+    const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum CORE::Conditions::ConditionType& type) const
 {
@@ -210,7 +210,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
-    const DRT::Condition& cond, double time, DbcInfo& info,
+    const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // get ids of conditioned nodes
@@ -279,7 +279,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     // is the number of degrees of freedom given in the constraint definition sufficient?
     const int num_dbc_dofs = static_cast<int>((*onoff).size());
     if (num_dbc_dofs < numdf)
-      FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf, cond.Name().c_str());
+      FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf,
+          CORE::Conditions::to_string(cond.Type()).data());
 
     // loop over dofs of current nnode
     for (unsigned j = 0; j < total_numdf; ++j)
@@ -411,7 +412,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+    const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -428,7 +429,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
-    const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
+    const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum CORE::Conditions::ConditionType& type) const
@@ -445,8 +446,9 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
-    const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-    const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const CORE::Conditions::Condition& cond, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   if (systemvectors[0].is_null() and systemvectors[1].is_null() and systemvectors[2].is_null())
     FOUR_C_THROW(

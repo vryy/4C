@@ -136,7 +136,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
   {
-    std::vector<DRT::Condition*> locsysconditions(0);
+    std::vector<CORE::Conditions::Condition*> locsysconditions(0);
     (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
 
     // if there are inclined structural Dirichlet BC, get the structural LocSysManager
@@ -2099,7 +2099,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
 #endif  // TFSI
 #endif  // TSI_DEBUG
 
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   std::string condstring("ThermoConvections");
   ThermoField()->Discretization()->GetCondition(condstring, cond);
   if (cond.size() > 0)
@@ -2556,7 +2556,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   //---------------------------------------------------------------------------
 
   // initialise a vector containing all structural DBC
-  std::vector<DRT::Condition*> dbc(0);
+  std::vector<CORE::Conditions::Condition*> dbc(0);
   StructureField()->Discretization()->GetCondition("Dirichlet", dbc);
 
   // initialise a vector contatining all DBC in a special direction (here: in z)

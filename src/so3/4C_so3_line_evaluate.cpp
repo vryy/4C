@@ -26,8 +26,9 @@ FOUR_C_NAMESPACE_OPEN
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
 int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
   ParentElement()->SetParamsInterfacePtr(params);

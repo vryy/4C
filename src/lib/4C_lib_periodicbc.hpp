@@ -14,6 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
+
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
@@ -27,7 +29,6 @@ namespace DRT
 {
   class Discretization;
   class PBCDofSet;
-  class Condition;
 }  // namespace DRT
 
 
@@ -119,7 +120,7 @@ class PeriodicBoundaryConditions
 
 
   //! @name method that returns a pointer to the vector of the conditions
-  std::vector<DRT::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
+  std::vector<CORE::Conditions::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
   //@}
 
 
@@ -318,7 +319,7 @@ class PeriodicBoundaryConditions
   int numpbcpairs_;
 
   //!\brief vector of periodic surface boundary conditions
-  std::vector<DRT::Condition *> mysurfpbcs_;
+  std::vector<CORE::Conditions::Condition *> mysurfpbcs_;
 
   //!\brief map connecting master to slave nodes owned by this proc
   //       master node -> list of his slave node(s)

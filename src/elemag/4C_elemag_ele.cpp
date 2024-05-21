@@ -442,8 +442,9 @@ int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition berardocco 02/18 |
  *-----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("dummy function called");
   return 0;
@@ -812,8 +813,9 @@ int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a surface/line Neumann boundary condition  berardocco 02/18 |
  *------------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("not available");
 

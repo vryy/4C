@@ -32,11 +32,6 @@ namespace ADAPTER
   class StructureRedAirway;
 }
 
-namespace DRT
-{
-  class Condition;
-}
-
 namespace AIRWAY
 {
   class RedAirwayImplicitTimeInt;

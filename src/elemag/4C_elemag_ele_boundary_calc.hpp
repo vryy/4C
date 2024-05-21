@@ -17,6 +17,7 @@ correct implementation is still missing.
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -25,7 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
 
   namespace ELEMENTS
@@ -53,7 +53,7 @@ namespace DRT
        */
       virtual int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseMatrix* elemat1) = 0;
 
@@ -94,8 +94,8 @@ namespace DRT
 
       //! Evaluate a Neumann boundary condition
       int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       /// Evaluate routine for boundary elements

@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobject.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -826,9 +826,10 @@ might become invalid after a redistribution of the discretization.
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
     {
-      condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
+      condition_.insert(
+          std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, cond));
       return;
     }
 
@@ -843,7 +844,8 @@ might become invalid after a redistribution of the discretization.
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    virtual void GetCondition(
+        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -858,7 +860,7 @@ might become invalid after a redistribution of the discretization.
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual DRT::Condition* GetCondition(const std::string& name) const;
+    virtual CORE::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this element
@@ -1104,7 +1106,8 @@ might become invalid after a redistribution of the discretization.
     \return 0 if successful, negative otherwise
     */
     virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::Conditions::Condition& condition, std::vector<int>& lm,
+        CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) = 0;
 
 
@@ -1267,7 +1270,7 @@ might become invalid after a redistribution of the discretization.
     std::vector<Teuchos::RCP<DRT::FaceElement>> face_;
 
     //! \brief Some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 
     //! vector of material objects of element
     std::vector<Teuchos::RCP<CORE::MAT::Material>> mat_;

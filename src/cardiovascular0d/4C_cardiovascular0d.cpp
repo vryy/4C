@@ -435,7 +435,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         {
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
-            DRT::Condition& cond = *(cardiovascular0dcond_[j]);
+            CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
             int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
@@ -455,7 +455,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         {
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
-            DRT::Condition& cond = *(cardiovascular0dcond_[j]);
+            CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
             int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {

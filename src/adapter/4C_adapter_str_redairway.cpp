@@ -26,7 +26,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 
   // first get all Neumann conditions on structure
 
-  std::vector<DRT::Condition*> surfneumcond;
+  std::vector<CORE::Conditions::Condition*> surfneumcond;
   Discretization()->GetCondition("SurfaceNeumann", surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
@@ -35,7 +35,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   std::vector<int> tmp;
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
-    DRT::Condition* actcond = surfneumcond[i];
+    CORE::Conditions::Condition* actcond = surfneumcond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayTissue)
     {
       int condID = actcond->parameters().Get<int>("coupling id");
@@ -60,7 +60,7 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
-    DRT::Condition* cond = coupcond_[condID];
+    CORE::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(6, 0.0);
     newval[0] = (*couppres)[i];
     cond->parameters().Add("val", newval);
@@ -86,10 +86,10 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {
     int condID = coupmap_->GID(i);
-    DRT::Condition& cond = *(coupcond_[condID]);
+    CORE::Conditions::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID", condID);
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;

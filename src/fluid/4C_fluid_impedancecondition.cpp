@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
     const Teuchos::RCP<DRT::Discretization> actdis)
 {
-  std::vector<DRT::Condition*> impedancecond;
+  std::vector<CORE::Conditions::Condition*> impedancecond;
   actdis->GetCondition("ImpedanceCond", impedancecond);
 
   // the number of lines of impedance boundary conditions found in the input
@@ -181,8 +181,8 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
-    const Teuchos::RCP<DRT::Discretization> actdis, const int condid, DRT::Condition* impedancecond)
+FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretization> actdis,
+    const int condid, CORE::Conditions::Condition* impedancecond)
     : discret_(actdis),
       myrank_(discret_->Comm().MyPID()),
       theta_(0.5),

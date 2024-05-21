@@ -207,7 +207,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
   {
     // get DoF coupling conditions
-    std::vector<DRT::Condition*> couplingconditions(0);
+    std::vector<CORE::Conditions::Condition*> couplingconditions(0);
     dis.GetCondition("PointCoupling", couplingconditions);
     if ((int)couplingconditions.size() > 0) pccdofhandling_ = true;
 

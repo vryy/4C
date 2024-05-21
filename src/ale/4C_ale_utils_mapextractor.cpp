@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------------*/
 #include "4C_ale_utils_mapextractor.hpp"
 
+#include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_selector.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -22,21 +22,24 @@ FOUR_C_NAMESPACE_OPEN
 void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overlapping)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
+  CORE::Conditions::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FREESURFCoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "AleWear", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FREESURFCoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
   mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "Mortar", 0, ndim)));
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim)));
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FPSICoupling", 0, ndim)));
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
@@ -46,19 +49,22 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overla
 Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements = DRT::UTILS::ConditionedElementMap(dis, "FSICoupling");
+  Teuchos::RCP<std::set<int>> condelements =
+      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      DRT::UTILS::ConditionedElementMap(dis, "FREESURFCoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "FREESURFCoupling");
   Teuchos::RCP<std::set<int>> condelements3 =
-      DRT::UTILS::ConditionedElementMap(dis, "StructAleCoupling");
-  Teuchos::RCP<std::set<int>> condelements4 = DRT::UTILS::ConditionedElementMap(dis, "AleWear");
+      CORE::Conditions::ConditionedElementMap(dis, "StructAleCoupling");
+  Teuchos::RCP<std::set<int>> condelements4 =
+      CORE::Conditions::ConditionedElementMap(dis, "AleWear");
   Teuchos::RCP<std::set<int>> condelements5 =
-      DRT::UTILS::ConditionedElementMap(dis, "BioGrCoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "BioGrCoupling");
   Teuchos::RCP<std::set<int>> condelements6 =
-      DRT::UTILS::ConditionedElementMap(dis, "ALEUPDATECoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "ALEUPDATECoupling");
   Teuchos::RCP<std::set<int>> condelements7 =
-      DRT::UTILS::ConditionedElementMap(dis, "FPSICoupling");
-  Teuchos::RCP<std::set<int>> condelements8 = DRT::UTILS::ConditionedElementMap(dis, "Mortar");
+      CORE::Conditions::ConditionedElementMap(dis, "FPSICoupling");
+  Teuchos::RCP<std::set<int>> condelements8 =
+      CORE::Conditions::ConditionedElementMap(dis, "Mortar");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   std::copy(condelements3->begin(), condelements3->end(),
@@ -81,8 +87,9 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::ConditionedElementMap(
 void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
+  CORE::Conditions::MultiConditionSelector mcs;
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
@@ -91,9 +98,9 @@ void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));
+  CORE::Conditions::MultiConditionSelector mcs;
+  mcs.AddSelector(Teuchos::rcp(
+      new CORE::Conditions::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 

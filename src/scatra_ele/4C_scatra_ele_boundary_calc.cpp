@@ -269,7 +269,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
     case SCATRA::BoundaryAction::calc_Neumann:
     {
-      DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+      CORE::Conditions::Condition* condition =
+          params.get<CORE::Conditions::Condition*>("condition");
       if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       EvaluateNeumann(ele, params, discretization, *condition, la, elevec1_epetra, 1.);
@@ -300,7 +301,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get condition
-      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+      Teuchos::RCP<CORE::Conditions::Condition> cond =
+          params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
       if (cond == Teuchos::null)
         FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
 
@@ -486,8 +488,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT::FaceElement* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    CORE::Conditions::Condition& condition, DRT::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
 {
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1392,7 +1395,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
         scatraparams_->NdsTwoTensorQuantity());
 
   // get current scatra-scatra interface coupling condition
-  Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> s2icondition =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (s2icondition == Teuchos::null)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
@@ -1613,7 +1617,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   //////////////////////////////////////////////////////////////////////
 
   // get current condition
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
@@ -1776,7 +1781,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   //                  get current condition
   //////////////////////////////////////////////////////////////////////
 
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
 
   const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
@@ -1927,7 +1933,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // ------------get current condition----------------------------------
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null)
     FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
@@ -2094,7 +2101,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
   //------------------------------------------------------------------------
-  Teuchos::RCP<DRT::Condition> dbc = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> dbc =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
 
   // check of total time
   const double time = scatraparamstimint_->Time();

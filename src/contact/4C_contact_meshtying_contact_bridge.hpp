@@ -11,6 +11,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_condition.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -24,7 +25,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class Condition;
 }  // namespace DRT
 
 namespace IO
@@ -65,8 +65,9 @@ namespace CONTACT
     @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
     */
     MeshtyingContactBridge(DRT::Discretization& dis,
-        std::vector<DRT::Condition*>& meshtyingConditions,
-        std::vector<DRT::Condition*>& contactConditions, double timeIntegrationMidPoint);
+        std::vector<CORE::Conditions::Condition*>& meshtyingConditions,
+        std::vector<CORE::Conditions::Condition*>& contactConditions,
+        double timeIntegrationMidPoint);
 
     /*!
     \brief Destructor

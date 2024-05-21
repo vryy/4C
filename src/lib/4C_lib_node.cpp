@@ -50,7 +50,7 @@ DRT::Node::Node(const DRT::Node& old)
 {
   // we do NOT want a deep copy of the condition_ a condition is
   // only a reference in the node anyway
-  std::map<std::string, Teuchos::RCP<Condition>>::const_iterator fool;
+  std::map<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
     SetCondition(fool->first, fool->second);
 }
@@ -127,14 +127,15 @@ void DRT::Node::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Node::GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const
+void DRT::Node::GetCondition(
+    const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
   auto startit = condition_.lower_bound(name);
   auto endit = condition_.upper_bound(name);
   int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
+  std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
 }
@@ -142,7 +143,7 @@ void DRT::Node::GetCondition(const std::string& name, std::vector<DRT::Condition
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Node::GetCondition(const std::string& name) const
+CORE::Conditions::Condition* DRT::Node::GetCondition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;

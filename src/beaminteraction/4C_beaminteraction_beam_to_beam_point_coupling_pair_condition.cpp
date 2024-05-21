@@ -10,8 +10,8 @@
 #include "4C_beaminteraction_beam_to_beam_point_coupling_pair_condition.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_point_coupling_pair.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_geometry_pair_element.hpp"
-#include "4C_lib_condition.hpp"
 #include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN

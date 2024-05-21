@@ -1112,7 +1112,8 @@ namespace DRT
              NOT be overwritten but stored twice in the discretization
 
     */
-    virtual void SetCondition(const std::string& name, Teuchos::RCP<Condition> cond);
+    virtual void SetCondition(
+        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
     \brief Replace a condition with a certain name (Filled()==false on exit)
@@ -1124,8 +1125,8 @@ namespace DRT
     \param cond : vector of new conditions
 
     \author hiermeier \date 11/16 */
-    void ReplaceConditions(
-        const std::string& name, const std::vector<Teuchos::RCP<Condition>>& conds);
+    void ReplaceConditions(const std::string& name,
+        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds);
 
     /*!
     \brief Get all conditions with a certain name
@@ -1144,10 +1145,11 @@ namespace DRT
 
     \return Returns out.size()=0 if condition with that name does not exist
     */
-    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    virtual void GetCondition(
+        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
 
     virtual void GetCondition(
-        const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const;
+        const std::string& name, std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& out) const;
 
     /*! \brief Get a condition with a certain name
 
@@ -1165,13 +1167,14 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    [[nodiscard]] virtual DRT::Condition* GetCondition(const std::string& name) const;
+    [[nodiscard]] virtual CORE::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /// return all condition names defined in this discretization
     virtual void GetConditionNames(std::vector<std::string>& names) const;
 
     /// return all conditions defined on this discretization
-    virtual std::multimap<std::string, Teuchos::RCP<Condition>>& GetAllConditions()
+    virtual std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>&
+    GetAllConditions()
     {
       return condition_;
     }
@@ -2091,15 +2094,16 @@ namespace DRT
     volume coupling condition -> this is special since an associated volume
     conditions also needs to be considered
     */
-    void FindAssociatedEleIDs(
-        Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name);
+    void FindAssociatedEleIDs(Teuchos::RCP<CORE::Conditions::Condition> cond,
+        std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
     /*!
     \brief Build the geometry of lines for a certain line condition
 
     */
-    virtual bool BuildLinesinCondition(const std::string& name, Teuchos::RCP<DRT::Condition> cond);
+    virtual bool BuildLinesinCondition(
+        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of surfaces for a certain surface condition.
@@ -2113,14 +2117,14 @@ namespace DRT
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
     virtual bool BuildSurfacesinCondition(
-        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
+        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
     virtual bool BuildVolumesinCondition(
-        const std::string& name, Teuchos::RCP<DRT::Condition> cond);
+        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
     \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
@@ -2244,7 +2248,7 @@ namespace DRT
     std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;
 
     ///< Some conditions e.g. boundary conditions
-    std::multimap<std::string, Teuchos::RCP<Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
 
     //! Vector of DofSets
     std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;

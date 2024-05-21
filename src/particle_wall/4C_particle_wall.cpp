@@ -12,6 +12,7 @@
 
 #include "4C_binstrategy.hpp"
 #include "4C_comm_utils_factory.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
@@ -19,7 +20,6 @@
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -544,14 +544,14 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
   if (not structurediscretization->Filled()) structurediscretization->FillComplete();
 
   // get all particle wall conditions
-  std::vector<DRT::Condition*> conditions;
+  std::vector<CORE::Conditions::Condition*> conditions;
   structurediscretization->GetCondition("ParticleWall", conditions);
 
   // iterate over particle wall conditions
   for (int i = 0; i < static_cast<int>(conditions.size()); ++i)
   {
     // set current particle wall condition
-    std::vector<DRT::Condition*> currcondition(0);
+    std::vector<CORE::Conditions::Condition*> currcondition(0);
     currcondition.push_back(conditions[i]);
 
     // get material id for current particle wall condition
@@ -563,7 +563,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
     std::map<int, Teuchos::RCP<DRT::Element>> colelements;
 
     // get structure objects in wall condition
-    DRT::UTILS::FindConditionObjects(
+    CORE::Conditions::FindConditionObjects(
         *structurediscretization, nodes, colnodes, colelements, currcondition);
 
     // iterate over column wall nodes

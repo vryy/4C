@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_scatra_ele_calc_utils.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
@@ -937,19 +937,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
   //--------------------------------------------------------------------
   // get nodal values of fluid body force
   //--------------------------------------------------------------------
-  std::vector<DRT::Condition*> myfluidneumcond;
+  std::vector<CORE::Conditions::Condition*> myfluidneumcond;
 
   // check whether all nodes have a unique Fluid Neumann condition
   switch (nsd_)
   {
     case 3:
-      DRT::UTILS::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
+      CORE::Conditions::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
       break;
     case 2:
-      DRT::UTILS::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
+      CORE::Conditions::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
       break;
     case 1:
-      DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
+      CORE::Conditions::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
       break;
     default:
       FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);

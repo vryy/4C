@@ -352,12 +352,12 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       // check type of constraint conditions (Lagrange multiplier vs. penalty)
       // ----------------------------------------------------------------------
       bool have_lag_constraint = false;
-      std::vector<DRT::Condition*> lagcond_volconstr3d(0);
-      std::vector<DRT::Condition*> lagcond_areaconstr3d(0);
-      std::vector<DRT::Condition*> lagcond_areaconstr2d(0);
-      std::vector<DRT::Condition*> lagcond_mpconline2d(0);
-      std::vector<DRT::Condition*> lagcond_mpconplane3d(0);
-      std::vector<DRT::Condition*> lagcond_mpcnormcomp3d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_volconstr3d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_areaconstr3d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_areaconstr2d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_mpconline2d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_mpconplane3d(0);
+      std::vector<CORE::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
       discret_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
       discret_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
       discret_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);

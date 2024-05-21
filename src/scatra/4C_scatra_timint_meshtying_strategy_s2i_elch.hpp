@@ -153,8 +153,8 @@ namespace SCATRA
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     void EvaluateConditionNTS(
-        DRT::Condition& condition,      //!< scatra-scatra interface coupling condition
-        const MORTAR::Node& slavenode,  //!< slave-side node
+        CORE::Conditions::Condition& condition,  //!< scatra-scatra interface coupling condition
+        const MORTAR::Node& slavenode,           //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::Element& slaveelement,   //!< slave-side mortar element

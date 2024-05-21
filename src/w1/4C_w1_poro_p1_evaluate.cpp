@@ -878,8 +878,9 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
 
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Wall1PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> disp(true);
   CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);

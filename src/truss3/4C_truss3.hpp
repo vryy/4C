@@ -125,7 +125,8 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::Conditions::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! get internal (elastic) energy of element

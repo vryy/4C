@@ -310,7 +310,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       FOUR_C_THROW("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
     // check for self contact
-    std::vector<DRT::Condition*> contactConditions(0);
+    std::vector<CORE::Conditions::Condition*> contactConditions(0);
     Discret().GetCondition("Mortar", contactConditions);
     bool self = false;
 
@@ -702,7 +702,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   }
 
   // Vector that solely contains solid-to-solid contact pairs
-  std::vector<std::vector<DRT::Condition*>> ccond_grps(0);
+  std::vector<std::vector<CORE::Conditions::Condition*>> ccond_grps(0);
   CONTACT::UTILS::GetContactConditionGroups(ccond_grps, Discret());
 
   std::set<const DRT::Node*> dbc_slave_nodes;
@@ -966,7 +966,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactCornerConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactCornerConditions(0);
           Discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
@@ -975,7 +975,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactEdgeConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactEdgeConditions(0);
           Discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
@@ -986,7 +986,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactSymConditions(0);
           Discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
@@ -1038,7 +1038,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactCornerConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactCornerConditions(0);
           Discret().GetCondition("mrtrcorner", contactCornerConditions);
           for (auto& condition : contactCornerConditions)
           {
@@ -1047,7 +1047,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactEdgeConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactEdgeConditions(0);
           Discret().GetCondition("mrtredge", contactEdgeConditions);
           for (auto& condition : contactEdgeConditions)
           {
@@ -1058,7 +1058,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymConditions(0);
+          std::vector<CORE::Conditions::Condition*> contactSymConditions(0);
           Discret().GetCondition("mrtrsym", contactSymConditions);
 
           for (auto& condition : contactSymConditions)
@@ -1471,7 +1471,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::Element::other;
-  std::vector<Teuchos::RCP<DRT::Condition>> poroCondVec;
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> poroCondVec;
   discret.GetCondition("PoroCoupling", poroCondVec);
   if (!cele->IsSlave())  // treat an element as a master element if it is no slave element
   {
@@ -2126,7 +2126,7 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
   if (Discret().GetCondition("SSIInterfaceContact") != nullptr)
   {
     // get the scatra-scatra interface coupling condition
-    std::vector<DRT::Condition*> s2ikinetics_conditions;
+    std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions;
     Discret().GetCondition("S2IKinetics", s2ikinetics_conditions);
 
     // create a sublist which is filled and added to the contact interface parameters

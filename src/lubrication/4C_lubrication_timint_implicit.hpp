@@ -44,7 +44,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class DofSet;
-  class Condition;
 }  // namespace DRT
 
 namespace IO

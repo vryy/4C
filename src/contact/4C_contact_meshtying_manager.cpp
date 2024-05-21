@@ -59,7 +59,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0)
     std::cout << "Building meshtying interface(s)..............." << std::endl;
 
-  std::vector<DRT::Condition*> contactconditions(0);
+  std::vector<CORE::Conditions::Condition*> contactconditions(0);
   discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
@@ -81,8 +81,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = nullptr;
+    std::vector<CORE::Conditions::Condition*> currentgroup(0);
+    CORE::Conditions::Condition* tempcond = nullptr;
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -217,7 +217,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
 
         // get edge and corner information:
-        std::vector<DRT::Condition*> contactcornercond(0);
+        std::vector<CORE::Conditions::Condition*> contactcornercond(0);
         discret.GetCondition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
@@ -226,7 +226,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
             mtnode->SetOnCorner() = true;
           }
         }
-        std::vector<DRT::Condition*> contactedgecond(0);
+        std::vector<CORE::Conditions::Condition*> contactedgecond(0);
         discret.GetCondition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
@@ -237,7 +237,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-        std::vector<DRT::Condition*> contactSymconditions(0);
+        std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
         discret.GetCondition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)
@@ -373,8 +373,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
-  std::vector<DRT::Condition*> mtcond(0);
-  std::vector<DRT::Condition*> ccond(0);
+  std::vector<CORE::Conditions::Condition*> mtcond(0);
+  std::vector<CORE::Conditions::Condition*> ccond(0);
 
   discret.GetCondition("Mortar", mtcond);
   discret.GetCondition("Contact", ccond);

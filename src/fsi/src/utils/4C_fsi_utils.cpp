@@ -15,13 +15,13 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -191,10 +191,11 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   std::map<int, std::map<int, DRT::Node*>> structgnodes;  // complete map of strucutre nodes
 
   // initialize struct objects in interface
-  DRT::UTILS::FindConditionObjects(*structdis, dummy2, structgnodes, structelements, "FSICoupling");
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
+      *structdis, dummy2, structgnodes, structelements, "FSICoupling");
+  CORE::Conditions::FindConditionObjects(
       *structdis, dummy1, structmnodes, structmelements, "FSICouplingNoSlide");
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *structdis, dummy1, structdnodes, structdelements, "FSICouplingCenterDisp");
   istructdispnodes_ = structdnodes;
   istructdispeles_ = structdelements;
@@ -238,8 +239,9 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   std::map<int, DRT::Node*> fluidmnodes;                // partial map of sticking fluid nodes
 
   // initialize struct objects in interface
-  DRT::UTILS::FindConditionObjects(*fluiddis, fluidnodes, dummy2, fluidelements, "FSICoupling");
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
+      *fluiddis, fluidnodes, dummy2, fluidelements, "FSICoupling");
+  CORE::Conditions::FindConditionObjects(
       *fluiddis, fluidmnodes, dummy1, fluidmelements, "FSICouplingNoSlide");
   ifluidconfnodes_ = fluidmnodes;
   ifluidslidnodes_ = fluidnodes;

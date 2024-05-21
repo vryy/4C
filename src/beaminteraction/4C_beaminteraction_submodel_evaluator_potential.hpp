@@ -17,6 +17,7 @@
 
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 #include "4C_binstrategy_utils.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_io_visualization_manager.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -25,7 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Element;
-  class Condition;
 }  // namespace DRT
 namespace BEAMINTERACTION
 {
@@ -168,8 +168,8 @@ namespace BEAMINTERACTION
 
       void GetBeamPotentialConditionsAppliedToThisElementPair(
           BEAMINTERACTION::BeamPotentialPair const& elementpair,
-          std::vector<DRT::Condition*>& conditions_element1,
-          std::vector<DRT::Condition*>& conditions_element2) const;
+          std::vector<CORE::Conditions::Condition*>& conditions_element1,
+          std::vector<CORE::Conditions::Condition*>& conditions_element2) const;
 
       //! @}
 

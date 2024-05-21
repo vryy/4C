@@ -17,6 +17,7 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_monolithic.hpp"
@@ -25,7 +26,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
@@ -68,11 +68,11 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *structuredis, structurenodes, structuregnodes, structureelements, "FSICoupling");
 
   // Fill maps based on condition for slave side (masterdis != slavedis)
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
   std::map<int, DRT::Node*>* slavenodesPtr = nullptr;
@@ -320,11 +320,11 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *structuredis, structurenodes, structuregnodes, structureelements, "FSICoupling");
 
   // Fill maps based on condition for slave side (masterdis != slavedis)
-  DRT::UTILS::FindConditionObjects(
+  CORE::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
   std::map<int, DRT::Node*>* slavenodesPtr = nullptr;

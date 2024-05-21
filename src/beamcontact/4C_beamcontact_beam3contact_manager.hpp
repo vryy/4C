@@ -431,10 +431,10 @@ namespace CONTACT
     Teuchos::RCP<std::vector<double>> mi_;
 
     //! line charge conditions
-    std::vector<DRT::Condition*> linechargeconds_;
+    std::vector<CORE::Conditions::Condition*> linechargeconds_;
 
     //! point charge conditions (rigid sphere)
-    std::vector<DRT::Condition*> pointchargeconds_;
+    std::vector<CORE::Conditions::Condition*> pointchargeconds_;
 
     // bool indicating if we are in the first time step of a simulation
     bool firststep_;

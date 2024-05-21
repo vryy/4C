@@ -624,8 +624,9 @@ void DRT::ELEMENTS::SoHex8fbar::InitJacobianMapping()
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition

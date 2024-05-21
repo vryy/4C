@@ -132,7 +132,7 @@ void MAT::ScatraMultiScaleGP::Init()
     }
 
     // extract multi-scale coupling conditions from micro-scale discretization
-    std::vector<Teuchos::RCP<DRT::Condition>> conditions;
+    std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conditions;
     microdis->GetCondition("ScatraMultiScaleCoupling", conditions);
 
     // safety check

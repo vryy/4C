@@ -798,7 +798,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FindFreeHangin
                   << std::endl;
 
       // check if any of the nodes of this connected component has a Dirichlet BC
-      DRT::Condition* dirich = nullptr;
+      CORE::Conditions::Condition* dirich = nullptr;
       for (int j = 0; j < conn_comp_size; ++j)
       {
         DRT::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);

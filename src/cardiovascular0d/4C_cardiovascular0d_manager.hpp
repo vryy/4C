@@ -30,10 +30,6 @@ namespace IO
   class DiscretizationReader;
 }
 
-namespace DRT
-{
-  class Condition;
-}
 
 namespace DRT
 {

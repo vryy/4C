@@ -13,7 +13,7 @@ Here is everything related with writing a dat-file
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
 #include "4C_inpar_validconditions.hpp"
-#include "4C_lib_conditiondefinition.hpp"
+#include "4C_io_condition_definition.hpp"
 #include "4C_pre_exodus_reader.hpp"
 
 FOUR_C_NAMESPACE_OPEN

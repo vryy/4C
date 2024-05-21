@@ -16,6 +16,7 @@
 #include "4C_adapter_field.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -26,7 +27,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Condition;
   class Discretization;
 }  // namespace DRT
 
@@ -300,7 +300,7 @@ namespace POROELAST
   {
    public:
     //! create using a Epetra_Comm
-    explicit NoPenetrationConditionHandle(std::vector<DRT::Condition*> nopencond)
+    explicit NoPenetrationConditionHandle(std::vector<CORE::Conditions::Condition*> nopencond)
         : cond_ids_(Teuchos::null),
           cond_dofs_(Teuchos::null),
           cond_rhs_(Teuchos::null),
@@ -363,7 +363,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> cond_rhs_;
 
     //! vector containing no penetration - conditions
-    std::vector<DRT::Condition*> nopencond_;
+    std::vector<CORE::Conditions::Condition*> nopencond_;
 
     //! Extractor used for no penetration condition
     Teuchos::RCP<CORE::LINALG::MapExtractor> nopenetration_;

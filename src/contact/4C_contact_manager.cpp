@@ -71,11 +71,11 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
   if (Comm().MyPID() == 0) std::cout << "Building contact interface(s)..............." << std::endl;
 
   // Vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
+  std::vector<CORE::Conditions::Condition*> beamandsolidcontactconditions(0);
   Discret().GetCondition("Contact", beamandsolidcontactconditions);
 
   // Vector that solely contains solid-to-solid contact pairs
-  std::vector<DRT::Condition*> contactconditions(0);
+  std::vector<CORE::Conditions::Condition*> contactconditions(0);
 
   // Sort out beam-to-solid contact pairs, since these are treated in the beam3contact framework
   for (const auto& beamSolidCondition : beamandsolidcontactconditions)
@@ -138,8 +138,8 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
   for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = nullptr;
+    std::vector<CORE::Conditions::Condition*> currentgroup(0);
+    CORE::Conditions::Condition* tempcond = nullptr;
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -348,7 +348,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
           if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, cnode);
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornercond(0);
+          std::vector<CORE::Conditions::Condition*> contactcornercond(0);
           Discret().GetCondition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
@@ -357,7 +357,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgecond(0);
+          std::vector<CORE::Conditions::Condition*> contactedgecond(0);
           Discret().GetCondition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
@@ -368,7 +368,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymconditions(0);
+          std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned l = 0; l < contactSymconditions.size(); l++)
@@ -405,7 +405,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornercond(0);
+          std::vector<CORE::Conditions::Condition*> contactcornercond(0);
           Discret().GetCondition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
@@ -414,7 +414,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgecond(0);
+          std::vector<CORE::Conditions::Condition*> contactedgecond(0);
           Discret().GetCondition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
@@ -426,7 +426,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
 
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymconditions(0);
+          std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned l = 0; l < contactSymconditions.size(); l++)
@@ -892,7 +892,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // check for self contact
     bool self = false;
     {
-      std::vector<DRT::Condition*> contactCondition(0);
+      std::vector<CORE::Conditions::Condition*> contactCondition(0);
       Discret().GetCondition("Mortar", contactCondition);
 
       for (const auto& condition : contactCondition)
@@ -1615,7 +1615,7 @@ void CONTACT::Manager::SetPoroParentElement(int& slavetype, int& mastertype,
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::Element::other;
-  std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> porocondvec;
   discret_.GetCondition("PoroCoupling", porocondvec);
   if (!cele->IsSlave())  // treat an element as a master element if it is no slave element
   {

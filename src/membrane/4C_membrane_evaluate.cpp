@@ -469,8 +469,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // set params interface pointer

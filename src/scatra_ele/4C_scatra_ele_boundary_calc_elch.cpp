@@ -104,7 +104,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
   my::ExtractNodeValues(ehist, discretization, la, "hist");
 
   // get current condition
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   // access parameters of the condition
@@ -222,7 +223,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
-  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+  Teuchos::RCP<CORE::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   const auto kinetics = cond->parameters().Get<int>("kinetic model");
@@ -378,12 +380,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
     Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
-    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-    const int nume,                     ///< number of transferred electrons
-    const std::vector<int> stoich,      ///< stoichiometry of the reaction
-    const int kinetics,                 ///< desired electrode kinetics model
-    const double pot0,                  ///< electrode potential on metal side
-    const double frt,                   ///< factor F/RT
+    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                                  ///< number of transferred electrons
+    const std::vector<int> stoich,                   ///< stoichiometry of the reaction
+    const int kinetics,                              ///< desired electrode kinetics model
+    const double pot0,                               ///< electrode potential on metal side
+    const double frt,                                ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -441,10 +443,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectrodeStatus(
-    const DRT::Element* ele,                   ///< current element
-    CORE::LINALG::SerialDenseVector& scalars,  ///< scalars to be integrated
-    Teuchos::ParameterList& params,            ///< parameter list
-    Teuchos::RCP<DRT::Condition> cond,         ///< condition
+    const DRT::Element* ele,                         ///< current element
+    CORE::LINALG::SerialDenseVector& scalars,        ///< scalars to be integrated
+    Teuchos::ParameterList& params,                  ///< parameter list
+    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< condition
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector

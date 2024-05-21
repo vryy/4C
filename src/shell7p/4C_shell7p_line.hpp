@@ -130,7 +130,7 @@ namespace DRT::ELEMENTS
     //! @name Evaluate methods
     //! @{
     int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& dof_index_array,
+        CORE::Conditions::Condition& condition, std::vector<int>& dof_index_array,
         CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 

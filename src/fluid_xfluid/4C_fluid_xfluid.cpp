@@ -16,6 +16,7 @@ interface
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -30,7 +31,6 @@ interface
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_dofset_transparent_independent.hpp"
@@ -2691,12 +2691,12 @@ void FLD::XFluid::LinearSolve() { FOUR_C_THROW("LinearSolve not implemented for 
 void FLD::XFluid::InitKrylovSpaceProjection()
 {
   // get condition "KrylovSpaceProjection" from discretization
-  std::vector<DRT::Condition*> KSPcond;
+  std::vector<CORE::Conditions::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection", KSPcond);
   int numcond = KSPcond.size();
   int numfluid = 0;
 
-  DRT::Condition* kspcond = nullptr;
+  CORE::Conditions::Condition* kspcond = nullptr;
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -2734,7 +2734,7 @@ void FLD::XFluid::InitKrylovSpaceProjection()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluid::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
+void FLD::XFluid::SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond)
 {
   /*
    * Krylov space projection in the XFEM

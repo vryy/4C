@@ -12,7 +12,7 @@
 #include "4C_coupling_adapter.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
-#include "4C_lib_condition_utils.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 #include <Epetra_IntVector.h>
@@ -54,9 +54,9 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& 
     FOUR_C_THROW("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
 
   std::vector<int> masternodes;
-  DRT::UTILS::FindConditionedNodes(masterdis, condname, masternodes);
+  CORE::Conditions::FindConditionedNodes(masterdis, condname, masternodes);
   std::vector<int> slavenodes;
-  DRT::UTILS::FindConditionedNodes(slavedis, condname, slavenodes);
+  CORE::Conditions::FindConditionedNodes(slavedis, condname, slavenodes);
 
   int localmastercount = static_cast<int>(masternodes.size());
   int mastercount;
@@ -159,14 +159,14 @@ void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
     const std::string& condname1, const std::string& condname2, const int numdof, bool matchall)
 {
   std::vector<int> masternodes1;
-  DRT::UTILS::FindConditionedNodes(masterdis, condname1, masternodes1);
+  CORE::Conditions::FindConditionedNodes(masterdis, condname1, masternodes1);
   std::vector<int> slavenodes1;
-  DRT::UTILS::FindConditionedNodes(slavedis, condname1, slavenodes1);
+  CORE::Conditions::FindConditionedNodes(slavedis, condname1, slavenodes1);
 
   std::set<int> masternodes2;
-  DRT::UTILS::FindConditionedNodes(masterdis, condname2, masternodes2);
+  CORE::Conditions::FindConditionedNodes(masterdis, condname2, masternodes2);
   std::set<int> slavenodes2;
-  DRT::UTILS::FindConditionedNodes(slavedis, condname2, slavenodes2);
+  CORE::Conditions::FindConditionedNodes(slavedis, condname2, slavenodes2);
 
   // now find all those elements of slavenodes1 and masternodes1 that
   // do not belong to slavenodes2 and masternodes2 at the same time
@@ -497,7 +497,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     // get all periodic boundary conditions on this node
     // slave nodes do not contribute dofs, we skip them
     // ----------------------------------------------------------------
-    std::vector<DRT::Condition*> thiscond;
+    std::vector<CORE::Conditions::Condition*> thiscond;
     actnode->GetCondition("SurfacePeriodic", thiscond);
 
     if (thiscond.empty())

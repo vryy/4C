@@ -828,8 +828,9 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
  |  Integrate a Volume Neumann boundary condition (public)     gee 03/12|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
   return -1;

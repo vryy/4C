@@ -72,7 +72,7 @@ namespace FLD
     };
 
     //! get all data from condtion
-    void GetData(int& id, int& direction, ToggleType& type, const DRT::Condition*);
+    void GetData(int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition*);
 
     //! receive a block in the round robin communication pattern
     void ReceiveBlock(

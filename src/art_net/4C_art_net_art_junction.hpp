@@ -134,8 +134,8 @@ namespace ART
       \brief Standard Constructor
      */
       ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis, IO::DiscretizationWriter &output,
-          std::vector<DRT::Condition *> conds, std::vector<int> IOart_flag, double dta, int condid,
-          int numcond);
+          std::vector<CORE::Conditions::Condition *> conds, std::vector<int> IOart_flag, double dta,
+          int condid, int numcond);
 
       /*!
       \brief Empty Constructor

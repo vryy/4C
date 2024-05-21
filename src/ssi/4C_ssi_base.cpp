@@ -312,7 +312,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
         // create new condition
         const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
-        auto cond = Teuchos::rcp(new DRT::Condition(num_conditions + 1,
+        auto cond = Teuchos::rcp(new CORE::Conditions::Condition(num_conditions + 1,
             CORE::Conditions::ScatraPartitioning, true, CORE::Conditions::geometry_type_surface));
         cond->parameters().Add("ConditionID", 0);
         cond->SetNodes(glob_node_ids);
@@ -379,7 +379,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   // safety check
   {
     // check for ssi coupling condition
-    std::vector<DRT::Condition*> ssicoupling;
+    std::vector<CORE::Conditions::Condition*> ssicoupling;
     scatra_integrator->Discretization()->GetCondition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
@@ -824,10 +824,10 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 
   auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
   // get all s2i kinetics conditions
-  std::vector<DRT::Condition*> s2ikinetics_conditons(0, nullptr);
+  std::vector<CORE::Conditions::Condition*> s2ikinetics_conditons(0, nullptr);
   structdis->GetCondition("S2IKinetics", s2ikinetics_conditons);
   // get all ssi contact conditions
-  std::vector<DRT::Condition*> ssi_contact_conditions;
+  std::vector<CORE::Conditions::Condition*> ssi_contact_conditions;
   structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
@@ -881,7 +881,7 @@ void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname
   if (SSIInterfaceContact())
   {
     // get ssi condition to be tested
-    std::vector<DRT::Condition*> ssiconditions;
+    std::vector<CORE::Conditions::Condition*> ssiconditions;
     structdis->GetCondition("SSIInterfaceContact", ssiconditions);
     SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(ssiconditions, structdis);
   }

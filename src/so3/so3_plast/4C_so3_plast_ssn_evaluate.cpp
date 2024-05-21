@@ -678,8 +678,9 @@ void DRT::ELEMENTS::So3Plast<distype>::CalculateBop(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::So3Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = condition.parameters().GetIf<std::vector<int>>("onoff");

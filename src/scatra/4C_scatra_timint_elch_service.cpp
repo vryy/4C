@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-    const std::vector<DRT::Condition*>& cccvhalfcycleconditions, const bool adaptivetimestepping,
-    const int num_dofs)
+SCATRA::CCCVCondition::CCCVCondition(const CORE::Conditions::Condition& cccvcyclingcondition,
+    const std::vector<CORE::Conditions::Condition*>& cccvhalfcycleconditions,
+    const bool adaptivetimestepping, const int num_dofs)
     : adaptivetimesteppingonoff_(static_cast<bool>(
           cccvcyclingcondition.parameters().Get<int>("AdaptiveTimeSteppingInitRelax"))),
       beginwithcharge_(
@@ -268,7 +268,7 @@ void SCATRA::CCCVCondition::ReadRestart(IO::DiscretizationReader& reader)
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
-    const DRT::Condition& cccvhalfcyclecondition, const bool adaptivetimestepping)
+    const CORE::Conditions::Condition& cccvhalfcyclecondition, const bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(cccvhalfcyclecondition.parameters().Get<std::vector<int>>(
           "AdaptiveTimeSteppingPhaseOnOff")),
       cutoffcrate_(cccvhalfcyclecondition.parameters().Get<double>("CutoffCRate")),

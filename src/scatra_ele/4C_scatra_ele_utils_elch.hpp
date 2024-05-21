@@ -58,14 +58,14 @@ namespace DRT
           const double timefac,                        ///< time factor
           const double fac,                            ///< Gauss integration factor
           const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
-          const Teuchos::RCP<DRT::Condition>& cond,    ///< condition
-          const int nume,                              ///< number of transferred electrons
-          const std::vector<int>& stoich,              ///< stoichiometry of the reaction
-          const double valence_k,                      ///< valence of the single reactant
-          const int kinetics,                          ///< desired electrode kinetics model
-          const double pot0,                           ///< actual electrode potential on metal side
-          const double frt,                            ///< factor F/RT
-          const double fns,     ///< factor fns = s_k / (nume * faraday * (-1))
+          const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
+          const int nume,                  ///< number of transferred electrons
+          const std::vector<int>& stoich,  ///< stoichiometry of the reaction
+          const double valence_k,          ///< valence of the single reactant
+          const int kinetics,              ///< desired electrode kinetics model
+          const double pot0,               ///< actual electrode potential on metal side
+          const double frt,                ///< factor F/RT
+          const double fns,                ///< factor fns = s_k / (nume * faraday * (-1))
           const double scalar,  ///< scaling factor for element matrix and right-hand side vector
                                 ///< contributions
           const int k           ///< index of evaluated scalar
@@ -74,9 +74,9 @@ namespace DRT
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
       void EvaluateElectrodeStatusAtIntegrationPoint(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseVector& scalars,  ///< scalars to be computed
-          const Teuchos::ParameterList& params,      ///< parameter list
-          const Teuchos::RCP<DRT::Condition>& cond,  ///< condition
+          CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
+          const Teuchos::ParameterList& params,                   ///< parameter list
+          const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&

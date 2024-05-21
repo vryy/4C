@@ -122,7 +122,7 @@ void DRT::UTILS::LocsysManager::Update(
   {
     for (int i = 0; i < NumLocsys(); ++i)
     {
-      DRT::Condition* currlocsys = locsysconds_[i];
+      CORE::Conditions::Condition* currlocsys = locsysconds_[i];
 
       // safety check
       if (currlocsys->Type() != CORE::Conditions::VolumeLocsys and
@@ -593,7 +593,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
   // Loop through all nodes in the condition
   // *******************************************************************
   // Obtain desired locsys condition and its corresponding nodes
-  DRT::Condition* currLocsysCond = locsysconds_[numLocsysCond];
+  CORE::Conditions::Condition* currLocsysCond = locsysconds_[numLocsysCond];
   const std::vector<int>* nodes = currLocsysCond->GetNodes();
 
   // Obtain rank of calling processor

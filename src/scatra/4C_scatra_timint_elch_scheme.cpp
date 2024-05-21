@@ -105,17 +105,17 @@ void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
@@ -164,19 +164,19 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
@@ -223,7 +223,7 @@ void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
   {
     ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -258,7 +258,7 @@ void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor() const
  *-------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
 {
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -314,7 +314,7 @@ void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -394,17 +394,17 @@ void SCATRA::ScaTraTimIntElchBDF2::WriteRestart() const
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -449,19 +449,19 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -506,7 +506,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
   {
     // ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -528,7 +528,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
  *-------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
 {
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -576,7 +576,7 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -695,17 +695,17 @@ void SCATRA::ScaTraTimIntElchGenAlpha::WriteRestart() const
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -742,19 +742,19 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -794,7 +794,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
   {
     ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -814,7 +814,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
  *-------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
 {
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -933,17 +933,17 @@ void SCATRA::ScaTraTimIntElchStationary::WriteRestart() const
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -977,19 +977,19 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<DRT::Condition*> cond;
+    std::vector<CORE::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<DRT::Condition*>::iterator fool;
+    std::vector<CORE::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      DRT::Condition* mycond = (*(fool));
+      CORE::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -1016,7 +1016,7 @@ void SCATRA::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); 
  *-------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
 {
-  std::vector<DRT::Condition*> cond;
+  std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -1165,7 +1165,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::SetOldPartOfRighthandside()
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<DRT::Condition*> conditions;
+    std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!

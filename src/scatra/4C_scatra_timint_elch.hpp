@@ -66,7 +66,8 @@ namespace SCATRA
 
     //! additional, to standard partitioning in scatra, the global system matrix in elch can be
     //! partitioned into concentration and potential dofs
-    void BuildBlockMaps(const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
+    void BuildBlockMaps(
+        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
     void BuildBlockNullSpaces(
@@ -133,7 +134,7 @@ namespace SCATRA
     //! \param condition   condition to be evaluated
     //! \return            evaluated scalars
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
-        Teuchos::RCP<DRT::Condition> condition);
+        Teuchos::RCP<CORE::Conditions::Condition> condition);
 
     //! \brief post-process status information on single electrode
     //!
@@ -465,7 +466,7 @@ namespace SCATRA
 
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
-    int NumScalInCondition(const DRT::Condition& condition,
+    int NumScalInCondition(const CORE::Conditions::Condition& condition,
         const Teuchos::RCP<const DRT::Discretization>& discret) const override;
 
     /*========================================================================*/

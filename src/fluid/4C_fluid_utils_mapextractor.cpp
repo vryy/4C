@@ -11,9 +11,9 @@
 
 #include "4C_fluid_utils_mapextractor.hpp"
 
+#include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_condition_selector.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 
@@ -25,18 +25,18 @@ void FLD::UTILS::MapExtractor::Setup(
     const DRT::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
+  CORE::Conditions::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
+      new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
+  mcs.AddSelector(Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(
+      dis, "FREESURFCoupling", 0, ndim + withpressure)));
+  mcs.AddSelector(Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(
+      dis, "StructAleCoupling", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "FREESURFCoupling", 0, ndim + withpressure)));
-  mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim + withpressure)));
-  mcs.AddSelector(
-      Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "Mortar", 0, ndim + withpressure)));
-  mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim + withpressure)));
+      new CORE::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim + withpressure)));
+  mcs.AddSelector(Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(
+      dis, "ALEUPDATECoupling", 0, ndim + withpressure)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(nds_master), *this);
 }
 
@@ -76,14 +76,16 @@ void FLD::UTILS::MapExtractor::Setup(
 Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements = DRT::UTILS::ConditionedElementMap(dis, "FSICoupling");
+  Teuchos::RCP<std::set<int>> condelements =
+      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      DRT::UTILS::ConditionedElementMap(dis, "FREESURFCoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "FREESURFCoupling");
   Teuchos::RCP<std::set<int>> condelements3 =
-      DRT::UTILS::ConditionedElementMap(dis, "StructAleCoupling");
-  Teuchos::RCP<std::set<int>> condelements4 = DRT::UTILS::ConditionedElementMap(dis, "Mortar");
+      CORE::Conditions::ConditionedElementMap(dis, "StructAleCoupling");
+  Teuchos::RCP<std::set<int>> condelements4 =
+      CORE::Conditions::ConditionedElementMap(dis, "Mortar");
   Teuchos::RCP<std::set<int>> condelements5 =
-      DRT::UTILS::ConditionedElementMap(dis, "ALEUPDATECoupling");
+      CORE::Conditions::ConditionedElementMap(dis, "ALEUPDATECoupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   std::copy(condelements3->begin(), condelements3->end(),
@@ -98,10 +100,10 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::ConditionedElementMap(
 void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
+  CORE::Conditions::MultiConditionSelector mcs;
   mcs.SetOverlapping(true);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
-      new DRT::UTILS::NDimConditionSelector(dis, "VolumetricSurfaceFlowCond", 0, ndim)));
+      new CORE::Conditions::NDimConditionSelector(dis, "VolumetricSurfaceFlowCond", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
@@ -109,8 +111,9 @@ void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const DRT::Discretization& di
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
 {
-  DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::ConditionSelector(dis, "KrylovSpaceProjection")));
+  CORE::Conditions::MultiConditionSelector mcs;
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::ConditionSelector(dis, "KrylovSpaceProjection")));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
@@ -121,7 +124,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::ConditionedElementMap(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
-      DRT::UTILS::ConditionedElementMap(dis, "KrylovSpaceProjection");
+      CORE::Conditions::ConditionedElementMap(dis, "KrylovSpaceProjection");
   return condelements;
 }
 
@@ -139,8 +142,9 @@ void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 void FLD::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
+  CORE::Conditions::MultiConditionSelector mcs;
+  mcs.AddSelector(
+      Teuchos::rcp(new CORE::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 

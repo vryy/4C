@@ -202,7 +202,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
     CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.values(), true);     // view only!
 
     // get current condition
-    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+    Teuchos::RCP<CORE::Conditions::Condition> cond =
+        params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
     if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
     // access parameters of the condition
@@ -417,7 +418,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
             elemat1_epetra.values(), true);  // view only!
 
         // get current condition
-        Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
+        Teuchos::RCP<CORE::Conditions::Condition> cond =
+            params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
         if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
         // access parameters of the condition
@@ -584,7 +586,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Element* ele,
     Teuchos::ParameterList& params, const DRT::Discretization& discretization,
-    const DRT::Condition& condition, const std::vector<int>& lm,
+    const CORE::Conditions::Condition& condition, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
   // prepare nurbs

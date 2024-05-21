@@ -35,7 +35,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
 
   coup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  coup_->SetupCoupling(*dis, *dis_, *DRT::UTILS::ConditionNodeRowMap(*dis, "FSICoupling"),
+  coup_->SetupCoupling(*dis, *dis_, *CORE::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
       *dis_->NodeRowMap(), ndim);
 }
 

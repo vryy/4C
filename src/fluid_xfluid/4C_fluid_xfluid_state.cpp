@@ -11,10 +11,10 @@
 #include "4C_fluid_xfluid_state.hpp"
 
 #include "4C_cut_cutwizard.hpp"
+#include "4C_discretization_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_condition_utils.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_xfem_dofset.hpp"

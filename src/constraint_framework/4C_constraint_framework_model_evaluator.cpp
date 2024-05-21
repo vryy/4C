@@ -58,7 +58,7 @@ void STR::MODELEVALUATOR::Constraints::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for multi point constraints
   // ---------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<DRT::Condition>> linePeriodicRve, surfPeriodicRve,
+  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
 
   DiscretPtr()->GetCondition("LinePeriodicRve", linePeriodicRve);

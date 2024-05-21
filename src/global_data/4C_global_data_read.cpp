@@ -18,13 +18,13 @@
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
+#include "4C_io_condition_definition.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_materialdefinition.hpp"
 #include "4C_io_meshreader.hpp"
-#include "4C_lib_conditiondefinition.hpp"
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_discret_xwall.hpp"
@@ -2188,13 +2188,13 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
   // Note that this will reset (un-FillComplete) the discretizations.
   for (auto& condition : condlist)
   {
-    std::multimap<int, Teuchos::RCP<DRT::Condition>> cond;
+    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>> cond;
 
     // read conditions from dat file
-    condition->Read(problem, reader, cond);
+    condition->Read(reader, cond);
 
     // add nodes to conditions
-    std::multimap<int, Teuchos::RCP<DRT::Condition>>::const_iterator curr;
+    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator curr;
     for (curr = cond.begin(); curr != cond.end(); ++curr)
     {
       switch (curr->second->GType())

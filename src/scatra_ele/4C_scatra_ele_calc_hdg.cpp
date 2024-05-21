@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ScaTraHDGEleCalc::ComputeNeumannBC");
 
-  DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+  CORE::Conditions::Condition* condition = params.get<CORE::Conditions::Condition*>("condition");
   if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
   // get actual time

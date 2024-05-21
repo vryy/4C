@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_condition.hpp"
+#include "4C_discretization_condition.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 
 #include <Epetra_Vector.h>
@@ -47,7 +47,7 @@ namespace POROMULTIPHASESCATRA
 
     //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
     void RecomputeCoupledDOFsForNTP(
-        std::vector<DRT::Condition*> coupcond, unsigned int couplingnode);
+        std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
     const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& GlobalExtractor() const;
