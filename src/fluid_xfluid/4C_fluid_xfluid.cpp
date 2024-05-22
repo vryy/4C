@@ -17,6 +17,8 @@ interface
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -32,9 +34,6 @@ interface
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_xfem.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
@@ -46,6 +45,7 @@ interface
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
 #include "4C_xfem_discretization_utils.hpp"
+#include "4C_xfem_dofset.hpp"
 #include "4C_xfem_edgestab.hpp"
 #include "4C_xfem_neumann.hpp"
 #include "4C_xfem_xfluid_timeInt.hpp"
@@ -106,8 +106,8 @@ void FLD::XFluid::AddAdditionalScalarDofsetAndCoupling()
   // levelset field and to allow to use the bgdis also as a cutterdis (note: cutterdis vectors are
   // based on a dofrowmap and not on a noderowmap...)
 
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(1, 0, 0, true));
 
   // add the dofset to the xfluid dis
   const int dofidx = xdiscret_->AddDofSet(dofsetaux);

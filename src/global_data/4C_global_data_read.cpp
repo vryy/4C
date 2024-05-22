@@ -13,6 +13,7 @@
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "4C_discretization_dofset_independent.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
@@ -28,7 +29,6 @@
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_lib_discret_xwall.hpp"
-#include "4C_lib_dofset_independent.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_mat_elchphase.hpp"
@@ -1533,7 +1533,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         // micro discretization
         if (problem.GetCommunicators()->NpType() ==
             CORE::COMM::NestedParallelismType::no_nested_parallelism)
-          dis_micro->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()));
+          dis_micro->ReplaceDofSet(Teuchos::rcp(new CORE::Dofsets::IndependentDofSet()));
 
         // create discretization writer - in constructor set into and owned by corresponding
         // discret

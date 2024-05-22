@@ -26,11 +26,15 @@ namespace CORE::LINALG
   class MapExtractor;
 }
 
+namespace CORE::Dofsets
+{
+  class DofSet;
+}
+
 // forward declarations
 namespace DRT
 {
   class Discretization;
-  class DofSet;
 }  // namespace DRT
 namespace IO
 {
@@ -69,7 +73,7 @@ namespace FLD
         CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
 
     TurbulenceStatisticsGeneralMean(Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<const DRT::DofSet> standarddofset, std::string homdir,
+        Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset, std::string homdir,
         CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
 
     /*!
@@ -164,8 +168,8 @@ namespace FLD
     \brief Redistribute all statistics vectors
 
     */
-    void Redistribute(
-        Teuchos::RCP<const DRT::DofSet> standarddofset, Teuchos::RCP<DRT::Discretization> discret);
+    void Redistribute(Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset,
+        Teuchos::RCP<DRT::Discretization> discret);
 
     /*!
     \brief Add results from scalar transport field solver to statistics
@@ -188,7 +192,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! dofset containing fluid standard dofs (no XFEM dofs)
-    Teuchos::RCP<const DRT::DofSet> standarddofset_;
+    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset_;
 
     //! the scatra discretization
     Teuchos::RCP<DRT::Discretization> scatradis_;

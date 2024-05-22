@@ -32,8 +32,8 @@
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element_integration_select.hpp"
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_dofset.hpp"
 
 #include <iostream>
 

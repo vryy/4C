@@ -11,9 +11,9 @@
 
 #include "4C_lib_discret_xfem.hpp"
 
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_xfem_dofset.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -75,7 +75,7 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
   initialdofsets_.clear();
 
   initialdofsets_.push_back(
-      Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[nds[0]], true)->Clone());
+      Teuchos::rcp_dynamic_cast<CORE::Dofsets::DofSet>(dofsets_[nds[0]], true)->Clone());
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)
@@ -83,10 +83,10 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
         "DiscretizationXFEM: At the moment just one initial dofset is supported by "
         "DiscretisationXFEM!");
 
-  Teuchos::RCP<DRT::FixedSizeDofSet> fsds =
-      Teuchos::rcp_dynamic_cast<DRT::FixedSizeDofSet>(initialdofsets_[0]);
+  Teuchos::RCP<CORE::Dofsets::FixedSizeDofSet> fsds =
+      Teuchos::rcp_dynamic_cast<CORE::Dofsets::FixedSizeDofSet>(initialdofsets_[0]);
   if (fsds == Teuchos::null)
-    FOUR_C_THROW("DiscretizationXFEM: Cast to DRT::FixedSizeDofSet failed!");
+    FOUR_C_THROW("DiscretizationXFEM: Cast to CORE::Dofsets::FixedSizeDofSet failed!");
 
   Teuchos::RCP<XFEM::XFEMDofSet> xfds =
       Teuchos::rcp_dynamic_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);

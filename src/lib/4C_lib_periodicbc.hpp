@@ -28,8 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
+
+namespace CORE::Dofsets
+{
   class PBCDofSet;
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 
 /*!
@@ -313,7 +317,7 @@ class PeriodicBoundaryConditions
   bool verbose_;
 
   //!\brief the pbc-dofset created by this object
-  Teuchos::RCP<DRT::PBCDofSet> pbcdofset_;
+  Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset_;
 
   //!\brief number of pairs of periodic boundary conditions
   int numpbcpairs_;

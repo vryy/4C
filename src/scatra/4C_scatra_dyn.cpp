@@ -11,8 +11,8 @@
 #include "4C_scatra_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_algorithm.hpp"
@@ -119,8 +119,8 @@ void scatra_dyn(int restart)
           scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+      auto dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+          GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
@@ -249,12 +249,12 @@ void scatra_dyn(int restart)
         const int ndofperelement_fluid = 0;
 
         // add proxy of velocity related degrees of freedom to scatra discretization
-        Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(
-            new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
+        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::rcp(
-            new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
+        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
         algo->ScaTraField()->SetNumberOfDofSetVelocity(1);

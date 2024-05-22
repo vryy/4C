@@ -9,24 +9,24 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_dofset_transparent.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::TransparentDofSet::TransparentDofSet(
+CORE::Dofsets::TransparentDofSet::TransparentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
-    : DRT::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
+    : CORE::Dofsets::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
 {
   return;
 }
 
-int DRT::TransparentDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::TransparentDofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  int count = DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for TransparentDofSet");
 
@@ -46,7 +46,7 @@ int DRT::TransparentDofSet::AssignDegreesOfFreedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void DRT::TransparentDofSet::TransferDegreesOfFreedom(
+void CORE::Dofsets::TransparentDofSet::TransferDegreesOfFreedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
   if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
@@ -129,7 +129,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
+void CORE::Dofsets::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
   if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
@@ -337,7 +337,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
+void CORE::Dofsets::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
     std::map<int, std::vector<int>>& gid_to_dofs)
 {
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
@@ -381,7 +381,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::TransparentDofSet::PackLocalSourceDofs(
+void CORE::Dofsets::TransparentDofSet::PackLocalSourceDofs(
     std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock)
 {
   int size = gid_to_dofs.size();
@@ -417,7 +417,7 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::TransparentDofSet::UnpackLocalSourceDofs(
+void CORE::Dofsets::TransparentDofSet::UnpackLocalSourceDofs(
     std::map<int, std::vector<int>>& gid_to_dofs, std::vector<char>& rblock)
 {
   gid_to_dofs.clear();
@@ -462,8 +462,8 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
-    CORE::COMM::Exporter& exporter, MPI_Request& request)
+void CORE::Dofsets::TransparentDofSet::ReceiveBlock(int numproc, int myrank,
+    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // necessary variables
 
@@ -504,7 +504,7 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char>& sblock,
+void CORE::Dofsets::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char>& sblock,
     CORE::COMM::Exporter& exporter, MPI_Request& request)
 {
   // Send block to next proc.

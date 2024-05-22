@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_heterogeneous_reaction_strategy.hpp"
 
+#include "4C_discretization_dofset_gidbased_wrapper.hpp"
+#include "4C_discretization_dofset_merged_wrapper.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_gidbased_wrapper.hpp"
-#include "4C_lib_dofset_merged_wrapper.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -134,8 +134,8 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     //
     // slave side is supposed to be the surface discretization
     //
-    Teuchos::RCP<DRT::DofSetMergedWrapper> newdofset =
-        Teuchos::rcp(new DRT::DofSetMergedWrapper(scatradis->GetDofSetProxy(), scatradis,
+    Teuchos::RCP<CORE::Dofsets::DofSetMergedWrapper> newdofset =
+        Teuchos::rcp(new CORE::Dofsets::DofSetMergedWrapper(scatradis->GetDofSetProxy(), scatradis,
             "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave"));
 
     // assign the dofset to the reaction discretization
@@ -144,8 +144,8 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     // add all secondary dofsets as proxies
     for (int ndofset = 1; ndofset < scatratimint_->Discretization()->NumDofSets(); ++ndofset)
     {
-      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> gidmatchingdofset =
-          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatratimint_->Discretization(),
+      Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> gidmatchingdofset =
+          Teuchos::rcp(new CORE::Dofsets::DofSetGIDBasedWrapper(scatratimint_->Discretization(),
               scatratimint_->Discretization()->GetDofSetProxy(ndofset)));
       discret_->AddDofSet(gidmatchingdofset);
     }

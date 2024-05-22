@@ -11,6 +11,7 @@ between the xfluid class and the cut-library
 
 #include "4C_xfem_coupling_mesh.hpp"
 
+#include "4C_discretization_dofset_transparent_independent.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
@@ -20,7 +21,6 @@ between the xfluid class and the cut-library
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -133,8 +133,8 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
 
   // for parallel jobs we have to call TransparentDofSet with additional flag true
   bool parallel = cond_dis_->Comm().NumProc() > 1;
-  Teuchos::RCP<DRT::DofSet> newdofset =
-      Teuchos::rcp(new DRT::TransparentIndependentDofSet(cond_dis_, parallel));
+  Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+      Teuchos::rcp(new CORE::Dofsets::TransparentIndependentDofSet(cond_dis_, parallel));
 
   cutter_dis_->ReplaceDofSet(newdofset);  // do not call this with true!!
 
@@ -593,8 +593,8 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
     aux_coup_dis_->Redistribute(*newnoderowmap, *newnodecolmap, false, false, false);
 
     // make auxiliary discretization have the same dofs as the coupling discretization
-    Teuchos::RCP<DRT::DofSet> newdofset =
-        Teuchos::rcp(new DRT::TransparentIndependentDofSet(cond_dis_, true));
+    Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+        Teuchos::rcp(new CORE::Dofsets::TransparentIndependentDofSet(cond_dis_, true));
     aux_coup_dis_->ReplaceDofSet(newdofset,
         false);  // do not call this with true (no replacement in static dofsets intended)
     aux_coup_dis_->FillComplete(true, true, true);

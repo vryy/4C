@@ -11,6 +11,8 @@
 
 #include "4C_fluid_utils.hpp"
 
+#include "4C_discretization_dofset.hpp"
+#include "4C_discretization_dofset_interface.hpp"
 #include "4C_discretization_fem_general_l2_projection.hpp"
 #include "4C_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fluid_ele_action.hpp"
@@ -18,8 +20,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_dofset.hpp"
-#include "4C_lib_dofset_interface.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"

@@ -11,14 +11,14 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 /*----------------------------------------------------------------------*/
 
 
-#ifndef FOUR_C_LIB_XFEM_DOFSET_HPP
-#define FOUR_C_LIB_XFEM_DOFSET_HPP
+#ifndef FOUR_C_XFEM_DOFSET_HPP
+#define FOUR_C_XFEM_DOFSET_HPP
 
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset_fixed_size.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_fixed_size.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +34,7 @@ namespace CORE::GEO
 
 namespace XFEM
 {
-  class XFEMDofSet : public DRT::FixedSizeDofSet
+  class XFEMDofSet : public CORE::Dofsets::FixedSizeDofSet
   {
    public:
     /// constructor

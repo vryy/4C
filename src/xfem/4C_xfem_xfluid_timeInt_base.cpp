@@ -26,8 +26,8 @@
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_xfem_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

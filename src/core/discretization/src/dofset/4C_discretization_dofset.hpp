@@ -9,12 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_HPP
-#define FOUR_C_LIB_DOFSET_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_base.hpp"
+#include "4C_discretization_dofset_base.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -32,74 +32,78 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
 
-  /*!
-  \brief A set of degrees of freedom
+/*!
+\brief A set of degrees of freedom
 
-  \note This is an internal class of the discretization module that one
-  should not need to touch on an ordinary day. It is here to support the
-  Discretization class. Everyday use should happen via the
-  Discretization class only.
+\note This is an internal class of the discretization module that one
+should not need to touch on an ordinary day. It is here to support the
+Discretization class. Everyday use should happen via the
+Discretization class only.
 
-  <h3>Purpose</h3>
+<h3>Purpose</h3>
 
-  This class represents one set of degrees of freedom for the
-  Discretization class in the usual parallel fashion. That is there is a
-  DofRowMap() and a DofColMap() that return the maps of the global FE
-  system of equation in row and column setting respectively. These maps
-  are used by the algorithm's Epetra_Vector classes among others.
+This class represents one set of degrees of freedom for the
+Discretization class in the usual parallel fashion. That is there is a
+DofRowMap() and a DofColMap() that return the maps of the global FE
+system of equation in row and column setting respectively. These maps
+are used by the algorithm's Epetra_Vector classes among others.
 
-  There can be dofs in nodes, faces, and elements. And additionally to the
-  above maps this class needs to know the global dof ids of all nodes
-  and elements. In order to provide this information nodal and elemental
-  column vectors are provided that store the number of dofs and the
-  local column map id of the first dof for each node and element. Since
-  dof numbers to one object are always consecutive this is all that's
-  needed. So the methods NumDof() and Dof() can be provided for nodes,
-  faces, and elements.
+There can be dofs in nodes, faces, and elements. And additionally to the
+above maps this class needs to know the global dof ids of all nodes
+and elements. In order to provide this information nodal and elemental
+column vectors are provided that store the number of dofs and the
+local column map id of the first dof for each node and element. Since
+dof numbers to one object are always consecutive this is all that's
+needed. So the methods NumDof() and Dof() can be provided for nodes,
+faces, and elements.
 
-  One has to keep in mind, however, that the lookup of one dof gid
-  involves some table lookups. Therefore there is a special version of
-  Dof() that gathers and returns all dof gids to one node or element at
-  once. This is to be preferred if more that one lookup is needed.
+One has to keep in mind, however, that the lookup of one dof gid
+involves some table lookups. Therefore there is a special version of
+Dof() that gathers and returns all dof gids to one node or element at
+once. This is to be preferred if more that one lookup is needed.
 
-  The point of holding these maps and vectors in a class of its own is
-  to enable multiple sets of dofs on the same mesh. But judging from
-  past experience this feature will not be used that often. So effort
-  has been made to hide the possibility of multiple DofSets.
+The point of holding these maps and vectors in a class of its own is
+to enable multiple sets of dofs on the same mesh. But judging from
+past experience this feature will not be used that often. So effort
+has been made to hide the possibility of multiple DofSets.
 
-  The setup is done by AssignDegreesOfFreedom(). This method uses two
-  redundant nodal and elemental vectors. It would be hard to avoid
-  those. Lets hope we can always afford them.
+The setup is done by AssignDegreesOfFreedom(). This method uses two
+redundant nodal and elemental vectors. It would be hard to avoid
+those. Lets hope we can always afford them.
 
-  \note It is guaranteed that the same mesh (nodes and elements are all
-  the same with the same global ids) is assigned the same set of dofs
-  all the time independent of its parallel distribution. That's crucial
-  to be able to redistribute a mesh without losing the old vectors.
+\note It is guaranteed that the same mesh (nodes and elements are all
+the same with the same global ids) is assigned the same set of dofs
+all the time independent of its parallel distribution. That's crucial
+to be able to redistribute a mesh without losing the old vectors.
 
-  <h3>Invariants</h3>
+<h3>Invariants</h3>
 
-  There are two possible states in this class: Reset and setup. To
-  change back and forth use AssignDegreesOfFreedom() and Reset().
+There are two possible states in this class: Reset and setup. To
+change back and forth use AssignDegreesOfFreedom() and Reset().
 
-  <h3>Dof number uniqueness</h3>
+<h3>Dof number uniqueness</h3>
 
-  Each DofSet assigns unique dof numbers that do not occur in any other
-  DofSet. This is true as long as the number of dofs per DofSet does not
-  change. To achieve this we keep a list of dof sets internally.
+Each DofSet assigns unique dof numbers that do not occur in any other
+DofSet. This is true as long as the number of dofs per DofSet does not
+change. To achieve this we keep a list of dof sets internally.
 
-  <h3>Copying behaviour</h3>
+<h3>Copying behaviour</h3>
 
-  Please note that even though Michael does not like it this class
-  contains neither copy constructor nor assignment operator. This is
-  intended. It is legal to copy this objects of class. The internal
-  variables (all Teuchos::RCPs) know how to copy themselves. So the
-  default versions will do just fine. (Far better than buggy hand
-  written versions.) And due to the two possible states there is no
-  reason to deep copy any of the local map and vector variables.
+Please note that even though Michael does not like it this class
+contains neither copy constructor nor assignment operator. This is
+intended. It is legal to copy this objects of class. The internal
+variables (all Teuchos::RCPs) know how to copy themselves. So the
+default versions will do just fine. (Far better than buggy hand
+written versions.) And due to the two possible states there is no
+reason to deep copy any of the local map and vector variables.
 
-  \author u.kue
-  */
+\author u.kue
+*/
+
+namespace CORE::Dofsets
+{
   class DofSet : public DofSetBase
   {
    public:
@@ -113,7 +117,7 @@ namespace DRT
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(const Node* node) const override
+    int NumDof(const DRT::Node* node) const override
     {
       int lid = node->LID();
       if (lid == -1) return 0;
@@ -121,7 +125,7 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Element* element) const override
+    int NumDof(const DRT::Element* element) const override
     {
       // check if this is a face element
       int lid = element->LID();
@@ -133,7 +137,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Node* node, int dof) const override
+    int Dof(const DRT::Node* node, int dof) const override
     {
       int lid = node->LID();
       if (lid == -1) return -1;
@@ -144,7 +148,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Element* element, int dof) const override
+    int Dof(const DRT::Element* element, int dof) const override
     {
       int lid = element->LID();
       if (lid == -1) return -1;
@@ -155,7 +159,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const Node* node) const override
+    std::vector<int> Dof(const DRT::Node* node) const override
     {
       const int lid = node->LID();
       if (lid == -1) return std::vector<int>();
@@ -173,7 +177,7 @@ namespace DRT
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,            ///< the node
+        const DRT::Node* node,       ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
@@ -182,7 +186,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Element* element) const override
+    std::vector<int> Dof(const DRT::Element* element) const override
     {
       int lid = element->LID();
       if (lid == -1) return std::vector<int>();
@@ -197,7 +201,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node, std::vector<int>& lm) const override
+    void Dof(const DRT::Node* node, std::vector<int>& lm) const override
     {
       int lid = node->LID();
       if (lid == -1) return;
@@ -213,9 +217,9 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Node* node,      ///< node, for which you want the dof positions
-        const unsigned startindex,  ///< first index of vector at which will be written to end
-        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    void Dof(const DRT::Node* node,  ///< node, for which you want the dof positions
+        const unsigned startindex,   ///< first index of vector at which will be written to end
+        std::vector<int>& lm         ///< already allocated vector to be filled with dof positions
     ) const override
     {
       const int lid = node->LID();
@@ -233,7 +237,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const Element* element, std::vector<int>& lm) const override
+    void Dof(const DRT::Element* element, std::vector<int>& lm) const override
     {
       int lid = element->LID();
       if (lid == -1) return;
@@ -246,10 +250,10 @@ namespace DRT
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(
-        const Element* element,  ///< element which provides its expected number of DOFs per node
-        const Node* node,        ///< node, for which you want the DOF positions
-        std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
+    void Dof(const DRT::Element*
+                 element,       ///< element which provides its expected number of DOFs per node
+        const DRT::Node* node,  ///< node, for which you want the DOF positions
+        std::vector<int>& lm    ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       const int lid = node->LID();
@@ -296,7 +300,7 @@ namespace DRT
     @return Maximum dof number of this dofset
     */
     int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start) override;
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -323,7 +327,7 @@ namespace DRT
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const Node& node) const override
+    int NumDofPerNode(const DRT::Node& node) const override
     {
       const int numele = node.NumElement();
       const DRT::Element* const* myele = node.Elements();
@@ -333,18 +337,18 @@ namespace DRT
     }
 
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(const Element& element, const Node& node) const
+    virtual int NumDofPerNode(const DRT::Element& element, const DRT::Node& node) const
     {
       return element.NumDofPerNode(node);
     }
 
     /// get number of element dofs for this element
-    virtual int NumDofPerElement(const Element& element) const
+    virtual int NumDofPerElement(const DRT::Element& element) const
     {
       return element.NumDofPerElement();
     }
 
-    virtual int NumDofPerFace(const Element& element, int face) const
+    virtual int NumDofPerFace(const DRT::Element& element, int face) const
     {
       return element.NumDofPerFace(face);
     }
@@ -353,10 +357,10 @@ namespace DRT
     virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf) { return; };
 
     /// get first number to be used as Dof GID in AssignDegreesOfFreedom
-    virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+    virtual int GetFirstGIDNumberToBeUsed(const DRT::Discretization& dis) const;
 
     /// get minimal node GID to be used in AssignDegreesOfFreedom
-    virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+    virtual int GetMinimalNodeGIDIfRelevant(const DRT::Discretization& dis) const;
 
     /// filled flag
     bool filled_;
@@ -424,11 +428,11 @@ namespace DRT
     //***************************************************************************
 
   };  // class DofSet
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset);
+std::ostream& operator<<(std::ostream& os, const CORE::Dofsets::DofSet& dofset);
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -12,9 +12,9 @@
 
 #include "4C_loma_dyn.hpp"
 
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_loma_algorithm.hpp"
 #include "4C_scatra_ele.hpp"
@@ -89,8 +89,9 @@ void loma_dyn(int restart)
               lomacontrol, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+      Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+          Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+              GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);

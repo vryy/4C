@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -27,7 +27,7 @@ namespace MORTAR
   \brief A set of degrees of freedom special for mortar coupling
 
   */
-  class DofSet : public DRT::DofSet
+  class DofSet : public CORE::Dofsets::DofSet
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -42,7 +42,10 @@ namespace MORTAR
 
 
     /// create a copy of this object
-    Teuchos::RCP<DRT::DofSet> Clone() override { return Teuchos::rcp(new MORTAR::DofSet(*this)); }
+    Teuchos::RCP<CORE::Dofsets::DofSet> Clone() override
+    {
+      return Teuchos::rcp(new MORTAR::DofSet(*this));
+    }
 
     //! @}
 

@@ -21,10 +21,10 @@
 #include "4C_io_control.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret_xfem.hpp"
-#include "4C_lib_xfem_dofset.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
+#include "4C_xfem_dofset.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

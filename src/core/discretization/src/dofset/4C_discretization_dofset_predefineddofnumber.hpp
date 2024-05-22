@@ -9,18 +9,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_PREDEFINEDDOFNUMBER_HPP
-#define FOUR_C_LIB_DOFSET_PREDEFINEDDOFNUMBER_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_PREDEFINEDDOFNUMBER_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_PREDEFINEDDOFNUMBER_HPP
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace CORE::Dofsets
 {
   /// A DofSet that owns a predefined number of dofs
   /*!
@@ -109,7 +109,7 @@ namespace DRT
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start) override
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
       if (numdofpernodenodewise_ != Teuchos::null and
@@ -132,12 +132,12 @@ namespace DRT
         FOUR_C_THROW("Redistribution not yet implemented!");
 
       // call base class routine
-      return DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+      return CORE::Dofsets::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
     }
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const Node& node) const override
+    int NumDofPerNode(const DRT::Node& node) const override
     {
       if (numdofpernodenodewise_ == Teuchos::null)
         return numdofpernode_;
@@ -146,7 +146,7 @@ namespace DRT
     }
 
     /// get number of element dofs for this element
-    int NumDofPerElement(const Element& element) const override
+    int NumDofPerElement(const DRT::Element& element) const override
     {
       if (numdofperelementelewise_ == Teuchos::null)
         return numdofperelement_;
@@ -155,7 +155,7 @@ namespace DRT
     }
 
     /// get number of element dofs for this element
-    int NumDofPerFace(const Element& element, int face) const override
+    int NumDofPerFace(const DRT::Element& element, int face) const override
     {
       if (numdofperfacefacewise_ == Teuchos::null)
         return numdofperface_;
@@ -191,7 +191,7 @@ namespace DRT
 
   };  // DofSetPredefinedDoFNumber
 
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 
 FOUR_C_NAMESPACE_CLOSE

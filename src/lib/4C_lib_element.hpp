@@ -881,7 +881,7 @@ might become invalid after a redistribution of the discretization.
     Extended version that features a nodal dof set (nds) array. Each node might
     have multiple sets of (physical) dofs. That is the actual number of dofs at
     a node represent a (small) number of independent physical dofs. This is not
-    to be confused with multiple DRT::DofSet objects within one
+    to be confused with multiple CORE::Dofsets::DofSet objects within one
     DRT::Discretization.
 
     The case of multiple set of dofs occurs in xfem without enrichments. E.g. a

@@ -100,9 +100,9 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   thermo_->ScaTraField()->SetNumberOfDofSetThermo(3);
 
   // distribute dofsets among subproblems
-  Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
-  Teuchos::RCP<DRT::DofSetInterface> structdofset = structuredis->GetDofSetProxy();
-  Teuchos::RCP<DRT::DofSetInterface> thermodofset = thermodis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structuredis->GetDofSetProxy();
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> thermodofset = thermodis->GetDofSetProxy();
   if (scatradis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
   if (scatradis->AddDofSet(thermodofset) != 2) FOUR_C_THROW("unexpected dof sets in scatra field");
   if (structuredis->AddDofSet(scatradofset) != 1)

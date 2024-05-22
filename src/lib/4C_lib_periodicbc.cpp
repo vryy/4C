@@ -20,8 +20,8 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_discretization_dofset_pbc.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_pbc.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
@@ -1309,7 +1309,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       // create a new dofset specialisation for periodic boundary conditions
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
-      pbcdofset_ = Teuchos::rcp(new DRT::PBCDofSet(allcoupledcolnodes_));
+      pbcdofset_ = Teuchos::rcp(new CORE::Dofsets::PBCDofSet(allcoupledcolnodes_));
       discret_->ReplaceDofSet(0, pbcdofset_, true);
     }
     else

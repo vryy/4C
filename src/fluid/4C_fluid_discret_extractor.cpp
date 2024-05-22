@@ -11,10 +11,10 @@
 
 #include "4C_fluid_discret_extractor.hpp"
 
+#include "4C_discretization_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_lib_discret_xwall.hpp"
-#include "4C_lib_dofset_transparent.hpp"
 #include "4C_lib_periodicbc.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
@@ -347,8 +347,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     // get dof form parent discretization for child discretization
-    childdiscret_->ReplaceDofSet(
-        Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_, true)));  // true: parallel
+    childdiscret_->ReplaceDofSet(Teuchos::rcp(
+        new CORE::Dofsets::TransparentDofSet(parentdiscret_, true)));  // true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
     childdiscret_->Redistribute(*newrownodemap, *newcolnodemap, true, true, true);
@@ -421,7 +421,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
-    childdiscret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_, true)));
+    childdiscret_->ReplaceDofSet(
+        Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(parentdiscret_, true)));
 
     // set discretization writer
     childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_,

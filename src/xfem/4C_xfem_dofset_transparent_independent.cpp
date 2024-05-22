@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel,
     Teuchos::RCP<CORE::GEO::CutWizard> wizard)
-    : DRT::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
+    : CORE::Dofsets::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
 {
   return;
 }
@@ -31,11 +31,11 @@ int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node)
     CORE::GEO::CUT::Node *n = wizard_->GetNode(node.Id());
     if (n != nullptr)
     {
-      int numdofpernode = DRT::DofSet::NumDofPerNode(node);
+      int numdofpernode = CORE::Dofsets::DofSet::NumDofPerNode(node);
       return numdofpernode * n->NumDofSets();
     }
   }
-  return DRT::DofSet::NumDofPerNode(node);
+  return CORE::Dofsets::DofSet::NumDofPerNode(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

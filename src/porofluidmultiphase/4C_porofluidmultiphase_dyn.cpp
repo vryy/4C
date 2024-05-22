@@ -10,12 +10,12 @@
 
 #include "4C_porofluidmultiphase_dyn.hpp"
 
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
@@ -101,8 +101,8 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(1, 0, 0, false));
   const int nds_solidpressure = actdis->AddDofSet(dofsetaux);
 
   // -------------------------------------------------------------------

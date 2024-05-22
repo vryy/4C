@@ -9,12 +9,12 @@
 #include "4C_elch_dyn.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_elch_algorithm.hpp"
 #include "4C_elch_moving_boundary_algorithm.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_elch.hpp"
@@ -84,8 +84,8 @@ void elch_dyn(int restart)
           scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+      auto dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+          GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);

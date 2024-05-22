@@ -102,7 +102,7 @@ namespace ADAPTER
     {
       return fluid_->Discretization();
     }
-    Teuchos::RCP<const DRT::DofSet> DofSet() override { return fluid_->DofSet(); }
+    Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override { return fluid_->DofSet(); }
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return fluid_->GetDBCMapExtractor();

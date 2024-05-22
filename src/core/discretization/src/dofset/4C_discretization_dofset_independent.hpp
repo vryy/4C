@@ -14,12 +14,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_INDEPENDENT_HPP
-#define FOUR_C_LIB_DOFSET_INDEPENDENT_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_INDEPENDENT_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_INDEPENDENT_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset.hpp"
+#include "4C_discretization_dofset.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -29,6 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
+
+namespace CORE::Dofsets
+{
 
   /*!
   \brief A set of degrees of freedom
@@ -66,17 +70,17 @@ namespace DRT
 
    protected:
     /// get first number to be used as Dof GID in AssignDegreesOfFreedom
-    int GetFirstGIDNumberToBeUsed(const Discretization& dis) const override;
+    int GetFirstGIDNumberToBeUsed(const DRT::Discretization& dis) const override;
 
     /// get minimal node GID to be used in AssignDegreesOfFreedom
-    int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const override;
+    int GetMinimalNodeGIDIfRelevant(const DRT::Discretization& dis) const override;
 
     bool ignoreminnodegid_;  //< bool whether minnodegid is taken from the discretization or ignored
 
    private:
   };
 
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

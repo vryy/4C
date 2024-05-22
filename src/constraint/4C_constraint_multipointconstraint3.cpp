@@ -12,9 +12,9 @@
 
 #include "4C_constraint_element3.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -56,7 +56,8 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> disc
       Teuchos::RCP<Epetra_Map> newcolnodemap =
           CORE::REBALANCE::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-      Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
+      Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+          Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset = Teuchos::null;
       (discriter->second)->FillComplete();

@@ -14,9 +14,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_discretization_dofset_gidbased_wrapper.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_dofset_gidbased_wrapper.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_poroelast_utils_setup.hpp"
@@ -85,10 +85,10 @@ namespace POROELAST
          */
         if (numglobalstructnodes != numglobalfluidnodes)
         {
-          Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structsubdofset =
-              Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
-          Teuchos::RCP<DRT::DofSetGIDBasedWrapper> fluidsubdofset =
-              Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
+          Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
+              new CORE::Dofsets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+          Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
+              new CORE::Dofsets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
 
           // check if FluidField has 2 discretizations, so that coupling is possible
           if (fluiddis->AddDofSet(structsubdofset) != 1)
@@ -99,9 +99,9 @@ namespace POROELAST
         else
         {
           // build a proxy of the structure discretization for the fluid field
-          Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+          Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
           // build a proxy of the fluid discretization for the structure field
-          Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+          Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
 
           // check if FluidField has 2 discretizations, so that coupling is possible
           if (fluiddis->AddDofSet(structdofset) != 1)
@@ -133,13 +133,13 @@ namespace POROELAST
         const int ndofpernode_struct = GLOBAL::Problem::Instance()->NDim();
         const int ndofperelement_struct = 0;
 
-        Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(
-            new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
+        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (structdis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::rcp(
-            new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
+        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            ndofpernode_struct, ndofperelement_struct, 0, true));
         if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
 
         // call AssignDegreesOfFreedom also for auxiliary dofsets

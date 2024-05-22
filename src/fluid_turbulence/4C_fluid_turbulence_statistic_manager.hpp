@@ -32,8 +32,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-  class DofSet;
 }  // namespace DRT
+
+namespace CORE::Dofsets
+{
+  class DofSet;
+}
 
 namespace IO
 {
@@ -133,7 +137,7 @@ namespace FLD
     */
     void DoTimeSample(int step, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
-        Teuchos::RCP<const DRT::DofSet> stddofset);
+        Teuchos::RCP<const CORE::Dofsets::DofSet> stddofset);
 
     /*!
     \brief Write (dump) the statistics to a file

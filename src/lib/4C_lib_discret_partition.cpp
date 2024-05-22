@@ -10,8 +10,8 @@
 /*---------------------------------------------------------------------*/
 
 #include "4C_comm_exporter.hpp"
+#include "4C_discretization_dofset_pbc.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_pbc.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -694,7 +694,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   // if node of pbc set is contained in list of owned and ghosted elements
   // in case of pbcs, this has to be restored
   bool have_pbc = false;
-  Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::null;
+  Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset = Teuchos::null;
   // map of master nodes and corresponding slave nodes
   std::map<int, std::set<int>> pbcmap;
   // create the inverse map --- slavenode -> masternode
@@ -705,7 +705,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
   {
-    pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet>(dofsets_[nds]);
+    pbcdofset = Teuchos::rcp_dynamic_cast<CORE::Dofsets::PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
     {

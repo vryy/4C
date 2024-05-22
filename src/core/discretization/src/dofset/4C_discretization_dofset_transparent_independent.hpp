@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_TRANSPARENT_INDEPENDENT_HPP
-#define FOUR_C_LIB_DOFSET_TRANSPARENT_INDEPENDENT_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_TRANSPARENT_INDEPENDENT_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_independent.hpp"
-#include "4C_lib_dofset_transparent.hpp"
+#include "4C_discretization_dofset_independent.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +30,7 @@ namespace CORE::GEO
   class CutWizard;
 }
 
-namespace DRT
+namespace CORE::Dofsets
 {
   /// Alias dofset that shares dof numbers with another dofset
   /*!
@@ -64,7 +64,7 @@ namespace DRT
 
 
   };  // class TransparentDofSet
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

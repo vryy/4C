@@ -14,6 +14,7 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_volmortar_shape.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_fluid_utils.hpp"
@@ -21,7 +22,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -3494,8 +3494,9 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     }
 
     int number_dofsets = scatratimint_->GetMaxDofSetNumber();
-    Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(
-        new DRT::DofSetPredefinedDoFNumber(numdofpernode, Teuchos::null, Teuchos::null, true));
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset =
+        Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+            numdofpernode, Teuchos::null, Teuchos::null, true));
     if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
       FOUR_C_THROW("Scalar transport discretization exhibits invalid number of dofsets!");
     scatratimint_->SetNumberOfDofSetGrowth(number_dofsets);

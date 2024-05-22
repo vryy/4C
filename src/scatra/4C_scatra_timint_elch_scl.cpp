@@ -11,10 +11,10 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -98,7 +98,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
 
   micro_timint_->Init();
 
-  auto dofset_vel = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(3, 0, 0, true));
+  auto dofset_vel = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->Discretization()->AddDofSet(dofset_vel) != 1)
     FOUR_C_THROW("unexpected number of dofsets in the scatra micro discretization");
   MicroScaTraField()->SetNumberOfDofSetVelocity(1);

@@ -13,6 +13,7 @@
 #include "4C_binstrategy.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_transparent.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_global_data.hpp"
@@ -21,7 +22,6 @@
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -600,8 +600,8 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 
   // reuse dofs of structural discretization for wall discretization
   bool parallel = (comm_.NumProc() == 1) ? false : true;
-  Teuchos::RCP<DRT::DofSet> newdofset =
-      Teuchos::rcp(new DRT::TransparentDofSet(structurediscretization, parallel));
+  Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+      Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(structurediscretization, parallel));
   walldiscretization_->ReplaceDofSet(newdofset);
 
   // finalize wall discretization construction

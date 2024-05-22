@@ -11,6 +11,7 @@
 
 #include "4C_fluid_timint_hdg.hpp"
 
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
@@ -19,7 +20,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,8 +53,8 @@ void FLD::TimIntHDG::Init()
                         : 0;
 
   // set degrees of freedom in the discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
   discret_->AddDofSet(dofsetaux);
   discret_->FillComplete();
 

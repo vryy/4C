@@ -180,7 +180,7 @@ POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
     std::cout << "\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n" << std::endl;
 
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSetInterface> scatradofset =
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset =
       ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible

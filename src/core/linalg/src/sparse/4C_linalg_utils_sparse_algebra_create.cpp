@@ -130,7 +130,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
-    const DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor)
+    const CORE::Dofsets::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;

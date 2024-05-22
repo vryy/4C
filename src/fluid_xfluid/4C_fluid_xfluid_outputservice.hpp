@@ -29,8 +29,12 @@ namespace DRT
   class Discretization;
   class DiscretizationXFEM;
   class Element;
-  class IndependentDofSet;
 }  // namespace DRT
+
+namespace CORE::Dofsets
+{
+  class IndependentDofSet;
+}
 
 namespace CORE::LINALG
 {
@@ -144,7 +148,7 @@ namespace FLD
     const Teuchos::RCP<XFEM::ConditionManager> cond_manager_;
 
     //! dofset for fluid output
-    Teuchos::RCP<DRT::IndependentDofSet> dofset_out_;
+    Teuchos::RCP<CORE::Dofsets::IndependentDofSet> dofset_out_;
 
     //! output vector (mapped to initial fluid dofrowmap)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;

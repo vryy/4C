@@ -11,12 +11,12 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "4C_lib_dofset_definedmapping_wrapper.hpp"
+#include "4C_discretization_dofset_definedmapping_wrapper.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_dofset_base.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_base.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
+CORE::Dofsets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
     Teuchos::RCP<DofSetInterface> sourcedofset, Teuchos::RCP<const DRT::Discretization> sourcedis,
     const std::string& couplingcond, const std::set<int> condids)
     : DofSetBase(),
@@ -43,15 +43,15 @@ DRT::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
+CORE::Dofsets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 {
   if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
-    const Discretization& dis, const unsigned dspos, const int start)
+int CORE::Dofsets::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null)
     FOUR_C_THROW("No source dof set assigned to mapping dof set!");
@@ -182,7 +182,7 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetDefinedMappingWrapper::Reset()
+void CORE::Dofsets::DofSetDefinedMappingWrapper::Reset()
 {
   targetlidtosourcegidmapping_ = Teuchos::null;
   filled_ = false;
@@ -193,7 +193,7 @@ void DRT::DofSetDefinedMappingWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
+void CORE::Dofsets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
@@ -209,7 +209,7 @@ void DRT::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) const
+const DRT::Node* CORE::Dofsets::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) const
 {
   // check
   FOUR_C_ASSERT(targetLid <= targetlidtosourcegidmapping_->MyLength(), "Target Lid out of range!");

@@ -10,7 +10,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_dofset_pbc.hpp"
+#include "4C_discretization_dofset_pbc.hpp"
 
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element.hpp"
@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
+CORE::Dofsets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
     : DofSet(), perbndcouples_(Teuchos::null), myMaxGID_(-1)
 {
   SetCoupledNodes(couplednodes);
@@ -31,15 +31,15 @@ DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> coupledn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
+int CORE::Dofsets::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::PBCDofSet::MinAllGID() const { return myMinGID_; }
+int CORE::Dofsets::PBCDofSet::MinAllGID() const { return myMinGID_; }
 
 
-int DRT::PBCDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::PBCDofSet::AssignDegreesOfFreedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
@@ -48,19 +48,19 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
-  DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
-  myMaxGID_ = DRT::DofSet::MaxAllGID();
-  myMinGID_ = DRT::DofSet::MinAllGID();
+  myMaxGID_ = DofSet::MaxAllGID();
+  myMinGID_ = DofSet::MinAllGID();
 
   // restore the slave node set
   slavenodeids_ = tempset;
 
   // assign dofs for the standard dofset, that is without periodic boundary
   // conditions and with the slave node set back in place
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  int count = DofSet::AssignDegreesOfFreedom(dis, dspos, start);
 
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
@@ -106,7 +106,8 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
  |  update coupled nodes map                             rasthofer 07/11|
  |                                                       DA wichmann    |
  *----------------------------------------------------------------------*/
-void DRT::PBCDofSet::SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
+void CORE::Dofsets::PBCDofSet::SetCoupledNodes(
+    Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
 {
   perbndcouples_ = couplednodes;
   slavenodeids_ = Teuchos::rcp(new std::set<int>);
@@ -128,7 +129,7 @@ void DRT::PBCDofSet::SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>
  |  Build the connectivity between slave node and its master node       |
  |                                                       schott 05/15   |
  *----------------------------------------------------------------------*/
-void DRT::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
+void CORE::Dofsets::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
 {
   perbnd_slavetomaster_ = Teuchos::rcp(new std::map<int, int>);
 

@@ -9,12 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_DOFSET_BASE_HPP
-#define FOUR_C_LIB_DOFSET_BASE_HPP
+#ifndef FOUR_C_DISCRETIZATION_DOFSET_BASE_HPP
+#define FOUR_C_DISCRETIZATION_DOFSET_BASE_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_interface.hpp"
+#include "4C_discretization_dofset_interface.hpp"
 
 #include <list>
 
@@ -23,7 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}
 
+namespace CORE::Dofsets
+{
 
   /*! \brief Base class set of degrees of freedom
 
@@ -103,7 +106,7 @@ namespace DRT
 
 
   };  // class DofSetBase
-}  // namespace DRT
+}  // namespace CORE::Dofsets
 
 FOUR_C_NAMESPACE_CLOSE
 

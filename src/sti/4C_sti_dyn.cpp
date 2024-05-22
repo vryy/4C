@@ -10,7 +10,7 @@
 #include "4C_sti_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_scatra_resulttest_elch.hpp"
 #include "4C_scatra_timint_elch.hpp"
@@ -39,8 +39,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   // add dofset for velocity-related quantities to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
@@ -57,7 +57,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   Teuchos::RCP<DRT::Discretization> thermodis = problem->GetDis("thermo");
 
   // add dofset for velocity-related quantities to thermo discretization
-  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
+  dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
   if (thermodis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 

@@ -18,12 +18,12 @@ algorithms
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_ehl_partitioned.hpp"
 #include "4C_ehl_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 #include "4C_mat_lubrication_mat.hpp"
@@ -175,14 +175,15 @@ void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string 
   const int ndofpernode_struct = structdis->NumDof(0, structdis->lRowNode(0));
   const int ndofperelement_struct = 0;
 
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux_lubrication =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux_lubrication =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
           ndofpernode_lubrication, ndofperelement_lubrication, 0, true));
   if (structdis->AddDofSet(dofsetaux_lubrication) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux_struct = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux_struct =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+          ndofpernode_struct, ndofperelement_struct, 0, true));
   if (lubricationdis->AddDofSet(dofsetaux_struct) != 1)
     FOUR_C_THROW("unexpected dof sets in lubrication field");
 

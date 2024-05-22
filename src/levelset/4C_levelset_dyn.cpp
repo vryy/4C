@@ -8,11 +8,11 @@
 #include "4C_levelset_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_levelset_algorithm.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -70,8 +70,9 @@ void levelset_dyn(int restart)
           levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+          GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);

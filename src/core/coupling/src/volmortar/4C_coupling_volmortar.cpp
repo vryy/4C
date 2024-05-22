@@ -20,10 +20,10 @@
 #include "4C_cut_cutwizard.hpp"
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_volumecell.hpp"
+#include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_geometry_searchtree.hpp"
 #include "4C_discretization_geometry_searchtree_service.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -1130,10 +1130,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
 {
   // create merged map:
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
+  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
+  dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
   int dofseta = dis1_->AddDofSet(dofsetaux);
-  dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
+  dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
   int dofsetb = dis2_->AddDofSet(dofsetaux);
   dis1_->FillComplete(true, false, false);
   dis2_->FillComplete(true, false, false);

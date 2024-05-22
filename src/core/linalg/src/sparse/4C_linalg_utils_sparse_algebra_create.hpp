@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_dofset_interface.hpp"
+#include "4C_discretization_dofset_interface.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_Comm.h>
@@ -124,7 +124,8 @@ namespace CORE::LINALG
     \date 02/08
    */
   void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
-      const DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor);
+      const CORE::Dofsets::DofSetInterface& dofset, int ndim,
+      CORE::LINALG::MapExtractor& extractor);
 
 
   /*!
