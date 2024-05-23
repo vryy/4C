@@ -11,8 +11,8 @@ else()
 endif()
 message(STATUS "Global test timeout scale is ${FOUR_C_TEST_TIMEOUT_SCALE}.")
 
-math(EXPR FOUR_C_TEST_TIMEOUT "120*${FOUR_C_TEST_TIMEOUT_SCALE}")
-message(STATUS "The scaled global test timeout is ${FOUR_C_TEST_TIMEOUT} s.")
+math(EXPR FOUR_C_TEST_GLOBAL_TIMEOUT "120*${FOUR_C_TEST_TIMEOUT_SCALE}")
+message(STATUS "The scaled global test timeout is ${FOUR_C_TEST_GLOBAL_TIMEOUT} s.")
 
 # Fetch GoogleTest and setup the unit tests if option is enabled
 four_c_process_global_option(FOUR_C_WITH_GOOGLETEST "Use GoogleTest for unit testing" ON)
