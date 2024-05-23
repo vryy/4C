@@ -15,13 +15,13 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_parobject.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_independent.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_io_legacy_table_iter.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_rigidsphere.hpp"
 
@@ -602,7 +602,7 @@ void PostProblem::read_meshes()
       if ((cond_pbcssurf != Teuchos::null and not cond_pbcssurf->empty()) or
           (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
       {
-        PeriodicBoundaryConditions pbc(currfield.discretization());
+        CORE::Conditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.update_dofs_for_periodic_boundary_conditions();
       }
 

@@ -15,12 +15,12 @@
 #include "4C_tsi_utils.hpp"
 
 #include "4C_coupling_volmortar_utils.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_dofset.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_fem_general_element_center.hpp"
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_so3_plast_ssn.hpp"
 #include "4C_so3_thermo.hpp"
@@ -158,7 +158,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // connect degrees of freedom for periodic boundary conditions
     {
-      PeriodicBoundaryConditions pbc_struct(structdis);
+      CORE::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
 
       if (pbc_struct.HasPBC())
       {
@@ -168,7 +168,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // connect degrees of freedom for periodic boundary conditions
     {
-      PeriodicBoundaryConditions pbc(thermdis);
+      CORE::Conditions::PeriodicBoundaryConditions pbc(thermdis);
 
       if (pbc.HasPBC())
       {

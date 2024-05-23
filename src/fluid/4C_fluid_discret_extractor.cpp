@@ -11,11 +11,11 @@
 
 #include "4C_fluid_discret_extractor.hpp"
 
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_lib_discret_xwall.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -327,7 +327,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         // master and slave nodes are owned by one proc afterwards
         if (allcond[numcond] == "SurfacePeriodic")
         {
-          PeriodicBoundaryConditions pbc(childdiscret_, false);
+          CORE::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
           pbc.update_dofs_for_periodic_boundary_conditions();
         }
       }
@@ -403,7 +403,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         std::cout << " discretization and fetch slave nodes to the master's proc\n";
       }
 
-      PeriodicBoundaryConditions pbc(childdiscret_, false);
+      CORE::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
       pbc.update_dofs_for_periodic_boundary_conditions();
 
       // get node to node coupling

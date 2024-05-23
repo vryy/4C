@@ -16,7 +16,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_lib_periodicbc.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 
 #include "4C_comm_utils.hpp"
 #include "4C_coupling_matchingoctree.hpp"
@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-PeriodicBoundaryConditions::PeriodicBoundaryConditions(
+CORE::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
     Teuchos::RCP<DRT::Discretization> actdis, bool verbose)
     : discret_(actdis), verbose_(verbose), pbcdofset_(Teuchos::null)
 {
@@ -98,7 +98,7 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
+void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
 {
   if (numpbcpairs_ > 0)
   {
@@ -238,7 +238,7 @@ void PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
+void CORE::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
 {
   if (numpbcpairs_ > 0)
   {
@@ -615,7 +615,7 @@ void PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
+void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
     std::map<int, std::vector<int>>& midtosid, const std::vector<int> masternodeids,
     const std::vector<int> slavenodeids, const std::vector<int> dofsforpbcplane,
     const double rotangle, const double abstol)
@@ -655,7 +655,7 @@ void PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
   tm3_ref_ = Teuchos::null;
 
   return;
-}  // PeriodicBoundaryConditions::create_node_coupling_for_single_pbc
+}  // CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -670,7 +670,7 @@ void PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void PeriodicBoundaryConditions::AddConnectivity(
+void CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity(
     std::map<int, std::vector<int>>& midtosid, const int pbcid)
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
@@ -916,7 +916,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
   }
 
   return;
-}  // PeriodicBoundaryConditions::AddConnectivity
+}  // CORE::Conditions::PeriodicBoundaryConditions::AddConnectivity
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -930,7 +930,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
+void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
@@ -1336,7 +1336,7 @@ void PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
   }
 
   return;
-}  // PeriodicBoundaryConditions::redistribute_and_create_dof_coupling
+}  // CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1363,7 +1363,7 @@ void PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::BalanceLoad()
+void CORE::Conditions::PeriodicBoundaryConditions::BalanceLoad()
 {
   if (discret_->Comm().NumProc() > 1)
   {

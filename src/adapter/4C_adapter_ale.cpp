@@ -17,6 +17,7 @@
 #include "4C_adapter_ale_wear.hpp"
 #include "4C_adapter_ale_xffsi.hpp"
 #include "4C_ale.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_fpsi.hpp"
@@ -26,7 +27,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -67,7 +67,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   // ---------------------------------------------------------------------------
   // connect degrees of freedom for coupled nodes
   // ---------------------------------------------------------------------------
-  PeriodicBoundaryConditions pbc(actdis);
+  CORE::Conditions::PeriodicBoundaryConditions pbc(actdis);
   pbc.update_dofs_for_periodic_boundary_conditions();
 
   // ---------------------------------------------------------------------------

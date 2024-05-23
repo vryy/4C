@@ -21,6 +21,7 @@
 #include "4C_adapter_fld_fluid_xfsi.hpp"
 #include "4C_adapter_fld_lung.hpp"
 #include "4C_adapter_fld_poro.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_timint_ac_ost.hpp"
 #include "4C_fluid_timint_hdg.hpp"
@@ -48,7 +49,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
@@ -101,7 +101,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   if (probtype != GLOBAL::ProblemType::fsi)
   {
-    PeriodicBoundaryConditions pbc(actdis);
+    CORE::Conditions::PeriodicBoundaryConditions pbc(actdis);
     pbc.update_dofs_for_periodic_boundary_conditions();
   }
 
