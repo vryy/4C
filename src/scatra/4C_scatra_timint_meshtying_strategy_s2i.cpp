@@ -15,13 +15,13 @@
 #include "4C_coupling_volmortar_shape.hpp"
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -1042,7 +1042,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(icoup_)->SlaveDofMap(), 81));
 
                 // initialize assembly strategy for auxiliary matrix block
-                DRT::AssembleStrategy strategy(
+                CORE::FE::AssembleStrategy strategy(
                     0, 2, islavematrix, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
                 // create parameter list for elements
@@ -1133,7 +1133,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     Teuchos::rcp(new CORE::LINALG::SparseMatrix(dofrowmap_growth, 81));
 
                 // initialize assembly strategy for auxiliary matrix block
-                DRT::AssembleStrategy strategy(
+                CORE::FE::AssembleStrategy strategy(
                     2, 0, islavematrix, imastermatrix, Teuchos::null, Teuchos::null, Teuchos::null);
 
                 // create parameter list for elements
@@ -1184,8 +1184,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                         *blockmapgrowth_, *blockmaps_slave_, 81, false, true));
 
                 // initialize assembly strategy for auxiliary matrix block
-                DRT::AssembleStrategy strategy(0, 2, blockslavematrix, Teuchos::null, Teuchos::null,
-                    Teuchos::null, Teuchos::null);
+                CORE::FE::AssembleStrategy strategy(0, 2, blockslavematrix, Teuchos::null,
+                    Teuchos::null, Teuchos::null, Teuchos::null);
 
                 // create parameter list for elements
                 Teuchos::ParameterList condparams;
@@ -1265,8 +1265,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     Teuchos::rcp(new CORE::LINALG::SparseMatrix(dofrowmap_growth, 81));
 
                 // initialize assembly strategy for auxiliary matrix blocks
-                DRT::AssembleStrategy strategy(2, 0, blockslavematrix, imastermatrix, Teuchos::null,
-                    Teuchos::null, Teuchos::null);
+                CORE::FE::AssembleStrategy strategy(2, 0, blockslavematrix, imastermatrix,
+                    Teuchos::null, Teuchos::null, Teuchos::null);
 
                 // create parameter list for elements
                 Teuchos::ParameterList condparams;
@@ -1331,8 +1331,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             growthresidual_->PutScalar(0.);
 
             // initialize assembly strategy for main-diagonal growth-growth block and
-            DRT::AssembleStrategy strategy(2, 2, growthgrowthblock_, Teuchos::null, growthresidual_,
-                Teuchos::null, Teuchos::null);
+            CORE::FE::AssembleStrategy strategy(2, 2, growthgrowthblock_, Teuchos::null,
+                growthresidual_, Teuchos::null, Teuchos::null);
 
             // create parameter list for elements
             Teuchos::ParameterList condparams;

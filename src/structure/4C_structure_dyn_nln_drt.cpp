@@ -13,12 +13,12 @@
 #include "4C_adapter_str_structure.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_comm_utils.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_resulttest.hpp"
@@ -76,7 +76,7 @@ void dyn_nlnstructural_drt()
 
   // connect degrees of freedom for periodic boundary conditions
   {
-    PeriodicBoundaryConditions pbc_struct(structdis);
+    CORE::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
 
     if (pbc_struct.HasPBC())
     {

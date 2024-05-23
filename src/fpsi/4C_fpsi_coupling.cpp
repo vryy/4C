@@ -18,12 +18,12 @@ Fluid-Poro-Coupling Matrixes!
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fpsi.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -294,10 +294,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
     {
       fparams.set<std::string>("fillblock", "Porofluid_Freefluid");
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-      DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-          0,                                  // fluiddofset for column
-          k_pf_porofluid,                     // coupling matrix with fluid rowmap
-          Teuchos::null,                      // no other matrix or vectors
+      CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+          0,                                       // fluiddofset for column
+          k_pf_porofluid,                          // coupling matrix with fluid rowmap
+          Teuchos::null,                           // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // what's the current problem type? Is it a fps3i problem?
@@ -326,10 +326,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       fparams.set<std::string>("fillblock", "Porofluid_Structure");
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
       k_pf_porofluid->Zero();
-      DRT::AssembleStrategy fluidstrategy21(0,  // porofluiddofset for row
-          0,                                    // porofluiddofset for column
-          k_pf_porofluid,                       // coupling matrix with fluid rowmap
-          Teuchos::null,                        // no other matrix or vectors
+      CORE::FE::AssembleStrategy fluidstrategy21(0,  // porofluiddofset for row
+          0,                                         // porofluiddofset for column
+          k_pf_porofluid,                            // coupling matrix with fluid rowmap
+          Teuchos::null,                             // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       FluidField()->Discretization()->EvaluateCondition(fparams, fluidstrategy21, "FPSICoupling");
@@ -350,10 +350,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       fparams.set<std::string>("fillblock", "Fluid_Porofluid");
       fparams.set("InterfaceFacingElementMap", poro_fluid_fluid_interface_map_);
       k_fp_porofluid->Zero();
-      DRT::AssembleStrategy porofluidstrategy(0,  // porofluiddofset for row
-          0,                                      // porofluiddofset for column
-          k_fp_porofluid,                         // porofluid-structure coupling matrix
-          Teuchos::null,                          // no other matrix or vectors
+      CORE::FE::AssembleStrategy porofluidstrategy(0,  // porofluiddofset for row
+          0,                                           // porofluiddofset for column
+          k_fp_porofluid,                              // porofluid-structure coupling matrix
+          Teuchos::null,                               // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       PoroField()->FluidField()->Discretization()->EvaluateCondition(
@@ -376,10 +376,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
       k_pfs_->UnComplete();
 
-      DRT::AssembleStrategy structurestrategy(0,  // porofluiddofset for row
-          1,                                      // structuredofset for column
-          k_pfs_,                                 // coupling matrix with porofluid rowmap
-          Teuchos::null,                          // no other matrix or vectors
+      CORE::FE::AssembleStrategy structurestrategy(0,  // porofluiddofset for row
+          1,                                           // structuredofset for column
+          k_pfs_,                                      // coupling matrix with porofluid rowmap
+          Teuchos::null,                               // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       PoroField()->FluidField()->Discretization()->EvaluateCondition(
@@ -398,10 +398,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       k_pf_porofluid->Reset();
       k_pf_porofluid->UnComplete();
 
-      DRT::AssembleStrategy structurestrategy2(0,  // porofluiddofset for row
-          0,                                       // fluiddofset for column
-          k_pf_porofluid,                          // coupling matrix with porofluid rowmap
-          Teuchos::null,                           // no other matrix or vectors
+      CORE::FE::AssembleStrategy structurestrategy2(0,  // porofluiddofset for row
+          0,                                            // fluiddofset for column
+          k_pf_porofluid,                               // coupling matrix with porofluid rowmap
+          Teuchos::null,                                // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
@@ -426,10 +426,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       k_pf_porofluid->Zero();
       k_pf_porofluid->UnComplete();
 
-      DRT::AssembleStrategy fluidfluidstrategy(0,  // fluiddofset for row
-          0,                                       // fluiddofset for column
-          c_ff_,                                   // porofluid-structure coupling matrix
-          Teuchos::null,                           // no other matrix or vectors
+      CORE::FE::AssembleStrategy fluidfluidstrategy(0,  // fluiddofset for row
+          0,                                            // fluiddofset for column
+          c_ff_,                                        // porofluid-structure coupling matrix
+          Teuchos::null,                                // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       FluidField()->Discretization()->EvaluateCondition(
@@ -440,10 +440,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       k_pf_porofluid->Zero();
       k_pf_porofluid->UnComplete();
 
-      DRT::AssembleStrategy structurefluidstrategy(0,  // fluid dofset for row
-          0,                                           // fluid dofset for column
-          k_pf_porofluid,                              // coupling matrix with fluid rowmap
-          Teuchos::null,                               // no other matrix or vectors
+      CORE::FE::AssembleStrategy structurefluidstrategy(0,  // fluid dofset for row
+          0,                                                // fluid dofset for column
+          k_pf_porofluid,                                   // coupling matrix with fluid rowmap
+          Teuchos::null,                                    // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       FluidField()->Discretization()->EvaluateCondition(
@@ -464,10 +464,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       k_pf_porofluid->Zero();
       k_pf_porofluid->UnComplete();
 
-      DRT::AssembleStrategy structurestructurestrategy(0,  // fluid dofset for row
-          0,                                               // fluid dofset for column
-          k_pf_porofluid,                                  // coupling matrix with fluid rowmap
-          Teuchos::null,                                   // no other matrix or vectors
+      CORE::FE::AssembleStrategy structurestructurestrategy(0,  // fluid dofset for row
+          0,                                                    // fluid dofset for column
+          k_pf_porofluid,                                       // coupling matrix with fluid rowmap
+          Teuchos::null,                                        // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       FluidField()->Discretization()->EvaluateCondition(
@@ -502,10 +502,10 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 
       // assemble into fluid row and column dofs -> need to transform rows to structure dofs and
       // cols to ale dofs
-      DRT::AssembleStrategy structurealestrategy(0,  // fluid dofset for row
-          1,                                         // ale dofset for column
-          temp6,                                     // coupling matrix with fluid rowmap
-          Teuchos::null,                             // no other matrix or vectors
+      CORE::FE::AssembleStrategy structurealestrategy(0,  // fluid dofset for row
+          1,                                              // ale dofset for column
+          temp6,                                          // coupling matrix with fluid rowmap
+          Teuchos::null,                                  // no other matrix or vectors
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // evaluate coupling terms
@@ -549,8 +549,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
 
-    DRT::AssembleStrategy rhscontistrategy(0,  // fluid dofset for row
-        0,                                     // fluid dofset for column
+    CORE::FE::AssembleStrategy rhscontistrategy(0,  // fluid dofset for row
+        0,                                          // fluid dofset for column
         Teuchos::null, Teuchos::null,
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
@@ -578,8 +578,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
     temprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
     temprhs2 = Teuchos::rcp(new Epetra_Vector(*PoroField()->DofRowMap(), true));
 
-    DRT::AssembleStrategy rhsstructurestrategy(0,  // fluid dofset for row
-        0,                                         // fluid dofset for column
+    CORE::FE::AssembleStrategy rhsstructurestrategy(0,  // fluid dofset for row
+        0,                                              // fluid dofset for column
         Teuchos::null, Teuchos::null,
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
@@ -602,8 +602,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
     temprhs = Teuchos::rcp(new Epetra_Vector(*PoroField()->FluidField()->DofRowMap(0), true));
     temprhs2 = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(0), true));
 
-    DRT::AssembleStrategy rhsfluidstrategy(0,  // fluid dofset for row
-        0,                                     // fluid dofset for column
+    CORE::FE::AssembleStrategy rhsfluidstrategy(0,  // fluid dofset for row
+        0,                                          // fluid dofset for column
         Teuchos::null, Teuchos::null,
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
@@ -627,8 +627,8 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
     temprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(0), true));
 
-    DRT::AssembleStrategy rhsfluidfluidstrategy(0,  // fluid dofset for row
-        0,                                          // fluid dofset for column
+    CORE::FE::AssembleStrategy rhsfluidfluidstrategy(0,  // fluid dofset for row
+        0,                                               // fluid dofset for column
         Teuchos::null, Teuchos::null,
         temprhs,  // rhs vector
         Teuchos::null, Teuchos::null);
@@ -651,9 +651,9 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
       fparams.set<std::string>("fillblock", "NeumannIntegration");
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
 
-      DRT::AssembleStrategy rhsfluidfluidstrategy2(0,  // fluid dofset for row
-          0,                                           // fluid dofset for column
-          c_ff_,                                       // coupling matrix with fluid rowmap
+      CORE::FE::AssembleStrategy rhsfluidfluidstrategy2(0,  // fluid dofset for row
+          0,                                                // fluid dofset for column
+          c_ff_,                                            // coupling matrix with fluid rowmap
           Teuchos::null,
           temprhs,  // rhs vector
           Teuchos::null, Teuchos::null);
@@ -672,9 +672,9 @@ void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
             new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
                 *AleField()->Interface(), *FluidField()->FPSIInterface(), 81, false, true));
 
-        DRT::AssembleStrategy rhsfluidfluidstrategy3(0,  // fluid dofset for row
-            1,                                           // ale dofset for column
-            tmp_c_fa,                                    // coupling matrix with fluid rowmap
+        CORE::FE::AssembleStrategy rhsfluidfluidstrategy3(0,  // fluid dofset for row
+            1,                                                // ale dofset for column
+            tmp_c_fa,                                         // coupling matrix with fluid rowmap
             Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
         FluidField()->Discretization()->EvaluateCondition(

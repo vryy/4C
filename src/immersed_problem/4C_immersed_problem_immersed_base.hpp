@@ -15,6 +15,7 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_cut_boundingbox.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
@@ -24,7 +25,6 @@
 #include "4C_fluid_ele_immersed_base.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_immersed_node.hpp"
 #include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_element.hpp"
@@ -211,7 +211,7 @@ namespace IMMERSED
     \date 05/14
     */
     void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> dis,
-        DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
+        CORE::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
@@ -238,7 +238,7 @@ namespace IMMERSED
 
     */
     void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<DRT::Discretization> dis,
-        const Teuchos::RCP<const DRT::Discretization> idis, DRT::AssembleStrategy* strategy,
+        const Teuchos::RCP<const DRT::Discretization> idis, CORE::FE::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct,
@@ -254,7 +254,7 @@ namespace IMMERSED
 
     */
     void evaluate_interpolation_condition(Teuchos::RCP<DRT::Discretization> evaldis,
-        Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
+        Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy,
         const std::string& condstring, const int condid);
 
 

@@ -19,7 +19,9 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_implicit.hpp"
 
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 #include "4C_global_data.hpp"
@@ -27,8 +29,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_assemblestrategy.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -232,8 +232,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
-  Teuchos::RCP<PeriodicBoundaryConditions> pbc =
-      Teuchos::rcp(new PeriodicBoundaryConditions(discret_, false));
+  auto pbc = Teuchos::rcp(new CORE::Conditions::PeriodicBoundaryConditions(discret_, false));
   if (pbc->HasPBC() and not isinit_)
   {
     pbc->update_dofs_for_periodic_boundary_conditions();
@@ -3662,8 +3661,8 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
       "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // evaluate nodal mean concentration of micro discretizations
-  DRT::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null, phinp_micro_,
-      Teuchos::null, Teuchos::null);
+  CORE::FE::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null,
+      phinp_micro_, Teuchos::null, Teuchos::null);
   discret_->Evaluate(eleparams, strategy);
 
   // copy states from first dof of MAT_Electrode

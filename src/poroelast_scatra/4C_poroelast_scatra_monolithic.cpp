@@ -12,10 +12,10 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -1080,10 +1080,10 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
   // build specific assemble strategy for the fluid-mechanical system matrix
   // from the point of view of FluidField:
   // fluiddofset = 0, structdofset = 1
-  DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-      2,                                  // scatradofset for column
-      k_pfs_,                             // scatra-mechanical matrix
-      Teuchos::null,                      // no other matrix or vectors
+  CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+      2,                                       // scatradofset for column
+      k_pfs_,                                  // scatra-mechanical matrix
+      Teuchos::null,                           // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the fluid-mechanical system matrix on the fluid element
@@ -1117,9 +1117,9 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy structuralstrategy(0,  // structdofset for row
-      2,                                       // scatradofset for column
-      k_pss_,                                  // mechanical-scatra coupling matrix
+  CORE::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
+      2,                                            // scatradofset for column
+      k_pss_,                                       // mechanical-scatra coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
@@ -1154,9 +1154,9 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
-      1,                                          // structuredofset for column
-      k_sps_,                                     // scatra-structure coupling matrix
+  CORE::FE::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
+      1,                                               // structuredofset for column
+      k_sps_,                                          // scatra-structure coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
@@ -1187,9 +1187,9 @@ void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
-      2,                                         // fluiddofset for column
-      k_spf_,                                    // scatra-fluid coupling matrix
+  CORE::FE::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
+      2,                                              // fluiddofset for column
+      k_spf_,                                         // scatra-fluid coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element

@@ -12,10 +12,10 @@
 #include "4C_binstrategy.hpp"
 #include "4C_discretization_dofset.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -696,7 +696,7 @@ void SCATRA::TimIntHDG::FDCheck()
   // create matrix and vector for calculation of sysmat and assemble
   systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
   systemvector1 = CORE::LINALG::CreateVector(*dofrowmap, true);
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
 
   // fill state vector with original state variables
@@ -1011,7 +1011,7 @@ void SCATRA::TimIntHDG::CalcMatInitial()
 
   // create matrix and vector for calculation of sysmat and assemble
   systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   strategy.Zero();
@@ -1399,7 +1399,7 @@ void SCATRA::TimIntHDG::AssembleRHS()
   // add problem specific time-integration parameters
   add_problem_specific_parameters_and_vectors(eleparams);
 
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
 
   strategy.Zero();

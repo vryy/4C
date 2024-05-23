@@ -10,11 +10,11 @@
  *------------------------------------------------------------------------------------------------*/
 
 
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_algorithm.hpp"
 #include "4C_levelset_intersection_utils.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_ele_action.hpp"

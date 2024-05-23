@@ -12,6 +12,7 @@
 #include "4C_fluid_xwall.hpp"
 
 #include "4C_discretization_condition.hpp"
+#include "4C_discretization_condition_periodic.hpp"
 #include "4C_discretization_dofset_transparent.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_xwall.hpp"
@@ -23,7 +24,6 @@
 #include "4C_io_control.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element.hpp"
-#include "4C_lib_periodicbc.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -647,7 +647,7 @@ void FLD::XWall::SetupXWallDis()
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 
-    PeriodicBoundaryConditions pbc(xwdiscret_, false);
+    CORE::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.update_dofs_for_periodic_boundary_conditions();
     xwdiscret_->ReplaceDofSet(newdofset);
     xwdiscret_->FillComplete(true, true, true);

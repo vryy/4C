@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Setup of the list of valid conditions for input
+\brief Routines for handing a collection of element matrices and vectors to the actual assembly
+calls into one global sparse matrix and global load vector
 
 \level 0
 
@@ -10,8 +11,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef FOUR_C_LIB_ASSEMBLESTRATEGY_HPP
-#define FOUR_C_LIB_ASSEMBLESTRATEGY_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_ASSEMBLESTRATEGY_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_ASSEMBLESTRATEGY_HPP
 
 #include "4C_config.hpp"
 
@@ -32,7 +33,7 @@ namespace CORE::LINALG
   class SparseOperator;
 }
 
-namespace DRT
+namespace CORE::FE
 {
   class Discretization;
 
@@ -50,8 +51,8 @@ namespace DRT
    public:
     /// Construct with allocated global objects or Teuchos::null.
     AssembleStrategy(int firstdofset, int seconddofset,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
@@ -73,19 +74,19 @@ namespace DRT
     //@}
 
     //! @name Access Methods to Global Object
-    Teuchos::RCP<CORE::LINALG::SparseOperator> Systemmatrix1() { return systemmatrix1_; }
-    Teuchos::RCP<CORE::LINALG::SparseOperator> Systemmatrix2() { return systemmatrix2_; }
+    Teuchos::RCP<LINALG::SparseOperator> Systemmatrix1() { return systemmatrix1_; }
+    Teuchos::RCP<LINALG::SparseOperator> Systemmatrix2() { return systemmatrix2_; }
     Teuchos::RCP<Epetra_Vector> Systemvector1() { return systemvector1_; }
     Teuchos::RCP<Epetra_Vector> Systemvector2() { return systemvector2_; }
     Teuchos::RCP<Epetra_Vector> Systemvector3() { return systemvector3_; }
     //@}
 
     //! @name Access Methods to Element Local Object
-    CORE::LINALG::SerialDenseMatrix& Elematrix1() { return elematrix1_; }
-    CORE::LINALG::SerialDenseMatrix& Elematrix2() { return elematrix2_; }
-    CORE::LINALG::SerialDenseVector& Elevector1() { return elevector1_; }
-    CORE::LINALG::SerialDenseVector& Elevector2() { return elevector2_; }
-    CORE::LINALG::SerialDenseVector& Elevector3() { return elevector3_; }
+    LINALG::SerialDenseMatrix& Elematrix1() { return elematrix1_; }
+    LINALG::SerialDenseMatrix& Elematrix2() { return elematrix2_; }
+    LINALG::SerialDenseVector& Elevector1() { return elevector1_; }
+    LINALG::SerialDenseVector& Elevector2() { return elevector2_; }
+    LINALG::SerialDenseVector& Elevector3() { return elevector3_; }
     //@}
 
     /// zero global storage
@@ -151,27 +152,25 @@ namespace DRT
     //! @name General Purpose Assembly Methods
 
     /// Assemble to given matrix using nodal stride
-    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-        const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
-        const std::vector<int>& lm, const std::vector<int>& lmowner);
-
-    /// Assemble to given matrix
-    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-        const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
-        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-        const std::vector<int>& lmcol);
-
-    /// Assemble to given matrix
-    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
-
-    /// Assemble to given vector
-    virtual void Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
-        const std::vector<int>& lm, const std::vector<int>& lmowner);
-
-    /// Assemble to given vector
-    virtual void Assemble(Epetra_MultiVector& V, const int n,
-        const CORE::LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
+    virtual void Assemble(LINALG::SparseOperator& sysmat, int eid, const std::vector<int>& lmstride,
+        const LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner);
+
+    /// Assemble to given matrix
+    virtual void Assemble(LINALG::SparseOperator& sysmat, int eid, const std::vector<int>& lmstride,
+        const LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
+
+    /// Assemble to given matrix
+    virtual void Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
+
+    /// Assemble to given vector
+    virtual void Assemble(Epetra_Vector& V, const LINALG::SerialDenseVector& Vele,
+        const std::vector<int>& lm, const std::vector<int>& lmowner);
+
+    /// Assemble to given vector
+    virtual void Assemble(Epetra_MultiVector& V, const int n, const LINALG::SerialDenseVector& Vele,
+        const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     //@}
 
@@ -181,8 +180,8 @@ namespace DRT
 
     //! @name Global Objects
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2_;
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1_;
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2_;
     Teuchos::RCP<Epetra_Vector> systemvector1_;
     Teuchos::RCP<Epetra_Vector> systemvector2_;
     Teuchos::RCP<Epetra_Vector> systemvector3_;
@@ -191,16 +190,16 @@ namespace DRT
 
     //! @name Element Local Objects
     /// define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1_;
-    CORE::LINALG::SerialDenseMatrix elematrix2_;
-    CORE::LINALG::SerialDenseVector elevector1_;
-    CORE::LINALG::SerialDenseVector elevector2_;
-    CORE::LINALG::SerialDenseVector elevector3_;
+    LINALG::SerialDenseMatrix elematrix1_;
+    LINALG::SerialDenseMatrix elematrix2_;
+    LINALG::SerialDenseVector elevector1_;
+    LINALG::SerialDenseVector elevector2_;
+    LINALG::SerialDenseVector elevector3_;
 
     //@}
   };
 
-}  // namespace DRT
+}  // namespace CORE::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

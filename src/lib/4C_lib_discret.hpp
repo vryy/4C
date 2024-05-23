@@ -56,6 +56,11 @@ namespace CORE::LINALG
   class SerialDenseVector;
 }  // namespace CORE::LINALG
 
+namespace CORE::FE
+{
+  class AssembleStrategy;
+}
+
 namespace CORE::Dofsets
 {
   class DofSetProxy;
@@ -73,8 +78,6 @@ namespace GLOBAL
 
 namespace DRT
 {
-  class AssembleStrategy;
-
   /*!
   \brief A class to manage a discretization in parallel
 
@@ -1659,7 +1662,7 @@ namespace DRT
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Call elements to evaluate
-    virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy);
+    virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy);
 
     /**
      * Loop over all elements of the Discretization and perform the given @p element_action. In
@@ -1668,7 +1671,7 @@ namespace DRT
      * This is very useful for one-off actions, that one does not want to implement inside the
      * actual Element's Evaluate call.
      */
-    virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
+    virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy,
         const std::function<void(DRT::Element&, Element::LocationArray&,
             CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
             CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
@@ -1804,8 +1807,8 @@ namespace DRT
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy
-    virtual void EvaluateCondition(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
-        const std::string& condstring, const int condid = -1);
+    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+        CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid = -1);
 
     /** \brief Evaluate a specified condition
      *

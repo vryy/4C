@@ -14,13 +14,13 @@
 #include "4C_adapter_fld_poro.hpp"
 
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -96,9 +96,9 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
     params.set<int>("Physical Type", INPAR::FLUID::poro);
 
-    DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-        0,                                  // fluiddofset for column
-        ConstraintMatrix,                   // fluid matrix
+    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+        0,                                       // fluiddofset for column
+        ConstraintMatrix,                        // fluid matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     Discretization()->SetState(0, "condVector", condVector);
@@ -120,8 +120,8 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
-    DRT::AssembleStrategy couplstrategy(0,  // fluiddofset for row
-        1,                                  // structdofset for column
+    CORE::FE::AssembleStrategy couplstrategy(0,  // fluiddofset for row
+        1,                                       // structdofset for column
         ConstraintMatrix,
         struct_vel_constraint_matrix,  // fluid-mechanical matrix
         Cond_RHS, Teuchos::null, Teuchos::null);

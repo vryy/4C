@@ -16,11 +16,11 @@
 #include "4C_contact_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -385,8 +385,8 @@ void POROELAST::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
 
-    DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-        0,                                  // fluiddofset for column
+    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+        0,                                       // fluiddofset for column
         k_fluid_, Teuchos::null, nopenetration_rhs_, Teuchos::null, Teuchos::null);
     FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "FSICoupling");
 
@@ -422,9 +422,9 @@ void POROELAST::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
-    DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-        1,                                  // structdofset for column
-        k_struct_,                          // fluid-mechanical matrix
+    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+        1,                                       // structdofset for column
+        k_struct_,                               // fluid-mechanical matrix
         k_lambda_, Teuchos::null, Teuchos::null, Teuchos::null);
     FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "FSICoupling");
 
@@ -451,9 +451,9 @@ void POROELAST::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
-    DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-        1,                                  // structdofset for column
-        k_porodisp_,                        // fluid-mechanical matrix
+    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+        1,                                       // structdofset for column
+        k_porodisp_,                             // fluid-mechanical matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "FSICoupling");
 
@@ -480,9 +480,9 @@ void POROELAST::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
-    DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-        0,                                  // fluiddofset for column
-        k_porofluid_,                       // fluid-mechanical matrix
+    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+        0,                                       // fluiddofset for column
+        k_porofluid_,                            // fluid-mechanical matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     FluidField()->Discretization()->EvaluateCondition(params, fluidstrategy, "FSICoupling");
 

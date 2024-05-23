@@ -19,6 +19,7 @@ interface
 #include "4C_discretization_condition_utils.hpp"
 #include "4C_discretization_dofset_predefineddofnumber.hpp"
 #include "4C_discretization_dofset_transparent_independent.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -32,7 +33,6 @@ interface
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_xfem.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -836,7 +836,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   Teuchos::ParameterList eleparams;
 
   //------------------------------------------------------------
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, state_->sysmat_, Teuchos::null, state_->residual_col_, Teuchos::null, Teuchos::null);
 
   DRT::Element::LocationArray la(1);
@@ -1352,7 +1352,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
   // call standard loop over elements
 
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, w_col, Teuchos::null, Teuchos::null);
 
   DRT::Element::LocationArray la(1);

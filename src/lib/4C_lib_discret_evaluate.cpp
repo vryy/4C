@@ -10,8 +10,8 @@
 /*---------------------------------------------------------------------*/
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_elements_paramsinterface.hpp"
 #include "4C_lib_utils_discret.hpp"
@@ -35,13 +35,14 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   Evaluate(params, strategy);
 }
 
 
-void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy)
+void DRT::Discretization::Evaluate(
+    Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy)
 {
   // Call the Evaluate method for the specific element
   Evaluate(params, strategy,
@@ -58,7 +59,8 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
+void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
+    CORE::FE::AssembleStrategy& strategy,
     const std::function<void(DRT::Element&, Element::LocationArray&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
@@ -349,7 +351,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
 {
-  DRT::AssembleStrategy strategy(
+  CORE::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
   EvaluateCondition(params, strategy, condstring, condid);
 }  // end of DRT::Discretization::EvaluateCondition
@@ -358,7 +360,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
-    DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
+    CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
   if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");

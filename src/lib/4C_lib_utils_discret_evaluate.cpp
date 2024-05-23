@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "4C_lib_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_utils_discret.hpp"
 
@@ -48,7 +48,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   if (systemmatrices.size() < 2) systemmatrices.resize(2, Teuchos::null);
   if (systemvectors.size() < 3) systemvectors.resize(3, Teuchos::null);
 
-  DRT::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
+  CORE::FE::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
       systemvectors[1], systemvectors[2]);
   Evaluate(discret, eparams, strategy, col_ele_map);
 }
@@ -56,7 +56,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    DRT::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
+    CORE::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate");
 
