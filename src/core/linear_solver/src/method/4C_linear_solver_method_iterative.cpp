@@ -16,7 +16,6 @@
 #include "4C_linear_solver_preconditioner_krylovprojection.hpp"
 #include "4C_linear_solver_preconditioner_ml.hpp"
 #include "4C_linear_solver_preconditioner_muelu.hpp"
-#include "4C_linear_solver_preconditioner_point.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <BelosBiCGStabSolMgr.hpp>
@@ -233,24 +232,6 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditio
       FOUR_C_THROW(
           "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown preconditioner for "
           "iterative solver chosen.");
-
-    // decide whether we do what kind of scaling
-    std::string scaling = solverlist.get("scaling", "none");
-    if (scaling == "none")
-    {
-    }
-    else if (scaling == "infnorm")
-    {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::InfNormPreconditioner(preconditioner));
-    }
-    else if (scaling == "symmetric")
-    {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::SymDiagPreconditioner(preconditioner));
-    }
-    else
-      FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown type of scaling "
-          "found in parameter list.");
 
     if (projector != Teuchos::null)
     {
