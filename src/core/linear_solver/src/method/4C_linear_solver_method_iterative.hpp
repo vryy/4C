@@ -55,14 +55,6 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList& Params() const { return params_; }
 
    private:
-    //! Get underlying preconditioner object of type PreconditionerTypeBase
-    const CORE::LINEAR_SOLVER::PreconditionerTypeBase& Preconditioner()
-    {
-      if (preconditioner_ == Teuchos::null)
-        FOUR_C_THROW("Preconditioner has to be given for iterative methods!");
-      return *preconditioner_;
-    }
-
     /*! \brief Check whether preconditioner will be reused
      *
      * The user can control reuse/recomputation of the preconditioner by setting appropriate input
