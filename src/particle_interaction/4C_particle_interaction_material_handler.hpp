@@ -45,7 +45,7 @@ namespace PARTICLEINTERACTION
     void Setup();
 
     //! return pointer to particle material parameter
-    inline const MAT::PAR::ParticleMaterialBase* GetPtrToParticleMatParameter(
+    inline const MAT::PAR::ParticleMaterialBase* get_ptr_to_particle_mat_parameter(
         PARTICLEENGINE::TypeEnum type_i) const
     {
       return phasetypetoparticlematpar_[type_i];

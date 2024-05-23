@@ -39,11 +39,11 @@ namespace STR
      public:
       explicit GaussPointDataOutputManager(INPAR::STR::GaussPointDataOutputType output_type);
 
-      void AddQuantityIfNotExistant(const std::string& name, int size);
+      void add_quantity_if_not_existant(const std::string& name, int size);
 
       void MergeQuantities(const std::unordered_map<std::string, int>& quantities);
 
-      void AddElementNumberOfGaussPoints(int numgp);
+      void add_element_number_of_gauss_points(int numgp);
 
       void PrepareData(const Epetra_Map& node_col_map, const Epetra_Map& element_row_map);
 
@@ -53,7 +53,7 @@ namespace STR
        * \brief Distribute and collect all quantities to and from all other procs to ensure that all
        * data is in this list.
        */
-      void DistributeQuantities(const Epetra_Comm& comm);
+      void distribute_quantities(const Epetra_Comm& comm);
 
       inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& GetNodalData()
       {
@@ -66,7 +66,7 @@ namespace STR
       }
 
       inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
-      GetElementCenterData()
+      get_element_center_data()
       {
         return data_element_center_;
       }
@@ -95,7 +95,7 @@ namespace STR
       }
 
       inline const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
-      GetElementCenterData() const
+      get_element_center_data() const
       {
         return data_element_center_;
       }
@@ -112,23 +112,23 @@ namespace STR
       static constexpr int MPI_TAG = 545;
       static constexpr char MPI_DELIMITER = '!';
 
-      void SendMyQuantitiesToProc(const CORE::COMM::Exporter& exporter, int to_proc) const;
+      void send_my_quantities_to_proc(const CORE::COMM::Exporter& exporter, int to_proc) const;
 
-      std::unique_ptr<std::unordered_map<std::string, int>> ReceiveQuantitiesFromProc(
+      std::unique_ptr<std::unordered_map<std::string, int>> receive_quantities_from_proc(
           const CORE::COMM::Exporter& exporter, int from_proc) const;
 
-      void BroadcastMyQuantitites(const CORE::COMM::Exporter& exporter);
+      void broadcast_my_quantitites(const CORE::COMM::Exporter& exporter);
 
       void PackMyQuantities(std::vector<char>& data) const;
 
       void UnpackQuantities(std::size_t pos, const std::vector<char>& data,
           std::unordered_map<std::string, int>& quantities) const;
 
-      void PrepareNodalDataVectors(const Epetra_Map& node_col_map);
+      void prepare_nodal_data_vectors(const Epetra_Map& node_col_map);
 
-      void PrepareElementCenterDataVectors(const Epetra_Map& element_col_map);
+      void prepare_element_center_data_vectors(const Epetra_Map& element_col_map);
 
-      void PrepareGaussPointDataVectors(const Epetra_Map& element_col_map);
+      void prepare_gauss_point_data_vectors(const Epetra_Map& element_col_map);
 
       //! output type of the data
       INPAR::STR::GaussPointDataOutputType output_type_;

@@ -44,7 +44,7 @@ void SCATRA::TimIntStationaryHDG::Init()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation           berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationaryHDG::SetElementTimeParameter(bool forcedincrementalsolver) const
+void SCATRA::TimIntStationaryHDG::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -75,7 +75,7 @@ void SCATRA::TimIntStationaryHDG::SetElementTimeParameter(bool forcedincremental
  | set time for evaluation of Neumann boundary conditions               |
  |                                                     berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationaryHDG::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
+void SCATRA::TimIntStationaryHDG::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
   return;

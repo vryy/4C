@@ -68,14 +68,14 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedTriadAtXi(
+    virtual void get_interpolated_triad_at_xi(
         CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const = 0;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedQuaternionAtXi(
+    virtual void get_interpolated_quaternion_at_xi(
         CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const = 0;
     //@}
 

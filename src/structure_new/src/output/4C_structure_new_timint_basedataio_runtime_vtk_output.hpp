@@ -53,7 +53,7 @@ namespace STR
       void Setup();
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
-      int OutputIntervalInSteps() const
+      int output_interval_in_steps() const
       {
         CheckInitSetup();
         return output_interval_steps_;
@@ -66,7 +66,7 @@ namespace STR
       }
 
       /// whether to write output in every iteration of the nonlinear solver
-      bool OutputEveryIteration() const
+      bool output_every_iteration() const
       {
         CheckInitSetup();
         return output_every_iteration_;

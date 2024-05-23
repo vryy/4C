@@ -36,10 +36,10 @@ namespace ADAPTER
     explicit AleFpsiWrapper(Teuchos::RCP<Ale> ale);
 
     //! specialized method to apply displacements to fpsi interface
-    void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
+    void apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
     //! specialized method to apply displacements to fsi interface
-    void ApplyFSIInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
+    void apply_fsi_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
     //! communicate object at the interface
     Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;

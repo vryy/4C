@@ -36,7 +36,7 @@ NOX::NLN::StatusTest::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuterStatusTests(
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::build_outer_status_tests(
     Teuchos::ParameterList& p, const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const
 {
@@ -48,7 +48,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOut
     test_type = Teuchos::get<std::string>(p, "Test Type");
   else
   {
-    throwError("BuildOuterStatusTests()", "The \"Test Type\" is a required parameter!");
+    throwError("build_outer_status_tests()", "The \"Test Type\" is a required parameter!");
   }
 
   if (test_type == "Combo")
@@ -480,7 +480,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildCom
     Teuchos::ParameterList& subtest_list = p.sublist(subtest_name.str(), true);
 
     Teuchos::RCP<::NOX::StatusTest::Generic> subtest =
-        this->BuildOuterStatusTests(subtest_list, u, tagged_tests);
+        this->build_outer_status_tests(subtest_list, u, tagged_tests);
 
     combo_test->addStatusTest(subtest);
 
@@ -521,12 +521,12 @@ void NOX::NLN::StatusTest::Factory::throwError(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::BuildOuterStatusTests(
+Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::build_outer_status_tests(
     Teuchos::ParameterList& p, const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
-  return factory.BuildOuterStatusTests(p, u, tagged_tests);
+  return factory.build_outer_status_tests(p, u, tagged_tests);
 }
 
 FOUR_C_NAMESPACE_CLOSE

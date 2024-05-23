@@ -79,9 +79,9 @@ namespace DRT
       /*!
       \brief general interface to variable manager (template)
 
-      The idea is, that there are the methods ExtractElementAndNodeValues(...)
+      The idea is, that there are the methods extract_element_and_node_values(...)
       and EvaluateGPVariables(..), which need to be called before evaluation.
-      ExtractElementAndNodeValues(...) reads the node values associated with the element
+      extract_element_and_node_values(...) reads the node values associated with the element
       from the global state vector and EvaluateGPVariables(..) performs the interpolation
       to the gauss points.
       All other methods are (more or less) constant access methods.
@@ -104,7 +104,7 @@ namespace DRT
         VariableManagerInterface(){};
 
         //! factory method
-        static Teuchos::RCP<VariableManagerInterface<nsd, nen>> CreateVariableManager(
+        static Teuchos::RCP<VariableManagerInterface<nsd, nen>> create_variable_manager(
             const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<CORE::MAT::Material> mat,
             const int numdofpernode, const int numfluidphases);
@@ -113,7 +113,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void ExtractElementAndNodeValues(const DRT::Element& ele,
+        virtual void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
 
@@ -126,7 +126,7 @@ namespace DRT
 
         //! check if EvaluateGPVariables was called
         virtual void CheckIsEvaluated() const = 0;
-        //! check if ExtractElementAndNodeValues was called
+        //! check if extract_element_and_node_values was called
         virtual void CheckIsExtracted() const = 0;
         //! return number of DOFs pre node
         virtual int NumDofPerNode() const = 0;
@@ -134,8 +134,8 @@ namespace DRT
         //! @name Access methods
         const std::vector<double>* Phinp() const override = 0;
         virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
-        virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const = 0;
-        virtual bool ElementHasValidVolFracSpecies(const int ivolfrac) const = 0;
+        virtual bool element_has_valid_vol_frac_pressure(const int ivolfrac) const = 0;
+        virtual bool element_has_valid_vol_frac_species(const int ivolfrac) const = 0;
         virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const = 0;
         virtual const std::vector<double>* Phidtnp() const = 0;
         virtual const std::vector<double>* Hist() const = 0;
@@ -178,11 +178,12 @@ namespace DRT
             FOUR_C_THROW("EvaluateGPVariables has not been called on variable manager!");
         };
 
-        //! check if ExtractElementAndNodeValues has been called
+        //! check if extract_element_and_node_values has been called
         void CheckIsExtracted() const override
         {
           if (not isextracted_)
-            FOUR_C_THROW("ExtractElementAndNodeValues has not been called on variable manager!");
+            FOUR_C_THROW(
+                "extract_element_and_node_values has not been called on variable manager!");
         };
 
         //! return number of DOFs per node
@@ -199,17 +200,17 @@ namespace DRT
           FOUR_C_THROW("Access method ElementPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        bool ElementHasValidVolFracPressure(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_pressure(const int ivolfrac) const override
         {
           FOUR_C_THROW(
-              "Access method ElementHasValidVolFracPressure() not implemented! Wrong "
+              "Access method element_has_valid_vol_frac_pressure() not implemented! Wrong "
               "VariableManager?");
           return 0.0;
         };
-        bool ElementHasValidVolFracSpecies(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_species(const int ivolfrac) const override
         {
           FOUR_C_THROW(
-              "Access method ElementHasValidVolFracSpecies() not implemented! Wrong "
+              "Access method element_has_valid_vol_frac_species() not implemented! Wrong "
               "VariableManager?");
           return 0.0;
         };
@@ -299,7 +300,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void ExtractElementAndNodeValues(const DRT::Element& ele,
+        void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
@@ -411,13 +412,13 @@ namespace DRT
         {
           return varmanager_->ConVelnp();
         };
-        bool ElementHasValidVolFracPressure(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_pressure(const int ivolfrac) const override
         {
-          return varmanager_->ElementHasValidVolFracPressure(ivolfrac);
+          return varmanager_->element_has_valid_vol_frac_pressure(ivolfrac);
         };
-        bool ElementHasValidVolFracSpecies(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_species(const int ivolfrac) const override
         {
-          return varmanager_->ElementHasValidVolFracSpecies(ivolfrac);
+          return varmanager_->element_has_valid_vol_frac_species(ivolfrac);
         };
         const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const override
         {
@@ -438,7 +439,7 @@ namespace DRT
         //! check if EvaluateGPVariables was called
         void CheckIsEvaluated() const override { varmanager_->CheckIsEvaluated(); }
 
-        //! check if ExtractElementAndNodeValues was called
+        //! check if extract_element_and_node_values was called
         void CheckIsExtracted() const override { varmanager_->CheckIsExtracted(); }
 
         //! return number of DOFs per node
@@ -478,7 +479,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void ExtractElementAndNodeValues(const DRT::Element& ele,
+        void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
@@ -550,7 +551,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void ExtractElementAndNodeValues(const DRT::Element& ele,
+        void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
@@ -636,7 +637,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void ExtractElementAndNodeValues(const DRT::Element& ele,
+        void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
@@ -684,7 +685,7 @@ namespace DRT
 
       This class evaluates for each element the maximum value of a specific volume fraction at its
       nodes. This is necessary to decide if the calculation of volume fraction pressures inside an
-      element makes sense returns a bool in ElementHasValidVolFracPressure to decide if volume
+      element makes sense returns a bool in element_has_valid_vol_frac_pressure to decide if volume
       fraction pressure has to be evaluated
 
       \author kremheller
@@ -707,7 +708,7 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void ExtractElementAndNodeValues(const DRT::Element& ele,
+        void extract_element_and_node_values(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
             CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
@@ -719,7 +720,7 @@ namespace DRT
             ) override;
 
         //! @name Access methods
-        bool ElementHasValidVolFracPressure(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_pressure(const int ivolfrac) const override
         {
           this->varmanager_->CheckIsExtracted();
           if (ivolfrac >= numvolfrac_)
@@ -730,7 +731,7 @@ namespace DRT
           return ele_has_valid_volfrac_press_[ivolfrac];
         }
 
-        bool ElementHasValidVolFracSpecies(const int ivolfrac) const override
+        bool element_has_valid_vol_frac_species(const int ivolfrac) const override
         {
           this->varmanager_->CheckIsExtracted();
           if (ivolfrac >= numvolfrac_)

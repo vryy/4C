@@ -198,14 +198,14 @@ VtkWriterBase::VtkWriterBase(unsigned int myrank, unsigned int num_processors,
       myrank_(myrank),
       numproc_(num_processors)
 {
-  SetAndCreateVtkWorkingDirectory(path_existing_working_directory, name_new_vtk_subdirectory);
+  set_and_create_vtk_working_directory(path_existing_working_directory, name_new_vtk_subdirectory);
 
-  CreateRestartedInitialCollectionFileMidSection(geometry_name, restart_name, restart_time);
+  create_restarted_initial_collection_file_mid_section(geometry_name, restart_name, restart_time);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
+void VtkWriterBase::set_and_create_vtk_working_directory(
     const std::string& path_existing_working_directory,
     const std::string& name_vtk_subdirectory_to_be_created)
 {
@@ -226,7 +226,7 @@ void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::ResetTimeAndTimeStep(double time, unsigned int timestepnumber)
+void VtkWriterBase::reset_time_and_time_step(double time, unsigned int timestepnumber)
 {
   time_ = time;
   timestep_ = timestepnumber;
@@ -234,7 +234,7 @@ void VtkWriterBase::ResetTimeAndTimeStep(double time, unsigned int timestepnumbe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::InitializeVtkFileStreamsForNewGeometryAndOrTimeStep()
+void VtkWriterBase::initialize_vtk_file_streams_for_new_geometry_and_or_time_step()
 {
   {
     std::ostringstream tmpstream;
@@ -245,29 +245,30 @@ void VtkWriterBase::InitializeVtkFileStreamsForNewGeometryAndOrTimeStep()
   }
 
 
-  InitializeVtkFileStreamThisProcessor();
+  initialize_vtk_file_stream_this_processor();
 
 
   if (myrank_ == 0)
   {
-    InitializeVtkMasterFileStream();
+    initialize_vtk_master_file_stream();
 
 
     // append this new master file to the stream of all written files and times
     // for later use as vtk collection file ('.pvd')
-    AppendMasterFileAndTimeToCollectionFileMidSectionContent(filename_base_ + this->WriterPSuffix(),
-        DetermineVtkSubdirectoryNameFromFullVtkWorkingPath(), time_);
+    append_master_file_and_time_to_collection_file_mid_section_content(
+        filename_base_ + this->WriterPSuffix(),
+        determine_vtk_subdirectory_name_from_full_vtk_working_path(), time_);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::InitializeVtkFileStreamThisProcessor()
+void VtkWriterBase::initialize_vtk_file_stream_this_processor()
 {
   std::ostringstream tmpstream;
 
   tmpstream << working_directory_full_path_ << "/" << filename_base_
-            << GetPartOfFileNameIndicatingProcessorId(myrank_) << this->WriterSuffix();
+            << get_part_of_file_name_indicating_processor_id(myrank_) << this->WriterSuffix();
 
   currentout_.close();
   currentout_.open(tmpstream.str().c_str());
@@ -275,7 +276,7 @@ void VtkWriterBase::InitializeVtkFileStreamThisProcessor()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::InitializeVtkMasterFileStream()
+void VtkWriterBase::initialize_vtk_master_file_stream()
 {
   currentmasterout_.close();
   currentmasterout_.open(
@@ -284,7 +285,7 @@ void VtkWriterBase::InitializeVtkMasterFileStream()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::AppendMasterFileAndTimeToCollectionFileMidSectionContent(
+void VtkWriterBase::append_master_file_and_time_to_collection_file_mid_section_content(
     const std::string& master_file_name, const std::string& master_file_directory_name, double time)
 {
   collection_file_midsection_cumulated_content_
@@ -305,20 +306,20 @@ void VtkWriterBase::WriteVtkHeaders()
 
 
   // start master file on processor 0
-  if (myrank_ == 0) WriteVtkHeaderMasterFile(byteorder);
+  if (myrank_ == 0) write_vtk_header_master_file(byteorder);
 
   // start file on each individual processor
-  WriteVtkHeaderThisProcessor(byteorder);
+  write_vtk_header_this_processor(byteorder);
 
   currentPhase_ = INIT;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
+void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
     const std::map<std::string, IO::visualization_vector_type_variant>& field_data_map)
 {
-  ThrowErrorIfInvalidFileStream(currentout_);
+  throw_error_if_invalid_file_stream(currentout_);
 
   // Initialize field data section.
   currentout_ << "    <FieldData>\n";
@@ -354,18 +355,18 @@ void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkTimeAndOrCycle()
+void VtkWriterBase::write_vtk_time_and_or_cycle()
 {
   std::map<std::string, IO::visualization_vector_type_variant> empty_map;
   empty_map.clear();
-  WriteVtkFieldDataAndOrTimeAndOrCycle(empty_map);
+  write_vtk_field_data_and_or_time_and_or_cycle(empty_map);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkHeaderMasterFile(const std::string& byteorder)
+void VtkWriterBase::write_vtk_header_master_file(const std::string& byteorder)
 {
-  ThrowErrorIfInvalidFileStream(currentmasterout_);
+  throw_error_if_invalid_file_stream(currentmasterout_);
 
   currentmasterout_ << "<?xml version=\"1.0\" ?> \n";
   currentmasterout_ << "<!-- \n";
@@ -379,9 +380,9 @@ void VtkWriterBase::WriteVtkHeaderMasterFile(const std::string& byteorder)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkHeaderThisProcessor(const std::string& byteorder)
+void VtkWriterBase::write_vtk_header_this_processor(const std::string& byteorder)
 {
-  ThrowErrorIfInvalidFileStream(currentout_);
+  throw_error_if_invalid_file_stream(currentout_);
 
   currentout_ << "<?xml version=\"1.0\" ?> \n";
   currentout_ << "<!-- \n";
@@ -430,23 +431,23 @@ void VtkWriterBase::WriteDataArray(const IO::visualization_vector_type_variant& 
   std::string vtk_type_name = "";
   if (std::holds_alternative<std::vector<double>>(data))
   {
-    WriteDataArrayThisProcessor(std::get<std::vector<double>>(data), num_components, name);
+    write_data_array_this_processor(std::get<std::vector<double>>(data), num_components, name);
     vtk_type_name = ScalarTypeToVtkType<double>();
   }
   else if (std::holds_alternative<std::vector<int>>(data))
   {
-    WriteDataArrayThisProcessor(std::get<std::vector<int>>(data), num_components, name);
+    write_data_array_this_processor(std::get<std::vector<int>>(data), num_components, name);
     vtk_type_name = ScalarTypeToVtkType<int>();
   }
   else
     FOUR_C_THROW("Got unexpected vector type");
 
-  if (myrank_ == 0) WriteDataArrayMasterFile(num_components, name, vtk_type_name);
+  if (myrank_ == 0) write_data_array_master_file(num_components, name, vtk_type_name);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::string& VtkWriterBase::GetPartOfFileNameIndicatingProcessorId(
+const std::string& VtkWriterBase::get_part_of_file_name_indicating_processor_id(
     unsigned int processor_id) const
 {
   static std::string filename_part("");
@@ -463,11 +464,11 @@ const std::string& VtkWriterBase::GetPartOfFileNameIndicatingProcessorId(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteDataArrayMasterFile(
+void VtkWriterBase::write_data_array_master_file(
     const int num_components, const std::string& name, const std::string& data_type_name)
 {
   std::ofstream& masterfilestream = currentmasterout_;
-  ThrowErrorIfInvalidFileStream(masterfilestream);
+  throw_error_if_invalid_file_stream(masterfilestream);
 
 
   masterfilestream << "      <PDataArray type=\"" << data_type_name.c_str() << "\" Name=\"" << name
@@ -481,11 +482,11 @@ void VtkWriterBase::WriteDataArrayMasterFile(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <typename T>
-void VtkWriterBase::WriteDataArrayThisProcessor(
+void VtkWriterBase::write_data_array_this_processor(
     const std::vector<T>& data, const int num_components, const std::string& name)
 {
   std::ofstream& filestream = currentout_;
-  ThrowErrorIfInvalidFileStream(filestream);
+  throw_error_if_invalid_file_stream(filestream);
 
 
   filestream << "        <DataArray type=\"" << ScalarTypeToVtkType<T>() << "\" Name=\"" << name
@@ -526,8 +527,8 @@ void VtkWriterBase::WriteDataArrayThisProcessor(
  *----------------------------------------------------------------------*/
 void VtkWriterBase::WriteVtkFooters()
 {
-  ThrowErrorIfInvalidFileStream(currentout_);
-  ThrowErrorIfInvalidFileStream(currentmasterout_);
+  throw_error_if_invalid_file_stream(currentout_);
+  throw_error_if_invalid_file_stream(currentmasterout_);
 
   // end the scalar fields
   switch (currentPhase_)
@@ -563,16 +564,16 @@ void VtkWriterBase::WriteVtkFooters()
   }
 
 
-  if (myrank_ == 0) WriteVtkFooterMasterFile();
+  if (myrank_ == 0) write_vtk_footer_master_file();
 
-  WriteVtkFooterThisProcessor();
+  write_vtk_footer_this_processor();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFooterMasterFile()
+void VtkWriterBase::write_vtk_footer_master_file()
 {
-  ThrowErrorIfInvalidFileStream(currentmasterout_);
+  throw_error_if_invalid_file_stream(currentmasterout_);
 
 
   // generate information about 'pieces' (piece = part that is written by individual processor)
@@ -598,9 +599,9 @@ void VtkWriterBase::WriteVtkFooterMasterFile()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFooterThisProcessor()
+void VtkWriterBase::write_vtk_footer_this_processor()
 {
-  ThrowErrorIfInvalidFileStream(currentout_);
+  throw_error_if_invalid_file_stream(currentout_);
 
 
   currentout_ << "    </Piece>\n";
@@ -613,7 +614,7 @@ void VtkWriterBase::WriteVtkFooterThisProcessor()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
+void VtkWriterBase::write_vtk_collection_file_for_all_written_master_files(
     const std::string& collectionfilename) const
 {
   /* The file mentioned here is the collection file ('.pvd') which contains
@@ -638,13 +639,13 @@ void VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
   {
     // initialize the output filestream for the new collection file
     std::ofstream collectionfilestream(
-        GetVtkCollectionFileFullPathAndName(collectionfilename).c_str());
+        get_vtk_collection_file_full_path_and_name(collectionfilename).c_str());
 
-    WriteHeaderIntoGivenVtkCollectionFileStream(collectionfilestream);
+    write_header_into_given_vtk_collection_file_stream(collectionfilestream);
 
     collectionfilestream << collection_file_midsection_cumulated_content_.str();
 
-    WriteFooterIntoGivenVtkCollectionFileStream(collectionfilestream);
+    write_footer_into_given_vtk_collection_file_stream(collectionfilestream);
 
 
     collectionfilestream.flush();
@@ -654,7 +655,7 @@ void VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
+void VtkWriterBase::write_vtk_collection_file_for_given_list_of_master_files(
     const std::string& collectionfilename,
     const std::vector<std::pair<double, std::string>>& masterfiles_time_and_name) const
 {
@@ -667,28 +668,29 @@ void VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
   {
     // initialize the output filestream for the new collection file
     std::ofstream collectionfilestream(
-        GetVtkCollectionFileFullPathAndName(collectionfilename).c_str());
+        get_vtk_collection_file_full_path_and_name(collectionfilename).c_str());
 
 
-    WriteHeaderIntoGivenVtkCollectionFileStream(collectionfilestream);
+    write_header_into_given_vtk_collection_file_stream(collectionfilestream);
 
     // determine the name of the subdirectory where all files have been written into
 
     /* This is necessary because we only want to collect RELATIVE paths of the
      * individual master files. Otherwise, the collection file would not work
      * as expected after copying/moving the simulation output data */
-    const std::string vtk_subdirectory_name = DetermineVtkSubdirectoryNameFromFullVtkWorkingPath();
+    const std::string vtk_subdirectory_name =
+        determine_vtk_subdirectory_name_from_full_vtk_working_path();
 
 
     for (unsigned int ifile = 0; ifile < masterfiles_time_and_name.size(); ++ifile)
     {
-      WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(collectionfilestream,
+      write_master_file_and_time_value_into_given_vtk_collection_file_stream(collectionfilestream,
           masterfiles_time_and_name[ifile].second, vtk_subdirectory_name,
           masterfiles_time_and_name[ifile].first);
     }
 
 
-    WriteFooterIntoGivenVtkCollectionFileStream(collectionfilestream);
+    write_footer_into_given_vtk_collection_file_stream(collectionfilestream);
 
     collectionfilestream.flush();
     collectionfilestream.close();
@@ -697,7 +699,7 @@ void VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
+void VtkWriterBase::create_restarted_initial_collection_file_mid_section(
     const std::string& geometryname, const std::string& restartfilename, const double restart_time)
 {
   if (myrank_ != 0 or not is_restart_) return;
@@ -730,13 +732,13 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
         {
           // Do not modify the path if the restart is given with an absolute path (we don't want to
           // have absolute paths in the collection file)
-          WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+          write_master_file_and_time_value_into_given_vtk_collection_file_stream(
               collection_file_midsection_cumulated_content_, filename, readtime);
         }
         else
         {
           std::filesystem::path p_new_filename = "." / p_restart.parent_path() / filename;
-          WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+          write_master_file_and_time_value_into_given_vtk_collection_file_stream(
               collection_file_midsection_cumulated_content_, p_new_filename.string(), readtime);
         }
       }
@@ -751,7 +753,7 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::string VtkWriterBase::GetVtkCollectionFileFullPathAndName(
+std::string VtkWriterBase::get_vtk_collection_file_full_path_and_name(
     const std::string& collectionfilename) const
 {
   // initialize the output filestream for the new collection file
@@ -760,10 +762,10 @@ std::string VtkWriterBase::GetVtkCollectionFileFullPathAndName(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteHeaderIntoGivenVtkCollectionFileStream(
+void VtkWriterBase::write_header_into_given_vtk_collection_file_stream(
     std::ofstream& collectionfilestream) const
 {
-  ThrowErrorIfInvalidFileStream(collectionfilestream);
+  throw_error_if_invalid_file_stream(collectionfilestream);
 
   // Todo specify byte order, xml version, vtk DataFile Version, ... in a central place
 
@@ -780,10 +782,10 @@ void VtkWriterBase::WriteHeaderIntoGivenVtkCollectionFileStream(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteFooterIntoGivenVtkCollectionFileStream(
+void VtkWriterBase::write_footer_into_given_vtk_collection_file_stream(
     std::ofstream& collectionfilestream) const
 {
-  ThrowErrorIfInvalidFileStream(collectionfilestream);
+  throw_error_if_invalid_file_stream(collectionfilestream);
 
   collectionfilestream << "  </Collection>\n";
   collectionfilestream << "</VTKFile>\n";
@@ -791,7 +793,7 @@ void VtkWriterBase::WriteFooterIntoGivenVtkCollectionFileStream(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::string VtkWriterBase::DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() const
+std::string VtkWriterBase::determine_vtk_subdirectory_name_from_full_vtk_working_path() const
 {
   // this extracts the substring starting from the last '/' in the full
   // path of the vtk working directory
@@ -810,10 +812,10 @@ std::string VtkWriterBase::DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+void VtkWriterBase::write_master_file_and_time_value_into_given_vtk_collection_file_stream(
     std::ostream& collectionfilestream, const std::string& master_file_name, double time) const
 {
-  ThrowErrorIfInvalidFileStream(collectionfilestream);
+  throw_error_if_invalid_file_stream(collectionfilestream);
 
   collectionfilestream << "    <DataSet timestep=\"" << std::scientific
                        << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time
@@ -822,7 +824,7 @@ void VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::ThrowErrorIfInvalidFileStream(const std::ostream& ostream) const
+void VtkWriterBase::throw_error_if_invalid_file_stream(const std::ostream& ostream) const
 {
   if (not ostream) FOUR_C_THROW("VtkWriterBase: trying to write to invalid output stream!");
 }

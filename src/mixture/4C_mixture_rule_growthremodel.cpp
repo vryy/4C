@@ -59,14 +59,14 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
         "growth strategy.");
   }
   growth_strategy_ = MIXTURE::PAR::MixtureGrowthStrategy::Factory(params->growth_strategy_matid_)
-                         ->CreateGrowthStrategy();
+                         ->create_growth_strategy();
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(CORE::COMM::PackBuffer& data) const
 {
   MixtureRule::PackMixtureRule(data);
 
-  growth_strategy_->PackMixtureGrowthStrategy(data);
+  growth_strategy_->pack_mixture_growth_strategy(data);
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::UnpackMixtureRule(
@@ -74,12 +74,12 @@ void MIXTURE::GrowthRemodelMixtureRule::UnpackMixtureRule(
 {
   MixtureRule::UnpackMixtureRule(position, data);
 
-  growth_strategy_->UnpackMixtureGrowthStrategy(position, data);
+  growth_strategy_->unpack_mixture_growth_strategy(position, data);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MIXTURE::GrowthRemodelMixtureRule::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  growth_strategy_->RegisterAnisotropyExtensions(anisotropy);
+  growth_strategy_->register_anisotropy_extensions(anisotropy);
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
@@ -95,7 +95,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
 
 
   // Evaluate inverse growth deformation gradient
-  if (growth_strategy_->HasInelasticGrowthDeformationGradient())
+  if (growth_strategy_->has_inelastic_growth_deformation_gradient())
   {
     const double dt = params.get<double>("delta time", -1.0);
     if (dt < 0.0)
@@ -105,8 +105,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
 
     // Evaluate inverse growth deformation gradient
     static CORE::LINALG::Matrix<3, 3> iFg;
-    growth_strategy_->EvaluateInverseGrowthDeformationGradient(
-        iFg, *this, ComputeCurrentReferenceGrowthScalar(gp), gp);
+    growth_strategy_->evaluate_inverse_growth_deformation_gradient(
+        iFg, *this, compute_current_reference_growth_scalar(gp), gp);
 
     for (const auto& constituent : Constituents())
     {
@@ -122,12 +122,12 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
 {
   CORE::LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
 
-  if (growth_strategy_->HasInelasticGrowthDeformationGradient())
+  if (growth_strategy_->has_inelastic_growth_deformation_gradient())
   {
     // Evaluate growth kinematics
-    const double currentReferenceGrowthScalar = ComputeCurrentReferenceGrowthScalar(gp);
+    const double currentReferenceGrowthScalar = compute_current_reference_growth_scalar(gp);
 
-    growth_strategy_->EvaluateInverseGrowthDeformationGradient(
+    growth_strategy_->evaluate_inverse_growth_deformation_gradient(
         iF_gM, *this, currentReferenceGrowthScalar, gp);
   }
 
@@ -141,7 +141,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
     MixtureConstituent& constituent = *Constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    if (growth_strategy_->HasInelasticGrowthDeformationGradient())
+    if (growth_strategy_->has_inelastic_growth_deformation_gradient())
       constituent.EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
     else
       constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
@@ -183,14 +183,14 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
         return std::make_tuple(growthScalar, dGrowthScalarDC);
       });
 
-  growth_strategy_->EvaluateGrowthStressCmat(*this, currentReferenceGrowthScalar,
+  growth_strategy_->evaluate_growth_stress_cmat(*this, currentReferenceGrowthScalar,
       dCurrentReferenceGrowthScalarDC, F, E_strain, params, cstress, ccmat, gp, eleGID);
 
   S_stress.Update(1.0, cstress, 1.0);
   cmat.Update(1.0, ccmat, 1.0);
 }
 
-double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceGrowthScalar(int gp) const
+double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scalar(int gp) const
 {
   double current_reference_growth_scalar = 0.0;
   for (std::size_t i = 0; i < Constituents().size(); ++i)
@@ -202,7 +202,7 @@ double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceGrowthScalar(in
   return current_reference_growth_scalar;
 }
 
-double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDensity(
+double MIXTURE::GrowthRemodelMixtureRule::get_constituent_initial_reference_mass_density(
     const MixtureConstituent& constituent) const
 {
   for (std::size_t i = 0; i < Constituents().size(); ++i)
@@ -217,7 +217,7 @@ double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDens
   return 0.0;
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::RegisterOutputDataNames(
+void MIXTURE::GrowthRemodelMixtureRule::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size[OUTPUT_CURRENT_REFERENCE_DENSITY] = 1;
@@ -230,7 +230,8 @@ bool MIXTURE::GrowthRemodelMixtureRule::EvaluateOutputData(
   {
     for (int gp = 0; gp < NumGP(); ++gp)
     {
-      data(gp, 0) = ComputeCurrentReferenceGrowthScalar(gp) * params_->initial_reference_density_;
+      data(gp, 0) =
+          compute_current_reference_growth_scalar(gp) * params_->initial_reference_density_;
     }
     return true;
   }

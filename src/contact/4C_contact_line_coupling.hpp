@@ -110,7 +110,7 @@ namespace CONTACT
      \brief create integration lines
 
      */
-    virtual void CreateIntegrationLines(
+    virtual void create_integration_lines(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
 
     /*!
@@ -162,7 +162,7 @@ namespace CONTACT
      \brief perform linearization of line clip
 
      */
-    virtual void LineclipVertexLinearization(MORTAR::Vertex& currv,
+    virtual void lineclip_vertex_linearization(MORTAR::Vertex& currv,
         std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
         MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
@@ -202,7 +202,7 @@ namespace CONTACT
      \brief Get number of master elements
 
      */
-    virtual int NumberSurfaceElements() const { return (int)surf_eles_.size(); }
+    virtual int number_surface_elements() const { return (int)surf_eles_.size(); }
 
     /*!
      \brief Get current master element in loop
@@ -299,14 +299,14 @@ namespace CONTACT
      \brief perform linearization of master vertices
 
      */
-    void MasterVertexLinearization(
+    void master_vertex_linearization(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!
      \brief perform linearization of slave vertices
 
      */
-    void SlaveVertexLinearization(
+    void slave_vertex_linearization(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!

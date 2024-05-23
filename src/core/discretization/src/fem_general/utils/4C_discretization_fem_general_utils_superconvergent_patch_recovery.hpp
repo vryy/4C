@@ -37,7 +37,7 @@ namespace CORE::FE
             with the reconstruced state
    */
   template <int dim>
-  Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
+  Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
       DRT::Discretization& dis,       ///< underlying discretization
       const Epetra_Vector& state,     ///< state vector needed on element level
       const std::string& statename,   ///< name of state which will be set

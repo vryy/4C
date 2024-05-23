@@ -99,10 +99,10 @@ namespace INPUT
       read so that we can read them in parallel. This is done using the
       MeshReader and the ElementReader.
      */
-    std::ifstream::pos_type ExcludedSectionPosition(const std::string& section) const;
+    std::ifstream::pos_type excluded_section_position(const std::string& section) const;
 
     /// get number of lines of excluded section
-    unsigned int ExcludedSectionLength(const std::string& section) const;
+    unsigned int excluded_section_length(const std::string& section) const;
 
     /// return my communicator
     Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
@@ -133,7 +133,7 @@ namespace INPUT
 
 
     /// print unknown section names found in the input file
-    bool PrintUnknownSections();
+    bool print_unknown_sections();
 
    private:
     /// parse the value and add the key,value pair to the list

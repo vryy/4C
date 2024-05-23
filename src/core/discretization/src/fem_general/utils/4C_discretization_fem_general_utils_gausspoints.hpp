@@ -291,7 +291,7 @@ namespace CORE::FE
 
       GaussIntegration intpoints(gp);
 
-      ProjectGaussPointsLocalToGlobal<distype>(xie, intpoints, cgp);
+      project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
 
       return cgp;
     }
@@ -299,7 +299,7 @@ namespace CORE::FE
     /// Project the given Gauss points in local coordinate system of the element to its global
     /// coordinate system
     template <CORE::FE::CellType distype>
-    static void ProjectGaussPointsLocalToGlobal(
+    static void project_gauss_points_local_to_global(
         const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, Teuchos::RCP<CollectedGaussPoints>& cgp)
     {
@@ -337,7 +337,7 @@ namespace CORE::FE
     /// Project the given Gauss points in global coordinate system of the element to its local
     /// coordinate system
     template <CORE::FE::CellType distype>
-    static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
+    static Teuchos::RCP<GaussPoints> project_gauss_points_global_to_local(
         const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& xie,
         GaussIntegration& intpoints, const bool& throw_error = true)
     {

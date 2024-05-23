@@ -96,7 +96,7 @@ namespace SSTI
         CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
 
     //! return block map with dofs on slave side of interface
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> MapsInterfaceBlocksSlave(
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> maps_interface_blocks_slave(
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
         CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
 
@@ -123,7 +123,7 @@ namespace SSTI
     SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm);
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix() const
     {
       return block_map_system_matrix_;
     };
@@ -147,46 +147,46 @@ namespace SSTI
     void ClearMatrices();
 
     //! call complete on all coupling matrices
-    void CompleteCouplingMatrices();
+    void complete_coupling_matrices();
 
     //! call uncomplete on all coupling matrices
-    void UnCompleteCouplingMatrices();
+    void un_complete_coupling_matrices();
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
     //! return sub blocks of system matrix
     //@{
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraStructureDomain()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_structure_domain()
     {
       return scatrastructuredomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraStructureInterface()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_structure_interface()
     {
       return scatrastructureinterface_;
     };
     Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraThermoDomain() { return scatrathermodomain_; };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraThermoInterface()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_thermo_interface()
     {
       return scatrathermointerface_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> StructureScaTraDomain()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_sca_tra_domain()
     {
       return structurescatradomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> StructureThermoDomain()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_thermo_domain()
     {
       return structurethermodomain_;
     };
     Teuchos::RCP<CORE::LINALG::SparseOperator> ThermoScaTraDomain() { return thermoscatradomain_; };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ThermoScaTraInterface()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_sca_tra_interface()
     {
       return thermoscatrainterface_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ThermoStructureDomain()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_structure_domain()
     {
       return thermostructuredomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ThermoStructureInterface()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_structure_interface()
     {
       return thermostructureinterface_;
     };

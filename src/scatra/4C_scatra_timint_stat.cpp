@@ -58,14 +58,14 @@ void SCATRA::TimIntStationary::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralParameters(),
+  //       - order is important here: for safety checks in set_element_general_parameters(),
   //         we have to know the time-integration parameters
-  SetElementTimeParameter();
-  SetElementGeneralParameters();
-  SetElementTurbulenceParameters();
+  set_element_time_parameter();
+  set_element_general_parameters();
+  set_element_turbulence_parameters();
 
   // setup krylov
-  PrepareKrylovProjection();
+  prepare_krylov_projection();
 
   // safety check
   if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
@@ -77,7 +77,7 @@ void SCATRA::TimIntStationary::Init()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsolver) const
+void SCATRA::TimIntStationary::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -107,13 +107,13 @@ void SCATRA::TimIntStationary::Setup()
   // setup base class
   ScaTraTimIntImpl::Setup();
 
-  SetElementNodesetParameters();
+  set_element_nodeset_parameters();
 }
 
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
+void SCATRA::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
@@ -123,10 +123,10 @@ void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::ParameterLis
  | set part of the residual vector belonging to the old timestep        |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
+void SCATRA::TimIntStationary::set_old_part_of_righthandside()
 {
   // call base class routine
-  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+  ScaTraTimIntImpl::set_old_part_of_righthandside();
 
   hist_->PutScalar(0.0);
 }
@@ -135,7 +135,7 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                                    vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AddNeumannToResidual()
+void SCATRA::TimIntStationary::add_neumann_to_residual()
 {
   residual_->Update(1.0, *neumann_loads_, 1.0);
 }
@@ -160,10 +160,10 @@ void SCATRA::TimIntStationary::AVM3Separation()
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme   vg 11/08 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntStationary::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // call base class routine
-  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp", phinp_);
@@ -197,7 +197,7 @@ void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
   // read state vectors that are needed for restart
   reader->ReadVector(phinp_, "phinp");
 
-  ReadRestartProblemSpecific(step, *reader);
+  read_restart_problem_specific(step, *reader);
 }
 
 
@@ -213,7 +213,7 @@ void SCATRA::TimIntStationary::Update()
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
+    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
   }
 }
 

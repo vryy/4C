@@ -127,14 +127,14 @@ namespace STR
        *
        * @return Max GID in the entire problem
        */
-      int SetupBlockInformation(
+      int setup_block_information(
           const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt);
 
       /// setup the multi map extractor for saddle point problems
-      void SetupMultiMapExtractor();
+      void setup_multi_map_extractor();
 
       /// setup the map extractors for all active element technologies
-      void SetupElementTechnologyMapExtractors();
+      void setup_element_technology_map_extractors();
 
       /*! \brief Return map extractor for element technology
        *
@@ -142,12 +142,12 @@ namespace STR
        *
        * @return MultiMapExtractor for the required type of element technology
        */
-      const CORE::LINALG::MultiMapExtractor& GetElementTechnologyMapExtractor(
+      const CORE::LINALG::MultiMapExtractor& get_element_technology_map_extractor(
           const INPAR::STR::EleTech etech) const;
 
       /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
        *                              (additive)    <->  (non-additive)      */
-      void SetupRotVecMapExtractor(CORE::LINALG::MultiMapExtractor& multimapext);
+      void setup_rot_vec_map_extractor(CORE::LINALG::MultiMapExtractor& multimapext);
 
       void SetupPressExtractor(CORE::LINALG::MultiMapExtractor& multimapext);
 
@@ -167,26 +167,26 @@ namespace STR
           const INPAR::STR::ModelType& mt, const Epetra_Vector& source) const;
 
       //! Remove DOFs that are specific to element technologies (e.g. pressure DOFs)
-      void RemoveElementTechnologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
+      void remove_element_technologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
 
       //! Get DOFs that are specific to element technologies (e.g. pressure DOFs)
-      void ExtractElementTechnologies(const NOX::NLN::StatusTest::QuantityType checkquantity,
+      void extract_element_technologies(const NOX::NLN::StatusTest::QuantityType checkquantity,
           Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
 
       //! Modify mass matrix and rhs according to element technologies
-      void ApplyElementTechnologyToAccelerationSystem(
+      void apply_element_technology_to_acceleration_system(
           CORE::LINALG::SparseOperator& mass, Epetra_Vector& rhs) const;
 
       /* \brief Extract the part of a vector which belongs to the additive dofs.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> ExtractAdditiveEntries(const Epetra_Vector& source) const;
+      Teuchos::RCP<Epetra_Vector> extract_additive_entries(const Epetra_Vector& source) const;
 
       /* \brief Extract the part of a vector which belongs to non-additive rotation
        * (pseudo-)vector dofs.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> ExtractRotVecEntries(const Epetra_Vector& source) const;
+      Teuchos::RCP<Epetra_Vector> extract_rot_vec_entries(const Epetra_Vector& source) const;
 
       /** \brief Read-only access of the desired block of the global jacobian
        *  matrix in the global state data container.
@@ -210,7 +210,7 @@ namespace STR
       Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractModelBlock(CORE::LINALG::SparseOperator& jac,
           const INPAR::STR::ModelType& mt, const MatBlockType& bt) const;
 
-      Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> ExtractDisplRowOfBlocks(
+      Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> extract_displ_row_of_blocks(
           CORE::LINALG::SparseOperator& jac) const;
 
       Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> ExtractRowOfBlocks(
@@ -238,7 +238,7 @@ namespace STR
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianDisplBlock() const;
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_jacobian_displ_block() const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
@@ -250,7 +250,7 @@ namespace STR
           const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
       /// Create the structural stiffness matrix block
-      CORE::LINALG::SparseOperator* CreateStructuralStiffnessMatrixBlock();
+      CORE::LINALG::SparseOperator* create_structural_stiffness_matrix_block();
 
       /// Create the jacobian matrix
       Teuchos::RCP<CORE::LINALG::SparseOperator>& CreateJacobian();
@@ -322,7 +322,7 @@ namespace STR
       /// view of dof map of vector of additive unknowns
       /* in case we have non-additve DoFs in the structure discretization
        * (e.g. rotation vector DoFs of beams), this method is overloaded */
-      const Epetra_Map* AdditiveDofRowMapView() const;
+      const Epetra_Map* additive_dof_row_map_view() const;
 
       /// view of dof map of vector of rotation vector unknowns
       /* (e.g. rotation vector DoFs of beams), this method is overloaded */
@@ -376,10 +376,10 @@ namespace STR
       }
 
       /// Get the last number of linear iterations of the %step
-      int GetLastLinIterationNumber(const unsigned step) const;
+      int get_last_lin_iteration_number(const unsigned step) const;
 
       /// Get the number of non-linear iterations of the %step
-      int GetNlnIterationNumber(const unsigned step) const;
+      int get_nln_iteration_number(const unsigned step) const;
 
       /// Return time for lin solver
       const double& GetLinearSolverTime() const
@@ -389,7 +389,7 @@ namespace STR
       };
 
       /// Return element evaluation time
-      const double& GetElementEvaluationTime() const
+      const double& get_element_evaluation_time() const
       {
         CheckInitSetup();
         return dtele_;
@@ -681,7 +681,7 @@ namespace STR
       };
 
       /// Set the number of non-linear iterations of the #stepn_
-      void SetNlnIterationNumber(const int nln_iter);
+      void set_nln_iteration_number(const int nln_iter);
 
       /// Return time for linear solver
       double& GetLinearSolverTime()
@@ -691,7 +691,7 @@ namespace STR
       };
 
       /// Return element evaluation time
-      double& GetElementEvaluationTime()
+      double& get_element_evaluation_time()
       {
         CheckInitSetup();
         return dtele_;

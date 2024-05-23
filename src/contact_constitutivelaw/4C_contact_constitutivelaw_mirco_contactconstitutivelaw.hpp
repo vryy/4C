@@ -35,7 +35,7 @@ namespace CONTACT
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// create constitutive law instance of matching type with my parameters
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
+      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the Constitutive Law parameters of a mirco function
       //@{
@@ -43,16 +43,16 @@ namespace CONTACT
       int GetFirstMatID() const { return firstmatid_; };
       int GetSecondMatID() const { return secondmatid_; };
       double GetLateralLength() const { return lateral_length_; };
-      bool GetPressureGreenFunFlag() const { return pressure_green_fun_flag_; };
+      bool get_pressure_green_fun_flag() const { return pressure_green_fun_flag_; };
       double GetTolerance() const { return tolerance_; };
       double GetMaxIteration() const { return max_iteration_; };
       bool GetWarmStartingFlag() const { return warm_starting_flag_; };
       double GetCompositeYoungs() const { return composite_youngs_; };
-      double GetCompositePoissonsRatio() const { return composite_poissons_ratio_; };
+      double get_composite_poissons_ratio() const { return composite_poissons_ratio_; };
       double GetGridSize() const { return grid_size_; };
-      double GetComplianceCorrection() const { return elastic_compliance_correction_; };
-      double GetFiniteDifferenceFraction() const { return finite_difference_fraction_; };
-      double GetActiveGapTolerance() const { return active_gap_tolerance_; };
+      double get_compliance_correction() const { return elastic_compliance_correction_; };
+      double get_finite_difference_fraction() const { return finite_difference_fraction_; };
+      double get_active_gap_tolerance() const { return active_gap_tolerance_; };
       Teuchos::Ptr<std::vector<double>> GetMeshGrid() const { return meshgrid_; };
 
       void SetParameters();
@@ -96,7 +96,7 @@ namespace CONTACT
       //! @name Access methods
 
       /// contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
+      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_mirco;
       }

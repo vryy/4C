@@ -71,7 +71,7 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const
   normalcontactforce = k_normal_ * gap;
 }
 
-void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalPotentialEnergy(
+void PARTICLEINTERACTION::DEMContactNormalLinearSpring::normal_potential_energy(
     const double& gap, double& normalpotentialenergy) const
 {
   normalpotentialenergy = 0.5 * k_normal_ * UTILS::Pow<2>(gap);
@@ -161,7 +161,7 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
         0.2);
 }
 
-void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::NormalPotentialEnergy(
+void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::normal_potential_energy(
     const double& gap, double& normalpotentialenergy) const
 {
   normalpotentialenergy = 0.4 * k_normal_ * UTILS::Pow<2>(gap) * std::sqrt(-gap);

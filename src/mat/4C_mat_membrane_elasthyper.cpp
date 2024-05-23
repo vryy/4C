@@ -153,7 +153,7 @@ void MAT::MembraneElastHyper::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>&
   {
     CORE::LINALG::Matrix<3, 1> stress_aniso(true);
     CORE::LINALG::Matrix<3, 3> cmat_aniso(true);
-    EvaluateAnisotropicStressCmat(
+    evaluate_anisotropic_stress_cmat(
         stress_aniso, cmat_aniso, Q_trafo, rcg, rcg33, params, gp, eleGID);
 
     // update 2nd Piola-Kirchhoff stress and constitutive tensor
@@ -205,7 +205,7 @@ void MAT::MembraneElastHyper::StrainEnergy(
 /*----------------------------------------------------------------------*
  | calculate anisotropic stress and elasticity tensor    sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void MAT::MembraneElastHyper::EvaluateAnisotropicStressCmat(
+void MAT::MembraneElastHyper::evaluate_anisotropic_stress_cmat(
     CORE::LINALG::Matrix<3, 1>& stress_aniso, CORE::LINALG::Matrix<3, 3>& cmat_aniso,
     const CORE::LINALG::Matrix<3, 3>& Q_trafo, const CORE::LINALG::Matrix<3, 1>& rcg,
     const double& rcg33, Teuchos::ParameterList& params, const int gp, int eleGID)
@@ -236,7 +236,7 @@ void MAT::MembraneElastHyper::EvaluateAnisotropicStressCmat(
     CORE::LINALG::Matrix<6, 1> stress_aniso_full(true);
     CORE::LINALG::Matrix<6, 6> cmat_aniso_full(true);
 
-    potsum_[p]->AddStressAnisoPrincipal(
+    potsum_[p]->add_stress_aniso_principal(
         rcg_full, cmat_aniso_full, stress_aniso_full, params, gp, eleGID);
 
     // reduced anisotropic stress and constitutive tensor
@@ -262,6 +262,6 @@ void MAT::MembraneElastHyper::EvaluateAnisotropicStressCmat(
     // anisotropic constitutive tensor
     cmat_aniso.Update(1.0, cmat_aniso_red, 1.0);
   }
-}  // MAT::MembraneElastHyper::EvaluateAnisotropicStressCmat
+}  // MAT::MembraneElastHyper::evaluate_anisotropic_stress_cmat
 
 FOUR_C_NAMESPACE_CLOSE

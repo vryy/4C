@@ -46,7 +46,7 @@ void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeOutputWriter(
+void PARTICLEINTERACTION::InteractionWriter::register_specific_runtime_output_writer(
     const std::string& fieldname)
 {
   // safety check
@@ -65,7 +65,7 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeOutputWriter
   runtime_visualization_managers_[fieldname] = runtime_visualization_manager;
 }
 
-void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
+void PARTICLEINTERACTION::InteractionWriter::register_specific_runtime_csv_writer(
     const std::string& fieldname)
 {
   // safety check
@@ -77,7 +77,7 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
       comm_.MyPID(), *GLOBAL::Problem::Instance()->OutputControlFile(), fieldname);
 }
 
-void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutput(
+void PARTICLEINTERACTION::InteractionWriter::write_particle_interaction_runtime_output(
     const int step, const double time) const
 {
   // iterate over output writer objects
@@ -97,12 +97,12 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
     std::shared_ptr<IO::RuntimeCsvWriter> runtime_csvwriter = writerIt.second;
 
     // reset time and time step of the writer object
-    runtime_csvwriter->ResetTimeAndTimeStep(time, step);
+    runtime_csvwriter->reset_time_and_time_step(time, step);
 
     // data to be written preset in particle interaction evaluation
 
     // write file to filesystem
-    runtime_csvwriter->WriteCollectedDataToFile();
+    runtime_csvwriter->write_collected_data_to_file();
   }
 }
 

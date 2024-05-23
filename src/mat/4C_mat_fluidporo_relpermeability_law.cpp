@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroRelPermeabilityLaw*
-MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
+MAT::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
 {
   // initialize null pointer
   MAT::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = nullptr;

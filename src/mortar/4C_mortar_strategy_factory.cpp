@@ -186,7 +186,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
   if (faceele.is_null()) FOUR_C_THROW("Cast to FaceElement failed!");
 
-  bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+  bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
   // store nurbs specific data to node
@@ -226,8 +226,8 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
     const enum INPAR::CONTACT::SolvingStrategy soltype)
 {
   // some parameters
-  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->contact_dynamic_params();
   INPAR::MORTAR::ShapeFcn shapefcn =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype =

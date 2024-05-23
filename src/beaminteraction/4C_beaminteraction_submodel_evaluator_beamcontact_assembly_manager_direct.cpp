@@ -88,7 +88,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(
+      BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(
           *discret, elegids, eleforce, elestiff, fe_sysvec, fe_sysmat);
     }
 

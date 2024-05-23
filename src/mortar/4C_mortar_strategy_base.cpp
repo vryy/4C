@@ -70,7 +70,7 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::StrategyBase::SetTimeIntegrationInfo(
+void MORTAR::StrategyBase::set_time_integration_info(
     const double time_fac, const INPAR::STR::DynamicType dyntype)
 {
   // Get weight for contribution from last time step

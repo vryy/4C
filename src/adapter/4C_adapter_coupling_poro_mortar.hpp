@@ -69,7 +69,7 @@ namespace ADAPTER
 
     void UpdatePoroMt();
 
-    void RecoverFluidLMPoroMt(
+    void recover_fluid_lm_poro_mt(
         Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli);  // h.Willmann
 
     // return the used poro lagrange strategy

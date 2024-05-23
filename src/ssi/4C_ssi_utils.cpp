@@ -226,18 +226,18 @@ SSI::UTILS::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi
       structure_dofrowmap_(ssi_maps->StructureDofRowMap())
 {
   // fill maps related to scalar transport manifold if relevant
-  if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->ScaTraManifoldDofRowMap();
+  if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->sca_tra_manifold_dof_row_map();
 
-  InitializeSystemMatrix(ssi_maps, ssi_matrixtype);
+  initialize_system_matrix(ssi_maps, ssi_matrixtype);
 
-  InitializeMainDiagMatrices(ssi_maps);
+  initialize_main_diag_matrices(ssi_maps);
 
-  InitializeOffDiagMatrices(ssi_maps);
+  initialize_off_diag_matrices(ssi_maps);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
+void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
 {
   structure_matrix_ = SetupSparseMatrix(structure_dofrowmap_);
@@ -250,7 +250,7 @@ void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
       scatra_matrix_ = SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapScaTra());
       if (is_scatra_manifold_)
         manifold_matrix_ = SetupBlockMatrix(
-            ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapScaTraManifold());
+            ssi_maps->block_map_sca_tra_manifold(), ssi_maps->block_map_sca_tra_manifold());
 
       break;
     }
@@ -274,7 +274,7 @@ void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
+void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
 {
   switch (scatra_matrixtype_)
@@ -291,11 +291,11 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
       if (is_scatra_manifold_)
       {
         scatramanifold_structure_matrix_ =
-            SetupBlockMatrix(ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapStructure());
+            SetupBlockMatrix(ssi_maps->block_map_sca_tra_manifold(), ssi_maps->BlockMapStructure());
         scatramanifold_scatra_matrix_ =
-            SetupBlockMatrix(ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapScaTra());
+            SetupBlockMatrix(ssi_maps->block_map_sca_tra_manifold(), ssi_maps->BlockMapScaTra());
         scatra_scatramanifold_matrix_ =
-            SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapScaTraManifold());
+            SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->block_map_sca_tra_manifold());
       }
 
       break;
@@ -326,16 +326,16 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldScaTraMatrix()
+void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_sca_tra_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case CORE::LINALG::MatrixType::sparse:
-      ScaTraManifoldScaTraMatrix()()->Complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
+      sca_tra_manifold_sca_tra_matrix()()->Complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
       break;
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
-      ScaTraManifoldScaTraMatrix()()->Complete();
+      sca_tra_manifold_sca_tra_matrix()()->Complete();
       break;
     default:
       FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
@@ -345,16 +345,17 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldScaTraMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
+void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_structure_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case CORE::LINALG::MatrixType::sparse:
-      ScaTraManifoldStructureMatrix()->Complete(*structure_dofrowmap_, *scatramanifold_dofrowmap_);
+      sca_tra_manifold_structure_matrix()->Complete(
+          *structure_dofrowmap_, *scatramanifold_dofrowmap_);
       break;
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
-      ScaTraManifoldStructureMatrix()->Complete();
+      sca_tra_manifold_structure_matrix()->Complete();
       break;
     default:
       FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
@@ -364,16 +365,16 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::CompleteScaTraScaTraManifoldMatrix()
+void SSI::UTILS::SSIMatrices::complete_sca_tra_sca_tra_manifold_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case CORE::LINALG::MatrixType::sparse:
-      ScaTraScaTraManifoldMatrix()->Complete(*scatramanifold_dofrowmap_, *scatra_dofrowmap_);
+      sca_tra_sca_tra_manifold_matrix()->Complete(*scatramanifold_dofrowmap_, *scatra_dofrowmap_);
       break;
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
-      ScaTraScaTraManifoldMatrix()->Complete();
+      sca_tra_sca_tra_manifold_matrix()->Complete();
       break;
     default:
       FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
@@ -383,16 +384,16 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraScaTraManifoldMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::CompleteScaTraStructureMatrix()
+void SSI::UTILS::SSIMatrices::complete_sca_tra_structure_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case CORE::LINALG::MatrixType::sparse:
-      ScaTraStructureMatrix()->Complete(*structure_dofrowmap_, *scatra_dofrowmap_);
+      sca_tra_structure_matrix()->Complete(*structure_dofrowmap_, *scatra_dofrowmap_);
       break;
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
-      ScaTraStructureMatrix()->Complete();
+      sca_tra_structure_matrix()->Complete();
       break;
     default:
       FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
@@ -402,16 +403,16 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraStructureMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::CompleteStructureScaTraMatrix()
+void SSI::UTILS::SSIMatrices::complete_structure_sca_tra_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case CORE::LINALG::MatrixType::sparse:
-      StructureScaTraMatrix()->Complete(*scatra_dofrowmap_, *structure_dofrowmap_);
+      structure_sca_tra_matrix()->Complete(*scatra_dofrowmap_, *structure_dofrowmap_);
       break;
     case CORE::LINALG::MatrixType::block_condition:
     case CORE::LINALG::MatrixType::block_condition_dof:
-      StructureScaTraMatrix()->Complete();
+      structure_sca_tra_matrix()->Complete();
       break;
     default:
       FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
@@ -445,7 +446,7 @@ SSI::UTILS::SSIVectors::SSIVectors(
     : increment_(CORE::LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
       is_scatra_manifold_(is_scatra_manifold),
       manifold_residual_(is_scatra_manifold ? CORE::LINALG::CreateVector(
-                                                  *(ssi_maps->ScaTraManifoldDofRowMap()), true)
+                                                  *(ssi_maps->sca_tra_manifold_dof_row_map()), true)
                                             : Teuchos::null),
       residual_(CORE::LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
       scatra_residual_(CORE::LINALG::CreateVector(*(ssi_maps->ScaTraDofRowMap()), true)),
@@ -469,15 +470,15 @@ void SSI::UTILS::SSIVectors::ClearResiduals()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(
+void SSI::UTILS::SSIMatrices::initialize_system_matrix(
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const CORE::LINALG::MatrixType ssi_matrixtype)
 {
   switch (ssi_matrixtype)
   {
     case CORE::LINALG::MatrixType::block_field:
     {
-      system_matrix_ =
-          SetupBlockMatrix(ssi_maps->BlockMapSystemMatrix(), ssi_maps->BlockMapSystemMatrix());
+      system_matrix_ = SetupBlockMatrix(
+          ssi_maps->block_map_system_matrix(), ssi_maps->block_map_system_matrix());
       break;
     }
 
@@ -552,7 +553,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
   maps_sub_problems_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor
-  maps_sub_problems_->CheckForValidMapExtractor();
+  maps_sub_problems_->check_for_valid_map_extractor();
 
   switch (ssi_matrixtype_)
   {
@@ -563,7 +564,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
           std::vector<Teuchos::RCP<const Epetra_Map>>(
               1, ssi_mono_algorithm.StructureField()->DofRowMap())));
 
-      block_map_structure->CheckForValidMapExtractor();
+      block_map_structure->check_for_valid_map_extractor();
 
       block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, block_map_structure));
 
@@ -576,7 +577,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
               std::vector<Teuchos::RCP<const Epetra_Map>>(
                   1, ssi_mono_algorithm.ScaTraField()->DofRowMap())));
 
-          block_map_scatra->CheckForValidMapExtractor();
+          block_map_scatra->check_for_valid_map_extractor();
 
           block_maps_sub_problems_.insert(
               std::make_pair(Subproblem::scalar_transport, block_map_scatra));
@@ -588,7 +589,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
                 std::vector<Teuchos::RCP<const Epetra_Map>>(
                     1, ssi_mono_algorithm.ScaTraManifold()->DofRowMap())));
 
-            block_map_scatra_manifold->CheckForValidMapExtractor();
+            block_map_scatra_manifold->check_for_valid_map_extractor();
 
             block_maps_sub_problems_.insert(
                 std::make_pair(Subproblem::manifold, block_map_scatra_manifold));
@@ -620,7 +621,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
         }
       }
 
-      CreateAndCheckBlockMapsSubProblems(ssi_mono_algorithm);
+      create_and_check_block_maps_sub_problems(ssi_mono_algorithm);
 
       break;
     }
@@ -678,7 +679,7 @@ std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) c
         block_position.emplace_back(2);
       else
       {
-        auto scatra_manifold_num_block_maps = BlockMapScaTraManifold()->NumMaps();
+        auto scatra_manifold_num_block_maps = block_map_sca_tra_manifold()->NumMaps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
           block_position.emplace_back(BlockMapScaTra()->NumMaps() + 1 + i);
@@ -730,11 +731,12 @@ int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono& ssi_mono_algorithm)
+void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
+    const SSI::SSIMono& ssi_mono_algorithm)
 {
   const int num_blocks_systemmatrix =
       BlockMapScaTra()->NumMaps() + BlockMapStructure()->NumMaps() +
-      (ssi_mono_algorithm.IsScaTraManifold() ? BlockMapScaTraManifold()->NumMaps() : 0);
+      (ssi_mono_algorithm.IsScaTraManifold() ? block_map_sca_tra_manifold()->NumMaps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
@@ -751,17 +753,18 @@ void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono&
 
   if (ssi_mono_algorithm.IsScaTraManifold())
   {
-    for (int i = 0; i < BlockMapScaTraManifold()->NumMaps(); ++i)
+    for (int i = 0; i < block_map_sca_tra_manifold()->NumMaps(); ++i)
     {
       auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
-      partial_maps_system_matrix[block_positions_manifold.at(i)] = BlockMapScaTraManifold()->Map(i);
+      partial_maps_system_matrix[block_positions_manifold.at(i)] =
+          block_map_sca_tra_manifold()->Map(i);
     }
   }
 
   block_map_system_matrix_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
       *maps_sub_problems_->FullMap(), partial_maps_system_matrix));
 
-  block_map_system_matrix_->CheckForValidMapExtractor();
+  block_map_system_matrix_->check_for_valid_map_extractor();
 }
 
 /*---------------------------------------------------------------------------------*
@@ -773,8 +776,8 @@ Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::BlockMa
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::BlockMapScaTraManifold()
-    const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor>
+SSI::UTILS::SSIMaps::block_map_sca_tra_manifold() const
 {
   return block_maps_sub_problems_.at(Subproblem::manifold);
 }
@@ -795,7 +798,7 @@ Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::ScaTraDofRowMap() const
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::ScaTraManifoldDofRowMap() const
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::sca_tra_manifold_dof_row_map() const
 {
   return MapsSubProblems()->Map(SSIMaps::GetProblemPosition(Subproblem::manifold));
 }
@@ -905,7 +908,7 @@ SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
       my_rank_(dis->Comm().MyPID()),
       num_proc_(dis->Comm().NumProc())
 {
-  SetupMeshTyingHandlers(
+  setup_mesh_tying_handlers(
       dis, conditionname_coupling, build_slave_slave_transformation, check_over_constrained);
 
   // construct full slave, master, and interior maps
@@ -926,7 +929,7 @@ SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<DRT::Discretization> dis,
     const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
 {
@@ -941,7 +944,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
 
   // find pairwise matching nodes
   std::vector<std::pair<int, int>> coupling_pairs;
-  FindMatchingNodePairs(dis, name_meshtying_condition, coupling_pairs);
+  find_matching_node_pairs(dis, name_meshtying_condition, coupling_pairs);
 
   // all nodes on one geometrical point: outer vector defines geometric position, and inner vector
   // all nodes there
@@ -953,7 +956,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
   // define master gids and pair them with the remaining (slave) nodes
   std::vector<int> master_gids;
   std::map<int, int> slave_master_pair;
-  DefineMasterSlavePairing(
+  define_master_slave_pairing(
       dis, grouped_matching_nodes, master_gids, slave_master_pair, check_over_constrained);
 
   if (do_print_) std::cout << "| Finished: master-slave pairing |" << std::endl;
@@ -961,7 +964,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
   // get number of slave nodes per master node -> max. number gives number of needed adapters
   std::map<int, int> num_assigned_slave_to_master_nodes;
   int glob_max_adapters = 0;
-  GetNumAssignedSlaveToMasterNodes(
+  get_num_assigned_slave_to_master_nodes(
       slave_master_pair, num_assigned_slave_to_master_nodes, glob_max_adapters);
 
   // setup mesh tying:
@@ -1018,7 +1021,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
 
     auto coupling_map_extractor =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*dis->DofRowMap(), maps));
-    coupling_map_extractor->CheckForValidMapExtractor();
+    coupling_map_extractor->check_for_valid_map_extractor();
 
     auto slave_slave_transformation = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     if (build_slave_slave_transformation)
@@ -1026,7 +1029,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
       // coupling adapter between new slave nodes (master) and old slave nodes from input file
       // (slave). Needed, to map the lineariaztion dphi/du at the interface to the correct dofs
       std::vector<int> all_coupled_original_slave_gids;
-      FindSlaveSlaveTransformationNodes(
+      find_slave_slave_transformation_nodes(
           dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
 
       std::vector<int> my_coupled_original_slave_gids;
@@ -1088,7 +1091,7 @@ int SSI::UTILS::SSIMeshTying::HasGIDPartial(const int gid, const int start, cons
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<DRT::Discretization> dis,
     const std::string& name_meshtying_condition,
     std::vector<std::pair<int, int>>& coupling_pairs) const
 {
@@ -1219,7 +1222,7 @@ void SSI::UTILS::SSIMeshTying::GroupMatchingNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::GetNumAssignedSlaveToMasterNodes(
+void SSI::UTILS::SSIMeshTying::get_num_assigned_slave_to_master_nodes(
     const std::map<int, int>& slave_master_pair,
     std::map<int, int>& num_assigned_slave_to_master_nodes, int& max_assigned_slave_nodes) const
 {
@@ -1252,7 +1255,7 @@ void SSI::UTILS::SSIMeshTying::GetNumAssignedSlaveToMasterNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(Teuchos::RCP<DRT::Discretization> dis,
     const std::vector<std::vector<int>>& grouped_matching_nodes, std::vector<int>& master_gids,
     std::map<int, int>& slave_master_pair, const bool check_over_constrained) const
 {
@@ -1325,7 +1328,7 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
+void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
     Teuchos::RCP<DRT::Discretization> dis, const std::string& name_meshtying_condition,
     const std::vector<int>& inodegidvec_slave,
     std::vector<int>& all_coupled_original_slave_gids) const
@@ -1366,7 +1369,7 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::CheckSlaveSideHasDirichletConditions(
+void SSI::UTILS::SSIMeshTying::check_slave_side_has_dirichlet_conditions(
     Teuchos::RCP<const Epetra_Map> struct_dbc_map) const
 {
   // check if slave side dofs are part of DBC maps

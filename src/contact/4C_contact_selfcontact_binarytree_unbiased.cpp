@@ -36,7 +36,7 @@ CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& dis
 /*----------------------------------------------------------------------*
  | Add tree nodes to the contact pairs vector  (private)   schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::AddTreeNodesToContactPairs(
+void CONTACT::UnbiasedSelfBinaryTree::add_tree_nodes_to_contact_pairs(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
   bool addcontactpair(true);
@@ -57,7 +57,7 @@ void CONTACT::UnbiasedSelfBinaryTree::AddTreeNodesToContactPairs(
 /*----------------------------------------------------------------------*
  | Calculate dual graph processor specific  (private)      schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
+void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
     const std::vector<int>& elelist, const int p)
 {
@@ -99,7 +99,7 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
     }
 
     // get element specific first order nodes
-    const int numnode = GetEleSpecificNumNodes(element);
+    const int numnode = get_ele_specific_num_nodes(element);
 
     // loop over all first-order nodes of current element (here we make use of the fact that
     // first-order nodes are always stored before higher-order nodes)
@@ -122,7 +122,7 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
         // we only need to collect information if current adjacent element is owned by processor p
         if (adjElementk->Owner() != p) continue;
 
-        CalculateAdjacentTreeNodesAndDualEdges(
+        calculate_adjacent_tree_nodes_and_dual_edges(
             possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
       }  // all adjacent elements
     }    // all nodes
@@ -138,12 +138,12 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
   }  // all elements
 
   return;
-}  // CalculateProcSpecificDualGraph
+}  // calculate_proc_specific_dual_graph
 
 /*----------------------------------------------------------------------*
  | Define search elements based on contact pairs (private) schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::DefineSearchElements()
+void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
 {
   const int eleID = ContactPairs().begin()->first;
 
@@ -174,7 +174,7 @@ void CONTACT::UnbiasedSelfBinaryTree::DefineSearchElements()
       celement->AddSearchElements(contacteleID[j]);
 
       // recursively call this function again
-      if (ContactPairs().find(contacteleID[j]) != ContactPairs().end()) DefineSearchElements();
+      if (ContactPairs().find(contacteleID[j]) != ContactPairs().end()) define_search_elements();
     }
   }
 
@@ -206,7 +206,7 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
   MORTAR::BaseBinaryTree::Init();
 
   // initialize internal variables
-  InitInternalVariables();
+  init_internal_variables();
 
   // calculate min. element length and set enlargement accordingly
   SetEnlarge();
@@ -224,12 +224,12 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
   {
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
 
-    CalculateProcSpecificDualGraph(&dualgraph, elelist, p);
+    calculate_proc_specific_dual_graph(&dualgraph, elelist, p);
     procdualgraph[p] = dualgraph;
   }
   // now initialize unbiased self binary tree in a bottom-up way based on the processor specific
   // dual graph
-  InitializeTreeBottomUp(&procdualgraph);
+  initialize_tree_bottom_up(&procdualgraph);
 
   return;
 }
@@ -238,7 +238,7 @@ void CONTACT::UnbiasedSelfBinaryTree::Init()
  | Initialize tree bottom-up based on processor specific                |
  | dual graph (private)                                    schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::InitializeTreeBottomUp(
+void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
     std::map<int, std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>*
         procdualGraph)
 {
@@ -325,8 +325,8 @@ void CONTACT::UnbiasedSelfBinaryTree::InitializeTreeBottomUp(
   // in 3D we have to calculate adjacent tree nodes
   if (Dim() == 3)
   {
-    CalculateAdjacentLeaves();
-    CalculateAdjacentTnodes();
+    calculate_adjacent_leaves();
+    calculate_adjacent_tnodes();
   }
 
   return;
@@ -515,12 +515,12 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
   //**********************************************************************
   // optional STEP 6: communicate Searchelements to all Procs
   //**********************************************************************
-  if (searchele_all_proc_) CommunicateSearchElementsAllProcs();
+  if (searchele_all_proc_) communicate_search_elements_all_procs();
 
   // define the search elements based on the contact pairs map
   while (!ContactPairs().empty())
   {
-    DefineSearchElements();
+    define_search_elements();
   }
 
   return;
@@ -529,7 +529,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
 /*------------------------------------------------------------------------*
  | Communicate the Search Elements to all processors (private) ager 09/19 |
  *-----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::CommunicateSearchElementsAllProcs()
+void CONTACT::UnbiasedSelfBinaryTree::communicate_search_elements_all_procs()
 {
   for (int elelid = 0; elelid < Discret().ElementColMap()->NumMyElements(); ++elelid)
   {

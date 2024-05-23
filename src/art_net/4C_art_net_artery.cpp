@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create(const int id, const
 }
 
 
-void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
+void DRT::ELEMENTS::ArteryType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["ART"];

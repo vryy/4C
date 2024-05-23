@@ -32,7 +32,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(const int id
   return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id, owner));
 }
 
-void DRT::ELEMENTS::FluidTypeImmersed::SetupElementDefinition(
+void DRT::ELEMENTS::FluidTypeImmersed::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];

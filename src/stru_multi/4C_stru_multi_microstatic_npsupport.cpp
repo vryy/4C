@@ -52,7 +52,7 @@ void STRUMULTI::np_support_drt()
   // by HDF5; the macro procs call output->WriteMesh(0, 0.0) in ADAPTER::Structure
   const int someUniqueNumber =
       GLOBAL::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
-  std::string uniqueDummyName = "dummyHDF5file_p" + someUniqueNumber;
+  std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
@@ -88,7 +88,7 @@ void STRUMULTI::np_support_drt()
         std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
         exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
 
-        const auto* micro_data = condnamemap[0]->GetMicroStaticDataPtr();
+        const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
         // extract received data from the container
         const CORE::LINALG::SerialDenseMatrix* defgrdcopy = &micro_data->defgrd_;
         CORE::LINALG::Matrix<3, 3> defgrd(
@@ -137,7 +137,7 @@ void STRUMULTI::np_support_drt()
         CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
         exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
-        const auto* micro_data = condnamemap[0]->GetMicroStaticDataPtr();
+        const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
 
         // extract received data from the container
         int gp = micro_data->gp_;

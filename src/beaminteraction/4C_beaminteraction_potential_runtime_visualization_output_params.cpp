@@ -79,7 +79,8 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::throw_error_if_not_init_and_setup()
+    const
 {
   if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }

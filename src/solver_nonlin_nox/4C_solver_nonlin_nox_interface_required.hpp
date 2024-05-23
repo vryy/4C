@@ -54,19 +54,19 @@ namespace NOX
             const bool& isScaled = false) const = 0;
 
         //! Returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
-        virtual double GetPrimarySolutionUpdateRMS(const Epetra_Vector& xNew,
+        virtual double get_primary_solution_update_rms(const Epetra_Vector& xNew,
             const Epetra_Vector& xOld, const double& aTol, const double& rTol,
             const NOX::NLN::StatusTest::QuantityType& checkQuantity,
             const bool& disable_implicit_weighting = false) const = 0;
 
         //! Returns the increment norm of the primary DoF fields
-        virtual double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xNew,
+        virtual double get_primary_solution_update_norms(const Epetra_Vector& xNew,
             const Epetra_Vector& xOld, const NOX::NLN::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! Returns the previous solution norm of primary DoF fields
-        virtual double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xOld,
+        virtual double get_previous_primary_solution_norms(const Epetra_Vector& xOld,
             const NOX::NLN::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
@@ -76,7 +76,7 @@ namespace NOX
             const enum MeritFunction::MeritFctName merit_func_type) const = 0;
 
         //! return model terms of a linear model (optional)
-        virtual double GetLinearizedModelTerms(const ::NOX::Abstract::Group* group,
+        virtual double get_linearized_model_terms(const ::NOX::Abstract::Group* group,
             const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const
@@ -89,7 +89,7 @@ namespace NOX
         virtual double CalcRefNormForce() = 0;
 
         //! access the lumped mass matrix
-        virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const
+        virtual Teuchos::RCP<const Epetra_Vector> get_lumped_mass_matrix_ptr() const
         {
           FOUR_C_THROW("The evaluation of the lumped mass matrix is not implemented!");
           return Teuchos::null;
@@ -102,13 +102,13 @@ namespace NOX
         }
 
         //! recover from a backup state (optional)
-        virtual void RecoverFromBackupState()
+        virtual void recover_from_backup_state()
         {
           FOUR_C_THROW("There is no meaningful implementation for this method!");
         }
 
         //! compute element volumes (optional)
-        virtual bool computeElementVolumes(
+        virtual bool compute_element_volumes(
             const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
         {
           FOUR_C_THROW("There is no meaningful implementation for this method!");

@@ -35,7 +35,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface pointer in the parent element
-  ParentElement()->SetParamsInterfacePtr(params);
+  ParentElement()->set_params_interface_ptr(params);
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
   // acting on the spatial configuration. Therefore, it needs to be linearized. On the
   // contrary, the simplified 'neum_pseudo_orthopressure' option allows for an approximative
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       std::vector<CORE::LINALG::SerialDenseVector> boundknots(1);
 
       double normalfac = 0.0;
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(
           parentknots, boundknots, normalfac, ParentMasterElement()->Id(), FaceMasterNumber());
 
       if (zero_size) return (0);
@@ -646,8 +646,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         xscurr(i, 1) = xsrefe(i, 1) + mydisp[i * noddof + 1];
       }
       // call submethods
-      ComputeAreaConstrStiff(xscurr, elematrix1);
-      ComputeAreaConstrDeriv(xscurr, elevector1);
+      compute_area_constr_stiff(xscurr, elematrix1);
+      compute_area_constr_deriv(xscurr, elevector1);
       elevector2 = elevector1;
       // compute area between line and x-Axis
       double areaele = 0.5 * (xscurr(0, 1) + xscurr(1, 1)) * (xscurr(1, 0) - xscurr(0, 0));
@@ -814,7 +814,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * Compute first derivatives of area                            tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
+void DRT::ELEMENTS::Wall1Line::compute_area_constr_deriv(
     CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector)
 {
   if (elevector.length() != 4)
@@ -835,7 +835,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
  * Compute influence of area constraint on stiffness matrix.    tk 10/07*
  * Second derivatives of areas with respect to the displacements        *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
+void DRT::ELEMENTS::Wall1Line::compute_area_constr_stiff(
     CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseMatrix& elematrix)
 {
   elematrix(0, 0) = 0.0;

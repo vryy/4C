@@ -145,7 +145,7 @@ void CONSTRAINTS::Constraint::Initialize(
       FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  InitializeConstraint(params, systemvector3);
+  initialize_constraint(params, systemvector3);
   return;
 }
 
@@ -216,7 +216,7 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 
@@ -354,11 +354,11 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::Constraint::InitializeConstraint(
+void CONSTRAINTS::Constraint::initialize_constraint(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 

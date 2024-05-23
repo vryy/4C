@@ -46,7 +46,7 @@ namespace DRT
       void SetParameters(Teuchos::ParameterList& parameters) override;
 
       //! set the nodeset parameters
-      void SetNodesetParameters(Teuchos::ParameterList& parameters);
+      void set_nodeset_parameters(Teuchos::ParameterList& parameters);
 
       //! @name return general parameters
       //! @{
@@ -60,9 +60,9 @@ namespace DRT
       double FDCheckTol() const { return fdchecktol_; };
       int ProbNum() const { return probnum_; };
       bool SemiImplicit() const { return semiimplicit_; };
-      double IntLayerGrowthConvTol() const { return intlayergrowth_convtol_; };
-      unsigned IntLayerGrowthIteMax() const { return intlayergrowth_itemax_; };
-      bool PartitionedMultiScale() const { return partitioned_multiscale_; };
+      double int_layer_growth_conv_tol() const { return intlayergrowth_convtol_; };
+      unsigned int_layer_growth_ite_max() const { return intlayergrowth_itemax_; };
+      bool partitioned_multi_scale() const { return partitioned_multiscale_; };
       bool IsEMD() const { return is_emd_; };
       int EMDSource() const { return emd_source_; };
       //! return true if external force is applied
@@ -80,7 +80,7 @@ namespace DRT
       //! number of dofset associated with temperature dofs
       int NdsThermo() const;
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
-      int NdsTwoTensorQuantity() const;
+      int nds_two_tensor_quantity() const;
       //! number of dofset associated with velocity related dofs
       int NdsVel() const;
       //! number of dofset associated with wall shear stress dofs

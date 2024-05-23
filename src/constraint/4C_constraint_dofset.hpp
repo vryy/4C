@@ -42,7 +42,7 @@ namespace CONSTRAINTS
   <h3>Invariants</h3>
 
   There are two possible states in this class: Reset and setup. To
-  change back and forth use AssignDegreesOfFreedom() and Reset().
+  change back and forth use assign_degrees_of_freedom() and Reset().
   */
   class ConstraintDofSet : public CORE::Dofsets::DofSet
   {
@@ -68,7 +68,7 @@ namespace CONSTRAINTS
     //! @name Construction
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
+    virtual int assign_degrees_of_freedom(
         const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start);
 
     //@}

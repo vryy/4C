@@ -47,8 +47,8 @@ namespace LUBRICATION
     //! from scratch by using the newly updated #prenp_. The method
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors
-    //! (like #PredictConstTempConsistRate)
-    void UpdateIterIncrementally() override;
+    //! (like #predict_const_temp_consist_rate)
+    void update_iter_incrementally() override;
 
    protected:
     /// don't want = operator and cctor
@@ -58,16 +58,16 @@ namespace LUBRICATION
     TimIntStationary(const TimIntStationary& old);
 
     /// set time parameter for element evaluation
-    void SetElementTimeParameter() const override;
+    void set_element_time_parameter() const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
+    void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) override;
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual() override;
+    void add_neumann_to_residual() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     /// return the right time-scaling-factor for the true residual
     double ResidualScaling() const override { return 1.0; }

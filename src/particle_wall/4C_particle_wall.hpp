@@ -134,7 +134,7 @@ namespace PARTICLEWALL
      *
      * \param[out] particlestatestotypes map of particle types and corresponding states
      */
-    virtual void InsertParticleStatesOfParticleTypes(
+    virtual void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const final;
 
@@ -146,7 +146,7 @@ namespace PARTICLEWALL
      * \param[in] step output step
      * \param[in] time output time
      */
-    virtual void WriteWallRuntimeOutput(const int step, const double time) const final;
+    virtual void write_wall_runtime_output(const int step, const double time) const final;
 
     /*!
      * \brief update bin row and column map
@@ -156,7 +156,7 @@ namespace PARTICLEWALL
      * \param[in] binrowmap bin row map
      * \param[in] bincolmap bin column map
      */
-    virtual void UpdateBinRowAndColMap(
+    virtual void update_bin_row_and_col_map(
         const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
 
     /*!
@@ -164,7 +164,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 08/2019
      */
-    virtual void CheckWallNodesLocatedInBoundingBox() const final;
+    virtual void check_wall_nodes_located_in_bounding_box() const final;
 
     /*!
      * \brief get maximum wall position increment since last transfer
@@ -173,20 +173,20 @@ namespace PARTICLEWALL
      *
      * \param[out] allprocmaxpositionincrement maximum wall position increment
      */
-    virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) const final;
+    virtual void get_max_wall_position_increment(double& allprocmaxpositionincrement) const final;
 
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes() = 0;
+    virtual void distribute_wall_elements_and_nodes() = 0;
 
     //! transfer wall elements and nodes
-    virtual void TransferWallElementsAndNodes() = 0;
+    virtual void transfer_wall_elements_and_nodes() = 0;
 
     /*!
      * \brief relate bins to column wall elements
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    virtual void RelateBinsToColWallEles() final;
+    virtual void relate_bins_to_col_wall_eles() final;
 
     /*!
      * \brief build particle to wall neighbors
@@ -197,7 +197,7 @@ namespace PARTICLEWALL
      *
      * \param[in] particlestobins relation of (owned and ghosted) particles to bins
      */
-    virtual void BuildParticleToWallNeighbors(
+    virtual void build_particle_to_wall_neighbors(
         const PARTICLEENGINE::ParticlesToBins& particlestobins) final;
 
     /*!
@@ -205,9 +205,9 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    virtual bool HaveValidWallNeighbors() const final { return validwallneighbors_; };
+    virtual bool have_valid_wall_neighbors() const final { return validwallneighbors_; };
 
-    Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const final
+    Teuchos::RCP<const DRT::Discretization> get_wall_discretization() const final
     {
       return walldiscretization_;
     };
@@ -217,7 +217,7 @@ namespace PARTICLEWALL
       return walldatastate_;
     }
 
-    const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const final;
+    const PARTICLEENGINE::PotentialWallNeighbors& get_potential_wall_neighbors() const final;
 
     /*!
      * \brief determine nodal positions of column wall element
@@ -227,7 +227,7 @@ namespace PARTICLEWALL
      * \param ele[in]             column wall element
      * \param colelenodalpos[out] current nodal position
      */
-    void DetermineColWallEleNodalPos(
+    void determine_col_wall_ele_nodal_pos(
         DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const final;
 
    private:
@@ -235,10 +235,10 @@ namespace PARTICLEWALL
     //! @{
 
     //! init wall discretization
-    virtual void InitWallDiscretization() = 0;
+    virtual void init_wall_discretization() = 0;
 
     //! setup wall discretization
-    virtual void SetupWallDiscretization() const = 0;
+    virtual void setup_wall_discretization() const = 0;
 
     /*!
      * \brief init wall data state container
@@ -256,7 +256,7 @@ namespace PARTICLEWALL
      *
      * \param[in] restart_time   restart time of the simulation
      */
-    virtual void CreateWallDiscretizationRuntimeVtuWriter(double restart_time) final;
+    virtual void create_wall_discretization_runtime_vtu_writer(double restart_time) final;
 
     //! @}
 
@@ -272,7 +272,7 @@ namespace PARTICLEWALL
 
    protected:
     //! create wall discretization
-    virtual void CreateWallDiscretization() final;
+    virtual void create_wall_discretization() final;
 
     //! communicator
     const Epetra_Comm& comm_;
@@ -335,14 +335,14 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    void DistributeWallElementsAndNodes() override;
+    void distribute_wall_elements_and_nodes() override;
 
     /*!
      * \brief transfer wall elements and nodes
      *
      * \author Sebastian Fuchs \date 03/2019
      */
-    void TransferWallElementsAndNodes() override;
+    void transfer_wall_elements_and_nodes() override;
 
    private:
     /*!
@@ -352,21 +352,21 @@ namespace PARTICLEWALL
      *
      * \param[in] bintorowelemap bin to row wall element distribution
      */
-    void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
+    void extend_wall_element_ghosting(std::map<int, std::set<int>>& bintorowelemap);
 
     /*!
      * \brief init wall discretization
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void InitWallDiscretization() override;
+    void init_wall_discretization() override;
 
     /*!
      * \brief setup wall discretization
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void SetupWallDiscretization() const override;
+    void setup_wall_discretization() const override;
   };
 
   /*!
@@ -394,14 +394,14 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    void DistributeWallElementsAndNodes() override;
+    void distribute_wall_elements_and_nodes() override;
 
     /*!
      * \brief transfer wall elements and nodes
      *
      * \author Sebastian Fuchs \date 03/2019
      */
-    void TransferWallElementsAndNodes() override;
+    void transfer_wall_elements_and_nodes() override;
 
    private:
     /*!
@@ -409,14 +409,14 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void InitWallDiscretization() override;
+    void init_wall_discretization() override;
 
     /*!
      * \brief setup wall discretization
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void SetupWallDiscretization() const override;
+    void setup_wall_discretization() const override;
   };
 
 }  // namespace PARTICLEWALL

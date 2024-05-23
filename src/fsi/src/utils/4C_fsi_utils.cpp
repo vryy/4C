@@ -176,9 +176,9 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   structcoupmaster_ = structcoupmaster;
 
   coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
@@ -311,7 +311,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
     Teuchos::RCP<Epetra_Vector> iprojdispale, CORE::ADAPTER::CouplingMortar& coupsf,
     const Epetra_Comm& comm)
 {
-  Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
+  Teuchos::RCP<Epetra_Vector> idisptotal = structure.extract_interface_dispnp();
   const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // project sliding fluid nodes onto struct interface surface
@@ -406,9 +406,9 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
 {
   Teuchos::RCP<DRT::Discretization> structdis = structure.Discretization();
 
-  Teuchos::RCP<Epetra_Vector> idispn = structure.ExtractInterfaceDispn();
-  Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
-  Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispnp();
+  Teuchos::RCP<Epetra_Vector> idispn = structure.extract_interface_dispn();
+  Teuchos::RCP<Epetra_Vector> idisptotal = structure.extract_interface_dispnp();
+  Teuchos::RCP<Epetra_Vector> idispstep = structure.extract_interface_dispnp();
 
   int err = idispstep->Update(-1.0, *idispn, 1.0);
   if (err != 0) FOUR_C_THROW("ERROR");
@@ -541,7 +541,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 {
   const int dim = GLOBAL::Problem::Instance()->NDim();
 
-  Teuchos::RCP<Epetra_Vector> idispnp = structure.ExtractInterfaceDispnp();
+  Teuchos::RCP<Epetra_Vector> idispnp = structure.extract_interface_dispnp();
 
   // Redistribute displacement of structnodes on the interface to all processors.
   Teuchos::RCP<Epetra_Import> interimpo =
@@ -580,10 +580,10 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
           CORE::GEO::getXAABBofEles(structreduelements_[mnit->first], currentpositions);
 
       if (dim == 2)
-        searchTree->initializeTreeSlideALE(
+        searchTree->initialize_tree_slide_ale(
             rootBox, structreduelements_[mnit->first], CORE::GEO::TreeType(CORE::GEO::QUADTREE));
       else if (dim == 3)
-        searchTree->initializeTreeSlideALE(
+        searchTree->initialize_tree_slide_ale(
             rootBox, structreduelements_[mnit->first], CORE::GEO::TreeType(CORE::GEO::OCTTREE));
       else
         FOUR_C_THROW("wrong dimension");
@@ -629,7 +629,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
       std::vector<double> finaldxyz(dim);
 
       // search for near elements next to the query point (ie within a radius of 2x maxmindist)
-      std::map<int, std::set<int>> closeeles = searchTree->searchElementsInRadius(
+      std::map<int, std::set<int>> closeeles = searchTree->search_elements_in_radius(
           interfacedis, currentpositions, alenodecurr, maxmindist_, 0);
       // if no close elements could be found, try with a much larger radius and print a warning
       if (closeeles.empty())
@@ -638,7 +638,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
         std::cout << "WARNING: no elements found in radius r=" << maxmindist_
                   << ". Will try once with a " << static_cast<int>(enlarge_factor)
                   << "-times bigger radius!" << std::endl;
-        closeeles = searchTree->searchElementsInRadius(
+        closeeles = searchTree->search_elements_in_radius(
             interfacedis, currentpositions, alenodecurr, enlarge_factor * maxmindist_, 0);
         maxmindist_ *= 10.0;
 

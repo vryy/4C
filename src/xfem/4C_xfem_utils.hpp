@@ -38,8 +38,8 @@ namespace XFEM
     on the point position.
 
      */
-    void GetVolumeCellMaterial(DRT::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<CORE::MAT::Material>& mat,       // material of volume cell OUTPUT
+    void get_volume_cell_material(DRT::Element* actele,  // element for volume cell INPUT
+        Teuchos::RCP<CORE::MAT::Material>& mat,          // material of volume cell OUTPUT
         CORE::GEO::CUT::Point::PointPosition position =
             CORE::GEO::CUT::Point::outside  // position of volume cell INPUT to determine
                                             // position

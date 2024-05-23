@@ -66,7 +66,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
         // calculate domain and bodyforce integral
-        CalculateDomainAndBodyforce(elevec1_epetra, ele);
+        calculate_domain_and_bodyforce(elevec1_epetra, ele);
 
       break;
     }
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
  |  calculate domain integral                                   vg 01/09|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
     CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele)
 {
   // ---------------------------------------------------------------------
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // get bodyforce in gausspoint
     const double rhs = my::bodyforce_[0].Dot(my::funct_);
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalculateDomainAndBodyforce(
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
     thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
   // call base class routine
-  my::ExtractElementAndNodeValues(ele, params, discretization, la);
+  my::extract_element_and_node_values(ele, params, discretization, la);
 
   return;
 }
@@ -206,7 +206,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
  | calculate viscous part of subgrid-scale velocity                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
     CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
   my::derxy2_.Scale(1.0 / prefac);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc
+}  // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc
 
 
 // template classes

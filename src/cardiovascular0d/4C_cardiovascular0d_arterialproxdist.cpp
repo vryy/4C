@@ -55,7 +55,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
   if (!actdisc_->Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
@@ -342,7 +342,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);
 

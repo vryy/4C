@@ -42,7 +42,7 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLin
   std::string method = lsparams.get("Method", "Full Step");
 
   // If we use not the full step method, a inner status test has to be provided!
-  if (method != "Full Step") InnerStatusTestIsRequired(innerTests);
+  if (method != "Full Step") inner_status_test_is_required(innerTests);
 
   if (method == "Full Step")
     line_search = Teuchos::rcp(new ::NOX::LineSearch::FullStep(gd, lsparams));
@@ -65,12 +65,12 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Factory::InnerStatusTestIsRequired(
+void NOX::NLN::LineSearch::Factory::inner_status_test_is_required(
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
 {
   if (innerTests.is_null())
     FOUR_C_THROW(
-        "ERROR - NOX::NLN::LineSearch::Factory::InnerStatusTestIsRequired -"
+        "ERROR - NOX::NLN::LineSearch::Factory::inner_status_test_is_required -"
         " The inner status test pointer should be initialized at this point!");
 }
 

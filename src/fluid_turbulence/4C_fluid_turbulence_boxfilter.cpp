@@ -120,7 +120,7 @@ void FLD::Boxfilter::InitializeVreman()
   return;
 }
 
-void FLD::Boxfilter::InitializeVremanScatra(Teuchos::RCP<DRT::Discretization> scatradis)
+void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<DRT::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -149,7 +149,7 @@ void FLD::Boxfilter::ApplyFilterScatra(const Teuchos::RCP<const Epetra_Vector> s
     const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle, const int ndsvel)
 {
   // perform filtering depending on the LES model
-  ApplyBoxFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
+  apply_box_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
 
   return;
 }
@@ -162,7 +162,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ApplyFilterForDynamicComputationOfCs");
+  TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_cs");
 
   // LES turbulence modeling is only valid for 3 dimensions
   const int numdim = 3;
@@ -423,7 +423,8 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
     double expression_val;
     double alpha2_val;
 
-    std::map<int, std::vector<int>>* pbcmapmastertoslave = discret_->GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* pbcmapmastertoslave =
+        discret_->get_all_pbc_coupled_col_nodes();
     // loop all master nodes on this proc
     if (pbcmapmastertoslave)
     {
@@ -927,10 +928,10 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
  | perform box filtering                                      (private) |
  |                                                      rasthofer 08/12 |
  *----------------------------------------------------------------------*/
-void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector> scalar,
+void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vector> scalar,
     const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle, const int ndsvel)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ApplyFilterForDynamicComputationOfPrt");
+  TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_prt");
   if (apply_box_filter_ == true) FOUR_C_THROW("not yet considered");
   // LES turbulence modeling is only valid for 3 dimensions
   const int numdim = 3;
@@ -1132,7 +1133,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
 
     // loop all master nodes on this proc
     std::map<int, std::vector<int>>* pbcmapmastertoslave =
-        scatradiscret_->GetAllPBCCoupledColNodes();
+        scatradiscret_->get_all_pbc_coupled_col_nodes();
     // loop all master nodes on this proc
     if (pbcmapmastertoslave)
     {

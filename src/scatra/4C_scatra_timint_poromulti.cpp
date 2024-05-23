@@ -39,7 +39,7 @@ void SCATRA::ScaTraTimIntPoroMulti::Init() { return; }
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
+void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     Teuchos::RCP<const Epetra_MultiVector> multiflux)
 {
   // set L2-projection to true
@@ -100,7 +100,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
+void SCATRA::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
     Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid)
 {
   if (NdsPressure() >= discret_->NumDofSets())
@@ -114,7 +114,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem                  vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::AddProblemSpecificParametersAndVectors(
+void SCATRA::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {
@@ -137,7 +137,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
-    const auto dispnp_multi = ConvertDofVectorToComponentwiseNodeVector(dispnp, NdsDisp());
+    const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
 
@@ -147,12 +147,12 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
 
     const auto external_force = discret_->GetState(nds_vel, "external_force");
     const auto output_external_force =
-        ConvertDofVectorToComponentwiseNodeVector(external_force, NdsVel());
+        convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
     output_->WriteVector("external_force", output_external_force, IO::nodevector);
 
     const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
     const auto output_intrinsic_mobility =
-        ConvertDofVectorToComponentwiseNodeVector(mobility, NdsVel());
+        convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
     output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
   }
 }  // ScaTraTimIntImpl::OutputState
@@ -160,10 +160,10 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
 /*----------------------------------------------------------------------*
  | problem specific output                             kremheller 10/18 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::OutputProblemSpecific()
+void SCATRA::ScaTraTimIntPoroMulti::output_problem_specific()
 {
   // oxygen partial pressure (if desired)
-  OutputOxygenPartialPressure();
+  output_oxygen_partial_pressure();
 
   return;
 }
@@ -171,7 +171,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputProblemSpecific()
 /*----------------------------------------------------------------------*
  | output of oxygen partial pressure                   kremheller 10/18 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
+void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
 {
   // extract conditions for oxygen partial pressure
   std::vector<CORE::Conditions::Condition*> conditions;

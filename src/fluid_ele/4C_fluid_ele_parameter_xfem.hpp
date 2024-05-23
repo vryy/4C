@@ -33,8 +33,8 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// set all the XFEM specific parameters
-      void SetElementXFEMParameter(Teuchos::ParameterList& params,  ///< parameter list
-          int myrank                                                ///< pid (for output purpose)
+      void set_element_xfem_parameter(Teuchos::ParameterList& params,  ///< parameter list
+          int myrank                                                   ///< pid (for output purpose)
       );
 
       /*----------------------------------------------------*/
@@ -43,10 +43,10 @@ namespace DRT
       //@{
 
       //! get the volumecell integration method used for integrating cut elements?
-      INPAR::CUT::VCellGaussPts VolumeCellGaussPoints() const { return vcellgausspts_; };
+      INPAR::CUT::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
 
       //! get the boundarycell integration method used for integrating the surface in cut elements?
-      INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints() const { return bcellgausspts_; };
+      INPAR::CUT::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
 
       //@}
 
@@ -72,7 +72,7 @@ namespace DRT
 
       //! get the type of how to estimate the scaling of the trace inequality used for the viscous
       //! part of Nitsche's method?
-      INPAR::XFEM::ViscStabTraceEstimate ViscStabTracEstimate() const
+      INPAR::XFEM::ViscStabTraceEstimate visc_stab_trac_estimate() const
       {
         return visc_stab_trace_estimate_;
       };
@@ -91,17 +91,17 @@ namespace DRT
       //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint
       //! viscous terms
       //! @return true, in case of a symmetric adjoint term
-      bool IsViscousAdjointSymmetric() const
+      bool is_viscous_adjoint_symmetric() const
       {
         if (visc_adjoint_scaling_ == INPAR::XFEM::adj_none)
-          FOUR_C_THROW("Do not call IsViscousAdjointSymmetric with adj_none");
+          FOUR_C_THROW("Do not call is_viscous_adjoint_symmetric with adj_none");
         return visc_adjoint_scaling_ == INPAR::XFEM::adj_sym;
       }
 
       //! get information, whether the formulation should be symmetric/skew-symmetric/none in the
       //! adjoint viscous terms
       //! @return double with scaling
-      double GetViscousAdjointScaling() const
+      double get_viscous_adjoint_scaling() const
       {
         switch (visc_adjoint_scaling_)
         {
@@ -146,14 +146,14 @@ namespace DRT
       //@{
       //! get information, whether we take the maximum from the viscous and convective penalty
       //! scaling or the sum of them
-      INPAR::XFEM::MassConservationCombination MassConservationCombination() const
+      INPAR::XFEM::MassConservationCombination mass_conservation_combination() const
       {
         return mass_conservation_combo_;
       }
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
-      INPAR::XFEM::MassConservationScaling MassConservationScaling() const
+      INPAR::XFEM::MassConservationScaling mass_conservation_scaling() const
       {
         return mass_conservation_scaling_;
       }
@@ -161,18 +161,18 @@ namespace DRT
       //@}
 
       //! for new OST-implementation: which interface terms to be evaluated for previous time step
-      INPAR::XFEM::InterfaceTermsPreviousState InterfaceTermsPreviousState() const
+      INPAR::XFEM::InterfaceTermsPreviousState interface_terms_previous_state() const
       {
         return intterms_prev_state_;
       }
 
       //! assure a valid combination of input parameters for certain weighting
-      void CheckParameterConsistencyForAveragingStrategy(
+      void check_parameter_consistency_for_averaging_strategy(
           int myrank, INPAR::XFEM::AveragingStrategy averaging_strategy) const;
 
      private:
       //! assure a valid combination of input parameters
-      void CheckParameterConsistency(int myrank) const;
+      void check_parameter_consistency(int myrank) const;
 
       /*----------------------------------------------------*/
       //! @name parameters for integration on cut elements

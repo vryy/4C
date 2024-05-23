@@ -73,25 +73,25 @@ namespace STR
           const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      static Teuchos::RCP<CORE::LINALG::Solver> BuildMeshtyingContactLinSolver(
+      static Teuchos::RCP<CORE::LINALG::Solver> build_meshtying_contact_lin_solver(
           DRT::Discretization& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
           enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id);
 
      private:
       //! create the structural linear solver (should be called by default)
-      Teuchos::RCP<CORE::LINALG::Solver> BuildStructureLinSolver(
+      Teuchos::RCP<CORE::LINALG::Solver> build_structure_lin_solver(
           const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> BuildMeshtyingContactLinSolver(
+      Teuchos::RCP<CORE::LINALG::Solver> build_meshtying_contact_lin_solver(
           DRT::Discretization& actdis) const;
 
       //! create the Lagrange/penalty enforced constraint linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> BuildLagPenConstraintLinSolver(
+      Teuchos::RCP<CORE::LINALG::Solver> build_lag_pen_constraint_lin_solver(
           const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
 
       //! create the Windkessel linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> BuildCardiovascular0DLinSolver(
+      Teuchos::RCP<CORE::LINALG::Solver> build_cardiovascular0_d_lin_solver(
           const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
 
     };  // class Factory

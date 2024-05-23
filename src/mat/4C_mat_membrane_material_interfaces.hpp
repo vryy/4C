@@ -128,7 +128,7 @@ namespace MAT
      *
      * @return Adapted stretch in thickness direction
      */
-    virtual double EvaluateMembraneThicknessStretch(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    virtual double evaluate_membrane_thickness_stretch(const CORE::LINALG::Matrix<3, 3>& defgrd,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 

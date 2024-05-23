@@ -71,7 +71,7 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp)
 }
 
 const CORE::LINALG::Matrix<6, 1>&
-MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor_stress(int gp) const
+MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::get_structural_tensor_stress(int gp) const
 {
   if (!is_initialized_)
   {
@@ -86,12 +86,12 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor_stress(
   return structural_tensors_stress_[gp];
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalDataInitialized()
+void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_data_initialized()
 {
   // do nothing
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataInitialized()
+void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data_initialized()
 {
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS)
@@ -133,7 +133,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
   is_initialized_ = true;
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitialized()
+void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_initialized()
 {
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_EXTERNAL ||
       init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_FIBERS)
@@ -156,11 +156,11 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
-  scalar_products_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
-  structural_tensors_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
-  structural_tensors_stress_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
+  scalar_products_.resize(GetAnisotropy()->get_number_of_gauss_points());
+  structural_tensors_.resize(GetAnisotropy()->get_number_of_gauss_points());
+  structural_tensors_stress_.resize(GetAnisotropy()->get_number_of_gauss_points());
 
-  for (auto gp = 0; gp < GetAnisotropy()->GetNumberOfGaussPoints(); ++gp)
+  for (auto gp = 0; gp < GetAnisotropy()->get_number_of_gauss_points(); ++gp)
   {
     scalar_products_[gp] = GetAnisotropy()
                                ->GetGPFiber(gp, fiber_ids_[0])
@@ -195,9 +195,9 @@ MAT::ELASTIC::CoupAnisoExpoShear::CoupAnisoExpoShear(MAT::ELASTIC::PAR::CoupAnis
 {
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShear::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MAT::ELASTIC::CoupAnisoExpoShear::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(CORE::COMM::PackBuffer& data) const

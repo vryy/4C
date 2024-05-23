@@ -53,7 +53,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
   // The averaged reference normals have to be calculated after each face element is set up.
   for (const auto& face_element_iterator : face_elements_)
     if (face_element_iterator.second->IsPartOfPair())
-      face_element_iterator.second->CalculateAveragedReferenceNormals(face_elements_);
+      face_element_iterator.second->calculate_averaged_reference_normals(face_elements_);
 }
 
 /**

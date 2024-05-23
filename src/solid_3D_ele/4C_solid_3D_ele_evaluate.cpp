@@ -73,7 +73,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   }
 
   // get ptr to interface to time integration
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const ELEMENTS::ActionType action = std::invoke(
       [&]()
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
           },
           solid_calc_variant_);
@@ -102,7 +102,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, *SolidMaterial(), discretization, lm, params, &elevec1, nullptr, nullptr);
           },
           solid_calc_variant_);
@@ -114,7 +114,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
@@ -145,8 +145,8 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
-                lm, params, &elevec1, nullptr, &mass_matrix);
+            interface->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+                discretization, lm, params, &elevec1, nullptr, &mass_matrix);
           },
           solid_calc_variant_);
 
@@ -190,8 +190,9 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     case DRT::ELEMENTS::struct_calc_energy:
     {
       double int_energy = std::visit(
-          [&](auto& interface) {
-            return interface->CalculateInternalEnergy(
+          [&](auto& interface)
+          {
+            return interface->calculate_internal_energy(
                 *this, *SolidMaterial(), discretization, lm, params);
           },
           solid_calc_variant_);
@@ -200,7 +201,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())
       {
         // new structural time integration
-        ParamsInterface().AddContributionToEnergyType(int_energy, STR::internal_energy);
+        ParamsInterface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
       }
       else
       {
@@ -217,8 +218,8 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->InitializeGaussPointDataOutput(
-                *this, *SolidMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
+            interface->initialize_gauss_point_data_output(
+                *this, *SolidMaterial(), *ParamsInterface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -229,8 +230,8 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateGaussPointDataOutput(
-                *this, *SolidMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
+            interface->evaluate_gauss_point_data_output(
+                *this, *SolidMaterial(), *ParamsInterface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -238,7 +239,8 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case ELEMENTS::struct_calc_reset_istep:
     {
-      std::visit([&](auto& interface) { interface->ResetToLastConverged(*this, *SolidMaterial()); },
+      std::visit([&](auto& interface)
+          { interface->reset_to_last_converged(*this, *SolidMaterial()); },
           solid_calc_variant_);
 
       return 0;
@@ -260,7 +262,7 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const double time = std::invoke(
       [&]()

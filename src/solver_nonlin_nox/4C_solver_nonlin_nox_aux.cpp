@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
+void NOX::NLN::AUX::set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
 {
   // make all Yes/No integral values to Boolean
   INPUT::BoolifyValidInputParameters(p_nox);
@@ -235,9 +235,9 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic&
     {
       // look for the right quantity and get the desired class variable value
       if (classVariableName == "ATOL")
-        return normWRMSTest->GetAbsoluteTolerance(qType);
+        return normWRMSTest->get_absolute_tolerance(qType);
       else if (classVariableName == "RTOL")
-        return normWRMSTest->GetRelativeTolerance(qType);
+        return normWRMSTest->get_relative_tolerance(qType);
     }
   }
   // if the nox_nln_statustest_combo Test cast was successful
@@ -283,7 +283,7 @@ double NOX::NLN::AUX::GetNormFClassVariable(const ::NOX::StatusTest::Generic& te
       else if (classVariableName == "TrueTolerance")
         return normFTest->GetTrueTolerance(qType);
       else if (classVariableName == "SpecifiedTolerance")
-        return normFTest->GetSpecifiedTolerance(qType);
+        return normFTest->get_specified_tolerance(qType);
       else if (classVariableName == "InitialTolerance")
         return normFTest->GetInitialTolerance(qType);
     }
@@ -388,7 +388,7 @@ int NOX::NLN::AUX::GetNormType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
+::NOX::StatusTest::Generic* NOX::NLN::AUX::get_outer_status_test_with_quantity(
     ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
@@ -418,7 +418,7 @@ template <class T>
     for (auto& ctest : tests)
     {
       // recursive function call
-      ::NOX::StatusTest::Generic* ptr = GetOuterStatusTestWithQuantity<T>(*ctest, qtype);
+      ::NOX::StatusTest::Generic* ptr = get_outer_status_test_with_quantity<T>(*ctest, qtype);
       if (ptr) return ptr;
     }
   }
@@ -641,13 +641,13 @@ std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
+NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormF>(
     ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormUpdate>(
+NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormUpdate>(
     ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormWRMS>(
+NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormWRMS>(
     ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormF>(
     const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);

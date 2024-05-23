@@ -40,7 +40,7 @@ namespace DRT
 
         Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-        void SetupElementDefinition(
+        void setup_element_definition(
             std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
             override
         {

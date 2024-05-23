@@ -42,7 +42,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -69,7 +69,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -96,7 +96,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -123,7 +123,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -150,7 +150,7 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 

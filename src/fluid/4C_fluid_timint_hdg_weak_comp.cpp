@@ -208,7 +208,7 @@ void FLD::TimIntHDGWeakComp::ExplicitPredictor()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                         laspina 08/19 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::SetOldPartOfRighthandside()
+void FLD::TimIntHDGWeakComp::set_old_part_of_righthandside()
 {
   hist_->PutScalar(0.0);
 
@@ -223,7 +223,7 @@ void FLD::TimIntHDGWeakComp::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha              laspina 08/19 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::GenAlphaUpdateAcceleration()
+void FLD::TimIntHDGWeakComp::gen_alpha_update_acceleration()
 {
   //                                  n+1     n
   //                               vel   - vel
@@ -250,7 +250,7 @@ void FLD::TimIntHDGWeakComp::GenAlphaUpdateAcceleration()
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps              laspina 08/19 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::GenAlphaIntermediateValues()
+void FLD::TimIntHDGWeakComp::gen_alpha_intermediate_values()
 {
   // set intermediate values for accelerations
   //
@@ -284,7 +284,8 @@ void FLD::TimIntHDGWeakComp::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                   laspina 08/19 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntHDGWeakComp::set_custom_ele_params_assemble_mat_and_rhs(
+    Teuchos::ParameterList& eleparams)
 {
   eleparams.set<bool>("needslocalupdate", !first_assembly_);
 }
@@ -292,7 +293,7 @@ void FLD::TimIntHDGWeakComp::SetCustomEleParamsAssembleMatAndRHS(Teuchos::Parame
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                   laspina 08/19 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::ClearStateAssembleMatAndRHS()
+void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
 {
   if (!first_assembly_)
   {
@@ -303,7 +304,7 @@ void FLD::TimIntHDGWeakComp::ClearStateAssembleMatAndRHS()
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
   first_assembly_ = false;
-  FluidImplicitTimeInt::ClearStateAssembleMatAndRHS();
+  FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
 }
 
 
@@ -483,7 +484,8 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
 /*----------------------------------------------------------------------*
  | evaluate error for test cases with analytical solutions laspina 08/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double>>
+FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   INPAR::FLUID::CalcError calcerr =

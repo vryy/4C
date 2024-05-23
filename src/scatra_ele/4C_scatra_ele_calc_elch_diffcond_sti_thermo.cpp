@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::extract_element_and_node_values(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
     DRT::Discretization& discretization,  //!< discretization
@@ -47,10 +47,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ExtractElementA
 )
 {
   // call base class routine to extract scatra-related quantities
-  mydiffcond::ExtractElementAndNodeValues(ele, params, discretization, la);
+  mydiffcond::extract_element_and_node_values(ele, params, discretization, la);
 
   // call base class routine to extract thermo-related quantitites
-  mythermo::ExtractElementAndNodeValues(ele, params, discretization, la);
+  mythermo::extract_element_and_node_values(ele, params, discretization, la);
 }
 
 
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 
       // gradient of test function times gradient of temperature
       double laplawfrhs_temp(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_temp, gradtemp, vi);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_temp, gradtemp, vi);
 
       for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0),
-        mydiffcond::DiffManager()->GetConcDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
+        mydiffcond::DiffManager()->get_conc_deriv_iso_diff_coef(0, 0), VarManager()->Temp(),
         VarManager()->GradTemp(), my::funct_, my::derxy_);
     mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD
   {
     case SCATRA::Action::calc_scatra_mono_odblock_scatrathermo:
     {
-      SysmatODScatraThermo(ele, elemat1_epetra);
+      sysmat_od_scatra_thermo(ele, elemat1_epetra);
 
       break;
     }
@@ -213,7 +213,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraThermo(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::sysmat_od_scatra_thermo(
     DRT::Element* ele,                     //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
@@ -226,13 +226,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate overall integration factor
     const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
 
     // evaluate internal variables at current integration point
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // evaluate material parameters at current integration point
     double dummy(0.);
@@ -261,13 +261,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 
         // gradient of test function times gradient of concentration
         double laplawfrhs_conc = 0.0;
-        my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
+        my::get_laplacian_weak_form_rhs(laplawfrhs_conc, gradconc, vi);
 
         for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
         {
           // gradient of test function times gradient of shape function
           double laplawf(0.);
-          my::GetLaplacianWeakForm(laplawf, vi, ui);
+          my::get_laplacian_weak_form(laplawf, vi, ui);
 
           // gradient of test function times derivative of current density w.r.t. temperature
           const double di_dT =
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     // potential
     mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
         VarManager()->GradPhi(0), VarManager()->GradPot(),
-        myelectrode::DiffManager()->GetTempDerivIsoDiffCoef(0, 0),
+        myelectrode::DiffManager()->get_temp_deriv_iso_diff_coef(0, 0),
         myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);
   }
 }
@@ -308,10 +308,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
-  VarManager()->SetInternalVariables(my::funct_, my::derxy_, mythermo::etempnp_, my::ephinp_,
+  VarManager()->set_internal_variables(my::funct_, my::derxy_, mythermo::etempnp_, my::ephinp_,
       my::ephin_, my::econvelnp_, my::ehist_);
 }
 

@@ -64,7 +64,7 @@ namespace DRT
           ) override;
 
       //! calculate contributions to matrix and rhs (outside loop over all scalars)
-      void CalcMatAndRhsOutsideScalarLoop(
+      void calc_mat_and_rhs_outside_scalar_loop(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
@@ -73,8 +73,8 @@ namespace DRT
           ) override;
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
-      void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,                                      //!< location vector
+      void correction_for_flux_across_dc(DRT::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                                          //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
           ) override;
@@ -109,7 +109,7 @@ namespace DRT
       /*========================================================================*/
 
       //! Calculate quantities used for stabilization
-      void PrepareStabilization(
+      void prepare_stabilization(
           std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
           std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
@@ -119,7 +119,7 @@ namespace DRT
 
       //! Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and
       //! Zarins
-      void CalcTauDerPotTaylorHughesZarins(
+      void calc_tau_der_pot_taylor_hughes_zarins(
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& tau,    //!< stabilization parameter
@@ -187,7 +187,7 @@ namespace DRT
 
       //! CalcMat: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
       //! eliminated
-      void CalcMatPotEquENCPDEElim(
+      void calc_mat_pot_equ_encpde_elim(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -197,7 +197,7 @@ namespace DRT
       );
 
       //! CalcMat: Poisson equation for electric potential
-      void CalcMatPotEquPoisson(
+      void calc_mat_pot_equ_poisson(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
@@ -206,7 +206,7 @@ namespace DRT
       );
 
       //! CalcMat: Laplace equation for electric potential
-      void CalcMatPotEquLaplace(
+      void calc_mat_pot_equ_laplace(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double fac                        //!< domain-integration factor
       );
@@ -252,7 +252,7 @@ namespace DRT
 
       //! CalcRhs: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
       //! eliminated
-      void CalcRhsPotEquENCPDEElim(
+      void calc_rhs_pot_equ_encpde_elim(
           CORE::LINALG::SerialDenseVector& erhs,         //!< element vector to be filled
           const int k,                                   //!< index of current scalar
           const double fac,                              //!< domain-integration factor
@@ -262,7 +262,7 @@ namespace DRT
       );
 
       //! CalcRhs: Poisson equation for electric potential
-      void CalcRhsPotEquPoisson(
+      void calc_rhs_pot_equ_poisson(
           CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
           const int k,                                  //!< index of current scalar
           const double fac,                             //!< domain-integration factor
@@ -273,7 +273,7 @@ namespace DRT
       );
 
       //! CalcRhs: Laplace equation for electric potential
-      void CalcRhsPotEquLaplace(
+      void calc_rhs_pot_equ_laplace(
           CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
           const double fac,                             //!< domain-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
@@ -285,12 +285,12 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      void CheckElchElementParameter(DRT::Element* ele  //!< current element
+      void check_elch_element_parameter(DRT::Element* ele  //!< current element
           ) override;
 
       //! evaluate an electrode boundary kinetics point condition
-      void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                       ///< element matrix
+      void evaluate_elch_boundary_kinetics_point(const DRT::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,                           ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
@@ -324,14 +324,14 @@ namespace DRT
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
-      void CalErrorComparedToAnalytSolution(
+      void cal_error_compared_to_analyt_solution(
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
           ) override;
 
       //! set internal variables for Nernst-Planck formulation
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for Nernst-Planck formulation
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>> VarManager()
@@ -383,7 +383,7 @@ namespace DRT
             migconv_(true){};
 
       //! compute and set internal variables for the Nernst-Planck formulation
-      void SetInternalVariablesElchNP(
+      void set_internal_variables_elch_np(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
@@ -398,7 +398,7 @@ namespace DRT
       )
       {
         // set internal variables in base variable manager
-        vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist);
+        vmelch::set_internal_variables_elch(funct, derxy, ephinp, ephin, econvelnp, ehist);
 
         // migration velocity vector (divided by D_k*z_k) at t_(n+1) or t_(n+alpha_F): -F/(RT)
         // \grad{\Phi}

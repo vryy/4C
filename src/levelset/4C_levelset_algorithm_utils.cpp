@@ -55,10 +55,10 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vecto
   ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, setpressure);
 
   // manipulate velocity field away from the interface
-  if (extract_interface_vel_) ManipulateFluidFieldForGfunc();
+  if (extract_interface_vel_) manipulate_fluid_field_for_gfunc();
 
   // estimate velocity at contact points, i.e., intersection points of interface and (no-slip) walls
-  if (cpbc_) ApplyContactPointBoundaryCondition();
+  if (cpbc_) apply_contact_point_boundary_condition();
 
   return;
 }
@@ -67,7 +67,7 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vecto
 /*----------------------------------------------------------------------*
  | add problem depended params for AssembleMatAndRHS    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
+void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params)
 {
   // set only special parameters of the solution of the reinitialization equation
@@ -85,19 +85,20 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
       discret_->SetState("phin", phin_);
 
 #ifndef USE_PHIN_FOR_VEL
-      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based) CalcNodeBasedReinitVel();
+      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+        calc_node_based_reinit_vel();
 #endif
 
       // add nodal velocity field, if required
       if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
-        discret_->AddMultiVectorToParameterList(
+        discret_->add_multi_vector_to_parameter_list(
             params, "reinitialization velocity field", nb_grad_val_);
     }
     else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
     {
       // add node-based gradient, if required
       if (projection_ == true)
-        discret_->AddMultiVectorToParameterList(params, "gradphi", nb_grad_val_);
+        discret_->add_multi_vector_to_parameter_list(params, "gradphi", nb_grad_val_);
 
       // add interface integration cells
       params.set<Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>>>(
@@ -123,7 +124,7 @@ void SCATRA::LevelSetAlgorithm::CaptureInterface(
   intersect.CaptureZeroLevelSet(phinp_, discret_, volminus, volplus, surf, interface);
 
   // do mass conservation check
-  MassConservationCheck(volminus, writetofile);
+  mass_conservation_check(volminus, writetofile);
 
   return;
 }
@@ -132,7 +133,7 @@ void SCATRA::LevelSetAlgorithm::CaptureInterface(
 /*----------------------------------------------------------------------*
  | mass conservation check                              rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::MassConservationCheck(
+void SCATRA::LevelSetAlgorithm::mass_conservation_check(
     const double actvolminus, const bool writetofile)
 {
   if (myrank_ == 0)
@@ -199,7 +200,7 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 /*----------------------------------------------------------------------*
  | calculate error compared to analytical solution      rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
+void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 {
   const INPAR::SCATRA::CalcErrorLevelSet calcerr =
       CORE::UTILS::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
@@ -312,7 +313,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
 /*------------------------------------------------------------------------------------------------*
  | compute convective velocity for contact points no-slip wall and interface      rasthofer 12/13 |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
+void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 {
   // get condition
   std::vector<CORE::Conditions::Condition*> lscontactpoint;
@@ -461,7 +462,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
  | manipulate velocity field away from the interface                              rasthofer 08/11 |
  |                                                                                    DA wichmann |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
+void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 {
   // idea: Velocity field at no-slip walls is zero fixing the level-set contours here.
   //       This may result in strong deformations of the level-set field, which may then
@@ -629,7 +630,8 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     // proc.
     //------------------------------------------------------------------------------------------------
     std::set<int>::const_iterator eleit;
-    std::map<int, std::vector<int>>* col_pbcmapmastertoslave = discret_->GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* col_pbcmapmastertoslave =
+        discret_->get_all_pbc_coupled_col_nodes();
     for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
     {
       const int elelid = discret_->ElementColMap()->LID(*eleit);
@@ -907,7 +909,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 /*----------------------------------------------------------------------------*
  | Get Mass Center, using the smoothing function                 winter 06/14 |
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
+void SCATRA::LevelSetAlgorithm::mass_center_using_smoothing()
 {
   // set vector values needed by elements
   discret_->ClearState();
@@ -977,7 +979,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
 
   return;
 
-}  // SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing
+}  // SCATRA::LevelSetAlgorithm::mass_center_using_smoothing
 
 
 /*----------------------------------------------------------------------------*
@@ -995,7 +997,7 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
   //--------------------------------------------------------------------
 
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
+  discret_->compute_null_space_if_necessary(solver_->Params(), true);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

@@ -98,7 +98,7 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
     // After ghosting we need to explicitly set up the MultiMapExtractor again
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
-        ->SetupMultiMapExtractor();
+        ->setup_multi_map_extractor();
   }
 
   geometrycoupler_->Setup(
@@ -155,19 +155,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int
   {
     // Assemble the fluid stiffness matrix and hand it to the fluid solver
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)
-        ->SetCouplingContributions(AssembleFluidCouplingMatrix());
+        ->set_coupling_contributions(assemble_fluid_coupling_matrix());
 
     // Assemble the fluid force vector and hand it to the fluid solver
-    fluid_->ApplyInterfaceValues(AssembleFluidCouplingResidual());
+    fluid_->apply_interface_values(assemble_fluid_coupling_residual());
   }
 
   // return the current struture velocity
   return Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
-      ->ExtractInterfaceVelnp();
+      ->extract_interface_velnp();
 };
 
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintenforcer::RecomputeCouplingWithoutPairCreation()
+void ADAPTER::FBIConstraintenforcer::recompute_coupling_without_pair_creation()
 {
   // Before each search we delete all pair and segment information
   bridge_->ResetBridge();
@@ -183,7 +183,7 @@ void ADAPTER::FBIConstraintenforcer::RecomputeCouplingWithoutPairCreation()
 // return the structure force
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 {
-  return AssembleStructureCouplingResidual();
+  return assemble_structure_coupling_residual();
 };
 
 /*----------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
       ele_ptrs[1] = fluidele;
 
       // Extract current element dofs, i.e. positions and velocities
-      ExtractCurrentElementDofs(ele_ptrs, beam_dofvec, fluid_dofvec);
+      extract_current_element_dofs(ele_ptrs, beam_dofvec, fluid_dofvec);
 
       // Finally tell the bridge to create the pair
       bridge_->CreatePair(ele_ptrs, beam_dofvec, fluid_dofvec);
@@ -267,7 +267,7 @@ void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
     ele_ptrs[1] = (*pairiterator)->Element2();
 
     // Extract current element dofs, i.e. positions and velocities
-    ExtractCurrentElementDofs(ele_ptrs, beam_dofvec, fluid_dofvec);
+    extract_current_element_dofs(ele_ptrs, beam_dofvec, fluid_dofvec);
 
     // Finally tell the bridge to create the pair
     bridge_->ResetPair(beam_dofvec, fluid_dofvec, *pairiterator);
@@ -275,7 +275,7 @@ void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
 }
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
+void ADAPTER::FBIConstraintenforcer::extract_current_element_dofs(
     std::vector<DRT::Element const*> elements, std::vector<double>& beam_dofvec,
     std::vector<double>& fluid_dofvec) const
 {

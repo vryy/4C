@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the constraint vector and the coupling matrices.
      */
-    void EvaluateRotationalCouplingTerms(
+    void evaluate_rotational_coupling_terms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_1st>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the stiffness contributions of this pair.
      */
-    void EvaluateRotationalCouplingStiffTerms(
+    void evaluate_rotational_coupling_stiff_terms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,

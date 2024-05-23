@@ -46,7 +46,7 @@ namespace XFEM
     //@{
 
     //! predict states in the coupling object
-    void PredictCouplingStates() override{};
+    void predict_coupling_states() override{};
 
     //! init...
     void InitCouplingStates() override;

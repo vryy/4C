@@ -96,7 +96,7 @@ namespace POROMULTIPHASESCATRA
     void SetScatraSolution();
 
     //! apply the additional Dirichlet boundary condition for volume fraction species
-    void ApplyAdditionalDBCForVolFracSpecies();
+    void apply_additional_dbc_for_vol_frac_species();
 
     //! access to poro field
     const Teuchos::RCP<ADAPTER::PoroMultiPhase>& PoroField() { return poromulti_; }

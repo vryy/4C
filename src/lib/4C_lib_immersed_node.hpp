@@ -117,7 +117,7 @@ namespace DRT
     /*!
     \brief set 'true' if parent element is cut by an immersed boundary
     */
-    void SetIsBoundaryImmersed(bool isbdryimmersed) { IsBoundaryImmersed_ = isbdryimmersed; }
+    void set_is_boundary_immersed(bool isbdryimmersed) { IsBoundaryImmersed_ = isbdryimmersed; }
 
     /*!
     \brief set 'true' if parent element is adjacent to immersed boundary and fully covered by

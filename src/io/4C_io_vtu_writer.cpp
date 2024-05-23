@@ -69,8 +69,8 @@ const std::vector<std::string>& VtuWriter::WriterPPieceTags() const
   for (size_t iproc = 0; iproc < numproc_; ++iproc)
   {
     std::stringstream stream;
-    stream << "<Piece Source=\"" << filename_base_ << GetPartOfFileNameIndicatingProcessorId(iproc)
-           << ".vtu\"/>";
+    stream << "<Piece Source=\"" << filename_base_
+           << get_part_of_file_name_indicating_processor_id(iproc) << ".vtu\"/>";
     tags.push_back(std::string(stream.str()));
   }
   return tags;
@@ -94,7 +94,7 @@ const std::string& VtuWriter::WriterPSuffix() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
+void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& point_coordinates,
     const std::vector<IO::index_type>& point_cell_connectivity,
     const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
     const std::vector<IO::index_type>& face_connectivity,
@@ -121,7 +121,7 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
   /*----------------------------------------------------------------------*/
   if (myrank_ == 0)
   {
-    ThrowErrorIfInvalidFileStream(currentmasterout_);
+    throw_error_if_invalid_file_stream(currentmasterout_);
 
     currentmasterout_ << "    <PPoints>\n";
     currentmasterout_ << "      <PDataArray type=\"Float64\" NumberOfComponents=\""
@@ -132,7 +132,7 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
 
   // step 1: write point coordinates into file
   /*----------------------------------------------------------------------*/
-  ThrowErrorIfInvalidFileStream(currentout_);
+  throw_error_if_invalid_file_stream(currentout_);
 
   currentout_ << "    <Piece NumberOfPoints=\"" << num_points << "\" NumberOfCells=\"" << num_cells
               << "\" >\n"
@@ -270,18 +270,18 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WritePointDataVector(const IO::visualization_vector_type_variant& data,
+void VtuWriter::write_point_data_vector(const IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_point, const std::string& name)
 {
   // start the point data section that will be written subsequently
   if (currentPhase_ == INIT)
   {
-    ThrowErrorIfInvalidFileStream(currentout_);
+    throw_error_if_invalid_file_stream(currentout_);
     currentout_ << "  <PointData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream(currentmasterout_);
+      throw_error_if_invalid_file_stream(currentmasterout_);
       currentmasterout_ << "    <PPointData>\n";
     }
 
@@ -308,12 +308,12 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
   // if required, end the point data section
   if (currentPhase_ == POINTS)
   {
-    ThrowErrorIfInvalidFileStream(currentout_);
+    throw_error_if_invalid_file_stream(currentout_);
     currentout_ << "  </PointData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream(currentmasterout_);
+      throw_error_if_invalid_file_stream(currentmasterout_);
       currentmasterout_ << "    </PPointData>\n";
     }
   }
@@ -321,12 +321,12 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
   // start the cell data section that will be written subsequently
   if (currentPhase_ == INIT || currentPhase_ == POINTS)
   {
-    ThrowErrorIfInvalidFileStream(currentout_);
+    throw_error_if_invalid_file_stream(currentout_);
     currentout_ << "  <CellData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream(currentmasterout_);
+      throw_error_if_invalid_file_stream(currentmasterout_);
       currentmasterout_ << "    <PCellData>\n";
     }
 

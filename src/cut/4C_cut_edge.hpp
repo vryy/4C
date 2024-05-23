@@ -212,13 +212,13 @@ namespace CORE::GEO
       /*!
       \brief Computes the points at which both the sides intersect
        */
-      bool FindCutPointsMeshCut(
+      bool find_cut_points_mesh_cut(
           Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = nullptr);
 
       /*!
       \brief Simplified version of the FindCutPoints as used by the function LevelSetCut
        */
-      bool FindCutPointsLevelSet(Mesh& mesh, Element* element, Side& side, Side& other);
+      bool find_cut_points_level_set(Mesh& mesh, Element* element, Side& side, Side& other);
 
       /*!
       \brief Cut points falling on this edge that are common to the two given sides are extracted
@@ -242,7 +242,7 @@ namespace CORE::GEO
       void SelfCutPosition(Point::PointPosition p);
 
       /// Changes the selfcutposition of this edge and spreads the positional information
-      void ChangeSelfCutPosition(Point::PointPosition p);
+      void change_self_cut_position(Point::PointPosition p);
 
       /// Erase the cutside from this edge because it is deleted in the selfcut
       void EraseCutSide(Side* cutside) { sides_.erase(cutside); }

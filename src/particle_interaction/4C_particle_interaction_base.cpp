@@ -30,10 +30,10 @@ PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
 void PARTICLEINTERACTION::ParticleInteractionBase::Init()
 {
   // init particle material handler
-  InitParticleMaterialHandler();
+  init_particle_material_handler();
 
   // init particle interaction writer
-  InitParticleInteractionWriter();
+  init_particle_interaction_writer();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
@@ -44,7 +44,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall hander
   particlewallinterface_ = particlewallinterface;
@@ -72,11 +72,11 @@ void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::
-    CheckParticleInteractionDistanceConcerningBinSize() const
+    check_particle_interaction_distance_concerning_bin_size() const
 {
   // get maximum particle interaction distance
   double allprocmaxinteractiondistance = 0.0;
-  double maxinteractiondistance = MaxInteractionDistance();
+  double maxinteractiondistance = max_interaction_distance();
   comm_.MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
 
   // bin size safety check
@@ -85,18 +85,18 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
         allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
 
   // periodic length safety check
-  if (particleengineinterface_->HavePeriodicBoundaryConditions())
+  if (particleengineinterface_->have_periodic_boundary_conditions())
   {
     // loop over all spatial directions
     for (int dim = 0; dim < 3; ++dim)
     {
       // check for periodic boundary condition in current spatial direction
-      if (not particleengineinterface_->HavePeriodicBoundaryConditionsInSpatialDirection(dim))
+      if (not particleengineinterface_->have_periodic_boundary_conditions_in_spatial_direction(dim))
         continue;
 
       // check periodic length in current spatial direction
       if ((2.0 * allprocmaxinteractiondistance) >
-          particleengineinterface_->LengthOfBinningDomainInASpatialDirection(dim))
+          particleengineinterface_->length_of_binning_domain_in_a_spatial_direction(dim))
         FOUR_C_THROW(
             "particles are not allowed to interact directly and across the periodic boundary!");
     }
@@ -113,11 +113,11 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentStepSize(const doub
   dt_ = currentstepsize;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentWriteResultFlag(
+void PARTICLEINTERACTION::ParticleInteractionBase::set_current_write_result_flag(
     bool writeresultsthisstep)
 {
   // set current write result flag in particle interaction writer
-  particleinteractionwriter_->SetCurrentWriteResultFlag(writeresultsthisstep);
+  particleinteractionwriter_->set_current_write_result_flag(writeresultsthisstep);
 }
 
 void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
@@ -125,14 +125,14 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double
   gravity_ = gravity;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::WriteInteractionRuntimeOutput(
+void PARTICLEINTERACTION::ParticleInteractionBase::write_interaction_runtime_output(
     const int step, const double time)
 {
   // write particle interaction runtime output
-  particleinteractionwriter_->WriteParticleInteractionRuntimeOutput(step, time);
+  particleinteractionwriter_->write_particle_interaction_runtime_output(step, time);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
+void PARTICLEINTERACTION::ParticleInteractionBase::init_particle_material_handler()
 {
   // create particle material handler
   particlematerial_ = std::make_shared<PARTICLEINTERACTION::MaterialHandler>(params_);
@@ -141,7 +141,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
   particlematerial_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleInteractionWriter()
+void PARTICLEINTERACTION::ParticleInteractionBase::init_particle_interaction_writer()
 {
   // create particle interaction writer
   particleinteractionwriter_ =
@@ -161,7 +161,7 @@ double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get maximum stored value of state
     double currmaxrad = container->GetMaxValueOfState(PARTICLEENGINE::Radius);

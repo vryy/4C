@@ -70,7 +70,7 @@ BEAMINTERACTION::BeamInteractionConditions::BeamInteractionConditions() {}
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
+void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<const BeamContactParams>& params_ptr)
 {
@@ -179,17 +179,17 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
               INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
             new_condition = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying(map_item.second.first,
-                    map_item.second.second, params_ptr->BeamToSolidVolumeMeshtyingParams()));
+                    map_item.second.second, params_ptr->beam_to_solid_volume_meshtying_params()));
           else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
-            new_condition =
-                Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(map_item.second.first,
-                    map_item.second.second, params_ptr->BeamToSolidSurfaceMeshtyingParams(), true));
+            new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(
+                map_item.second.first, map_item.second.second,
+                params_ptr->beam_to_solid_surface_meshtying_params(), true));
           else if (interaction_type ==
                    INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
-            new_condition =
-                Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(map_item.second.first,
-                    map_item.second.second, params_ptr->BeamToSolidSurfaceContactParams(), false));
+            new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(
+                map_item.second.first, map_item.second.second,
+                params_ptr->beam_to_solid_surface_contact_params(), false));
           else
             FOUR_C_THROW("Got unexpected interaction type.");
           interaction_vector.push_back(new_condition);
@@ -297,7 +297,7 @@ BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::CreateIndirectAssemblyManagers(
+void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_managers(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     std::vector<Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
 {
@@ -307,7 +307,7 @@ void BEAMINTERACTION::BeamInteractionConditions::CreateIndirectAssemblyManagers(
   {
     for (auto& condition : map_pair.second)
     {
-      condition_assembly_manager = condition->CreateIndirectAssemblyManager(discret);
+      condition_assembly_manager = condition->create_indirect_assembly_manager(discret);
       if (not(condition_assembly_manager == Teuchos::null))
         assembly_managers.push_back(condition_assembly_manager);
     }

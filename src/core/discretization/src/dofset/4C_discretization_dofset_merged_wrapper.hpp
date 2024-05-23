@@ -57,7 +57,7 @@ namespace CORE::Dofsets
     bool Filled() const override { return filled_ and sourcedofset_->Filled(); };
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables

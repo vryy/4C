@@ -79,9 +79,9 @@ void MAT::Anisotropy::UnpackAnisotropy(
   }
 }
 
-void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp) { numgp_ = numgp; }
+void MAT::Anisotropy::set_number_of_gauss_points(int numgp) { numgp_ = numgp; }
 
-void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefinition)
+void MAT::Anisotropy::read_anisotropy_from_element(INPUT::LineDefinition* lineDefinition)
 {
   if (lineDefinition == nullptr)
   {
@@ -98,7 +98,7 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefin
       element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     }
 
-    element_cylinder_coordinate_system_manager_->ReadFromElementLineDefinition(lineDefinition);
+    element_cylinder_coordinate_system_manager_->read_from_element_line_definition(lineDefinition);
   }
 
   // read fibers in FIBERi notation
@@ -115,10 +115,10 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefin
     i += 1;
   }
 
-  OnElementFibersInitialized();
+  on_element_fibers_initialized();
 }
 
-void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterList& params)
+void MAT::Anisotropy::read_anisotropy_from_parameter_list(const Teuchos::ParameterList& params)
 {
   if (params.isParameter("fiberholder"))
   {
@@ -132,7 +132,7 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
     }
   }
 
-  OnGPFibersInitialized();
+  on_gp_fibers_initialized();
 }
 
 void MAT::Anisotropy::InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber)
@@ -147,7 +147,7 @@ void MAT::Anisotropy::SetElementFibers(const std::vector<CORE::LINALG::Matrix<3,
 {
   element_fibers_ = fibers;
 
-  OnElementFibersInitialized();
+  on_element_fibers_initialized();
 }
 
 void MAT::Anisotropy::SetGaussPointFibers(
@@ -182,7 +182,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
 
   gp_fibers_ = fibers;
 
-  OnGPFibersInitialized();
+  on_gp_fibers_initialized();
 }
 
 const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int i) const
@@ -238,49 +238,49 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, u
   return gp_fibers_[gp][i];
 }
 
-void MAT::Anisotropy::RegisterAnisotropyExtension(BaseAnisotropyExtension& extension)
+void MAT::Anisotropy::register_anisotropy_extension(BaseAnisotropyExtension& extension)
 {
   extensions_.emplace_back(Teuchos::rcpFromRef(extension));
   extension.SetAnisotropy(*this);
 }
 
-void MAT::Anisotropy::OnElementFibersInitialized()
+void MAT::Anisotropy::on_element_fibers_initialized()
 {
   element_fibers_initialized_ = true;
   for (auto& extension : extensions_)
   {
-    extension->OnGlobalElementDataInitialized();
+    extension->on_global_element_data_initialized();
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
     for (auto& extension : extensions_)
     {
-      extension->OnGlobalDataInitialized();
+      extension->on_global_data_initialized();
     }
   }
 }
 
-void MAT::Anisotropy::OnGPFibersInitialized()
+void MAT::Anisotropy::on_gp_fibers_initialized()
 {
   gp_fibers_initialized_ = true;
   for (auto& extension : extensions_)
   {
-    extension->OnGlobalGPDataInitialized();
+    extension->on_global_gp_data_initialized();
   }
 
   if (element_fibers_initialized_ and gp_fibers_initialized_)
   {
     for (auto& extension : extensions_)
     {
-      extension->OnGlobalDataInitialized();
+      extension->on_global_data_initialized();
     }
   }
 }
 
-int MAT::Anisotropy::GetNumberOfGaussPoints() const { return numgp_; }
+int MAT::Anisotropy::get_number_of_gauss_points() const { return numgp_; }
 
-int MAT::Anisotropy::GetNumberOfElementFibers() const { return element_fibers_.size(); }
+int MAT::Anisotropy::get_number_of_element_fibers() const { return element_fibers_.size(); }
 
 int MAT::Anisotropy::GetNumberOfGPFibers() const
 {
@@ -289,12 +289,12 @@ int MAT::Anisotropy::GetNumberOfGPFibers() const
   return gp_fibers_[0].size();
 }
 
-bool MAT::Anisotropy::HasElementCylinderCoordinateSystem() const
+bool MAT::Anisotropy::has_element_cylinder_coordinate_system() const
 {
   return element_cylinder_coordinate_system_manager_.has_value();
 }
 
-bool MAT::Anisotropy::HasGPCylinderCoordinateSystem() const
+bool MAT::Anisotropy::has_gp_cylinder_coordinate_system() const
 {
   return !gp_cylinder_coordinate_system_managers_.empty();
 }

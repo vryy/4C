@@ -121,12 +121,12 @@ namespace CONTACT
     /*!
     \brief Get list of beam contact input parameters
     */
-    inline const Teuchos::ParameterList& BeamContactParameters() { return sbeamcontact_; }
+    inline const Teuchos::ParameterList& beam_contact_parameters() { return sbeamcontact_; }
 
     /*!
     \brief Get list of general contact input parameters
     */
-    inline const Teuchos::ParameterList& GeneralContactParameters() { return scontact_; }
+    inline const Teuchos::ParameterList& general_contact_parameters() { return scontact_; }
 
     /*!
     \brief Get current constraint norm
@@ -504,7 +504,7 @@ namespace CONTACT
     /*
     \brief Test if element midpoints are close (spherical bounding box intersection)
     */
-    bool CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2,
+    bool close_midpoint_distance(const DRT::Element* ele1, const DRT::Element* ele2,
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
         const double sphericalsearchradius);
 
@@ -512,12 +512,12 @@ namespace CONTACT
     \brief Set the member variables numnodes_ and numnodalvalues depending on the element type
     handed in!
     */
-    void SetElementTypeAndDistype(DRT::Element* ele1);
+    void set_element_type_and_distype(DRT::Element* ele1);
 
     /*!
     \brief Check, if pair with given element IDs is allready existing in the vector pairs_!
     */
-    bool PairAllreadyExisting(int currid1, int currid2);
+    bool pair_allready_existing(int currid1, int currid2);
 
     /*!
     \brief Get maximum element length
@@ -538,7 +538,7 @@ namespace CONTACT
     rotation matrix R. Note that theta is given in radiant.
 
     */
-    void TransformAngleToTriad(
+    void transform_angle_to_triad(
         CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R);
 
     /*!
@@ -561,7 +561,7 @@ namespace CONTACT
      *
      *  \author grill
      *  \date 05/16 */
-    void InitBeamContactDiscret();
+    void init_beam_contact_discret();
 
     /*!
     \brief Store current displacment state in currentpositions
@@ -590,13 +590,13 @@ namespace CONTACT
     \brief Sort found element pairs and fill vectors of contact pairs (BTB, BTSOL and BTSPH)
 
     */
-    void FillContactPairsVectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
+    void fill_contact_pairs_vectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
 
     /*!
     \brief Sort found element pairs and fill vectors of potential pairs (BTB, BTSOL and BTSPH)
 
     */
-    void FillPotentialPairsVectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
+    void fill_potential_pairs_vectors(const std::vector<std::vector<DRT::Element*>> elementpairs);
 
     /*!
     \brief Compute coordinates for GMSH-Output for two-noded-elements
@@ -643,7 +643,7 @@ namespace CONTACT
     \brief Print Gmsh Triangle to stringstream by specifying the vertices
 
     */
-    void PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
+    void print_gmsh_triangle_to_stream(std::stringstream& gmshfilecontent,
         const std::vector<std::vector<double>>& vertexlist, int i, int j, int k, double color,
         const double centercoord[]);
     /*!
@@ -663,8 +663,8 @@ namespace CONTACT
     /*!
     \brief GMSH-Surface-Output for solid surfaces
     */
-    void GMSH_SolidSurfaceElementNumbers(const DRT::Element* element, const Epetra_Vector& disrow,
-        std::stringstream& gmshfilecontent);
+    void gmsh_solid_surface_element_numbers(const DRT::Element* element,
+        const Epetra_Vector& disrow, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Get color of solid element surfaces for GMSH-Output

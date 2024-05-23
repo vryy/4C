@@ -58,7 +58,7 @@ namespace NOX
 
        private:
         // checks if the inner status test pointer is initialized
-        void InnerStatusTestIsRequired(
+        void inner_status_test_is_required(
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const;
       };
       /*! Nonmember function to build a line search object.

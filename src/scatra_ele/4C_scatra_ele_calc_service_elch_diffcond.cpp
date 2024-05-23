@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElementParameter(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_element_parameter(
     DRT::Element* ele)
 {
   // 1) Check material specific options
@@ -109,16 +109,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
 /*---------------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTimeDerivative(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_time_derivative(
     DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // call base class routine
-  myelch::CalcInitialTimeDerivative(ele, emat, erhs, params, discretization, la);
+  myelch::calc_initial_time_derivative(ele, emat, erhs, params, discretization, la);
 
   // In the moment the diffusion manager contains the porosity at the last Gauss point (previous
-  // call my::CalcInitialTimeDerivative()) Since the whole approach is valid only for constant
+  // call my::calc_initial_time_derivative()) Since the whole approach is valid only for constant
   // porosities, we do not fill the diffusion manager again at the element center The solution
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTime
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectRHSFromCalcRHSLinMass(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
 {
@@ -183,15 +183,15 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
         FOUR_C_THROW("Invalid material!");
 
       // process electrode boundary kinetics point condition
-      myelch::CalcElchBoundaryKineticsPoint(ele, params, discretization, la[0].lm_, elemat1_epetra,
-          elevec1_epetra, DiffManager()->GetPhasePoro(0));
+      myelch::calc_elch_boundary_kinetics_point(ele, params, discretization, la[0].lm_,
+          elemat1_epetra, elevec1_epetra, DiffManager()->GetPhasePoro(0));
 
       break;
     }
 
     case SCATRA::Action::calc_elch_domain_kinetics:
     {
-      CalcElchDomainKinetics(
+      calc_elch_domain_kinetics(
           ele, params, discretization, la[0].lm_, elemat1_epetra, elevec1_epetra);
 
       break;
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainKinetics(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domain_kinetics(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
@@ -336,8 +336,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
     if (zerocur == 0)
     {
-      EvaluateElchDomainKinetics(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist, timefac, cond,
-          nume, *stoich, kinetics, pot0);
+      evaluate_elch_domain_kinetics(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist, timefac,
+          cond, nume, *stoich, kinetics, pot0);
     }
 
     // realize correct scaling of rhs contribution for gen.alpha case
@@ -365,23 +365,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics, *stoich,
-        nume, pot0, timefac);
+    evaluate_electrode_status(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
+        *stoich, nume, pot0, timefac);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
-    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
-    CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::evaluate_elch_boundary_kinetics_point(const DRT::Element* ele,
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0, const double frt, const double scalar)
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKineticsPoint(
+  myelch::evaluate_elch_boundary_kinetics_point(
       ele, emat, erhs, ephinp, ehist, timefac, cond, nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
@@ -425,7 +426,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDomainKinetics(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_domain_kinetics(
     const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
@@ -461,20 +462,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
      *----------------------------------------------------------------------*/
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
-      SetInternalVariablesForMatAndRHS();
+      set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
       const double frt = VarManager()->FRT();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
+      const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
       // extract specific electrode surface area A_s from condition
       double A_s = cond->parameters().Get<double>("A_s");
 
       // call utility class for element evaluation
-      Utils()->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, fac,
-          my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
+      Utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
+          fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
     }  // end of loop over integration points gpid
   }    // end loop over scalars
 
@@ -519,7 +520,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectrodeStatus(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electrode_status(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::Conditions::Condition> cond,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
@@ -561,16 +562,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
     // loop over integration points
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
+      const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
-      SetInternalVariablesForMatAndRHS();
+      set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
       const double frt = VarManager()->FRT();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
-      Utils()->EvaluateElectrodeStatusAtIntegrationPoint(ele, scalars, params, cond, ephinp,
+      Utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, A_s, k);
     }  // loop over integration points
 
@@ -682,9 +683,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurren
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseVector& errors)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::cal_error_compared_to_analyt_solution(const DRT::Element* ele,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
 {
   switch (CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
   {
@@ -728,7 +729,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // density at t_(n)
         std::vector<double> densn(my::numscal_, 1.0);
@@ -741,7 +742,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
         double visc(0.0);
 
         // get material parameter (constants values)
-        SetInternalVariablesForMatAndRHS();
+        set_internal_variables_for_mat_and_rhs();
         GetMaterialParams(ele, densn, densnp, densam, visc);
 
         // get values of all transported scalars at integration point
@@ -811,7 +812,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
     break;
     default:
     {
-      myelectrode::CalErrorComparedToAnalytSolution(ele, params, errors);
+      myelectrode::cal_error_compared_to_analyt_solution(ele, params, errors);
       break;
     }
   }
@@ -820,16 +821,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchDiffCond(
+  VarManager()->set_internal_variables_elch_diff_cond(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }
 
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {

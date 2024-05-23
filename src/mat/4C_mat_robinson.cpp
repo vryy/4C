@@ -359,7 +359,7 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // update history of the condensed variables plastic strain and back stress
   // iterative update of the current history vectors at current Gauss point gp
-  IterativeUpdateOfInternalVariables(gp, straininc);
+  iterative_update_of_internal_variables(gp, straininc);
 
   // name:                 4C
   // total strain:         strain
@@ -494,7 +494,7 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kva(true);
   // initialise the visco-plastic strain residual
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pres(true);
-  CalcBEViscousStrainRate(
+  calc_be_viscous_strain_rate(
       dt_, scalartemp, strain_p, strain_pn, devstress, eta, strain_pres, kve, kvv, kva);
 
   // ------------------------- residual of back stress, kae, kav, kaa
@@ -510,15 +510,15 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // initialise the back stress residual
   // back stress (residual): beta/backstress --> bckstsr
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_res(true);
-  CalcBEBackStressFlow(dt_, scalartemp, strain_p, strain_pn, devstress, backstress, backstress_n,
-      backstress_res, kae, kav, kaa);
+  calc_be_back_stress_flow(dt_, scalartemp, strain_p, strain_pn, devstress, backstress,
+      backstress_n, backstress_res, kae, kav, kaa);
 
   // build reduced system by condensing the evolution equations: only stress
   // equation remains
   // ------------------------------------- reduced stress and tangent
   // ==> static condensation
-  CalculateCondensedSystem(*stress,  // (o): sigma_red --> used to calculate f_int^{e} at GP
-      *cmat,                         // (o): C_red --> used to calculate stiffness k^{e} at GP
+  calculate_condensed_system(*stress,  // (o): sigma_red --> used to calculate f_int^{e} at GP
+      *cmat,                           // (o): C_red --> used to calculate stiffness k^{e} at GP
       kev, kea, strain_pres, kve, kvv, kva, backstress_res, kae, kav, kaa, (kvarva_->at(gp)),
       (kvakvae_->at(gp)));
 
@@ -540,7 +540,7 @@ void MAT::Robinson::SetupCmat(
 {
   // get material parameters
   // Young's modulus
-  double emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+  double emod = get_mat_parameter_at_tempnp(&(params_->youngs_), tempnp);
   // Poisson's ratio
   double nu = params_->poissonratio_;
 
@@ -611,7 +611,7 @@ void MAT::Robinson::RelDevStress(
  | residual of BE-discretised viscous strain rate            dano 11/11 |
  | at Gauss point                                                       |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time step size
+void MAT::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time step size
     double tempnp,                                                // (i) current temperature
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,  // (i) viscous strain at t_n
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
@@ -651,7 +651,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
 
   // Bingham-Prager shear stress threshold at current temperature 'K^2'
   double kksq = 0.0;
-  kksq = GetMatParameterAtTempnp(&(params_->shrthrshld_), tempnp);
+  kksq = get_mat_parameter_at_tempnp(&(params_->shrthrshld_), tempnp);
 
   // F = (J_2 - K^2) / K^2 = (J_2 / K^2) - 1
   double ff = 0.0;
@@ -878,14 +878,14 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
     for (int i = 0; i < 6; i++) kva(i, i) = 0.0;  // so3_mv6_m_zero(kva);
   }
 
-}  // CalcBEViscousStrainRate()
+}  // calc_be_viscous_strain_rate()
 
 
 /*----------------------------------------------------------------------*
  | residual of BE-discretised back stress and its            dano 11/11 |
  | consistent tangent according to the flow rule at Gauss point         |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
+void MAT::Robinson::calc_be_back_stress_flow(const double dt, const double tempnp,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pn,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,
@@ -924,14 +924,14 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   double kk0sq = 0.0;
   // activation temperature
   double tem0 = params_->actv_tmpr_;
-  kk0sq = GetMatParameterAtTempnp(&(params_->shrthrshld_), tem0);
+  kk0sq = get_mat_parameter_at_tempnp(&(params_->shrthrshld_), tem0);
 
   // 'beta' at current temperature
-  double beta = GetMatParameterAtTempnp(&(params_->beta_), tempnp);
+  double beta = get_mat_parameter_at_tempnp(&(params_->beta_), tempnp);
 
   // 'H' at current temperature
   double hh = 0.0;
-  hh = GetMatParameterAtTempnp(params_->h_, tempnp);
+  hh = get_mat_parameter_at_tempnp(params_->h_, tempnp);
   if (params_->kind_ == "Arya_NarloyZ")
   {
     hh *= std::pow(6.896, (1.0 + beta)) / (3.0 * kk0sq);
@@ -948,7 +948,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
 
   // recovery/softening factor 'R_0'
   double rr0 = 0.0;
-  rr0 = GetMatParameterAtTempnp(params_->rcvry_, tempnp);
+  rr0 = get_mat_parameter_at_tempnp(params_->rcvry_, tempnp);
   // exponent 'm'
   double mm = params_->m_;
   if (params_->kind_ == "Arya_NarloyZ")
@@ -1150,14 +1150,14 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
     kaa.MultiplyNT(fcta, backstress_n, backstress_n, 1.0);
   }  // elastic
 
-}  // CalcBEBackStressFlow()
+}  // calc_be_back_stress_flow()
 
 
 /*----------------------------------------------------------------------*
  | return temperature-dependent material parameter           dano 02/12 |
  | at current temperature --> polynomial type                           |
  *----------------------------------------------------------------------*/
-double MAT::Robinson::GetMatParameterAtTempnp(
+double MAT::Robinson::get_mat_parameter_at_tempnp(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
     const double& tempnp                     // tmpr (i) current temperature
 )
@@ -1180,14 +1180,14 @@ double MAT::Robinson::GetMatParameterAtTempnp(
 
   return parambytempnp;
 
-}  // GetMatParameterAtTempnp()
+}  // get_mat_parameter_at_tempnp()
 
 
 /*----------------------------------------------------------------------*
  | Get temperature-dependent material parameter at           dano 11/11 |
  | current temperature                                                  |
  *----------------------------------------------------------------------*/
-double MAT::Robinson::GetMatParameterAtTempnp(
+double MAT::Robinson::get_mat_parameter_at_tempnp(
     const double paramconst,  // (i) given parameter is a constant
     const double& tempnp      // tmpr (i) current temperature
 )
@@ -1204,14 +1204,14 @@ double MAT::Robinson::GetMatParameterAtTempnp(
 
   return parambytempnp;
 
-}  // GetMatParameterAtTempnp()
+}  // get_mat_parameter_at_tempnp()
 
 
 /*----------------------------------------------------------------------*
  | Reduce (statically condense) system in strain, strain_p,  dano 01/12 |
  | backstress to purely strain                                          |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::CalculateCondensedSystem(
+void MAT::Robinson::calculate_condensed_system(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
         stress,  // (io): updated stress with condensed terms
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
@@ -1358,14 +1358,14 @@ void MAT::Robinson::CalculateCondensedSystem(
   // cmat (6x6) = kevea (6x12) . kvakvae (12x6)
   cmat.MultiplyNN((-1.0), kevea, kvakvae, 1.0);
 
-}  // CalculateCondensedSystem()
+}  // calculate_condensed_system()
 
 
 /*----------------------------------------------------------------------*
  | iterative update of material internal variables that      dano 01/12 |
- | are condensed out of the system within CalculateCondensedSystem()    |
+ | are condensed out of the system within calculate_condensed_system()    |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::IterativeUpdateOfInternalVariables(const int gp,
+void MAT::Robinson::iterative_update_of_internal_variables(const int gp,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc  // total strain increment
 )
 {
@@ -1460,7 +1460,7 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(const int gp,
   //   for i=7--12, j=1--6
   backstresscurr_->at(gp) = backstress_n;
 
-}  // IterativeUpdateOfInternalVariables()
+}  // iterative_update_of_internal_variables()
 
 
 /*----------------------------------------------------------------------*/

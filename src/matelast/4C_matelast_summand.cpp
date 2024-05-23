@@ -478,7 +478,7 @@ void MAT::ELASTIC::Summand::ReadRadAxiCir(
   }
 }
 
-void MAT::ELASTIC::Summand::EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+void MAT::ELASTIC::Summand::evaluate_first_derivatives_aniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
     CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
 {
   bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
@@ -491,8 +491,9 @@ void MAT::ELASTIC::Summand::EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2
   }
 }
 
-void MAT::ELASTIC::Summand::EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
-    CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID)
+void MAT::ELASTIC::Summand::evaluate_second_derivatives_aniso(
+    CORE::LINALG::Matrix<3, 1>& ddPII_aniso, CORE::LINALG::Matrix<3, 3> const& rcg, int gp,
+    int eleGID)
 {
   bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
   SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);

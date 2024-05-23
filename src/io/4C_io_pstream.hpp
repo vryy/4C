@@ -159,7 +159,7 @@ namespace IO
     std::ostream& os(const Verbositylevel level = undef) const;
 
     /// Return verbosity level
-    inline Verbositylevel RequestedOutputLevel() const { return requestedoutputlevel_; }
+    inline Verbositylevel requested_output_level() const { return requestedoutputlevel_; }
 
    private:
     /// Return whether this is a target processor for output
@@ -244,7 +244,7 @@ namespace IO
     template <typename CharT>
     Level& stream(CharT s)  ///< text to be added
     {
-      if (level_ <= pstream_->RequestedOutputLevel()) pstream_->stream(s);
+      if (level_ <= pstream_->requested_output_level()) pstream_->stream(s);
       return *this;
     }
 

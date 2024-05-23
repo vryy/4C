@@ -47,7 +47,7 @@ void FLD::TimIntStationary::Init()
   if (numstasteps_ > 0)
     FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
 
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   CompleteGeneralInit();
   return;
@@ -60,7 +60,7 @@ void FLD::TimIntStationary::Init()
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationary::TimeLoop()
 {
-  SolveStationaryProblem();
+  solve_stationary_problem();
   return;
 }
 
@@ -68,7 +68,7 @@ void FLD::TimIntStationary::TimeLoop()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                              bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::SetOldPartOfRighthandside()
+void FLD::TimIntStationary::set_old_part_of_righthandside()
 {
   /*
      Stationary:
@@ -85,7 +85,7 @@ void FLD::TimIntStationary::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | solve stationary fluid problem                              gjb 10/07|
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::SolveStationaryProblem()
+void FLD::TimIntStationary::solve_stationary_problem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
@@ -104,7 +104,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //              set (pseudo-)time-dependent parameters
     // -------------------------------------------------------------------
-    IncrementTimeAndStep();
+    increment_time_and_step();
 
     // -------------------------------------------------------------------
     //                         out to screen
@@ -114,12 +114,12 @@ void FLD::TimIntStationary::SolveStationaryProblem()
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n", step_, stepmax_);
     }
 
-    SetElementTimeParameter();
+    set_element_time_parameter();
 
     // -------------------------------------------------------------------
     //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
-    SetDirichletNeumannBC();
+    set_dirichlet_neumann_bc();
 
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
@@ -143,7 +143,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
 
 
     // Evaluate integral error
-    EvaluateErrorComparedToAnalyticalSol();
+    evaluate_error_compared_to_analytical_sol();
 
 
 
@@ -154,7 +154,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
 
   }  // end of time loop
 
-}  // TimIntStationary::SolveStationaryProblem
+}  // TimIntStationary::solve_stationary_problem
 
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
@@ -168,7 +168,7 @@ void FLD::TimIntStationary::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+void FLD::TimIntStationary::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
     const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
     const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
@@ -208,7 +208,7 @@ void FLD::TimIntStationary::OutputofFilteredVel(
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
-void FLD::TimIntStationary::SetElementTimeParameter()
+void FLD::TimIntStationary::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -246,9 +246,9 @@ double FLD::TimIntStationary::TimIntParam() const
 /*----------------------------------------------------------------------*|
  | Set Eleparams for turbulence models                          bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
+void FLD::TimIntStationary::treat_turbulence_models(Teuchos::ParameterList& eleparams)
 {
-  FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
+  FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
     FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velnp_, "velafgrad", alefluid_);
   return;

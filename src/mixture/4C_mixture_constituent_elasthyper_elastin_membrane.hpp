@@ -55,7 +55,7 @@ namespace MIXTURE
      * \brief This method will be called when all global data is initialized. Here we need to create
      * the membrane plane structural tensor
      */
-    void OnGlobalDataInitialized() override;
+    void on_global_data_initialized() override;
 
     /*!
      * \brief Returns the structural tensor of the membrane plane at the Gauss point
@@ -64,7 +64,7 @@ namespace MIXTURE
      * \return const CORE::LINALG::Matrix<3, 3>& Reference to the structural tensor of the membrane
      * plane
      */
-    const CORE::LINALG::Matrix<3, 3>& GetOrthogonalStructuralTensor(int gp);
+    const CORE::LINALG::Matrix<3, 3>& get_orthogonal_structural_tensor(int gp);
 
    private:
     /// Holder of the internal structural tensors
@@ -153,7 +153,7 @@ namespace MIXTURE
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
     /*!
      * Initialize the constituent with the parameters of the input line
@@ -232,7 +232,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateMembraneStress(
+    void evaluate_membrane_stress(
         CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    protected:
@@ -247,7 +247,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateStressCMatMembrane(const CORE::LINALG::Matrix<3, 3>& F,
+    void evaluate_stress_c_mat_membrane(const CORE::LINALG::Matrix<3, 3>& F,
         const CORE::LINALG::Matrix<3, 3>& iFin, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
         int eleGID) const;
@@ -262,7 +262,7 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateStructuralTensorsInGrownConfiguration(CORE::LINALG::Matrix<3, 3>& Aradgr,
+    void evaluate_structural_tensors_in_grown_configuration(CORE::LINALG::Matrix<3, 3>& Aradgr,
         CORE::LINALG::Matrix<3, 3>& Aorthgr, const CORE::LINALG::Matrix<3, 3>& iFin, int gp,
         int eleGID) const;
 
@@ -278,7 +278,7 @@ namespace MIXTURE
      *
      * \param Ce (in) : Elastic Cauchy-Green deformation tensor
      */
-    static void EvaluateAorthgrCeAorthgrArad(CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad,
+    static void evaluate_aorthgr_ce_aorthgr_arad(CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad,
         const CORE::LINALG::Matrix<3, 3>& Aradgr, const CORE::LINALG::Matrix<3, 3>& Aorthgr,
         const CORE::LINALG::Matrix<3, 3>& Ce);
 
@@ -292,7 +292,7 @@ namespace MIXTURE
      * \param Aorthgr (in) : Structural tensor of the membrane plane direction in grown
      * configuration
      */
-    static void EvaluateiFinAorthgriFinT(CORE::LINALG::Matrix<3, 3>& iFinAorthgriFinT,
+    static void evaluatei_fin_aorthgri_fin_t(CORE::LINALG::Matrix<3, 3>& iFinAorthgriFinT,
         const CORE::LINALG::Matrix<3, 3>& iFin, const CORE::LINALG::Matrix<3, 3>& Aorthgr);
 
     /*!
@@ -306,7 +306,7 @@ namespace MIXTURE
      * \param iFin inverse of the inelastic part of the deformation
      * \param Aorthgr Structural tensor of the membrane plane direction in grown configuration
      */
-    static void EvaluateiFinTAorthgrTiXTAorthgriFin(
+    static void evaluatei_fin_t_aorthgr_ti_xt_aorthgri_fin(
         CORE::LINALG::Matrix<3, 3>& iFinTAorthgrTiXTAorthgriFin,
         const CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad,
         const CORE::LINALG::Matrix<3, 3>& iFin, const CORE::LINALG::Matrix<3, 3>& Aorthgr);

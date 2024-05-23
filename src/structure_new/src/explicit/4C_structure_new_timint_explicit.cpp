@@ -82,7 +82,7 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TIMINT::Explicit::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();
   FOUR_C_THROW(
@@ -93,7 +93,7 @@ void STR::TIMINT::Explicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::DetermineStressStrain() { ExplInt().DetermineStressStrain(); }
+void STR::TIMINT::Explicit::determine_stress_strain() { ExplInt().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 void STR::TIMINT::Explicit::Evaluate()
 {
   CheckInitSetup();
-  ThrowIfStateNotInSyncWithNOXGroup();
+  throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
@@ -156,7 +156,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::PreparePartitionStep()
+void STR::TIMINT::Explicit::prepare_partition_step()
 {
   // do nothing for explicit time integrators
 }
@@ -242,7 +242,7 @@ int STR::TIMINT::Explicit::Integrate()
 int STR::TIMINT::Explicit::IntegrateStep()
 {
   CheckInitSetup();
-  ThrowIfStateNotInSyncWithNOXGroup();
+  throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   NlnSolver().Reset();
   // solve the non-linear problem
@@ -320,30 +320,30 @@ int STR::TIMINT::Explicit::MethodSteps() const { return explint_ptr_->MethodStep
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::Explicit::MethodOrderOfAccuracyDis() const
+int STR::TIMINT::Explicit::method_order_of_accuracy_dis() const
 {
-  return explint_ptr_->MethodOrderOfAccuracyDis();
+  return explint_ptr_->method_order_of_accuracy_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::Explicit::MethodOrderOfAccuracyVel() const
+int STR::TIMINT::Explicit::method_order_of_accuracy_vel() const
 {
-  return explint_ptr_->MethodOrderOfAccuracyVel();
+  return explint_ptr_->method_order_of_accuracy_vel();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::Explicit::MethodLinErrCoeffDis() const
+double STR::TIMINT::Explicit::method_lin_err_coeff_dis() const
 {
-  return explint_ptr_->MethodLinErrCoeffDis();
+  return explint_ptr_->method_lin_err_coeff_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::Explicit::MethodLinErrCoeffVel() const
+double STR::TIMINT::Explicit::method_lin_err_coeff_vel() const
 {
-  return explint_ptr_->MethodLinErrCoeffVel();
+  return explint_ptr_->method_lin_err_coeff_vel();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -74,7 +74,7 @@ void STR::TimIntAB2::Setup()
 
 
   // determine mass, damping and initial accelerations
-  DetermineMassDampConsistAccel();
+  determine_mass_damp_consist_accel();
 
   // resize of multi-step quantities
   ResizeMStep();
@@ -178,7 +178,7 @@ int STR::TimIntAB2::IntegrateStep()
   // *********** time measurement ***********
 
   // contact or meshtying forces
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     fcmtn_->PutScalar(0.0);
 
@@ -203,7 +203,7 @@ int STR::TimIntAB2::IntegrateStep()
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
 
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     frimpn_->Update(1.0, *fcmtn_, 1.0);
   }
@@ -227,7 +227,7 @@ int STR::TimIntAB2::IntegrateStep()
       // linear solver call
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised
-      // in TimInt::DetermineMassDampConsistAccel
+      // in TimInt::determine_mass_damp_consist_accel
       CORE::LINALG::SolverParams solver_params;
       solver_params.reset = true;
       solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, solver_params);
@@ -270,7 +270,7 @@ void STR::TimIntAB2::UpdateStepState()
   acc_->UpdateSteps(*accn_);
 
   // update contact and meshtying
-  UpdateStepContactMeshtying();
+  update_step_contact_meshtying();
 
   return;
 }

@@ -39,7 +39,7 @@ namespace DRT
 
       //! return flag for coupling of lithium-ion flux density and electric current density at
       //! Dirichlet and Neumann boundaries
-      bool BoundaryFluxCoupling() const { return boundaryfluxcoupling_; };
+      bool boundary_flux_coupling() const { return boundaryfluxcoupling_; };
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list

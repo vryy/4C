@@ -253,9 +253,15 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup conductivity tensor                                cbert 02/13 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::Setup(const CORE::LINALG::Matrix<3, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
+void MAT::Myocard::Setup(const CORE::LINALG::Matrix<3, 1>& fiber1)
+{
+  setup_diffusion_tensor(fiber1);
+}
 
-void MAT::Myocard::Setup(const CORE::LINALG::Matrix<2, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
+void MAT::Myocard::Setup(const CORE::LINALG::Matrix<2, 1>& fiber1)
+{
+  setup_diffusion_tensor(fiber1);
+}
 
 void MAT::Myocard::Setup(INPUT::LineDefinition* linedef)
 {
@@ -264,12 +270,12 @@ void MAT::Myocard::Setup(INPUT::LineDefinition* linedef)
   {
     diff_at_ele_center_ = true;
     linedef->ExtractDoubleVector("FIBER1", fiber1);
-    SetupDiffusionTensor(fiber1);
+    setup_diffusion_tensor(fiber1);
   }
 }
 
 
-void MAT::Myocard::SetupDiffusionTensor(const std::vector<double>& fiber1)
+void MAT::Myocard::setup_diffusion_tensor(const std::vector<double>& fiber1)
 {
   // Normalize fiber1
   double fiber1normS = fiber1[0] * fiber1[0] + fiber1[1] * fiber1[1] + fiber1[2] * fiber1[2];
@@ -300,7 +306,7 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double>& fiber1)
   return;
 }
 
-void MAT::Myocard::SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1)
+void MAT::Myocard::setup_diffusion_tensor(const CORE::LINALG::Matrix<3, 1>& fiber1)
 {
   // Normalize fiber1
   double fiber1normS = fiber1(0) * fiber1(0) + fiber1(1) * fiber1(1) + fiber1(2) * fiber1(2);
@@ -332,7 +338,7 @@ void MAT::Myocard::SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1
   return;
 }
 
-void MAT::Myocard::SetupDiffusionTensor(const CORE::LINALG::Matrix<2, 1>& fiber1)
+void MAT::Myocard::setup_diffusion_tensor(const CORE::LINALG::Matrix<2, 1>& fiber1)
 {
   // Normalize fiber1
   double fiber1normS = fiber1(0) * fiber1(0) + fiber1(1) * fiber1(1);
@@ -464,10 +470,10 @@ double MAT::Myocard::ReaCoeffDeriv(const double phi, const double dt, int gp) co
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables              cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MAT::Myocard::GetNumberOfInternalStateVariables() const
+int MAT::Myocard::get_number_of_internal_state_variables() const
 {
   int val = 0;
-  val = myocard_mat_->GetNumberOfInternalStateVariables();
+  val = myocard_mat_->get_number_of_internal_state_variables();
   return val;
 }
 
@@ -512,10 +518,10 @@ void MAT::Myocard::SetInternalState(const int k, const double val, int gp)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MAT::Myocard::GetNumberOfIonicCurrents() const
+int MAT::Myocard::get_number_of_ionic_currents() const
 {
   int val = 0;
-  val = myocard_mat_->GetNumberOfIonicCurrents();
+  val = myocard_mat_->get_number_of_ionic_currents();
   return val;
 }
 
@@ -562,7 +568,7 @@ void MAT::Myocard::Initialize()
     FOUR_C_THROW(
         "Myocard Material type is not supported! (for the moment only MV,FHN,INADA,TNNP and SAN)");
 
-  nb_state_variables_ = myocard_mat_->GetNumberOfInternalStateVariables();
+  nb_state_variables_ = myocard_mat_->get_number_of_internal_state_variables();
 
   return;
 }
@@ -570,9 +576,9 @@ void MAT::Myocard::Initialize()
 /*----------------------------------------------------------------------*
  |  resize internal state variables                      hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::ResizeInternalStateVariables()
+void MAT::Myocard::resize_internal_state_variables()
 {
-  myocard_mat_->ResizeInternalStateVariables(params_->num_gp);
+  myocard_mat_->resize_internal_state_variables(params_->num_gp);
   return;
 }
 

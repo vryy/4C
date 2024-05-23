@@ -279,8 +279,8 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
   // SAFETY CHECKS
   // read parameter list and problem type
   const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
-  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
   if (problemtype == GLOBAL::ProblemType::fsi_xfem || problemtype == GLOBAL::ProblemType::fpsi_xfem)
@@ -426,7 +426,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
+void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
     const DRT::Discretization& str_discret,
     const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
     std::set<const DRT::Node*>& dbc_slave_nodes, std::set<const DRT::Element*>& dbc_slave_eles)
@@ -476,7 +476,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
   for (auto& dbc_slave_node_pair : dbc_slave_node_map)
     dbc_slave_nodes.insert(dbc_slave_node_pair.first);
 
-  DetectDbcSlaveElements(dbc_slave_eles, dbc_slave_node_map, sl_conds);
+  detect_dbc_slave_elements(dbc_slave_eles, dbc_slave_node_map, sl_conds);
 }
 
 /*----------------------------------------------------------------------------*
@@ -531,7 +531,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::DetectDbcSlaveElements(
+void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
     std::set<const DRT::Element*>& dbc_slave_eles,
     const std::map<const DRT::Node*, int>& dbc_slave_nodes,
     const std::vector<const CORE::Conditions::Condition*>& sl_conds)

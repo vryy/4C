@@ -44,7 +44,7 @@ namespace POROELAST
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    void RecoverLagrangeMultiplierAfterTimeStep() override = 0;
+    void recover_lagrange_multiplier_after_time_step() override = 0;
 
     //! inner newton iteration
     void Solve() override;
@@ -53,11 +53,11 @@ namespace POROELAST
     //! @name transfer helpers
 
     //! field transform (interface only)
-    Teuchos::RCP<Epetra_Vector> StructureToFluidAtInterface(
+    Teuchos::RCP<Epetra_Vector> structure_to_fluid_at_interface(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //! field transform (interface only)
-    Teuchos::RCP<Epetra_Vector> FluidToStructureAtInterface(
+    Teuchos::RCP<Epetra_Vector> fluid_to_structure_at_interface(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //!@}
@@ -70,7 +70,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> FSIDBCMap();
 
     //! setup of coupling object and systemmatrixes
-    virtual void SetupCouplingAndMatrices();
+    virtual void setup_coupling_and_matrices();
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a
     //! split, i.e. structure or fluid split.

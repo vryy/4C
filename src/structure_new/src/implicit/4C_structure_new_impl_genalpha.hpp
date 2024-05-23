@@ -105,11 +105,11 @@ namespace STR
       //!@{
 
       //! Predict constant displacements, consistent velocities and accelerations [derived]
-      void PredictConstDisConsistVelAcc(
+      void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       //! Predict displacements based on constant velocities and consistent accelerations [derived]
-      bool PredictConstVelConsistAcc(
+      bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       //! Predict displacements based on constant accelerations and consistent velocities [derived]
@@ -156,28 +156,28 @@ namespace STR
       int MethodSteps() const override { return 1; }
 
       //! Give linear order of accuracy of displacement part
-      int MethodOrderOfAccuracyDis() const override
+      int method_order_of_accuracy_dis() const override
       {
-        return (fabs(MethodLinErrCoeffDis2()) < 1e-6) ? 3 : 2;
+        return (fabs(method_lin_err_coeff_dis2()) < 1e-6) ? 3 : 2;
       }
 
       //! Give linear order of accuracy of velocity part
-      int MethodOrderOfAccuracyVel() const override
+      int method_order_of_accuracy_vel() const override
       {
-        return (fabs(MethodLinErrCoeffVel1()) < 1e-6) ? 2 : 1;
+        return (fabs(method_lin_err_coeff_vel1()) < 1e-6) ? 2 : 1;
       }
 
       //! Return linear error coefficient of displacements
-      double MethodLinErrCoeffDis() const override
+      double method_lin_err_coeff_dis() const override
       {
-        if (MethodOrderOfAccuracyDis() == 2)
-          return MethodLinErrCoeffDis2();
+        if (method_order_of_accuracy_dis() == 2)
+          return method_lin_err_coeff_dis2();
         else
-          return MethodLinErrCoeffDis3();
+          return method_lin_err_coeff_dis3();
       }
 
       //! 2nd order linear error coefficient of displacements
-      double MethodLinErrCoeffDis2() const
+      double method_lin_err_coeff_dis2() const
       {
         const double& alphaf = coeffs_.alphaf_;
         const double& alpham = coeffs_.alpham_;
@@ -188,7 +188,7 @@ namespace STR
       }
 
       //! 3rd order linear error coefficient of displacements
-      double MethodLinErrCoeffDis3() const
+      double method_lin_err_coeff_dis3() const
       {
         const double& alphaf = coeffs_.alphaf_;
         const double& alpham = coeffs_.alpham_;
@@ -200,16 +200,16 @@ namespace STR
       }
 
       //! Return linear error coefficient of velocities
-      double MethodLinErrCoeffVel() const override
+      double method_lin_err_coeff_vel() const override
       {
-        if (MethodOrderOfAccuracyVel() == 1)
-          return MethodLinErrCoeffVel1();
+        if (method_order_of_accuracy_vel() == 1)
+          return method_lin_err_coeff_vel1();
         else
-          return MethodLinErrCoeffVel2();
+          return method_lin_err_coeff_vel2();
       }
 
       //! 1st order linear error coefficient of velocities
-      double MethodLinErrCoeffVel1() const
+      double method_lin_err_coeff_vel1() const
       {
         const double& alphaf = coeffs_.alphaf_;
         const double& alpham = coeffs_.alpham_;
@@ -220,7 +220,7 @@ namespace STR
       }
 
       //! 2nd order linear error coefficient of velocities
-      double MethodLinErrCoeffVel2() const
+      double method_lin_err_coeff_vel2() const
       {
         const double& alphaf = coeffs_.alphaf_;
         const double& alpham = coeffs_.alpham_;
@@ -255,7 +255,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      void AddViscoMassContributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Epetra_Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -275,7 +275,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme:
@@ -292,10 +292,10 @@ namespace STR
        * velocity, and the 2nd the acceleration.
        *
        *  See the SetState() routine for the iterative update of the current state. */
-      void UpdateConstantStateContributions() override;
+      void update_constant_state_contributions() override;
 
       /// set the time integration coefficients
-      void SetTimeIntegrationCoefficients(Coefficients& coeffs) const;
+      void set_time_integration_coefficients(Coefficients& coeffs) const;
 
 
       /// Return a reliable model value which can be used for line search

@@ -223,7 +223,7 @@ namespace CORE::GEO
       which elem1 is derived
        */
       template <CORE::FE::CellType celldistype>
-      void TransformLocalCoords(Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta,
+      void transform_local_coords(Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta,
           CORE::LINALG::Matrix<3, 1>& x_gp_lin, CORE::LINALG::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
 

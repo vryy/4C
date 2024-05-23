@@ -192,10 +192,10 @@ namespace MAT
     double DiamInitial() const { return diam_init_; }
 
     /// return artery diameter of previous time step
-    double DiamPreviousTimeStep() const { return diam_previous_time_step_; }
+    double diam_previous_time_step() const { return diam_previous_time_step_; }
 
     /// set the artery diameter of previous time step
-    void SetDiamPreviousTimeStep(const double diam_previous_time_step)
+    void set_diam_previous_time_step(const double diam_previous_time_step)
     {
       diam_previous_time_step_ = diam_previous_time_step;
     }
@@ -246,7 +246,7 @@ namespace MAT
      *  \param[in] plasmavisc  viscosity of blood plasma (should be approx. 1.05e-3 Pa s)
      *  \return    blood viscosity
      */
-    double CalculateBloodViscosity(const double diam, const double plasmavisc) const;
+    double calculate_blood_viscosity(const double diam, const double plasmavisc) const;
 
     /// my material parameters
     MAT::PAR::Cnst1dArt* params_;

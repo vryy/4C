@@ -62,7 +62,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // get pointer to biopolymer network data and init random number data
   // -------------------------------------------------------------------------
   eval_browniandyn_ptr_ = EvalData().BrownianDynPtr();
-  brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->TimeStepConstRandNumb();
+  brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->time_step_const_rand_numb();
 
   // todo: maybe make input of time step obligatory
   if (brown_dyn_state_data_.browndyn_dt < 0.0)
@@ -90,7 +90,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // get maximal number of random numbers required by any element in the
   // discretization and store them in randomnumbersperelement_
   // -------------------------------------------------------------------------
-  RandomNumbersPerElement();
+  random_numbers_per_element();
   // -------------------------------------------------------------------------
   // Generate random forces for first time step
   // -------------------------------------------------------------------------
@@ -99,8 +99,8 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
    * required by any element in the discretization per time step; therefore this
    * multivector is suitable for synchronization of these random numbers in
    *  parallel computing*/
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
-  GenerateGaussianRandomNumbers();
+  eval_browniandyn_ptr_->resize_random_force_m_vector(discret_ptr_, maxrandnumelement_);
+  generate_gaussian_random_numbers();
 
   issetup_ = true;
 
@@ -114,7 +114,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   CheckInitSetup();
 
   // todo: somewhat illegal considering of const correctness
-  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet(GState().GetTimeN());
+  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(GState().GetTimeN());
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
@@ -170,12 +170,12 @@ bool STR::MODELEVALUATOR::BrownianDyn::EvaluateStiff()
   // -------------------------------------------------------------------------
   // so far the Neumann loads implemented especially for brownian don't
   // have a contribution to the jacobian
-  //   ApplyForceStiffExternal();
+  //   apply_force_stiff_external();
 
   // -------------------------------------------------------------------------
   // (2) BROWNIAN FORCES and STIFFNESS ENTRIES
   // -------------------------------------------------------------------------
-  ApplyForceStiffBrownian();
+  apply_force_stiff_brownian();
 
   if (not stiff_brownian_ptr_->Filled()) stiff_brownian_ptr_->Complete();
 
@@ -192,11 +192,11 @@ bool STR::MODELEVALUATOR::BrownianDyn::EvaluateForceStiff()
   // -------------------------------------------------------------------------
   // (1) EXTRERNAL FORCES and STIFFNESS ENTRIES
   // -------------------------------------------------------------------------
-  ApplyForceStiffExternal();
+  apply_force_stiff_external();
   // -------------------------------------------------------------------------
   // (2) BROWNIAN FORCES and STIFFNESS ENTRIES
   // -------------------------------------------------------------------------
-  ApplyForceStiffBrownian();
+  apply_force_stiff_brownian();
 
   if (not stiff_brownian_ptr_->Filled()) stiff_brownian_ptr_->Complete();
 
@@ -262,7 +262,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceExternal()
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
-  EvaluateNeumannBrownianDyn(f_ext_np_ptr_, Teuchos::null);
+  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, Teuchos::null);
 
   return ok;
 }
@@ -305,10 +305,10 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffExternal()
+bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
 {
   /* so far brownian specific neumann loads need no linearization,
-   therefore ApplyForceStiffExternal is equal to ApplyForceExternal*/
+   therefore apply_force_stiff_external is equal to ApplyForceExternal*/
 
   CheckInitSetup();
   bool ok = true;
@@ -325,14 +325,14 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffExternal()
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
-  EvaluateNeumannBrownianDyn(f_ext_np_ptr_, Teuchos::null);
+  evaluate_neumann_brownian_dyn(f_ext_np_ptr_, Teuchos::null);
 
   return ok;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
+bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
 {
   CheckInitSetup();
   bool ok = true;
@@ -403,7 +403,7 @@ void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::EvaluateNeumannBrownianDyn(
+void STR::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
     Teuchos::RCP<Epetra_Vector> eval_vec, Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat)
 {
   CheckInitSetup();
@@ -476,7 +476,7 @@ void STR::MODELEVALUATOR::BrownianDyn::UpdateStepElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::DetermineStressStrain()
+void STR::MODELEVALUATOR::BrownianDyn::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -492,7 +492,7 @@ void STR::MODELEVALUATOR::BrownianDyn::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::DetermineOptionalQuantity()
+void STR::MODELEVALUATOR::BrownianDyn::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -508,7 +508,7 @@ void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(IO::DiscretizationWriter&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BrownianDyn::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BrownianDyn::get_block_dof_row_map_ptr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();
@@ -516,7 +516,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BrownianDyn::GetBlockDofRowM
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BrownianDyn::GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BrownianDyn::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -524,8 +524,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BrownianDyn::GetCurrentSo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BrownianDyn::GetLastTimeStepSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::BrownianDyn::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -539,7 +539,7 @@ void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
   // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
-  GenerateGaussianRandomNumbers();
+  generate_gaussian_random_numbers();
 }
 
 /*----------------------------------------------------------------------------*
@@ -554,7 +554,7 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
     // -------------------------------------------------------------------------
     // Generate new random forces
     // -------------------------------------------------------------------------
-    GenerateGaussianRandomNumbers();
+    generate_gaussian_random_numbers();
     // -------------------------------------------------------------------------
     // Update number of unconverged steps
     // -------------------------------------------------------------------------
@@ -588,7 +588,7 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
+void STR::MODELEVALUATOR::BrownianDyn::random_numbers_per_element()
 {
   CheckInit();
   // -------------------------------------------------------------------------
@@ -609,13 +609,13 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
     if (beamele != nullptr)
     {
       randomnumbersperlocalelement =
-          std::max(randomnumbersperlocalelement, beamele->HowManyRandomNumbersINeed());
+          std::max(randomnumbersperlocalelement, beamele->how_many_random_numbers_i_need());
     }
     else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i)) != nullptr)
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
           dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i))
-              ->HowManyRandomNumbersINeed());
+              ->how_many_random_numbers_i_need());
     }
     else
     {
@@ -633,7 +633,7 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
+void STR::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
 {
   CheckInit();
 
@@ -707,14 +707,15 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength() const
+bool STR::MODELEVALUATOR::BrownianDyn::
+    is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const
 {
   const int numroweles = Discret().NumMyRowElements();
   const double halfofminimalperiodlength =
-      0.5 * eval_browniandyn_ptr_->GetPeriodicBoundingBox()->EdgeLength(0);
+      0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->EdgeLength(0);
   for (int i = 1; i < 3; ++i)
     std::min(halfofminimalperiodlength,
-        0.5 * eval_browniandyn_ptr_->GetPeriodicBoundingBox()->EdgeLength(i));
+        0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->EdgeLength(i));
 
   if (halfofminimalperiodlength != 0.0)
   {

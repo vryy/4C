@@ -214,7 +214,7 @@ namespace MAT
     /// \brief Return material mass density given by mixture rule
     double Density() const override { return mixture_rule_->ReturnMassDensity(); };
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(

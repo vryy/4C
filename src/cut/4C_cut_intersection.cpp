@@ -146,12 +146,12 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckBoundingBoxOverlap()
+    numNodesEdge, numNodesSide>::check_bounding_box_overlap()
 {
   Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::Create(GetSide()));
   Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::Create(GetEdge()));
 
-  return CheckBoundingBoxOverlap(*sbb, *ebb);
+  return check_bounding_box_overlap(*sbb, *ebb);
 }
 
 /*--------------------------------------------------------------------------*
@@ -159,7 +159,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckBoundingBoxOverlap(BoundingBox& ebb, BoundingBox& sbb) const
+    numNodesEdge, numNodesSide>::check_bounding_box_overlap(BoundingBox& ebb,
+    BoundingBox& sbb) const
 {
   return (not sbb.Within(1.0, ebb));
 }
@@ -182,7 +183,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     case 2:
     {
-      return CheckParallelismBetweenSideAndEdge(side_rs_intersect, edge_r_intersect, tolerance);
+      return check_parallelism_between_side_and_edge(
+          side_rs_intersect, edge_r_intersect, tolerance);
     }
     default:
     {
@@ -202,16 +204,16 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge,
-    numNodesSide>::CheckParallelismBetweenSideAndEdge(std::vector<CORE::LINALG::Matrix<dimside, 1>>&
-                                                          side_rs_intersect,
-    std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
+    numNodesEdge, numNodesSide>::
+    check_parallelism_between_side_and_edge(
+        std::vector<CORE::LINALG::Matrix<dimside, 1>>& side_rs_intersect,
+        std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
 {
   side_rs_intersect.clear();
   edge_r_intersect.clear();
   tolerance = 0.0;
 
-  //  if ( CheckAngleCriterionBetweenSideNormalAndEdge() )
+  //  if ( check_angle_criterion_between_side_normal_and_edge() )
   //    FOUR_C_THROW("This shouldn't happen at this point! -- hiermeier");
 
   return false;
@@ -222,7 +224,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckAngleCriterionBetweenSideNormalAndEdge()
+    numNodesEdge, numNodesSide>::check_angle_criterion_between_side_normal_and_edge()
 {
   // calculate the normal at the side element center
   const CORE::LINALG::Matrix<dimside, 1> rst_side_center(
@@ -281,7 +283,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
   // quick check first -- check angle between the two edges, if the check fails,
   // the two edges are definitely not parallel.
-  if (not CheckAngleCriterionBetweenTwoEdges()) return false;
+  if (not check_angle_criterion_between_two_edges()) return false;
 
   /* If the lines seem to be parallel, we do the expensive calculation and
    * check if the end points of the edge are on the side edge ( and are collinear ). */
@@ -344,7 +346,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     for (unsigned i = 0; i < num_cut_points_; ++i)
     {
       xsi_side_.Update(side_rs_corner_intersect[0]);
-      if (not FindLocalCoordinateOfEdgeEndPoint(
+      if (not find_local_coordinate_of_edge_end_point(
               xsi_edge_(0), side_xyz_corner_intersect[i], tolerance))
         FOUR_C_THROW("We couldn't find the correct edge end-point!");
       if (num_cut_points_ > 1)
@@ -389,7 +391,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckAngleCriterionBetweenTwoEdges()
+    numNodesEdge, numNodesSide>::check_angle_criterion_between_two_edges()
 {
   CORE::LINALG::Matrix<probdim, 1> deedge(&xyze_lineElement_(0, 0), false);
   CORE::LINALG::Matrix<probdim, 1> dsedge(&xyze_surfaceElement_(0, 0), false);
@@ -423,7 +425,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::FindLocalCoordinateOfEdgeEndPoint(double& pos,
+    numNodesEdge, numNodesSide>::find_local_coordinate_of_edge_end_point(double& pos,
     const CORE::LINALG::Matrix<probdim, 1>& xyz, const double& tolerance) const
 {
   const std::array<double, 2> r_endpoints = {-1.0, 1.0};
@@ -446,9 +448,9 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
-CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype,
-    debug, dimedge, dimside, numNodesEdge, numNodesSide>::HandleParallelIntersection(PointSet& cuts,
-    int skip_id, bool output)
+CORE::GEO::CUT::ParallelIntersectionStatus
+CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, numNodesEdge,
+    numNodesSide>::handle_parallel_intersection(PointSet& cuts, int skip_id, bool output)
 {
   std::array<Node*, 2> id_to_node = {GetEdge().BeginNode(), GetEdge().EndNode()};
   int id_start = 0, id_end = 2;
@@ -906,7 +908,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     KERNEL::PointOnSurfaceLoc location_status[2];
     for (unsigned tri = 0; tri < 2; ++tri)
     {
-      tri_conv(tri) = ComputeEdgeTri3Intersection(tri, location_status[tri]);
+      tri_conv(tri) = compute_edge_tri3_intersection(tri, location_status[tri]);
       /* we expect the QUAD4 to converge in case that the projected point is
        * inside the QUAD4 or TRI3! */
       if (location_status[tri].WithinSide())
@@ -919,11 +921,11 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         for (std::vector<Node*>::const_iterator it = side_nodes.begin(); it != side_nodes.end();
              ++it)
         {
-          (*it)->point()->DumpConnectivityInfo();
+          (*it)->point()->dump_connectivity_info();
         }
         FOUR_C_THROW(
-            "ComputeEdgeSideIntersection for Quad4 didn't converge, "
-            "but ComputeEdgeTri3Intersection for triangulation (id=%d) is inside the Element!",
+            "compute_edge_side_intersection for Quad4 didn't converge, "
+            "but compute_edge_tri3_intersection for triangulation (id=%d) is inside the Element!",
             tri);
       }
     }
@@ -950,7 +952,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::TriangulatedIntersection(PointSet& cuts)
+    numNodesEdge, numNodesSide>::triangulated_intersection(PointSet& cuts)
 {
   double itol = 0.0;
   switch (sidetype)
@@ -961,7 +963,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       IntersectionStatus conv;
       try
       {
-        conv = ComputeEdgeSideIntersection(itol, true);
+        conv = compute_edge_side_intersection(itol, true);
       }
       catch (CORE::Exception& e)
       {
@@ -1010,7 +1012,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       {
         try
         {
-          tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, &close_to_shared_edge[tri]);
+          tri_status[tri] =
+              compute_edge_tri3_intersection_quad4_split(tri, &close_to_shared_edge[tri]);
         }
         catch (CORE::Exception& e)
         {
@@ -1135,7 +1138,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   // ------------------------------------------------------------------------
   //  bounding box check
   // ------------------------------------------------------------------------
-  bool debugbb = CheckBoundingBoxOverlap();
+  bool debugbb = check_bounding_box_overlap();
   if (debugbb)
   {
     if (debug)
@@ -1156,7 +1159,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
   // try to find out if this intersection can be handled just by ComputeDistance
   // and edge-edge intersections
-  ParallelIntersectionStatus parallel_res = HandleParallelIntersection(cuts);
+  ParallelIntersectionStatus parallel_res = handle_parallel_intersection(cuts);
 
   if (parallel_res == intersection_found)
     return true;
@@ -1169,14 +1172,14 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       // Try to calculate the intersection point directly with Newton
       // ------------------------------------------------------------------------
 #if (TRIANGULATED_INTERSECTION)
-    return TriangulatedIntersection(cuts);
+    return triangulated_intersection(cuts);
 #else
 
     double itol = 0.0;
     IntersectionStatus conv;
     try
     {
-      conv = ComputeEdgeSideIntersection(itol, true);
+      conv = compute_edge_side_intersection(itol, true);
     }
     catch (const CORE::Exception& e)
     {
@@ -1250,10 +1253,10 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, CORE::FE::CellType edgetype, CORE::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::RefinedBBOverlapCheck(int maxstep)
+    numNodesEdge, numNodesSide>::refined_bb_overlap_check(int maxstep)
 {
   if (sidetype != CORE::FE::CellType::tri3)
-    FOUR_C_THROW("RefinedBBOverlapCheck is made for distored tri3s!");
+    FOUR_C_THROW("refined_bb_overlap_check is made for distored tri3s!");
 
   std::vector<CORE::LINALG::Matrix<3, 1>> surfpoints;
   std::vector<CORE::LINALG::Matrix<3, 1>> linepoints;
@@ -1375,8 +1378,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     overlappingidx = newoverlappingidx;
 
-    std::cout << "RefinedBBOverlapCheck: Refinement Level " << refinestep << " there is " << overlap
-              << " overlap!" << std::endl;
+    std::cout << "refined_bb_overlap_check: Refinement Level " << refinestep << " there is "
+              << overlap << " overlap!" << std::endl;
     if (!overlap) break;
   }
   return overlap;
@@ -1425,7 +1428,7 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
     GetTriangle(xyze_triElement, tri_id);
 
     bool conv = false;
-    switch (GetOptionsPtr()->GeomDistance_Floattype())
+    switch (GetOptionsPtr()->geom_distance_floattype())
     {
       case INPAR::CUT::floattype_double:
       {

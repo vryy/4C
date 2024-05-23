@@ -52,10 +52,10 @@ namespace DRT
 
       std::string Name() const override { return "Truss3Type"; }
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -95,7 +95,7 @@ namespace DRT
       //! \param[out] curr_nodal_coords     nodal coordinates
       //! \param[out] dcurr_nodal_coords_du deriv. of nodal coordinates w.r.t. global displacement
       //! \param[out] dN_dx                 derivative of shape functions
-      void PrepCalcInternalForceStiffTotLag(
+      void prep_calc_internal_force_stiff_tot_lag(
           const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
           CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx);
@@ -106,7 +106,7 @@ namespace DRT
       //! \param[in] ele_state    elemental states (depending on the instantiated element)
       //! \param[out] forcevec    element force vector
       //! \param[out] stiffmat    element stiffness matrix
-      virtual void CalcInternalForceStiffTotLag(
+      virtual void calc_internal_force_stiff_tot_lag(
           const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat);
 
@@ -184,18 +184,18 @@ namespace DRT
           INPUT::LineDefinition* linedef) override;
 
       //! scale truss reference length
-      void ScaleReferenceLength(double scalefac);
+      void scale_reference_length(double scalefac);
 
       //! set cross section area of this element
       void SetCrossSec(const double& crosssec);
 
-      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+      void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
       //! \brief sets reference coordinates X_ and reference length lrefe_ for elements added to
       //! the discretization
       //!
       //! \param xrefe     nodal coordinates in reference frame
-      void SetUpReferenceGeometry(const std::vector<double>& xrefe);
+      void set_up_reference_geometry(const std::vector<double>& xrefe);
 
       CORE::FE::CellType Shape() const override;
 
@@ -228,7 +228,7 @@ namespace DRT
       //! \param[in] discretization  discretization
       //! \param[in] params          parameter list
       //! \param[out] ele_state      elemental states (depending on the instantiated element)
-      virtual void ExtractElementalVariables(LocationArray& la,
+      virtual void extract_elemental_variables(LocationArray& la,
           const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state);
 

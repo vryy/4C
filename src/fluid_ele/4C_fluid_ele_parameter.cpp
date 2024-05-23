@@ -95,7 +95,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
+void DRT::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_general_fluid_parameter_ == false) set_general_fluid_parameter_ = true;
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
 //----------------------------------------------------------------------*
 //  set loma parameters                                  rasthofer 03/12|
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::FluidEleParameter::set_element_loma_parameter(Teuchos::ParameterList& params)
 {
   // get parameter lists
   Teuchos::ParameterList& lomaparams = params.sublist("LOMA");
@@ -463,7 +463,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter(Teuchos::Paramete
 //----------------------------------------------------------------------*
 //  set two phase parameters                                winter 05/14|
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::FluidEleParameter::set_element_two_phase_parameter(
+    Teuchos::ParameterList& params)
 {
   // Two Phase Flow specific parameters,
   // Smeared specific parameters
@@ -478,7 +479,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter(Teuchos::Para
 //----------------------------------------------------------------------*
 //  set turbulence parameters                            rasthofer 11/11|
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
+void DRT::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
     Teuchos::ParameterList& params)
 {
   // get parameter lists

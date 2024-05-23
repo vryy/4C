@@ -64,7 +64,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
   // Check if this is an HDG element, if yes, can initialize...
   if (const DRT::ELEMENTS::FluidHDG* hdgele = dynamic_cast<const DRT::ELEMENTS::FluidHDG*>(ele))
   {
-    usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
+    usescompletepoly_ = hdgele->uses_complete_polynomial_space();
     if (shapes_ == Teuchos::null)
       shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int corrtermfuncnum = fluidparams.get<int>("CORRTERMFUNCNO");
   if (corrtermfuncnum > 0)
-    local_solver_->ComputeCorrectionTerm(interiorecorrectionterm_, corrtermfuncnum);
+    local_solver_->compute_correction_term(interiorecorrectionterm_, corrtermfuncnum);
 
   // interior body force term for the weakly compressible benchmark if applicable
   interiorebodyforce_.resize(nsd_ * shapes_->ndofs_, 0.0);
@@ -134,9 +134,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   // solves the local problem of the nonlinear iteration before
   if (updateLocally)
   {
-    local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, trace_val_[0],
+    local_solver_->compute_interior_residual(mat, interior_val_, interior_acc_, trace_val_[0],
         ebofoaf_, interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
-    local_solver_->ComputeInteriorMatrices(mat, false);
+    local_solver_->compute_interior_matrices(mat, false);
 
     FOUR_C_ASSERT(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
 
@@ -148,16 +148,16 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
       local_solver_->ComputeFaceMatrices(f, mat, false, elemat1);
     }
 
-    local_solver_->EliminateVelocityGradient(elemat1);
+    local_solver_->eliminate_velocity_gradient(elemat1);
     local_solver_->SolveResidual();
-    UpdateSecondarySolution(*ele, discretization, local_solver_->gUpd, local_solver_->upUpd);
+    update_secondary_solution(*ele, discretization, local_solver_->gUpd, local_solver_->upUpd);
   }
 
   elemat1.putScalar(0.0);
   elevec1.putScalar(0.0);
-  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, trace_val_[0], ebofoaf_,
-      interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
-  local_solver_->ComputeInteriorMatrices(mat, updateLocally);
+  local_solver_->compute_interior_residual(mat, interior_val_, interior_acc_, trace_val_[0],
+      ebofoaf_, interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
+  local_solver_->compute_interior_matrices(mat, updateLocally);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     shapesface_->EvaluateFace(*ele, f);
@@ -165,7 +165,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     local_solver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
   }
 
-  if (!updateLocally) local_solver_->EliminateVelocityGradient(elemat1);
+  if (!updateLocally) local_solver_->eliminate_velocity_gradient(elemat1);
 
   local_solver_->CondenseLocalPart(elemat1, elevec1);
 
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT::Element& ele,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(const DRT::Element& ele,
     DRT::Discretization& discretization, const CORE::LINALG::SerialDenseVector& updateG,
     const CORE::LINALG::SerialDenseVector& updateUp)
 {
@@ -272,22 +272,22 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
     break;
     case FLD::interpolate_hdg_to_node:
     {
-      return InterpolateSolutionToNodes(ele, discretization, elevec1);
+      return interpolate_solution_to_nodes(ele, discretization, elevec1);
       break;
     }
     case FLD::interpolate_hdg_for_hit:
     {
-      InterpolateSolutionForHIT(ele, discretization, elevec1);
+      interpolate_solution_for_hit(ele, discretization, elevec1);
       break;
     }
     case FLD::project_hdg_force_on_dof_vec_for_hit:
     {
-      ProjectForceOnDofVecForHIT(ele, discretization, elevec1, elevec2);
+      project_force_on_dof_vec_for_hit(ele, discretization, elevec1, elevec2);
       break;
     }
     case FLD::project_hdg_initial_field_for_hit:
     {
-      ProjectInitialFieldForHIT(ele, discretization, elevec1, elevec2, elevec3);
+      project_initial_field_for_hit(ele, discretization, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::project_fluid_field:
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
     }
     case FLD::calc_pressure_average:
     {
-      return EvaluatePressureAverage(ele, params, mat, elevec1);
+      return evaluate_pressure_average(ele, params, mat, elevec1);
       break;
     }
     default:
@@ -364,7 +364,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
     }
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
 
-    FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint(
+    FluidEleCalc<distype>::evaluate_analytic_solution_point(
         xyz, time, calcerr, calcerrfunctno, mat, u, p, dervel);
 
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -660,8 +660,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
+    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
   // Check if the vector has the correct size
@@ -846,7 +847,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
  * interpolate solution for postprocessing of hit              bk 03/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
@@ -916,9 +917,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2)
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
+    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
 
@@ -1032,9 +1033,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
+    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   const int numsamppoints = 5;
 
@@ -1328,7 +1330,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele,
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     CORE::LINALG::SerialDenseVector& elevec)
 {
@@ -1361,7 +1363,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
 
     // get analytical solution
-    FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint(
+    FluidEleCalc<distype>::evaluate_analytic_solution_point(
         xyz, time, calcerr, calcerrfunctno, mat, u, p, dervel);
 
     pressureint += p * jfac;
@@ -1436,7 +1438,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidual(
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_residual(
     const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
@@ -1652,7 +1654,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatrices(
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matrices(
     const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear)
 {
   // get physical type
@@ -2224,7 +2226,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGradient(
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gradient(
     CORE::LINALG::SerialDenseMatrix& elemat)
 {
   // get physical type
@@ -2292,7 +2294,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
   for (unsigned int i = 0; i < (nsd_ + 1) * ndofs_ + 1; ++i) upUpd(i) = upRes(i);
 
   // compute UG * M^{-1} gRes. Since UG is not stored completely, need some loops.
-  // Note: the data field tmpMatGrad contains UG * M^{-1} after EliminateVelocityGradient
+  // Note: the data field tmpMatGrad contains UG * M^{-1} after eliminate_velocity_gradient
   //
   // shape of UG in 3D:
   // [ x y z             ]   [ x     y     z     ]
@@ -2499,7 +2501,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm(
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correction_term(
     std::vector<double>& interiorecorrectionterm, int corrtermfuncnum)
 {
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -2609,7 +2611,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS:
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalCorrection(
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::print_local_correction(
     DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "

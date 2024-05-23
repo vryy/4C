@@ -61,7 +61,7 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
     FOUR_C_THROW("BGS2x2: provided operator is not a BlockSparseMatrix!");
   }
 
-  SetupBlockPreconditioners();
+  setup_block_preconditioners();
 
   return;
 }
@@ -69,7 +69,7 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BgS2x2Operator::SetupBlockPreconditioners()
+void CORE::LINALG::BgS2x2Operator::setup_block_preconditioners()
 {
   Teuchos::RCP<CORE::LINALG::Solver> s1 =
       Teuchos::rcp(new CORE::LINALG::Solver(list1_, a_->Comm(), false));
@@ -129,7 +129,7 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
 
     solver1_->Solve(Op11.EpetraMatrix(), z1, x1, true);
 
-    LocalBlockRichardson(solver1_, Op11, x1, z1, tmpx1, block1_iter_, block1_omega_);
+    local_block_richardson(solver1_, Op11, x1, z1, tmpx1, block1_iter_, block1_omega_);
 
     if (run > 0)
     {
@@ -154,7 +154,7 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
 
     solver2_->Solve(Op22.EpetraMatrix(), z2, x2, true);
 
-    LocalBlockRichardson(solver2_, Op22, x2, z2, tmpx2, block2_iter_, block2_omega_);
+    local_block_richardson(solver2_, Op22, x2, z2, tmpx2, block2_iter_, block2_omega_);
 
     if (run > 0)
     {
@@ -175,7 +175,7 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BgS2x2Operator::LocalBlockRichardson(
+void CORE::LINALG::BgS2x2Operator::local_block_richardson(
     Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& Op,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> y,
     Teuchos::RCP<Epetra_MultiVector> tmpx, int iter, double omega) const

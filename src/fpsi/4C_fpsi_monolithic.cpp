@@ -84,12 +84,12 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
-  Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
-  PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
+  Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->get_fluid_poro_fluid_interface_map();
+  PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
   // build a proxy of the fluid discretization for the ale field
   if (FluidField()->Discretization()->AddDofSet(
-          AleField()->WriteAccessDiscretization()->GetDofSetProxy()) != 1)
+          AleField()->write_access_discretization()->GetDofSetProxy()) != 1)
   {
     FOUR_C_THROW("unexpected numbers of dofsets in fluid field");
   }
@@ -110,7 +110,7 @@ void FPSI::MonolithicBase::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
 
   PoroField()->PrepareTimeStep();
@@ -188,7 +188,7 @@ Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluid_FSI(
 {
   return coupfa_fsi_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluidInterface_FSI(
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::ale_to_fluid_interface_fsi(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_fsi_->SlaveToMaster(iv);
@@ -210,7 +210,8 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       islinesearch_(false),
       firstcall_(true)
 {
-  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
   solveradapttol_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
@@ -287,22 +288,22 @@ void FPSI::Monolithic::SetupSystem_FSI()
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
-  CORE::ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
-  CORE::ADAPTER::Coupling& icoupfa_fsi = InterfaceFluidAleCoupling_FSI();
+  CORE::ADAPTER::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
+  CORE::ADAPTER::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
+  CORE::ADAPTER::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
 
   // structure to fluid
-  coupsf_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),
+  coupsf_fsi.setup_condition_coupling(*PoroField()->StructureField()->Discretization(),
       PoroField()->StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
   // structure to ale
-  coupsa_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),
+  coupsa_fsi.setup_condition_coupling(*PoroField()->StructureField()->Discretization(),
       PoroField()->StructureField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa_fsi.SetupConditionCoupling(*FluidField()->Discretization(),
+  icoupfa_fsi.setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -340,7 +341,7 @@ void FPSI::Monolithic::Timeloop()
 void FPSI::Monolithic::PrepareTimeloop()
 {
   // check if maps were destroyed before entring the timeloop
-  Extractor().CheckForValidMapExtractor();
+  Extractor().check_for_valid_map_extractor();
 
   return;
 }
@@ -373,10 +374,10 @@ void FPSI::Monolithic::TimeStep()
       FOUR_C_THROW("Effective tangent matrix must be filled here !");
     }
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
+    // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
     LinearSolve();
     // build norms
-    BuildConvergenceNorms();
+    build_convergence_norms();
 
     // print stuff
     if (islinesearch_ == false) PrintNewtonIter();
@@ -409,12 +410,12 @@ void FPSI::Monolithic::TimeStep()
     FOUR_C_THROW("Newton found no convergence in %d iterations", iter_);
   }
 
-  PoroField()->RecoverLagrangeMultiplierAfterTimeStep();
+  PoroField()->recover_lagrange_multiplier_after_time_step();
 
   // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
   // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
   if (FSI_Interface_exists_)
-    RecoverLagrangeMultiplier();  // LagrangeMultiplier of the FSI interface!
+    recover_lagrange_multiplier();  // LagrangeMultiplier of the FSI interface!
 }
 
 /*----------------------------------------------------------------------*/
@@ -430,8 +431,8 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
     linesearch_counter = 0.;
     FluidField()->Discretization()->SetState(0, "dispnp", FluidField()->Dispnp());
     meshdispold_ = AleToFluid(AleField()->Dispnp());
-    porointerfacedisplacementsold_ =
-        FPSICoupl()->iPorostructToAle(PoroField()->StructureField()->ExtractInterfaceDispnp(true));
+    porointerfacedisplacementsold_ = FPSICoupl()->iPorostructToAle(
+        PoroField()->StructureField()->extract_interface_dispnp(true));
   }
 
 
@@ -449,19 +450,19 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
     FOUR_C_THROW("No existing increment vector !");
   }
 
-  PoroField()->UpdateStateIncrementally(sx, pfx);
+  PoroField()->update_state_incrementally(sx, pfx);
   PoroField()->EvaluateFields(Teuchos::null);
   PoroField()->SetupSystemMatrix();
 
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI =
-      FPSICoupl()->iPorostructToAle(PoroField()->StructureField()->ExtractInterfaceDispnp(true));
-  AleField()->ApplyInterfaceDisplacements(porointerfacedisplacements_FPSI);
+      FPSICoupl()->iPorostructToAle(PoroField()->StructureField()->extract_interface_dispnp(true));
+  AleField()->apply_interface_displacements(porointerfacedisplacements_FPSI);
 
   if (FSI_Interface_exists_)
   {
     Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FSI =
-        StructToAle_FSI(PoroField()->StructureField()->ExtractInterfaceDispnp(false));
-    AleField()->ApplyFSIInterfaceDisplacements(porointerfacedisplacements_FSI);
+        StructToAle_FSI(PoroField()->StructureField()->extract_interface_dispnp(false));
+    AleField()->apply_fsi_interface_displacements(porointerfacedisplacements_FSI);
   }
 
   AleField()->WriteAccessDispnp()->Update(
@@ -469,14 +470,14 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
   AleField()->Evaluate(Teuchos::null);
 
   Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(aledisplacements);
+  FluidField()->apply_mesh_displacement(aledisplacements);
 
   FluidField()->UpdateNewton(fx);
 
   FluidField()->Evaluate(Teuchos::null);
 
   // Evaluate FPSI Coupling Matrixes and RHS
-  FPSICoupl()->EvaluateCouplingMatrixesRHS();
+  FPSICoupl()->evaluate_coupling_matrixes_rhs();
 
   SetupRHS(iter_ == 1);
 
@@ -582,7 +583,7 @@ void FPSI::Monolithic::CreateLinearSolver()
         "valid number !");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -662,22 +663,22 @@ void FPSI::Monolithic::CreateLinearSolver()
   // for now, use same solver parameters for poro fluid and free fluid
 
   // poro/structure
-  solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
   // poro fluid
-  solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams);
   // fluid
-  solver_->PutSolverParamsToSubParams("Inverse3", fsolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams);
   // ale
-  solver_->PutSolverParamsToSubParams("Inverse4", asolverparams);
+  solver_->put_solver_params_to_sub_params("Inverse4", asolverparams);
 
   // prescribe rigid body modes
-  PoroField()->StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+  PoroField()->StructureField()->Discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse1"));
-  PoroField()->FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+  PoroField()->FluidField()->Discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse2"));
-  FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+  FluidField()->Discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse3"));
-  AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+  AleField()->write_access_discretization()->compute_null_space_if_necessary(
       solver_->Params().sublist("Inverse4"));
 
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
@@ -746,11 +747,11 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *sparse, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+    CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // line search
     if (linesearch_)
@@ -768,11 +769,11 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *systemmatrix_, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
@@ -834,15 +835,15 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
       pfx->Scale(-1.0);
       fx->Scale(-1.0);
 
-      PoroField()->UpdateStateIncrementally(sx, pfx);
+      PoroField()->update_state_incrementally(sx, pfx);
       PoroField()->EvaluateFields(Teuchos::null);
       PoroField()->SetupSystemMatrix();
 
       FluidField()->UpdateNewton(Teuchos::rcp_dynamic_cast<const Epetra_Vector>(fx));
       // AleField()   ->ResetNewton(ax);
 
-      FluidField()->ApplyMeshDisplacement(meshdispold_);
-      AleField()->ApplyInterfaceDisplacements(porointerfacedisplacementsold_);
+      FluidField()->apply_mesh_displacement(meshdispold_);
+      AleField()->apply_interface_displacements(porointerfacedisplacementsold_);
 
 
       // set iterinc_ to a fraction of the old iterinc_
@@ -1018,7 +1019,7 @@ bool FPSI::Monolithic::Converged()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::BuildConvergenceNorms()
+void FPSI::Monolithic::build_convergence_norms()
 {
   rhs_->Norm2(&normofrhs_);
   Teuchos::RCP<const Epetra_Vector> rhs_fluid;
@@ -1038,7 +1039,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   rhs_porofluidvelocity = PoroField()->FluidField()->ExtractVelocityPart(rhs_porofluid);
   rhs_porofluidpressure = PoroField()->FluidField()->ExtractPressurePart(rhs_porofluid);
   rhs_porointerface =
-      FPSICoupl()->PoroFluidFpsiVelPresExtractor()->ExtractCondVector(rhs_porofluid);
+      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->ExtractCondVector(rhs_porofluid);
 
   rhs_fluid = Extractor().ExtractVector(rhs_, fluid_block_);
   //  Teuchos::RCP<const Epetra_Vector> rhs_fullfluid = Teuchos::rcp(new
@@ -1049,7 +1050,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
 
   rhs_fluidvelocity = FluidField()->ExtractVelocityPart(rhs_fluid);
   rhs_fluidpressure = FluidField()->ExtractPressurePart(rhs_fluid);
-  rhs_fluidinterface = FPSICoupl()->FluidFpsiVelPresExtractor()->ExtractCondVector(rhs_fluid);
+  rhs_fluidinterface = FPSICoupl()->fluid_fpsi_vel_pres_extractor()->ExtractCondVector(rhs_fluid);
 
   rhs_ale = Extractor().ExtractVector(rhs_, ale_i_block_);  // Extractor().ExtractVector(rhs_, 2);
 
@@ -1098,7 +1099,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   iterincporofluidvelocity = PoroField()->FluidField()->ExtractVelocityPart(iterincporofluid);
   iterincporofluidpressure = PoroField()->FluidField()->ExtractPressurePart(iterincporofluid);
   iterincporointerface =
-      FPSICoupl()->PoroFluidFpsiVelPresExtractor()->ExtractCondVector(iterincporofluid);
+      FPSICoupl()->poro_fluid_fpsi_vel_pres_extractor()->ExtractCondVector(iterincporofluid);
 
   iterincfluid = Extractor().ExtractVector(iterinc_, fluid_block_);
 
@@ -1110,7 +1111,8 @@ void FPSI::Monolithic::BuildConvergenceNorms()
 
   iterincfluidvelocity = FluidField()->ExtractVelocityPart(iterincfluid);
   iterincfluidpressure = FluidField()->ExtractPressurePart(iterincfluid);
-  iterincfluidinterface = FPSICoupl()->FluidFpsiVelPresExtractor()->ExtractCondVector(iterincfluid);
+  iterincfluidinterface =
+      FPSICoupl()->fluid_fpsi_vel_pres_extractor()->ExtractCondVector(iterincfluid);
 
   iterincale = Extractor().ExtractVector(iterinc_, ale_i_block_);
 
@@ -1169,7 +1171,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   norm1_a_ += 1e-10;
 
   return;
-}  // BuildConvergenceNorms
+}  // build_convergence_norms
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1179,7 +1181,7 @@ void FPSI::Monolithic::PrintNewtonIter()
   // replace myrank_ here general by Comm().MyPID()
   if ((Comm().MyPID() == 0) and printscreen_ and (Step() % printscreen_ == 0) and printiter_)
   {
-    if (iter_ == 1) PrintNewtonIterHeader(stdout);
+    if (iter_ == 1) print_newton_iter_header(stdout);
     PrintNewtonIterText(stdout);
   }
 
@@ -1187,7 +1189,7 @@ void FPSI::Monolithic::PrintNewtonIter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
+void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -1291,7 +1293,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}  // PrintNewtonIterHeader()
+}  // print_newton_iter_header()
 
 
 /*----------------------------------------------------------------------*
@@ -1566,9 +1568,9 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     PoroField()->ClearPoroIterinc();
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *FluidField()->Interface()->FSICondMap());
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative
@@ -1756,7 +1758,7 @@ void FPSI::Monolithic::FPSIFDCheck()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::ExtractColumnsfromSparse(Teuchos::RCP<Epetra_CrsMatrix> src,
+void FPSI::Monolithic::extract_columnsfrom_sparse(Teuchos::RCP<Epetra_CrsMatrix> src,
     const Teuchos::RCP<const Epetra_Map>& colmap, Teuchos::RCP<Epetra_CrsMatrix> dst)
 {
   dst->PutScalar(0.0);  // clear matrix

@@ -72,7 +72,7 @@ void SCATRA::TimIntHDG::Setup()
   {
     DRT::ELEMENTS::ScaTraHDG *hdgele =
         dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
-    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
+    (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
@@ -222,19 +222,19 @@ void SCATRA::TimIntHDG::SetTheta()
 /*----------------------------------------------------------------------*
 | set HDG state vectors                                  hoermann 09/15 |
 *-----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntHDG::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // set hdg vector and interior variables vector
   discret_->SetState(0, "phin", phin_);
   discret_->SetState(0, "phiaf", phinp_);
   discret_->SetState(nds_intvar_, "intphinp", intphinp_);
   discret_->SetState(nds_intvar_, "intphin", intphin_);
-}  // AddTimeIntegrationSpecificVectors
+}  // add_time_integration_specific_vectors
 
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha  hoer 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::GenAlphaIntermediateValues()
+void SCATRA::TimIntHDG::gen_alpha_intermediate_values()
 {
   // set intermediate values for concentration derivatives
   //
@@ -255,12 +255,12 @@ void SCATRA::TimIntHDG::GenAlphaIntermediateValues()
 
   phiam_->Update(alphaM_, *phinp_, (1.0 - alphaM_), *phin_, 0.0);
 
-}  // GenAlphaIntermediateValues
+}  // gen_alpha_intermediate_values
 
 /*----------------------------------------------------------------------*
 | set old part of right hand side                        hoermann 09/15 |
 *-----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::SetOldPartOfRighthandside()
+void SCATRA::TimIntHDG::set_old_part_of_righthandside()
 {
   SetTheta();
   hist_->PutScalar(0.0);
@@ -268,7 +268,7 @@ void SCATRA::TimIntHDG::SetOldPartOfRighthandside()
   // This code is entered at the beginning of the nonlinear iteration, so
   // store that the assembly to be done next is going to be the first one
   // (without combined vector update) for HDG.
-  //  SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside();
+  //  SCATRA::TimIntGenAlpha::set_old_part_of_righthandside();
 }
 
 /*----------------------------------------------------------------------*
@@ -368,7 +368,7 @@ void SCATRA::TimIntHDG::OutputState()
   output_->WriteVector("gradphi_hdg", interpolatedGradPhi, IO::nodevector);
   output_->WriteVector("tracephi_hdg", interpolatedtracePhi, IO::nodevector);
 
-  WriteProblemSpecificOutput(interpolatedPhinp_);
+  write_problem_specific_output(interpolatedPhinp_);
 
   output_->WriteVector("elementdegree", elementdegree_, IO::elementvector);
 
@@ -418,8 +418,9 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
       // binning strategy is created and parallel redistribution is performed
       binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
       binningstrategy->Init(dis);
-      binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-          dis, stdelecolmap, stdnodecolmap);
+      binningstrategy
+          ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+              dis, stdelecolmap, stdnodecolmap);
     }
   }
 
@@ -433,10 +434,10 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
   hdgdis_->BuildFaceColMap();
 
   // assign the degrees of freedom to the adapted dofsets
-  hdgdis_->AssignDegreesOfFreedom(0);
+  hdgdis_->assign_degrees_of_freedom(0);
 
   // replace all ghosted element with the original thus the correct polynomial degree is used
-  discret_->ExportColumnElements(*discret_->ElementColMap(), false, false);
+  discret_->export_column_elements(*discret_->ElementColMap(), false, false);
 
   hdgdis_->FillComplete();
 
@@ -446,7 +447,7 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
     DRT::ELEMENTS::ScaTraHDG *hdgele =
         dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     // store the number of dofs for the element
-    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
+    (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
@@ -455,10 +456,10 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
   // replace old interior element dofs with the new created dofset
   discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
 
-  hdgdis_->AssignDegreesOfFreedom(0);
+  hdgdis_->assign_degrees_of_freedom(0);
 
-  // clear map cache since after every FillComplete() / AssignDegreesOfFreedom() old maps are stored
-  // in the mapstack
+  // clear map cache since after every FillComplete() / assign_degrees_of_freedom() old maps are
+  // stored in the mapstack
   output_->ClearMapCache();
 
   // reset the residual, increment and sysmat to the size
@@ -589,13 +590,13 @@ void SCATRA::TimIntHDG::SetInitialField(
 /*----------------------------------------------------------------------*
  | calculate intermediate solution                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::ComputeIntermediateValues()
+void SCATRA::TimIntHDG::compute_intermediate_values()
 {
   // time derivatives are not independent but rather have to be computed
   // from phinp_, phin_ and phidtn_
-  GenAlphaComputeTimeDerivative();
+  gen_alpha_compute_time_derivative();
   // compute values at intermediate time steps
-  GenAlphaIntermediateValues();
+  gen_alpha_intermediate_values();
 
   return;
 }
@@ -603,17 +604,17 @@ void SCATRA::TimIntHDG::ComputeIntermediateValues()
 /*----------------------------------------------------------------------*
  | compute values at the interior of the elements         hoermann 09/15|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::ComputeInteriorValues()
+void SCATRA::TimIntHDG::compute_interior_values()
 {
   // Update the interior variables
-  UpdateInteriorVariables(intphinp_);
+  update_interior_variables(intphinp_);
   return;
 }
 
 /*----------------------------------------------------------------------*
  | update time derivative for gen-alpha time integration hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::GenAlphaComputeTimeDerivative()
+void SCATRA::TimIntHDG::gen_alpha_compute_time_derivative()
 {
   //                                  n+1     n
   //                               phi   - phi
@@ -629,13 +630,13 @@ void SCATRA::TimIntHDG::GenAlphaComputeTimeDerivative()
   phidtnp_->Update(fact2, *phidtn_, 0.0);
   phidtnp_->Update(fact1, *phinp_, -fact1, *phin_, 1.0);
 
-}  // GenAlphaComputeTimeDerivative
+}  // gen_alpha_compute_time_derivative
 
 
 /*----------------------------------------------------------------------*
  | update interior variables                             hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> updatevector)
+void SCATRA::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> updatevector)
 {
   discret_->ClearState(true);
   Teuchos::ParameterList eleparams;
@@ -711,7 +712,7 @@ void SCATRA::TimIntHDG::FDCheck()
   strategy.Zero();
 
   // calculate of residual vector
-  UpdateInteriorVariables(intphitemp);
+  update_interior_variables(intphitemp);
 
   discret_->ClearState(true);
   discret_->SetState("phiaf", phinp_);
@@ -779,7 +780,7 @@ void SCATRA::TimIntHDG::FDCheck()
         if (phinp_->SumIntoGlobalValue(colgid, 0, eps))
           FOUR_C_THROW(
               "Perturbation could not be imposed on state vector for finite difference check!");
-      UpdateInteriorVariables(intphitemp);
+      update_interior_variables(intphitemp);
 
       discret_->ClearState(true);
 
@@ -866,7 +867,7 @@ void SCATRA::TimIntHDG::FDCheck()
 /*----------------------------------------------------------------------------------*
  | compute relative error with reference to analytical solution    berardocco 05/20 |
  *----------------------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
+void SCATRA::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 {
   switch (calcerror_)
   {
@@ -934,7 +935,7 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
   }
 
   return;
-}  // SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol
+}  // SCATRA::TimIntHDG::evaluate_error_compared_to_analytical_sol
 
 /*----------------------------------------------------------------------------------*
  | compute relative error with reference to analytical solution    berardocco 08/20 |
@@ -1173,10 +1174,10 @@ void SCATRA::TimIntHDG::AdaptDegree()
   hdgdis_->BuildFaceColMap();
 
   // assign the degrees of freedom to the adapted dofsets
-  hdgdis_->AssignDegreesOfFreedom(0);
+  hdgdis_->assign_degrees_of_freedom(0);
 
   // replace all ghosted element with the original thus the correct polynomial degree is used
-  discret_->ExportColumnElements(*discret_->ElementColMap(), false, false);
+  discret_->export_column_elements(*discret_->ElementColMap(), false, false);
 
   hdgdis_->FillComplete();
 
@@ -1186,7 +1187,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
     DRT::ELEMENTS::ScaTraHDG *hdgele =
         dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     // store the number of dofs for the element
-    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
+    (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
@@ -1195,10 +1196,10 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // replace old interior element dofs with the new created dofset
   discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
 
-  hdgdis_->AssignDegreesOfFreedom(0);
+  hdgdis_->assign_degrees_of_freedom(0);
 
-  // clear map cache since after every FillComplete() / AssignDegreesOfFreedom() old maps are stored
-  // in the mapstack
+  // clear map cache since after every FillComplete() / assign_degrees_of_freedom() old maps are
+  // stored in the mapstack
   output_->ClearMapCache();
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
@@ -1393,10 +1394,10 @@ void SCATRA::TimIntHDG::AssembleRHS()
   discret_->ClearState();
 
   // add state vectors according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // add problem specific time-integration parameters
-  AddProblemSpecificParametersAndVectors(eleparams);
+  add_problem_specific_parameters_and_vectors(eleparams);
 
   DRT::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
@@ -1436,7 +1437,7 @@ void SCATRA::TimIntHDG::AssembleRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> SCATRA::TimIntHDG::create_sca_tra_field_test()
 {
   return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
 }

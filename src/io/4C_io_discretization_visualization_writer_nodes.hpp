@@ -66,7 +66,8 @@ namespace IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void AppendDofBasedResultDataVector(const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+    void append_dof_based_result_data_vector(
+        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
         unsigned int result_num_dofs_per_node, const std::string& resultname);
 
     /**
@@ -85,7 +86,7 @@ namespace IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void AppendNodeBasedResultDataVector(
+    void append_node_based_result_data_vector(
         const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string& resultname);
 
@@ -97,7 +98,7 @@ namespace IO
     /**
      * @brief Set geometry data from nodes based on reference configuration
      */
-    void SetGeometryFromDiscretization();
+    void set_geometry_from_discretization();
 
    private:
     //! Discretization containing nodes of which geometry and result data shall be visualized

@@ -38,7 +38,7 @@ void wear_dyn_drt(int restart)
   // ***********************************************************
   // Setup the problem
   // ***********************************************************
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& wearpara = GLOBAL::Problem::Instance()->WearParams();
 
   // check if quasistatic analysis

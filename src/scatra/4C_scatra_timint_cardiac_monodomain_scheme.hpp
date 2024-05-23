@@ -50,10 +50,10 @@ namespace SCATRA
     void WriteRestart() const override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! do not calculate initial scalar time derivatives for ep
-    void CalcInitialTimeDerivative() override { return; };
+    void calc_initial_time_derivative() override { return; };
 
   };  // class TimIntCardiacMonodomainOST
 
@@ -84,7 +84,7 @@ namespace SCATRA
     void WriteRestart() const override;
 
     //! do not calculate initial scalar time derivatives for ep
-    void CalcInitialTimeDerivative() override { return; };
+    void calc_initial_time_derivative() override { return; };
 
   };  // class TimIntCardiacMonodomainBDF2
 
@@ -112,13 +112,13 @@ namespace SCATRA
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
    protected:
     void WriteRestart() const override;
 
     //! do not calculate initial scalar time derivatives for ep
-    void CalcInitialTimeDerivative() override { return; };
+    void calc_initial_time_derivative() override { return; };
 
   };  // class TimIntCardiacMonodomainGenAlpha
 }  // namespace SCATRA

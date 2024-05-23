@@ -53,11 +53,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatraTri3Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraTri3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  MembraneTri3Type::SetupElementDefinition(definitions_membrane);
+  MembraneTri3Type::setup_element_definition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE3"];
 
@@ -105,11 +105,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatraTri6Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraTri6Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  MembraneTri6Type::SetupElementDefinition(definitions_membrane);
+  MembraneTri6Type::setup_element_definition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE6"];
 
@@ -157,11 +157,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatraQuad4Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraQuad4Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  MembraneQuad4Type::SetupElementDefinition(definitions_membrane);
+  MembraneQuad4Type::setup_element_definition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE4"];
 
@@ -209,11 +209,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatraQuad9Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraQuad9Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  MembraneQuad9Type::SetupElementDefinition(definitions_membrane);
+  MembraneQuad9Type::setup_element_definition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE9"];
 

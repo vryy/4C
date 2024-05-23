@@ -48,7 +48,7 @@ namespace FLD
 
    private:
     /// method to transfer inflow velocity from inflow discret to compete discret
-    void TransferInflowVelocity();
+    void transfer_inflow_velocity();
 
     /// discretization of the compete domain
     Teuchos::RCP<DRT::Discretization> fluiddis_;

@@ -59,14 +59,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3ScatraType::Create(const int id,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::Truss3ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRUSS3SCATRA"];
 
   // get definitions from standard truss element
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_truss;
-  Truss3Type::SetupElementDefinition(definitions_truss);
+  Truss3Type::setup_element_definition(definitions_truss);
   std::map<std::string, INPUT::LineDefinition>& defs_truss = definitions_truss["TRUSS3"];
 
   // copy definitions of standard truss element to truss element for scalar transport coupling
@@ -155,7 +155,7 @@ bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
+void DRT::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
@@ -168,7 +168,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
   {
     case CORE::Materials::m_linelast1D:
     {
-      Truss3::CalcInternalForceStiffTotLag(ele_state, forcevec, stiffmat);
+      Truss3::calc_internal_force_stiff_tot_lag(ele_state, forcevec, stiffmat);
       break;
     }
     case CORE::Materials::m_linelast1D_growth:
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       CORE::LINALG::Matrix<2, 1> nodal_concentration;
       const int ndof = 6;
 
-      PrepCalcInternalForceStiffTotLagScaTra(
+      prep_calc_internal_force_stiff_tot_lag_sca_tra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
@@ -197,7 +197,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
         const double int_fac = dx_dxi * intpoints.qwgt[gp] * crosssec_;
 
         // get concentration at Gauss point
-        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
+        const double c_GP =
+            project_scalar_to_gauss_point(intpoints.qxg[gp][0], nodal_concentration);
 
         // calculate stress
         const double PK2_1D = growth_mat->EvaluatePK2(CurrLength(curr_nodal_coords) / lrefe_, c_GP);
@@ -274,7 +275,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       CORE::LINALG::Matrix<6, 1> dN_dx;
       CORE::LINALG::Matrix<2, 1> nodal_concentration;
 
-      PrepCalcInternalForceStiffTotLagScaTra(
+      prep_calc_internal_force_stiff_tot_lag_sca_tra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
@@ -284,7 +285,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
         // get concentration at Gauss point
-        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
+        const double c_GP =
+            project_scalar_to_gauss_point(intpoints.qxg[gp][0], nodal_concentration);
 
         const double PK2 = growth_mat->EvaluatePK2(def_grad, c_GP);
 
@@ -326,7 +328,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Truss3Scatra::ProjectScalarToGaussPoint(
+double DRT::ELEMENTS::Truss3Scatra::project_scalar_to_gauss_point(
     const double xi, const CORE::LINALG::Matrix<2, 1>& c) const
 {
   return (c(1) - c(0)) / 2.0 * xi + (c(1) + c(0)) / 2.0;
@@ -334,12 +336,12 @@ double DRT::ELEMENTS::Truss3Scatra::ProjectScalarToGaussPoint(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
+void DRT::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray& la,
     const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {
   // add displacements
-  Truss3::ExtractElementalVariables(la, discretization, params, ele_state);
+  Truss3::extract_elemental_variables(la, discretization, params, ele_state);
 
   // first: check, if micro state is set; if not -> take macro state
   // get nodal phi from micro state
@@ -372,13 +374,14 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
+void DRT::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_sca_tra(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
     CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx,
     CORE::LINALG::Matrix<2, 1>& nodal_concentration)
 {
-  PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dcurr_nodal_coords_du, dN_dx);
+  prep_calc_internal_force_stiff_tot_lag(
+      ele_state, curr_nodal_coords, dcurr_nodal_coords_du, dN_dx);
 
   const std::vector<double>& phi_ele = ele_state.at("phi");
 
@@ -425,7 +428,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
       CORE::LINALG::Matrix<6, 1> dN_dx;
       CORE::LINALG::Matrix<2, 1> nodal_concentration;
 
-      PrepCalcInternalForceStiffTotLagScaTra(
+      prep_calc_internal_force_stiff_tot_lag_sca_tra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
@@ -440,9 +443,10 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
         const double dx_dxi = lrefe_ / 2.0;
         const double int_fac = dx_dxi * gauss_points.qwgt[j] * crosssec_;
 
-        const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[j][0], nodal_concentration);
+        const double c_GP =
+            project_scalar_to_gauss_point(gauss_points.qxg[j][0], nodal_concentration);
 
-        eint_ = growth_mat->EvaluateElasticEnergy(CurrLength(curr_nodal_coords) / lrefe_, c_GP) *
+        eint_ = growth_mat->evaluate_elastic_energy(CurrLength(curr_nodal_coords) / lrefe_, c_GP) *
                 int_fac;
       }
       break;

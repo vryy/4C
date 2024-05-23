@@ -59,9 +59,9 @@ void XFEM::XfluidSemiLagrange::compute(
 
   // REMARK: in case of a new FGI iteration we have values at new position
   // they are used to compute nodal gradients used for non-predictor case
-  // at the end of newIteration_prepare newVectors will be cleared to fill it with new information
+  // at the end of new_iteration_prepare newVectors will be cleared to fill it with new information
   // from SL-algo
-  newIteration_prepare(newVectors_);
+  new_iteration_prepare(newVectors_);
 
   switch (FGIType_)
   {
@@ -117,7 +117,7 @@ void XFEM::XfluidSemiLagrange::compute(
 
     // counter limit because maximal max_iter Newton iterations with maximal
     // numproc processor changes per iteration (avoids infinite loop)
-    if (!globalNewtonFinished(counter))
+    if (!global_newton_finished(counter))
     {
 #ifdef DEBUG_SEMILAGRANGE
       IO::cout << "\n==============================================";
@@ -255,7 +255,7 @@ void XFEM::XfluidSemiLagrange::compute(
             //=========================================================
             if (data->changedside_)  // how to continue in newton loop, or stop the newton loop
             {
-              if (!continueForChangingSide(&*data, ele, nds_curr))
+              if (!continue_for_changing_side(&*data, ele, nds_curr))
                 continue;  // continue with next TimintData
             }
             else  // point did not change the side
@@ -333,7 +333,8 @@ void XFEM::XfluidSemiLagrange::compute(
 
                   CORE::LINALG::Matrix<nsd, 1> proj_x(true);
 
-                  FindNearestSurfPoint(data->startpoint_, proj_x, data->last_valid_vc_, "idispn");
+                  find_nearest_surf_point(
+                      data->startpoint_, proj_x, data->last_valid_vc_, "idispn");
 
                   proj_x = data->initialpoint_;
 
@@ -395,7 +396,7 @@ void XFEM::XfluidSemiLagrange::compute(
           }  // end if elefound
         }
       }  // end loop over all nodes stored in TiminitData marked for Semilagrangean algorithm
-    }    // !globalNewtonFinished(counter)
+    }    // !global_newton_finished(counter)
     else
     {
       // reset the state to failed
@@ -407,7 +408,7 @@ void XFEM::XfluidSemiLagrange::compute(
 
     // export nodes and according data for which the startpoint isn't still found (next_ vector) to
     // next proc
-    bool procDone = globalNewtonFinished();
+    bool procDone = global_newton_finished();
 
 #ifdef DEBUG_SEMILAGRANGE
     if (procDone)
@@ -446,10 +447,10 @@ void XFEM::XfluidSemiLagrange::compute(
   {
     //===================================================================
     //                     PARALLEL COMMUNICATION
-    exportAlternativAlgoData();  // export data of failed nodes
+    export_alternativ_algo_data();  // export data of failed nodes
     //===================================================================
 
-    getDataForNotConvergedNodes();  // compute final data for failed nodes
+    get_data_for_not_converged_nodes();  // compute final data for failed nodes
   }
 
 
@@ -559,7 +560,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
       //=========================================================
       if (data->changedside_)  // how to continue in newton loop, or stop the newton loop
       {
-        if (!continueForChangingSide(data, ele, nds_curr)) break;
+        if (!continue_for_changing_side(data, ele, nds_curr)) break;
       }
       else  // point did not change the sie
       {
@@ -753,7 +754,7 @@ void XFEM::XfluidSemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to el
 /*------------------------------------------------------------------------------------------------*
  * check if newton iteration searching for the Lagrangian origin has finished        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XfluidSemiLagrange::globalNewtonFinished(int counter) const
+bool XFEM::XfluidSemiLagrange::global_newton_finished(int counter) const
 {
   if (counter == newton_max_iter_ * numproc_) return true;  // maximal number of iterations reached
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
@@ -771,7 +772,7 @@ bool XFEM::XfluidSemiLagrange::globalNewtonFinished(int counter) const
 /*------------------------------------------------------------------------------------------------*
  * Decide how or if to continue when the startpoint approximation changed the side  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XfluidSemiLagrange::continueForChangingSide(
+bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
     TimeIntData* data,  ///< current data to be updated
     DRT::Element* ele,  ///< pointer to element the current point lies in
     std::vector<int>&
@@ -838,7 +839,7 @@ bool XFEM::XfluidSemiLagrange::continueForChangingSide(
 /*------------------------------------------------------------------------------------------------*
  * Computing final data where Semi-Lagrangian approach failed                        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::getDataForNotConvergedNodes()
+void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
@@ -885,13 +886,13 @@ void XFEM::XfluidSemiLagrange::getDataForNotConvergedNodes()
   }    // end loop over nodes
 
   return;
-}  // end getDataForNotConvergedNodes
+}  // end get_data_for_not_converged_nodes
 
 
 /*------------------------------------------------------------------------------------------------*
  * rewrite data for new computation                                                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::newIteration_prepare(
+void XFEM::XfluidSemiLagrange::new_iteration_prepare(
     std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors)
 {
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
@@ -903,8 +904,8 @@ void XFEM::XfluidSemiLagrange::newIteration_prepare(
     data->presValues_.clear();
   }
 
-  newIteration_nodalData(newRowVectors);  // data at t^n+1 not used in predictor
-  newRowVectors.clear();                  // no more needed
+  new_iteration_nodal_data(newRowVectors);  // data at t^n+1 not used in predictor
+  newRowVectors.clear();                    // no more needed
 }
 
 
@@ -912,7 +913,7 @@ void XFEM::XfluidSemiLagrange::newIteration_prepare(
 /*------------------------------------------------------------------------------------------------*
  * compute Gradients at side-changing nodes                                          schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::newIteration_nodalData(
+void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors)
 {
   const int nsd = 3;
@@ -1016,7 +1017,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
     if (eles_avg.size() == 0) FOUR_C_THROW("there is no element for averaging");
 
     // compute the nodal gradients for velocity/acc and pressure component
-    computeNodalGradient(newColVectors, node, eles_avg, eles_avg_nds, *dofset_new_,
+    compute_nodal_gradient(newColVectors, node, eles_avg, eles_avg_nds, *dofset_new_,
         avg_nodevelgraddata, avg_nodepresgraddata);
 
 
@@ -1043,7 +1044,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
     // the first vector contains the velocity information
     CORE::LINALG::Matrix<3, 1> nodevel(true);
     CORE::LINALG::Matrix<1, 1> nodepre(true);
-    extractNodalValuesFromVector<1>(nodevel, nodepre, newColVectors[0], lm);
+    extract_nodal_values_from_vector<1>(nodevel, nodepre, newColVectors[0], lm);
 
     data->vel_ = nodevel;
 
@@ -1054,7 +1055,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
       // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
 
       CORE::LINALG::Matrix<1, 1> nodepredummy(true);
-      extractNodalValuesFromVector<1>(nodedispnp, nodepredummy, dispnp_, lm);
+      extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
     }
 
     data->dispnp_ = nodedispnp;
@@ -1337,10 +1338,10 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
   //-------------------------------------------------------
   // all vectors are based on the same map
 
-  extractNodalValuesFromVector<numnode>(nodevel, nodepre, veln_, lm);
+  extract_nodal_values_from_vector<numnode>(nodevel, nodepre, veln_, lm);
 
   for (size_t index = 0; index < oldVectors_.size(); index++)
-    extractNodalValuesFromVector<numnode>(
+    extract_nodal_values_from_vector<numnode>(
         nodeveldata[index], nodepresdata[index], oldVectors_[index], lm);
 
 
@@ -1434,7 +1435,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
     if (eles_avg.size() == 0) FOUR_C_THROW("there is no element for averaging");
 
     // compute the nodal gradients for velocity/acc and pressure component
-    computeNodalGradient(oldVectors_, node, eles_avg, eles_avg_nds, *dofset_old_,
+    compute_nodal_gradient(oldVectors_, node, eles_avg, eles_avg_nds, *dofset_old_,
         avg_nodevelgraddata[inode], avg_nodepresgraddata[inode]);
   }
   //----------------------------------------------------------------------------------
@@ -1666,7 +1667,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
 /*------------------------------------------------------------------------------------------------*
  * compute gradients at nodes for that SL-reconstruction is called                   schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::computeNodalGradient(
+void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
         colVectors,                    ///< all vectors for that we reconstruct the their gradients
     DRT::Node* node,                   ///< node at which we reconstruct the gradients
@@ -1766,7 +1767,7 @@ double XFEM::XfluidSemiLagrange::Theta(TimeIntData* data) const
 /*------------------------------------------------------------------------------------------------*
  * export alternative algo data to neighbour proc                                    schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::exportAlternativAlgoData()
+void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
@@ -1887,7 +1888,7 @@ void XFEM::XfluidSemiLagrange::exportAlternativAlgoData()
     // processors wait for each other
     discret_->Comm().Barrier();
   }  // end loop over processors
-}  // end exportAlternativAlgoData
+}  // end export_alternativ_algo_data
 
 
 

@@ -123,7 +123,7 @@ namespace DRT
           const std::vector<double>& invfval,
           const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
 
-      void CalcMatAndRhsOutsideScalarLoop(CORE::LINALG::SerialDenseMatrix& emat,
+      void calc_mat_and_rhs_outside_scalar_loop(CORE::LINALG::SerialDenseMatrix& emat,
           CORE::LINALG::SerialDenseVector& erhs, const double fac, const double timefacfac,
           const double rhsfac) override;
 
@@ -143,7 +143,7 @@ namespace DRT
       double CalcFreeCharge(const double concentration);
 
       //! Calculate derivative of free charge w.r.t. concentration
-      double CalcFreeChargeDerConc();
+      double calc_free_charge_der_conc();
 
       /*========================================================================*/
       //! @name additional service routines
@@ -251,10 +251,10 @@ namespace DRT
       //! @name output
       /*========================================================================*/
 
-      void OutputTransportParams(const int numscal) override
+      void output_transport_params(const int numscal) override
       {
         // call base class routine
-        dmdiffcond::OutputTransportParams(numscal);
+        dmdiffcond::output_transport_params(numscal);
 
         // additional outputs
         std::cout << "maximum concentration:    " << c_max_ << std::endl;

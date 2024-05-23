@@ -162,7 +162,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
-    // my::rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd,pnen>(pedispnp);
+    // my::rotsymmpbc_->template rotate_my_values_if_necessary<pnsd,pnen>(pedispnp);
 
     pxyze += pedispnp;
   }

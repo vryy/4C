@@ -98,7 +98,7 @@ namespace DRT
         ) const override;
 
         //! get interface velocity gradient at current time step
-        void GetInterfaceVelGradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
+        void get_interface_vel_gradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const override;
 
@@ -112,7 +112,7 @@ namespace DRT
         ) const override;
 
         //! get interface velocity gradient at previous time step
-        void GetInterfaceVelGradn(CORE::LINALG::Matrix<nsd_, nsd_>&
+        void get_interface_vel_gradn(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradintn  ///< interface velocity gradients at coupling slave side
         ) const override;
 
@@ -122,27 +122,27 @@ namespace DRT
         ) const;
 
         //! set state for interface velocity jump
-        void SetInterfaceJumpStatenp(
+        void set_interface_jump_statenp(
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
             ) override;
 
         //! set state for interface velocity jump for previous time step
-        void SetInterfaceJumpStaten(
+        void set_interface_jump_staten(
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
             ) override;
 
         //! get interface velocity jump at Gaussian point
-        void GetInterfaceJumpVelnp(
+        void get_interface_jump_velnp(
             CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                          ///< or prescribed DBC at Gaussian point
         ) const override;
 
         //! get interface velocity jump for previous time step at Gaussian point
-        void GetInterfaceJumpVeln(CORE::LINALG::Matrix<nsd_, 1>&
+        void get_interface_jump_veln(CORE::LINALG::Matrix<nsd_, 1>&
                 ivelintn_jump  ///< cutter element interface velocity jump or
                                ///< prescribed DBC at Gaussian point
         ) const override;
@@ -159,7 +159,7 @@ namespace DRT
             CORE::LINALG::Matrix<nsd_, 1>& rst_slave) override;
 
         //! compute interface force
-        void ComputeInterfaceForce(
+        void compute_interface_force(
             CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
             CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
             const double& fac                         ///< integration factor
@@ -367,14 +367,15 @@ namespace DRT
             ) override;
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
-        void NIT_evaluateCoupling(const CORE::LINALG::Matrix<nsd_, 1>&
-                                      normal,  ///< outward pointing normal (defined by the coupling
-                                               ///< partner, that determines the interface traction)
-            const double& timefacfac,          ///< theta*dt*fac
-            const double& pres_timefacfac,     ///< scaling for pressure part
-            const double& visceff_m,           ///< viscosity in coupling master fluid
-            const double& visceff_s,           ///< viscosity in coupling slave fluid
-            const double& density_m,           ///< fluid density (master) USED IN XFF
+        void nit_evaluate_coupling(
+            const CORE::LINALG::Matrix<nsd_, 1>&
+                normal,                     ///< outward pointing normal (defined by the coupling
+                                            ///< partner, that determines the interface traction)
+            const double& timefacfac,       ///< theta*dt*fac
+            const double& pres_timefacfac,  ///< scaling for pressure part
+            const double& visceff_m,        ///< viscosity in coupling master fluid
+            const double& visceff_s,        ///< viscosity in coupling slave fluid
+            const double& density_m,        ///< fluid density (master) USED IN XFF
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
@@ -399,7 +400,7 @@ namespace DRT
             ) override;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
-        void NIT_evaluateCouplingOldState(
+        void nit_evaluate_coupling_old_state(
             const CORE::LINALG::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
@@ -429,7 +430,7 @@ namespace DRT
 
        private:
         //! evaluate traction-consistency term for Nitsche's method
-        void NIT_Traction_Consistency_Term(
+        void nit_traction_consistency_term(
             const CORE::LINALG::Matrix<nen_, 1>&
                 funct_m_timefacfac_ks,  ///< funct * timefacfac *kappa_s
             const CORE::LINALG::Matrix<slave_nen_, 1>&
@@ -440,7 +441,7 @@ namespace DRT
 
         //! evaluate traction-consistency term for Nitsche's method (for integration by parts
         //! aproach)
-        void NIT_Projected_Traction_Consistency_Term(
+        void nit_projected_traction_consistency_term(
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m_timefacfac_ks,  ///< master shape function derivatives * timefacfac *
                                         ///< kappa_s
@@ -452,7 +453,7 @@ namespace DRT
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with master side's
         //! weighting factor)
-        void NIT_p_Consistency_MasterTerms(const double& pres_m,     ///< master pressure
+        void nit_p_consistency_master_terms(const double& pres_m,    ///< master pressure
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
             const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
             const std::pair<bool, double>& m_row,                    ///< scaling for master row
@@ -463,8 +464,8 @@ namespace DRT
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with slave side's
         //! weighting factor)
-        void NIT_p_Consistency_SlaveTerms(const double& pres_s,  ///< slave pressure
-            const CORE::LINALG::Matrix<nen_, 1>& funct_m,        ///< funct
+        void nit_p_consistency_slave_terms(const double& pres_s,  ///< slave pressure
+            const CORE::LINALG::Matrix<nen_, 1>& funct_m,         ///< funct
             const CORE::LINALG::Matrix<nsd_, 1>&
                 normal_timefacfac_ks,              ///< normal vector * timefacfac
             const std::pair<bool, double>& m_row,  ///< scaling for master row
@@ -475,7 +476,7 @@ namespace DRT
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with master
         //! side's weighting factor)
-        void NIT_p_AdjointConsistency_MasterTerms(
+        void nit_p_adjoint_consistency_master_terms(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
             const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
             const double&
@@ -488,7 +489,7 @@ namespace DRT
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with slave
         //! side's weighting factor)
-        void NIT_p_AdjointConsistency_SlaveTerms(
+        void nit_p_adjoint_consistency_slave_terms(
             const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
             const double&
                 velint_diff_normal_timefacfac,     ///< (velint_m - velint_s) * normal * timefacfac
@@ -500,7 +501,7 @@ namespace DRT
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's
         //! weighting factor)
-        void NIT_visc_Consistency_MasterTerms(
+        void nit_visc_consistency_master_terms(
             const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,     ///< funct_m
             const std::pair<bool, double>& m_row,             ///< scaling for master row
@@ -511,7 +512,7 @@ namespace DRT
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's
         //! weighting factor)
-        void NIT_visc_Consistency_MasterTerms_Projected(
+        void nit_visc_consistency_master_terms_projected(
             const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,      ///< master deriv
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,         ///< funct_m
             const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
@@ -523,18 +524,18 @@ namespace DRT
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's
         //! weighting factor)
-        void NIT_visc_Consistency_SlaveTerms(const CORE::LINALG::Matrix<nsd_, slave_nen_>&
-                                                 derxy_s,  ///< slave shape function derivatives
-            const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
-            const std::pair<bool, double>& m_row,          ///< scaling for master row
-            const std::pair<bool, double>& s_row,          ///< scaling for slave row
-            const std::pair<bool, double>& s_col,          ///< scaling for slave col
-            bool only_rhs = false                          ///< evaluat only rhs
+        void nit_visc_consistency_slave_terms(const CORE::LINALG::Matrix<nsd_, slave_nen_>&
+                                                  derxy_s,  ///< slave shape function derivatives
+            const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< funct_m
+            const std::pair<bool, double>& m_row,           ///< scaling for master row
+            const std::pair<bool, double>& s_row,           ///< scaling for slave row
+            const std::pair<bool, double>& s_col,           ///< scaling for slave col
+            bool only_rhs = false                           ///< evaluat only rhs
         );
 
         //! evaluate solid-consistency term for Nitsche's method (scaled with slave side's weighting
         //! factor)
-        void NIT_solid_Consistency_SlaveTerms(
+        void nit_solid_consistency_slave_terms(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
             const double& timefacfac,                      ///< theta*dt*fac
             const std::pair<bool, double>& m_row,          ///< scaling for master row
@@ -545,7 +546,7 @@ namespace DRT
 
         //! evaluate projected solid-consistency term for Nitsche's method (scaled with slave side's
         //! weighting factor)
-        void NIT_solid_Consistency_SlaveTerms_Projected(
+        void nit_solid_consistency_slave_terms_projected(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,         ///< funct_m
             const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
             const double& timefacfac,                             ///< theta*dt*fac
@@ -557,7 +558,7 @@ namespace DRT
 
         //! evaluate solid-adjoint-consistency term for Nitsche's method (scaled with slave side's
         //! weighting factor)
-        void NIT_solid_AdjointConsistency_SlaveTerms(
+        void nit_solid_adjoint_consistency_slave_terms(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,      ///< funct_m
             const double& timefacfac,                          ///< theta*dt*fac
             const CORE::LINALG::Matrix<nsd_, 1>& velint_diff,  ///< (velint_m - velint_s)
@@ -571,7 +572,7 @@ namespace DRT
 
         //! evaluate projected solid-adjoint-consistency term for Nitsche's method (scaled with
         //! slave side's weighting factor)
-        void NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+        void nit_solid_adjoint_consistency_slave_terms_projected(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
             const double& timefacfac,                               ///< theta*dt*fac
             const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,    ///< projection matrix
@@ -586,7 +587,7 @@ namespace DRT
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master
         //! side's weighting factor)
-        void NIT_visc_AdjointConsistency_MasterTerms(
+        void nit_visc_adjoint_consistency_master_terms(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
@@ -600,7 +601,7 @@ namespace DRT
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master
         //! side's weighting factor)
-        void NIT_visc_AdjointConsistency_MasterTerms_Projected(
+        void nit_visc_adjoint_consistency_master_terms_projected(
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac *
                                               ///< 2 * mu_m * kappa_m
@@ -612,7 +613,7 @@ namespace DRT
         );
 
         //! evaluate traction-traction term
-        void NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
+        void nit_visc_neumann_adjoint_consistency_master_terms_projected(
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac *
                                               ///< 2 * mu_m * kappa_m
@@ -628,7 +629,7 @@ namespace DRT
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's
         //! weighting factor)
-        void NIT_visc_AdjointConsistency_SlaveTerms(
+        void nit_visc_adjoint_consistency_slave_terms(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
             const CORE::LINALG::Matrix<nsd_, slave_nen_>&
                 derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac *
@@ -651,7 +652,7 @@ namespace DRT
         );
 
         //!  evaluate linearization of Nitsche's penalty term
-        void NIT_Stab_Penalty_lin(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+        void nit_stab_penalty_lin(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
             const double& timefacfac,              ///< time integration factor
             const std::pair<bool, double>& m_row,  ///< scaling for master row
             const std::pair<bool, double>&
@@ -664,7 +665,7 @@ namespace DRT
         );
 
         //!  evaluate Nitsche's penalty term
-        void NIT_Stab_Penalty_Projected(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+        void nit_stab_penalty_projected(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
             const CORE::LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
             const CORE::LINALG::Matrix<nsd_, 1>&
                 velint_diff_proj_matrix,           ///< velocity difference projected
@@ -677,7 +678,7 @@ namespace DRT
 
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid
         //! only)
-        void NIT_Stab_Inflow_AveragedTerm(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+        void nit_stab_inflow_averaged_term(const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
             const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< master velocity
             const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^m
             const double& density,                          ///< fluid density
@@ -686,7 +687,7 @@ namespace DRT
         );
 
         //! Do Nitsche consistency and adjoint consistency terms with projection
-        void Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
+        void do_nit_visc_adjoint_and_neumann_master_terms_projected(
             const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
             const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
@@ -705,12 +706,13 @@ namespace DRT
 
 
        private:
-        void NIT_Create_Standard_Projection_Matrices(
+        void nit_create_standard_projection_matrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal  ///< normal vector
         );
 
         // Get the stabilization parameters for the specific problem.
-        void GetStabilizationParameters(const double& NIT_full_stab_fac,  ///< full Nitsche stab fac
+        void get_stabilization_parameters(
+            const double& NIT_full_stab_fac,  ///< full Nitsche stab fac
             const double& NIT_visc_stab_fac,  ///< viscous Nitsche stab fac
             double& stabnit,                  ///< stabilization factor NIT_Penalty
             double& stabepsnit,               ///< stabilization factor NIT_Penalty Neumann
@@ -949,7 +951,7 @@ namespace DRT
 
         //! evaluate interface coupling matrices for mixed/hybrid Cauchy stress-based (MHCS)
         //! coupling
-        void MHCS_buildCouplingMatrices(
+        void mhcs_build_coupling_matrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
             const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
@@ -962,7 +964,7 @@ namespace DRT
             ) override;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
-        void MHVS_buildCouplingMatrices(
+        void mhvs_build_coupling_matrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
             const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
@@ -978,7 +980,7 @@ namespace DRT
             ) override;
 
         //! apply the standard consistency traction interface jump term
-        void MH_Traction_Consistency_Term(
+        void mh_traction_consistency_term(
             const CORE::LINALG::Matrix<slave_nen_, 1>&
                 funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
             const CORE::LINALG::Matrix<nsd_, 1>&
@@ -987,7 +989,7 @@ namespace DRT
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based
         //! coupling (MHCS or MHVS)
-        void HybridLM_buildFinalCouplingMatrices(
+        void hybrid_lm_build_final_coupling_matrices(
             CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
                 numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
             CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,

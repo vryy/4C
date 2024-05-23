@@ -149,9 +149,9 @@ namespace ADAPTER
     }
 
     // access to contact/meshtying bridge
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
     {
-      return structure_->MeshtyingContactBridge();
+      return structure_->meshtying_contact_bridge();
     }
 
     // access to locsys manager
@@ -179,15 +179,15 @@ namespace ADAPTER
     bool HaveSpringDashpot() override { return structure_->HaveSpringDashpot(); }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
-      return structure_->GetConstraintManager();
+      return structure_->get_constraint_manager();
     }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
-      return structure_->GetSpringDashpotManager();
+      return structure_->get_spring_dashpot_manager();
     }
 
     /// get type of thickness scaling for thin shell structures
@@ -288,14 +288,14 @@ namespace ADAPTER
     void PrepareTimeStep() override { structure_->PrepareTimeStep(); }
 
     /// update displacment
-    void UpdateStateIncrementally(
+    void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
         ) override
     {
-      structure_->UpdateStateIncrementally(disi);
+      structure_->update_state_incrementally(disi);
     }
 
-    void DetermineStressStrain() override { structure_->DetermineStressStrain(); }
+    void determine_stress_strain() override { structure_->determine_stress_strain(); }
 
     /// update displacement and evaluate elements (implicit only)
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
@@ -317,15 +317,15 @@ namespace ADAPTER
 
     /// update iteration; add residual increment to Lagrange multipliers stored in Constraint
     /// manager
-    void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) override
+    void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) override
     {
-      structure_->UpdateIterIncrConstr(lagrincr);
+      structure_->update_iter_incr_constr(lagrincr);
     }
 
     /// update iteration; add residual increment to pressures stored in 0D cardiovascular manager
-    void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) override
+    void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override
     {
-      structure_->UpdateIterIncrCardiovascular0D(presincr);
+      structure_->update_iter_incr_cardiovascular0_d(presincr);
     }
 
     /// access to output object
@@ -353,7 +353,7 @@ namespace ADAPTER
     }
 
     /// Write Gmsh output for structural field
-    void WriteGmshStrucOutputStep() override { structure_->WriteGmshStrucOutputStep(); }
+    void write_gmsh_struc_output_step() override { structure_->write_gmsh_struc_output_step(); }
 
     /// output results to screen
     void PrintStep() override { structure_->PrintStep(); }
@@ -407,9 +407,9 @@ namespace ADAPTER
     INPAR::STR::ConvergenceStatus Solve() override { return structure_->Solve(); }
 
     //! linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
+    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
     {
-      return structure_->SolveRelaxationLinear();
+      return structure_->solve_relaxation_linear();
     }
 
     /// get the linear solver object used for this field
@@ -432,7 +432,7 @@ namespace ADAPTER
 
     //! specific method for iterative staggered partitioned TSI
     //! will be obsolete after switch to new structural timint.
-    void PreparePartitionStep() override { structure_->PreparePartitionStep(); }
+    void prepare_partition_step() override { structure_->prepare_partition_step(); }
 
     //@}
 
@@ -512,9 +512,9 @@ namespace ADAPTER
       return structure_->ModelEvaluator(mtype);
     }
 
-    [[nodiscard]] bool HasFinalStateBeenWritten() const override
+    [[nodiscard]] bool has_final_state_been_written() const override
     {
-      return structure_->HasFinalStateBeenWritten();
+      return structure_->has_final_state_been_written();
     }
 
    protected:

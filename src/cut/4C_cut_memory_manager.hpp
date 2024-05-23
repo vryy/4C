@@ -243,7 +243,7 @@ namespace CORE::GEO
       // zeroing out all the allocation
       void ResetAllocated();
 
-      GenericMemoryPool& GetMemoryPoolAllocator()
+      GenericMemoryPool& get_memory_pool_allocator()
       {
         if (mem_ == nullptr)
           FOUR_C_THROW("Memory pool allocator was not yet created");
@@ -324,7 +324,7 @@ namespace CORE::GEO
       // zeroing out all the allocation statics
       void ResetAllocated();
 
-      NormalMemoryAllocator& GetNormalMemoryAllocator()
+      NormalMemoryAllocator& get_normal_memory_allocator()
       {
         if (state_ == normal)
           return (*dynamic_cast<NormalMemoryAllocator*>(mem_));
@@ -332,7 +332,7 @@ namespace CORE::GEO
           return (*dynamic_cast<NormalMemoryAllocator*>(prev_));
       }
 
-      GenericMemoryPool& GetMemoryPoolAllocator()
+      GenericMemoryPool& get_memory_pool_allocator()
       {
         if (state_ == normal)
         {

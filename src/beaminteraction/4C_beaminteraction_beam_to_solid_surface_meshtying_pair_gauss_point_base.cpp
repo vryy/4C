@@ -61,7 +61,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
   double segment_jacobian = 0.0;
   double beam_segmentation_factor = 0.0;
   double penalty_parameter =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetPenaltyParameter();
+      this->Params()->beam_to_solid_surface_meshtying_params()->GetPenaltyParameter();
 
   // Integrate over segments.
   const unsigned int n_segments = this->line_to_3D_segments_.size();

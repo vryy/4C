@@ -36,7 +36,7 @@ namespace MAT
       // loop map of associated potential summands
       for (const auto& p : potsum)
       {
-        p->AddDerivativesPrincipal(dPI_full, ddPII_full, prinv, gp, eleGID);
+        p->add_derivatives_principal(dPI_full, ddPII_full, prinv, gp, eleGID);
       }
     }
 
@@ -46,7 +46,7 @@ namespace MAT
       // loop map of associated potential summands
       for (const auto& p : potsum)
       {
-        p->AddDerivativesModified(dPI_full, ddPII_full, prinv, gp, eleGID);
+        p->add_derivatives_modified(dPI_full, ddPII_full, prinv, gp, eleGID);
       }
     }
 

@@ -45,13 +45,13 @@ namespace PARTICLEINTERACTION
     virtual void Setup();
 
     //! get kernel space dimension
-    virtual void KernelSpaceDimension(int& dim) const final;
+    virtual void kernel_space_dimension(int& dim) const final;
 
     //! get smoothing length from kernel support radius
     virtual double SmoothingLength(const double& support) const = 0;
 
     //! get normalization constant from inverse smoothing length
-    virtual double NormalizationConstant(const double& inv_h) const = 0;
+    virtual double normalization_constant(const double& inv_h) const = 0;
 
     //! evaluate kernel (self-interaction)
     virtual double W0(const double& support) const = 0;
@@ -84,7 +84,7 @@ namespace PARTICLEINTERACTION
     double SmoothingLength(const double& support) const override;
 
     //! get normalization constant from inverse smoothing length
-    double NormalizationConstant(const double& inv_h) const override;
+    double normalization_constant(const double& inv_h) const override;
 
     //! evaluate kernel (self-interaction)
     double W0(const double& support) const override;
@@ -109,7 +109,7 @@ namespace PARTICLEINTERACTION
     double SmoothingLength(const double& support) const override;
 
     //! get normalization constant from inverse smoothing length
-    double NormalizationConstant(const double& inv_h) const override;
+    double normalization_constant(const double& inv_h) const override;
 
     //! evaluate kernel (self-interaction)
     double W0(const double& support) const override;

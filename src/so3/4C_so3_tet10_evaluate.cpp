@@ -41,9 +41,9 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.values(), true);
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           }
 
           // push-forward invJ for every gaussian point
-          UpdateJacobianMapping(mydisp, *prestress_);
+          update_jacobian_mapping(mydisp, *prestress_);
 
           // Update constraintmixture material
           if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -434,7 +434,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -557,17 +557,18 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
-          NUMGPT_SOTET10);
+      StrParamsInterface()
+          .gauss_point_data_output_manager_ptr()
+          ->add_element_number_of_gauss_points(NUMGPT_SOTET10);
 
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
 
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterOutputDataNames(quantities_map);
+      SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
     case struct_gauss_point_data_output:
@@ -577,7 +578,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -590,26 +591,30 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->get_element_center_data()
+                      .at(quantity_name);
               CORE::FE::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
-                      quantity_name);
+                  *StrParamsInterface()
+                       .gauss_point_data_output_manager_ptr()
+                       ->GetNodalDataCount()
+                       .at(quantity_name);
 
               static auto gauss_integration = CORE::FE::IntegrationPoints3D(
                   CORE::FE::NumGaussPointsToGaussRule<CORE::FE::CellType::tet10>(NUMGPT_SOTET10));
@@ -621,8 +626,10 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->GetGaussPointData()
+                      .at(quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
@@ -1014,7 +1021,7 @@ void DRT::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // loc
       params.set("gp_coords_ref", point);
     }
 
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet10>(
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::tet10>(
         shapefcts_4gp[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1507,7 +1514,7 @@ void DRT::ELEMENTS::SoTet10::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet10::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoTet10::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
@@ -1583,7 +1590,7 @@ void DRT::ELEMENTS::SoTet10::Update_element(std::vector<double>& disp,
       CORE::LINALG::Matrix<3, 10> derivs(false);
       so_tet10_derivs<CORE::FE::GaussRule3D::tet_4point>(derivs, gp);
 
-      UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet10>(
+      UTILS::compute_deformation_gradient<CORE::FE::CellType::tet10>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
 
 

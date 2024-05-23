@@ -96,36 +96,36 @@ namespace STR
 
       void UpdateStepElement() override;
 
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       void DetermineEnergy() override;
 
-      void DetermineOptionalQuantity() override;
+      void determine_optional_quantity() override;
 
       void ResetStepState() override;
 
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
-      void RuntimePreOutputStepState() override;
+      void runtime_pre_output_step_state() override;
 
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       void PostOutput() override;
 
-      void EvaluateJacobianContributionsFromElementLevelForPTC() override;
+      void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
-      void AssembleJacobianContributionsFromElementLevelForPTC(
+      void assemble_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
 
       void CreateBackupState(const Epetra_Vector& dir) override;
 
-      void RecoverFromBackupState() override;
+      void recover_from_backup_state() override;
       //! @}
 
      private:
@@ -136,7 +136,7 @@ namespace STR
       void SetSubModelTypes();
 
       //! build, init and setup submodel evaluator
-      void CreateSubModelEvaluators();
+      void create_sub_model_evaluators();
 
       //! @}
 

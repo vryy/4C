@@ -35,7 +35,7 @@ namespace CONTACT
 
 
       /// create constitutive law instance of matching type with my parameters
-      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
+      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
@@ -73,7 +73,7 @@ namespace CONTACT
       //! @name Access methods
 
       /// return contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
+      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational;
       }

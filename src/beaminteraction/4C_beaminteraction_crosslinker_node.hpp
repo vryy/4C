@@ -258,7 +258,7 @@ namespace CROSSLINKING
     //   is initialized.
     //
     //   */
-    //  virtual void InitializeDataContainer();
+    //  virtual void initialize_data_container();
 
     /*!
      \brief Set material for crosslinker node

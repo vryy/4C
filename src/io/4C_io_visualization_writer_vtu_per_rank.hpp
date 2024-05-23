@@ -42,7 +42,7 @@ namespace IO
     /**
      * @brief Write all fields contained in the field data map to disk (derived)
      */
-    void WriteFieldDataToDisk(
+    void write_field_data_to_disk(
         const std::map<std::string, visualization_vector_type_variant>& field_data_map) override;
 
     /**
@@ -58,13 +58,13 @@ namespace IO
     /**
      * @brief Write a single point data vector to disk (derived)
      */
-    void WritePointDataVectorToDisk(const visualization_vector_type_variant& data,
+    void write_point_data_vector_to_disk(const visualization_vector_type_variant& data,
         unsigned int num_components_per_point, const std::string& name) override;
 
     /**
      * @brief Write a single cell data vector to disk (derived)
      */
-    void WriteCellDataVectorToDisk(const visualization_vector_type_variant& data,
+    void write_cell_data_vector_to_disk(const visualization_vector_type_variant& data,
         unsigned int num_components_per_point, const std::string& name) override;
 
     /**

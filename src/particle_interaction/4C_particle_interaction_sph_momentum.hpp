@@ -92,31 +92,31 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
 
     //! insert momentum evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! add momentum contribution to acceleration field
-    void AddAccelerationContribution() const;
+    void add_acceleration_contribution() const;
 
    private:
     //! init momentum formulation handler
-    void InitMomentumFormulationHandler();
+    void init_momentum_formulation_handler();
 
     //! init artificial viscosity handler
-    void InitArtificialViscosityHandler();
+    void init_artificial_viscosity_handler();
 
     //! setup particle interaction writer
-    void SetupParticleInteractionWriter();
+    void setup_particle_interaction_writer();
 
     //! momentum equation (particle contribution)
-    void MomentumEquationParticleContribution() const;
+    void momentum_equation_particle_contribution() const;
 
     //! momentum equation (particle-boundary contribution)
-    void MomentumEquationParticleBoundaryContribution() const;
+    void momentum_equation_particle_boundary_contribution() const;
 
     //! momentum equation (particle-wall contribution)
-    void MomentumEquationParticleWallContribution() const;
+    void momentum_equation_particle_wall_contribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

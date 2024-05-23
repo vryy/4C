@@ -50,7 +50,7 @@ namespace DRT::ELEMENTS
    * evaluation of the deformation gradient at a specific position @p xi. Additionally, it has to
    * provide @p Prepare(...) for eventual preparation of data that is constant. It should return the
    * type @p PreparationData that is passed to every subsequent call. The static functions
-   * @p AddInternalForceVector(...) and @p AddStiffnessMatrix(...) are adding the gauss point
+   * @p add_internal_force_vector(...) and @p AddStiffnessMatrix(...) are adding the gauss point
    * contribution to the force vector or stiffness matrix, respectively. Some element formulations
    * require to store data @p HistoryData. This type needs to be default constructable. The static
    * member functions @p Pack(...) and @p Unpack(...) need to be defined to allow parallel
@@ -74,7 +74,7 @@ namespace DRT::ELEMENTS
 
     void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-    void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+    void evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
         MAT::So3Material& solid_material, const DRT::Discretization& discretization,
         const std::vector<int>& lm, Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseVector* force_vector,
@@ -93,15 +93,15 @@ namespace DRT::ELEMENTS
         const DRT::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
 
-    double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
+    double calculate_internal_energy(const DRT::Element& ele, MAT::So3Material& solid_material,
         const DRT::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
 
-    void InitializeGaussPointDataOutput(const DRT::Element& ele,
+    void initialize_gauss_point_data_output(const DRT::Element& ele,
         const MAT::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-    void EvaluateGaussPointDataOutput(const DRT::Element& ele,
+    void evaluate_gauss_point_data_output(const DRT::Element& ele,
         const MAT::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
         const DRT::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params);
 
-    void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
+    void reset_to_last_converged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
     double GetCauchyNDirAtXi(const DRT::Element& ele, MAT::So3Material& solid_material,
         const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& xi,

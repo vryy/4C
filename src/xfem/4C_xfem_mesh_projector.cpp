@@ -38,7 +38,7 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
       searchradius_fac_(
           params.sublist("XFLUID DYNAMIC/GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"))
 {
-  SetSourcePositionVector(sourcedisp);
+  set_source_position_vector(sourcedisp);
   // in case the source discretization is empty on this proc
   if (!sourcedis_->NumMyRowElements())
   {
@@ -66,7 +66,7 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
   }
 }
 
-void XFEM::MeshProjector::SetSourcePositionVector(Teuchos::RCP<const Epetra_Vector> sourcedisp)
+void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_Vector> sourcedisp)
 {
   src_nodepositions_n_.clear();
   // set position of source nodes
@@ -254,7 +254,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
     CommunicateNodes(tar_nodepositions_n, interpolated_vecs, projection_targetnodes, have_values);
   else
   {
-    FindCoveringElementsAndInterpolateValues(
+    find_covering_elements_and_interpolate_values(
         tar_nodepositions_n, interpolated_vecs, projection_targetnodes, have_values);
   }
 
@@ -299,7 +299,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
   }
 }
 
-void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
+void XFEM::MeshProjector::project_in_full_target_discretization(
     std::vector<Teuchos::RCP<Epetra_Vector>> target_statevecs,
     Teuchos::RCP<const Epetra_Vector> targetdisp)
 {
@@ -325,7 +325,7 @@ void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
 }
 
 template <CORE::FE::CellType distype>
-bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
+bool XFEM::MeshProjector::check_position_and_project(const DRT::Element* src_ele,
     const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
@@ -391,7 +391,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
   return inside;
 }
 
-void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
+void XFEM::MeshProjector::find_covering_elements_and_interpolate_values(
     std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
     std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
     std::vector<int>& projection_targetnodes, std::vector<int>& have_values)
@@ -407,7 +407,7 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
     CORE::LINALG::Matrix<8, 1> interpolatedvec(true);
 
     // search for near elements
-    std::map<int, std::set<int>> closeeles = search_tree_->searchElementsInRadius(
+    std::map<int, std::set<int>> closeeles = search_tree_->search_elements_in_radius(
         *sourcedis_, src_nodepositions_n_, node_xyz, searchradius_, 0);
 
     if (closeeles.empty())
@@ -428,16 +428,16 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
         switch (pele->Shape())
         {
           case CORE::FE::CellType::hex8:
-            insideelement =
-                CheckPositionAndProject<CORE::FE::CellType::hex8>(pele, node_xyz, interpolatedvec);
+            insideelement = check_position_and_project<CORE::FE::CellType::hex8>(
+                pele, node_xyz, interpolatedvec);
             break;
           case CORE::FE::CellType::hex20:
-            insideelement =
-                CheckPositionAndProject<CORE::FE::CellType::hex20>(pele, node_xyz, interpolatedvec);
+            insideelement = check_position_and_project<CORE::FE::CellType::hex20>(
+                pele, node_xyz, interpolatedvec);
             break;
           case CORE::FE::CellType::hex27:
-            insideelement =
-                CheckPositionAndProject<CORE::FE::CellType::hex27>(pele, node_xyz, interpolatedvec);
+            insideelement = check_position_and_project<CORE::FE::CellType::hex27>(
+                pele, node_xyz, interpolatedvec);
             break;
           default:
             FOUR_C_THROW(
@@ -509,7 +509,7 @@ void XFEM::MeshProjector::CommunicateNodes(
     {
       // -----------------------
       // do what we wanted to do
-      FindCoveringElementsAndInterpolateValues(
+      find_covering_elements_and_interpolate_values(
           tar_nodepositions, interpolated_vecs, projection_targetnodes, have_values);
 
       // Pack info into block to send it

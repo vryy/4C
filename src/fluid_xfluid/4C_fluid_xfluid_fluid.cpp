@@ -81,7 +81,7 @@ void FLD::XFluidFluid::Init(bool createinitialstate)
   XFluid::Init(false);
 
   // set parameters specific for fluid-fluid coupling
-  SetXFluidFluidParams();
+  set_x_fluid_fluid_params();
 
 
   if (createinitialstate) CreateInitialState();
@@ -97,17 +97,17 @@ void FLD::XFluidFluid::CreateInitialState()
   if (CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error") !=
       INPAR::FLUID::no_error_calculation)
   {
-    mc_xff_->RedistributeForErrorCalculation();
+    mc_xff_->redistribute_for_error_calculation();
   }
 
   // recreate internal faces of DiscretizationFaces (as the distribution of the embedded
   // discretization may have changed)
   if (CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error") !=
           INPAR::FLUID::no_error_calculation ||
-      mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
-      mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Mean)
+      mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided ||
+      mc_xff_->get_averaging_strategy() == INPAR::XFEM::Mean)
   {
-    embedded_fluid_->CreateFacesExtension();
+    embedded_fluid_->create_faces_extension();
   }
 
   // create internal faces for embedded discretization afterwards, if not full EOS on embedded
@@ -120,7 +120,7 @@ void FLD::XFluidFluid::CreateInitialState()
       Teuchos::RCP<DRT::DiscretizationFaces> facediscret =
           Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(
               embedded_fluid_->Discretization(), true);
-      facediscret->CreateInternalFacesExtension(true);
+      facediscret->create_internal_faces_extension(true);
     }
   }
 
@@ -149,10 +149,10 @@ void FLD::XFluidFluid::UseBlockMatrix(bool splitmatrix)
   if (splitmatrix)
     xff_state_->xffluidsysmat_ =
         Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
-            *XFluidFluidMapExtractor(), *XFluidFluidMapExtractor(), 108, false, true));
+            *x_fluid_fluid_map_extractor(), *x_fluid_fluid_map_extractor(), 108, false, true));
 }
 
-void FLD::XFluidFluid::SetXFluidFluidParams()
+void FLD::XFluidFluid::set_x_fluid_fluid_params()
 {
   Teuchos::ParameterList& params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
 
@@ -237,13 +237,13 @@ void FLD::XFluidFluid::Evaluate(
         xff_state_->xffluidincvel_);
 
     // update embedded fluid solution by increment
-    embedded_fluid_->UpdateIterIncrementally(
+    embedded_fluid_->update_iter_incrementally(
         xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
   }
 
-  if (mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided and nitsche_evp_)
+  if (mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided and nitsche_evp_)
   {
-    mc_xff_->ResetEvaluatedTraceEstimates();
+    mc_xff_->reset_evaluated_trace_estimates();
     if (ale_embfluid_)
       embedded_fluid_->Discretization()->SetState("dispnp", embedded_fluid_->Dispnp());
   }
@@ -324,7 +324,8 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::GetNewState()
 
   if (ale_embfluid_)
   {
-    mc_xff_->UpdateDisplacementIterationVectors();  // update last iteration interface displacements
+    mc_xff_
+        ->update_displacement_iteration_vectors();  // update last iteration interface displacements
     CORE::LINALG::Export(*embedded_fluid_->Dispnp(), *mc_xff_->IDispnp());
   }
 
@@ -341,7 +342,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::GetNewState()
   stepinc_ = CORE::LINALG::CreateVector(*state->xffluiddofrowmap_, true);
 
   // build a merged map from fluid-fluid dbc-maps
-  state->CreateMergedDBCMapExtractor(embedded_fluid_->GetDBCMapExtractor());
+  state->create_merged_dbc_map_extractor(embedded_fluid_->GetDBCMapExtractor());
 
   return state;
 }
@@ -369,7 +370,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS(int itnum  ///< iteration number
   // evaluate elements of embedded fluid
   embedded_fluid_->PrepareSolve();
 
-  if (mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
+  if (mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided)
   {
     mc_xff_->GetCouplingDis()->ClearState();
     // set velocity and displacement state for embedded fluid
@@ -395,7 +396,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS(int itnum  ///< iteration number
       xff_state_->residual_, xff_state_->xffluidresidual_);
 
   // add coupling contribution to embedded residual
-  const int mc_idx = condition_manager_->GetMeshCouplingIndex(cond_name_);
+  const int mc_idx = condition_manager_->get_mesh_coupling_index(cond_name_);
   Teuchos::RCP<XFluidState::CouplingState>& coup_state = xff_state_->coup_state_[mc_idx];
 
   {
@@ -417,7 +418,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS(int itnum  ///< iteration number
   // layer of embedded fluid
   if (xff_eos_pres_emb_layer_)
   {
-    AddEosPresStabToEmbLayer();
+    add_eos_pres_stab_to_emb_layer();
   }
 
   // add embedded part of merged residual
@@ -456,7 +457,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS(int itnum  ///< iteration number
   xff_state_->xffluidsysmat_->Complete();
 }
 
-void FLD::XFluidFluid::PrepareShapeDerivatives(
+void FLD::XFluidFluid::prepare_shape_derivatives(
     const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fsiextractor,
     const Teuchos::RCP<std::set<int>> condelements)
 {
@@ -490,7 +491,7 @@ void FLD::XFluidFluid::UpdateByIncrement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
+void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 {
   if (ale_embfluid_)
     embedded_fluid_->Discretization()->SetState("gridv", embedded_fluid_->GridVel());
@@ -532,8 +533,8 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
     DRT::Element* actface = xdiscret->lRowFace(i);
     DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
     if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
-    edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, xdiscret,
-        mc_xff_->GetAuxiliaryDiscretization(), ele, sysmat_linalg, residual_col);
+    edgestab_->evaluate_edge_stab_boundary_gp(faceparams, xdiscret,
+        mc_xff_->get_auxiliary_discretization(), ele, sysmat_linalg, residual_col);
   }
 
   //------------------------------------------------------------
@@ -557,7 +558,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
+bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
     const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
     std::vector<Teuchos::RCP<Epetra_Vector>>& newRowStateVectors,  ///< vectors to be reconstructed
     Teuchos::RCP<const Epetra_Vector> target_dispnp,  ///< displacement col - vector timestep n+1
@@ -575,12 +576,12 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
 
   // get set of node-ids, that demand projection from embedded discretization
   std::map<int, std::set<int>>& projection_nodeToDof =
-      xfluid_timeint->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
+      xfluid_timeint->get_node_to_dof_map_for_reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
   Teuchos::RCP<const Epetra_Vector> disp =
       CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
-  projector_->SetSourcePositionVector(disp);
-  projector_->SetSourceStateVectors(oldStateVectors);
+  projector_->set_source_position_vector(disp);
+  projector_->set_source_state_vectors(oldStateVectors);
 
   projector_->Project(projection_nodeToDof, newRowStateVectors, target_dispnp);
 
@@ -595,7 +596,7 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool FLD::XFluidFluid::XTimint_DoIncrementStepTransfer(
+bool FLD::XFluidFluid::x_timint_do_increment_step_transfer(
     const bool screen_out, const bool firstcall_in_timestep)
 {
   // use increment step transfer if :
@@ -603,7 +604,7 @@ bool FLD::XFluidFluid::XTimint_DoIncrementStepTransfer(
   // - first call in time step to initialize velnp
   if (mc_xff_->HasMovingInterface() || meshcoupl_dis_.size() > 1 || firstcall_in_timestep)
   {
-    return XFluid::XTimint_DoIncrementStepTransfer(screen_out, firstcall_in_timestep);
+    return XFluid::x_timint_do_increment_step_transfer(screen_out, firstcall_in_timestep);
   }
   else
     return true;
@@ -619,7 +620,7 @@ void FLD::XFluidFluid::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::XFluidFluid::UpdateMonolithicFluidSolution(
+void FLD::XFluidFluid::update_monolithic_fluid_solution(
     const Teuchos::RCP<const Epetra_Map>& fsidofmap)
 {
   // manipulate the dbc map extractor
@@ -633,14 +634,14 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution(
       Teuchos::rcp(new CORE::LINALG::MapExtractor(*(embedded_fluid_->DofRowMap()), condmerged));
 
   // DBC map-extractor containing FSI-dof
-  xff_state_->CreateMergedDBCMapExtractor(fsidbcmapex);
+  xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
   Solve();
-  xff_state_->CreateMergedDBCMapExtractor(embedded_fluid_->GetDBCMapExtractor());
+  xff_state_->create_merged_dbc_map_extractor(embedded_fluid_->GetDBCMapExtractor());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
+void FLD::XFluidFluid::interpolate_embedded_state_vectors()
 {
   XFEM::MeshProjector embedded_projector(
       embedded_fluid_->Discretization(), embedded_fluid_->Discretization(), *params_);
@@ -660,23 +661,23 @@ void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
 
   Teuchos::RCP<const Epetra_Vector> srcdisp =
       CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
-  embedded_projector.SetSourcePositionVector(srcdisp);
-  embedded_projector.SetSourceStateVectors(oldStateVectors);
+  embedded_projector.set_source_position_vector(srcdisp);
+  embedded_projector.set_source_state_vectors(oldStateVectors);
 
   Teuchos::RCP<const Epetra_Vector> tardisp = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Dispnp());
 
-  embedded_projector.ProjectInFullTargetDiscretization(newRowStateVectors, tardisp);
+  embedded_projector.project_in_full_target_discretization(newRowStateVectors, tardisp);
 
   // embedded_projector.GmshOutput(step_,embedded_fluid_->Dispnp());
 
-  embedded_fluid_->SetOldPartOfRighthandside();
-  embedded_fluid_->SetDirichletNeumannBC();
+  embedded_fluid_->set_old_part_of_righthandside();
+  embedded_fluid_->set_dirichlet_neumann_bc();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_analytical_sol()
 {
   // this function provides a general implementation for calculating error norms between computed
   // solutions and an analytical solution which is implemented or given by a function in the input

@@ -38,29 +38,32 @@ namespace MIXTURE
     {
     }
 
-    [[nodiscard]] Number EvaluateTrueMassProductionRate(Number delta_sig) const
+    [[nodiscard]] Number evaluate_true_mass_production_rate(Number delta_sig) const
     {
       return k_sig_ * delta_sig + 1.0 / decay_time_;
     }
 
-    [[nodiscard]] Number EvaluateTrueMassRemovalRate(Number delta_sig) const
+    [[nodiscard]] Number evaluate_true_mass_removal_rate(Number delta_sig) const
     {
       return -1.0 / decay_time_;
     }
 
-    [[nodiscard]] Number EvaluateDTrueMassProductionRateDSig(Number delta_sig) const
+    [[nodiscard]] Number evaluate_d_true_mass_production_rate_d_sig(Number delta_sig) const
     {
       return k_sig_;
     }
 
-    [[nodiscard]] Number EvaluateDTrueMassRemovalRateDSig(Number delta_sig) const { return 0.0; }
+    [[nodiscard]] Number evaluate_d_true_mass_removal_rate_d_sig(Number delta_sig) const
+    {
+      return 0.0;
+    }
 
-    [[nodiscard]] inline double EvaluateSurvivalFunction(double delta_time) const
+    [[nodiscard]] inline double evaluate_survival_function(double delta_time) const
     {
       return std::exp(-delta_time / decay_time_);
     }
 
-    [[nodiscard]] inline double EvaluateSurvivalFunctionIntegration(
+    [[nodiscard]] inline double evaluate_survival_function_integration(
         const double current_time, const double t1, const double t2) const
     {
       return decay_time_ * (std::exp(-(current_time - t2) / decay_time_) -

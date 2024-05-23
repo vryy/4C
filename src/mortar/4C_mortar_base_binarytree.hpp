@@ -293,7 +293,7 @@ namespace MORTAR
     \brief Initialize internal variables
 
      */
-    virtual void InitInternalVariables() = 0;
+    virtual void init_internal_variables() = 0;
 
     //! interface discretization
     DRT::Discretization& idiscret_;

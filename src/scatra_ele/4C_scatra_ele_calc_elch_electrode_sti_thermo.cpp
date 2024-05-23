@@ -39,15 +39,15 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::extract_element_and_node_values(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // call base class routine to extract scatra-related quantities
-  myelch::ExtractElementAndNodeValues(ele, params, discretization, la);
+  myelch::extract_element_and_node_values(ele, params, discretization, la);
 
   // call base class routine to extract thermo-related quantitites
-  mythermo::ExtractElementAndNodeValues(ele, params, discretization, la);
+  mythermo::extract_element_and_node_values(ele, params, discretization, la);
 }
 
 
@@ -90,7 +90,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
         myelectrode::DiffManager()->GetIsotropicDiff(0),
-        myelectrode::DiffManager()->GetConcDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
+        myelectrode::DiffManager()->get_conc_deriv_iso_diff_coef(0, 0), VarManager()->Temp(),
         VarManager()->GradTemp(), my::funct_, my::derxy_);
     mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
         myelectrode::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
@@ -117,7 +117,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionO
   {
     case SCATRA::Action::calc_scatra_mono_odblock_scatrathermo:
     {
-      SysmatODScatraThermo(ele, elemat1_epetra);
+      sysmat_od_scatra_thermo(ele, elemat1_epetra);
 
       break;
     }
@@ -141,7 +141,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionO
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatraThermo(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scatra_thermo(
     DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
 {
   // integration points and weights
@@ -152,13 +152,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate overall integration factor
     const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
 
     // evaluate internal variables at current integration point
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // evaluate material parameters at current integration point
     double dummy(0.);
@@ -169,7 +169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
     // potential
     mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
         VarManager()->GradPhi(0), VarManager()->GradPot(),
-        myelectrode::DiffManager()->GetTempDerivIsoDiffCoef(0, 0),
+        myelectrode::DiffManager()->get_temp_deriv_iso_diff_coef(0, 0),
         myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
 
     if (materialtype_ == CORE::Materials::m_soret)
@@ -188,10 +188,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
+    distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
-  VarManager()->SetInternalVariables(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
+  VarManager()->set_internal_variables(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mythermo::etempnp_, my::econvelnp_, my::ehist_);
 }
 

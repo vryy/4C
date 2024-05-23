@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
      * @return Pointer to created assembly manager.
      */
     virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
-    CreateIndirectAssemblyManager(const Teuchos::RCP<const DRT::Discretization>& discret)
+    create_indirect_assembly_manager(const Teuchos::RCP<const DRT::Discretization>& discret)
     {
       return Teuchos::null;
     };
@@ -164,7 +164,7 @@ namespace BEAMINTERACTION
      * @param discret (in) pointer to the discretization
      * @param params (in) Pointer beam contact parameters.
      */
-    void SetBeamInteractionConditions(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void set_beam_interaction_conditions(const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<const BeamContactParams>& params_ptr);
 
     /**
@@ -211,7 +211,7 @@ namespace BEAMINTERACTION
      * @param assembly_managers (in/out) Pointer to assembly manager vector from the beam
      * interaction submodel evaluator.
      */
-    void CreateIndirectAssemblyManagers(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void create_indirect_assembly_managers(const Teuchos::RCP<const DRT::Discretization>& discret,
         std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
             assembly_managers);
 
@@ -238,7 +238,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the total number of beam interaction conditions.
      */
-    inline unsigned int GetTotalNumberOfConditions() const
+    inline unsigned int get_total_number_of_conditions() const
     {
       unsigned int count = 0;
       for (const auto& map_pair : condition_map_) count += map_pair.second.size();

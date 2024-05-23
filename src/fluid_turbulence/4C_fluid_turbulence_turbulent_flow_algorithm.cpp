@@ -50,7 +50,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   inflowgenerator_ =
       Teuchos::rcp(new FluidDiscretExtractor(fluiddis_, "TurbulentInflowSection", true));
   // and get this discretization
-  inflowdis_ = inflowgenerator_->GetChildDiscretization();
+  inflowdis_ = inflowgenerator_->get_child_discretization();
 
   // set number of time steps
   numtimesteps_ = fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
@@ -100,10 +100,10 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     inflowfluidalgo_->FluidField()->StatisticsOutput();
 
     // transfer solution of inflow section to fluid discretization
-    TransferInflowVelocity();
+    transfer_inflow_velocity();
 
     // increase time and step only
-    fluidalgo_->FluidField()->IncrementTimeAndStep();
+    fluidalgo_->FluidField()->increment_time_and_step();
     // velnp is set manually instead of being computed in Solve()
     // replaces Solve
     fluidalgo_->FluidField()->SetVelocityField(velnp_);
@@ -131,7 +131,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
 /*-------------------------------------------------------------------------------------------*
  | transfer solution of inflow section to the complete fluid discretization   rasthofer 06/11|
  *-------------------------------------------------------------------------------------------*/
-void FLD::TurbulentFlowAlgorithm::TransferInflowVelocity()
+void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
 {
   if (fluiddis_->Comm().MyPID() == 0)
     std::cout << "#   transfer solution of inflow section ..." << std::flush;

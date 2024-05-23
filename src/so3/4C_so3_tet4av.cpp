@@ -41,7 +41,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4avType::Create(const std::vector<cha
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4avType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet4av(id, owner));
     return ele;
@@ -59,7 +59,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4avType::Create(const int id, con
 
 
 //------------------------------------------------------------------------
-void DRT::ELEMENTS::SoTet4avType::NodalBlockInformation(
+void DRT::ELEMENTS::SoTet4avType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -75,21 +75,21 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet4avType::ComputeNullSpace(
 }
 
 //------------------------------------------------------------------------
-void DRT::ELEMENTS::SoTet4avType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4avType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TET4", 4)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
-                     .AddOptionalNamedDoubleVector("RAD", 3)
-                     .AddOptionalNamedDoubleVector("AXI", 3)
-                     .AddOptionalNamedDoubleVector("CIR", 3)
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .add_optional_named_double_vector("RAD", 3)
+                     .add_optional_named_double_vector("AXI", 3)
+                     .add_optional_named_double_vector("CIR", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
                      .Build();
 }
 
@@ -104,7 +104,7 @@ DRT::ELEMENTS::SoTet4av::SoTet4av(int id, int owner) : SoBase(id, owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;

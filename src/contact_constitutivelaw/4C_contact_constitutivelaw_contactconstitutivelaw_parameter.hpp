@@ -73,7 +73,7 @@ namespace CONTACT::CONSTITUTIVELAW
     virtual ~Parameter() = default;
 
     /// create CoConstLaw instance of matching type with my parameters
-    virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() = 0;
+    virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() = 0;
 
     // Access offset of the function
     double GetOffset() { return offset_; }

@@ -156,7 +156,7 @@ double MAT::Cnst1dArt::Viscosity() const
     case MAT::PAR::ArteryViscosityLaw::viscositylaw_constant:
       return params_->viscosity_;
     case MAT::PAR::ArteryViscosityLaw::viscositylaw_blood:
-      return CalculateBloodViscosity(
+      return calculate_blood_viscosity(
           diam_ * params_->blood_visc_scale_diam_to_microns_, params_->viscosity_);
     default:
       FOUR_C_THROW("Unknown viscosity law for 1D artery element");
@@ -166,7 +166,7 @@ double MAT::Cnst1dArt::Viscosity() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Cnst1dArt::CalculateBloodViscosity(const double diam, const double plasmavisc) const
+double MAT::Cnst1dArt::calculate_blood_viscosity(const double diam, const double plasmavisc) const
 {
   // parameters
   const double hd = 0.45;

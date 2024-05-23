@@ -33,7 +33,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -97,16 +97,16 @@ namespace DRT
       surface lies in this element.
 
       */
-      void SetBoundaryIsImmersed(int IsBoundaryImmersed) override
+      void set_boundary_is_immersed(int IsBoundaryImmersed) override
       {
         is_immersed_bdry_ = IsBoundaryImmersed;
       };
 
       /*!
       \brief Each element, which is either Immersed or BoundaryImmersed is also set
-      HasProjectedDirichlet
+      has_projected_dirichlet
       */
-      void SetHasProjectedDirichlet(int has_projected_dirichletvalues) override
+      void set_has_projected_dirichlet(int has_projected_dirichletvalues) override
       {
         has_projected_dirichletvalues_ = has_projected_dirichletvalues;
       };
@@ -114,7 +114,8 @@ namespace DRT
       /*!
       \brief set if divergence needs to be projected to an integration point
       */
-      void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence) override
+      void set_int_point_has_projected_divergence(
+          int gp, int intpoint_has_projected_divergence) override
       {
         intpoint_has_projected_divergence_->at(gp) = intpoint_has_projected_divergence;
       };
@@ -122,7 +123,8 @@ namespace DRT
       /*!
       \brief store the projected divergence
       */
-      void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence) override
+      void store_projected_int_point_divergence(
+          int gp, double projected_intpoint_divergence) override
       {
         stored_projected_intpoint_divergence_->at(gp) = projected_intpoint_divergence;
       };
@@ -140,13 +142,13 @@ namespace DRT
       /*!
       \brief returns true if element needs to get projected Dirichlet values
       */
-      int HasProjectedDirichlet() override { return has_projected_dirichletvalues_; };
+      int has_projected_dirichlet() override { return has_projected_dirichletvalues_; };
 
       /*!
       \brief returns true if element needs to get projected divergence at integration point
 
       */
-      int IntPointHasProjectedDivergence(int gp) override
+      int int_point_has_projected_divergence(int gp) override
       {
         return intpoint_has_projected_divergence_->at(gp);
       };
@@ -154,7 +156,7 @@ namespace DRT
       /*!
       \brief returns projected divergence at integration point
       */
-      double ProjectedIntPointDivergence(int gp) override
+      double projected_int_point_divergence(int gp) override
       {
         return stored_projected_intpoint_divergence_->at(gp);
       };
@@ -162,7 +164,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing gps with projected divergence
       */
-      Teuchos::RCP<std::vector<int>> GetRCPIntPointHasProjectedDivergence() override
+      Teuchos::RCP<std::vector<int>> get_rcp_int_point_has_projected_divergence() override
       {
         return intpoint_has_projected_divergence_;
       };
@@ -170,7 +172,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing projected divergence values
       */
-      Teuchos::RCP<std::vector<double>> GetRCPProjectedIntPointDivergence() override
+      Teuchos::RCP<std::vector<double>> get_rcp_projected_int_point_divergence() override
       {
         return stored_projected_intpoint_divergence_;
       };

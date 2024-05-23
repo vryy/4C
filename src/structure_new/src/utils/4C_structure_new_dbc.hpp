@@ -79,13 +79,13 @@ namespace STR
     /*! \brief Apply the DBC to system of equations
      *
      *  \note Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
-    void ApplyDirichletToLocalSystem(
+    void apply_dirichlet_to_local_system(
         Teuchos::RCP<CORE::LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void ApplyDirichletToVector(Teuchos::RCP<Epetra_Vector>& vec) const;
+    void apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const;
 
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
@@ -96,7 +96,7 @@ namespace STR
     void UpdateLocSysManager();
 
     //! Calculate the dirichlet increment of the current (time) step
-    Teuchos::RCP<Epetra_Vector> GetDirichletIncrement();
+    Teuchos::RCP<Epetra_Vector> get_dirichlet_increment();
 
     /*! \brief Evaluate and apply the DBC
      *
@@ -109,7 +109,7 @@ namespace STR
      *  \param[in] source_ptr Source vector with values to be inserted
      *  \param[in/out] target_ptr Target vector where values shall be inserted into
      */
-    void InsertVectorInNonDbcDofs(
+    void insert_vector_in_non_dbc_dofs(
         Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const;
 
     //! @name Access functions
@@ -212,7 +212,7 @@ namespace STR
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */
-    void ApplyDirichletToLocalRhs(Teuchos::RCP<Epetra_Vector>& b) const;
+    void apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! \brief Apply the DBC to the Jacobian in the local coordinate system
      *
@@ -220,7 +220,7 @@ namespace STR
      *
      *  \param[in/out] A Jacobian matrix
      */
-    void ApplyDirichletToLocalJacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const;
+    void apply_dirichlet_to_local_jacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const;
 
    protected:
     //! Flag indicating the initialization status.
@@ -278,7 +278,7 @@ namespace NOX
           Dbc(const Teuchos::RCP<const STR::Dbc>& dbc_ptr);
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
-          void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
+          void run_pre_apply_jacobian_inverse(::NOX::Abstract::Vector& rhs,
               CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys) override;
 
          private:

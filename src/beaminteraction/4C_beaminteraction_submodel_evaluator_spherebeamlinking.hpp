@@ -74,13 +74,13 @@ namespace BEAMINTERACTION
       void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      bool PreUpdateStepElement(bool beam_redist) override;
+      bool pre_update_step_element(bool beam_redist) override;
 
       //! derived
       void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      void PostUpdateStepElement() override;
+      void post_update_step_element() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
       //! derived
       void ResetStepState() override;
@@ -112,17 +112,18 @@ namespace BEAMINTERACTION
       void RunPostIterate(const ::NOX::Solver::Generic& solver) override{/*empty*/};
 
       //! derived
-      void InitSubmodelDependencies(
+      void init_submodel_dependencies(
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
+      void add_bins_with_relevant_content_for_ia_discret_col_map(
+          std::set<int>& colbins) const override;
 
       //! derived
-      void GetHalfInteractionDistance(double& half_interaction_distance) override;
+      void get_half_interaction_distance(double& half_interaction_distance) override;
 
       //! @}
 
@@ -137,26 +138,26 @@ namespace BEAMINTERACTION
       void WriteOutputRuntime() const;
 
       /// get neighboring eles in discret
-      virtual void FindAndStoreNeighboringElements(
+      virtual void find_and_store_neighboring_elements(
           std::map<int, std::vector<std::pair<int, int>>>& newlinks);
 
       /// get neighboring eles in discret
-      virtual void CheckFeasibilityOfNewLink(DRT::Element const* currele,
+      virtual void check_feasibility_of_new_link(DRT::Element const* currele,
           std::vector<DRT::Element const*> const& neighbors, std::unordered_set<int>& tobebonded,
           std::map<int, std::vector<std::pair<int, int>>>& newlinks) const;
 
       /// create new beam to sphere joint object
-      virtual void CreateBeamToSphereJoint(
+      virtual void create_beam_to_sphere_joint(
           std::map<int, std::vector<std::pair<int, int>>> const& newlinks);
 
       /// update linker length to mimic contractive cells
       virtual void UpdateLinkerLength();
 
       /// check if bond needs to be dissolved
-      virtual void UnbindSphereBeamBonds(int& num_dissolved);
+      virtual void unbind_sphere_beam_bonds(int& num_dissolved);
 
       /// compute force dependent off rate for a catch-slip bond
-      virtual void CalcForceDependentCatchSlipBondUnbindProbability(
+      virtual void calc_force_dependent_catch_slip_bond_unbind_probability(
           Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind);
 
       //! @}

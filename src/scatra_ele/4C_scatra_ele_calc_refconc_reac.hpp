@@ -42,7 +42,7 @@ namespace DRT
 
      protected:
       //! Set reac. body force, reaction coefficient and derivatives
-      void SetAdvancedReactionTerms(const int k,                  //!< index of current scalar
+      void set_advanced_reaction_terms(const int k,               //!< index of current scalar
           const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
           ) override;
@@ -57,7 +57,7 @@ namespace DRT
           ) override;
 
       //! set internal variables
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! calculation of diffusive element matrix
       void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
@@ -66,7 +66,7 @@ namespace DRT
           ) override;
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,                   //!< ?
+      void get_laplacian_weak_form(double& val,                //!< ?
           const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const int vi,                                        //!< ?
           const int ui                                         //!< ?
@@ -90,7 +90,7 @@ namespace DRT
           ) override;
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,                //!< ?
+      void get_laplacian_weak_form_rhs(double& val,            //!< ?
           const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
           const int vi                                         //!< ?
@@ -108,7 +108,7 @@ namespace DRT
       };
 
       // add nodal displacements to point coordinates
-      void UpdateNodeCoordinates() override
+      void update_node_coordinates() override
       { /*nothing to to since we want reference coordinates*/
         return;
       };

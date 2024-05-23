@@ -96,7 +96,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 
-      interface_[i]->IntegrateKappaPenalty(*selement);
+      interface_[i]->integrate_kappa_penalty(*selement);
     }
 
     // loop over all slave row nodes on the current interface
@@ -123,7 +123,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
 /*----------------------------------------------------------------------*
  | evaluate relative movement in predictor step               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::EvaluateRelMovPredict()
+void CONTACT::PenaltyStrategy::evaluate_rel_mov_predict()
 {
   // only for frictional contact
   if (friction_ == false) return;
@@ -177,7 +177,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
 
     // evaluate lagrange multipliers (regularized forces) in normal direction
     // and nodal derivz matrix values, store them in nodes
-    interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
+    interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::SolvingStrategy soltype =
@@ -185,10 +185,10 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
 
     if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
                           soltype == INPAR::CONTACT::solution_multiscale))
-      interface_[i]->AssembleRegTangentForcesPenalty();
+      interface_[i]->assemble_reg_tangent_forces_penalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
-      interface_[i]->AssembleRegTangentForcesUzawa();
+      interface_[i]->assemble_reg_tangent_forces_uzawa();
 
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
@@ -233,7 +233,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // since we will modify the graph of kteff by adding additional
   // meshtyong stiffness entries, we have to uncomplete it
@@ -285,12 +285,12 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
       if (ftype == INPAR::CONTACT::friction_coulomb)
       {
         std::cout << "LINZMATRIX" << *linzmatrix_ << std::endl;
-        interface_[i]->FDCheckPenaltyTracFric();
+        interface_[i]->fd_check_penalty_trac_fric();
       }
       else if (ftype == INPAR::CONTACT::friction_none)
       {
         std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
-        interface_[i]->FDCheckPenaltyTracNor();
+        interface_[i]->fd_check_penalty_trac_nor();
         std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
       }
       else
@@ -567,7 +567,7 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
 /*----------------------------------------------------------------------*
  | evaluate L2-norm of active constraints                     popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
+void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
 {
   // initialize parameters
   double cnorm = 0.0;
@@ -691,14 +691,14 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 /*----------------------------------------------------------------------*
  | store Lagrange multipliers for next Uzawa step             popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::UpdateUzawaAugmentedLagrange()
+void CONTACT::PenaltyStrategy::update_uzawa_augmented_lagrange()
 {
   // store current LM into Uzawa LM
   // (note that this is also done after the last Uzawa step of one
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
-  StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+  store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
 
   return;
 }
@@ -728,12 +728,12 @@ void CONTACT::PenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
   // evaluate relative movement for friction
   if (cparams.IsPredictor())
-    EvaluateRelMovPredict();
+    evaluate_rel_mov_predict();
   else
     EvaluateRelMov();
 
   // update active set
-  UpdateActiveSetSemiSmooth();
+  update_active_set_semi_smooth();
 
   // apply contact forces and stiffness
   Initialize();  // init lin-matrices
@@ -768,7 +768,7 @@ void CONTACT::PenaltyStrategy::Assemble()
 
     // evaluate lagrange multipliers (regularized forces) in normal direction
     // and nodal derivz matrix values, store them in nodes
-    interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
+    interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::SolvingStrategy soltype =
@@ -776,10 +776,10 @@ void CONTACT::PenaltyStrategy::Assemble()
 
     if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
                           soltype == INPAR::CONTACT::solution_multiscale))
-      interface_[i]->AssembleRegTangentForcesPenalty();
+      interface_[i]->assemble_reg_tangent_forces_penalty();
 
     if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
-      interface_[i]->AssembleRegTangentForcesUzawa();
+      interface_[i]->assemble_reg_tangent_forces_uzawa();
 
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
@@ -824,7 +824,7 @@ void CONTACT::PenaltyStrategy::Assemble()
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // assemble contact quantities on all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -935,7 +935,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
 
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
@@ -1045,7 +1045,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBloc
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -1070,7 +1070,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBloc
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::GetLagrMultN(redist);
   else
@@ -1081,7 +1081,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const b
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::GetLagrMultNp(redist);
   else
@@ -1092,7 +1092,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const 
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
 {
-  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::LagrMultOld();
   else
@@ -1103,7 +1103,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::PenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::LMDoFRowMapPtr(redist);
   else

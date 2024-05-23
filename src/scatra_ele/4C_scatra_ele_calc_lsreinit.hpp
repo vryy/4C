@@ -93,7 +93,7 @@ namespace DRT
        *  \param bcell (in)  : boundary integration cell (necessary for the penalty term)
        *
        *  \author hiermeier \date 12/16 */
-      void EllipticNewtonSystem(CORE::LINALG::SerialDenseMatrix* emat,
+      void elliptic_newton_system(CORE::LINALG::SerialDenseMatrix* emat,
           CORE::LINALG::SerialDenseVector* erhs,
           const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
           const CORE::GEO::BoundaryIntCellPtrs& bcell);
@@ -103,17 +103,17 @@ namespace DRT
       //! @name general evaluation methods
       /*========================================================================*/
 
-      void EvalReinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
+      void eval_reinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
           DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
-      void EvalReinitializationEmbedded(const std::vector<int>& lm, DRT::Element* ele,
+      void eval_reinitialization_embedded(const std::vector<int>& lm, DRT::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
-      void EvalReinitializationStd(const Epetra_Vector& phinp, const std::vector<int>& lm,
+      void eval_reinitialization_std(const Epetra_Vector& phinp, const std::vector<int>& lm,
           DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
@@ -155,7 +155,7 @@ namespace DRT
       );
 
       //! calculation of characteristic element length, i.e., interface thickness
-      double CalcCharEleLengthReinit(const double vol,      //!< element volume
+      double calc_char_ele_length_reinit(const double vol,  //!< element volume
           const CORE::LINALG::Matrix<nsd_, 1>& gradphizero  //!< gradient of initial phi
       );
 
@@ -164,7 +164,7 @@ namespace DRT
       /*========================================================================*/
 
       //! calculation of element-wise denominator of penalty parameter
-      void CalcElePenaltyParameter(double& penalty  //!< penalty parameter
+      void calc_ele_penalty_parameter(double& penalty  //!< penalty parameter
       );
 
       //! calculate system matrix and rhs for correction step
@@ -182,7 +182,7 @@ namespace DRT
       );
 
       //! calculation of interface penalty term for elliptic reinitialization
-      void EvaluateInterfaceTerm(
+      void evaluate_interface_term(
           CORE::LINALG::SerialDenseMatrix* emat,       //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector* erhs,       //!< element vector to calculate
           const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
@@ -266,7 +266,7 @@ namespace DRT
         return;
       }
 
-      void SetVelocityForCrossWindDiff(const CORE::LINALG::Matrix<NSD, 1> velocity)
+      void set_velocity_for_cross_wind_diff(const CORE::LINALG::Matrix<NSD, 1> velocity)
       {
         if (NSD != 3) FOUR_C_THROW("Currently only 3d problems supported for crosswind diffusion");
 
@@ -350,7 +350,7 @@ namespace DRT
        * \param ephin      (in) : scalar at t_(n)
        * \param econvelnp  (in) : nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
        * \param ehist      (in) : history vector of transported scalars */
-      void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,
+      void set_internal_variables(const CORE::LINALG::Matrix<NEN, 1>& funct,
           const CORE::LINALG::Matrix<NSD, NEN>& derxy,
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephinp,
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,

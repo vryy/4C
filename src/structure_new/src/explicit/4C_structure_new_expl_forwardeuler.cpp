@@ -52,12 +52,12 @@ void STR::EXPLICIT::ForwardEuler::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  SetInitialDisplacement(
+  set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // mode of Forward Euler interpolation
   modexpleuler_ = dynamic_cast<const STR::TIMINT::ExplEulerDataSDyn&>(TimInt().GetDataSDyn())
-                      .GetModifiedForwardEuler();
+                      .get_modified_forward_euler();
 
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
@@ -68,7 +68,7 @@ void STR::EXPLICIT::ForwardEuler::Setup()
 void STR::EXPLICIT::ForwardEuler::PostSetup()
 {
   CheckInitSetup();
-  EquilibrateInitialState();
+  equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -109,7 +109,7 @@ void STR::EXPLICIT::ForwardEuler::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::AddViscoMassContributions(Epetra_Vector& f) const
+void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -117,7 +117,8 @@ void STR::EXPLICIT::ForwardEuler::AddViscoMassContributions(Epetra_Vector& f) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
+void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
+    CORE::LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   // set mass matrix
@@ -146,7 +147,7 @@ void STR::EXPLICIT::ForwardEuler::ReadRestart(IO::DiscretizationReader& ioreader
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
   ModelEval().ReadRestart(ioreader);
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 }
 
 /*----------------------------------------------------------------------------*

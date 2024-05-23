@@ -48,12 +48,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+      void nodal_block_information(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -190,10 +191,10 @@ namespace DRT
       }
 
       //! Set completepol_ variable
-      void SetCompletePolynomialSpace(bool completepol) { completepol_ = completepol; }
+      void set_complete_polynomial_space(bool completepol) { completepol_ = completepol; }
 
       //! Returns the degree of the element
-      int UsesCompletePolynomialSpace() const { return completepol_; }
+      int uses_complete_polynomial_space() const { return completepol_; }
 
       //! Sets bool to false if degree of element changes after p-adaption
       void SetPadaptEle(bool adapt)
@@ -216,7 +217,7 @@ namespace DRT
       bool MatInit() const { return matinit_; }
 
       //! Returns the degree of the element for the interior DG space
-      int NumDofPerElementAuxiliary() const
+      int num_dof_per_element_auxiliary() const
       {
         return (CORE::FE::getDimension(distype_) + 1) *
                CORE::FE::getBasisSize(distype_, degree_, completepol_);
@@ -377,7 +378,8 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+      void nodal_block_information(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
@@ -649,7 +651,8 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+      void nodal_block_information(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 

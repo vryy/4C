@@ -136,7 +136,7 @@ namespace FLD
     void TransferAndSaveTauw();
 
     // for inflowchannel
-    void OverwriteTransferredValues();
+    void overwrite_transferred_values();
 
     //! discretisation
     Teuchos::RCP<DRT::Discretization> discret_;

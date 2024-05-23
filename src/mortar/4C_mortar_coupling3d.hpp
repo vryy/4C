@@ -291,10 +291,10 @@ namespace MORTAR
      two available triangulation algorithms (Delaunay, Center) is called
      to do the actual triangulation of the convex clip polygon.
 
-     DelaunayTriangulation() is more efficient, as it always generates N-2 triangles
+     delaunay_triangulation() is more efficient, as it always generates N-2 triangles
      for a clip polygon with N vertices. Moreover, the triangle shape is optimized
      according to the Delaunay criterion, which maximizes the smallest internal
-     angle. Thus, DelaunayTriangulation() is used BY DEFAULT here.
+     angle. Thus, delaunay_triangulation() is used BY DEFAULT here.
 
      CenterTriangulation() is an old version that was based on first finding the
      center of the clip polygon by computing the centroid / geometric center
@@ -306,7 +306,7 @@ namespace MORTAR
 
      */
     virtual bool Triangulation(std::map<int, double>& projpar, double tol);
-    virtual bool DelaunayTriangulation(
+    virtual bool delaunay_triangulation(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
     virtual bool CenterTriangulation(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
@@ -392,7 +392,7 @@ namespace MORTAR
      \param tol (in): clipping tolerance for close vertices detection
 
      */
-    virtual bool PolygonClippingConvexHull(std::vector<Vertex>& poly1list,
+    virtual bool polygon_clipping_convex_hull(std::vector<Vertex>& poly1list,
         std::vector<Vertex>& poly2list, std::vector<Vertex>& respoly, double& tol);
 
     /*!

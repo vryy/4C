@@ -106,7 +106,7 @@ namespace MAT
        *
        * @param anisotropy Global anisotropy holder
        */
-      virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+      virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
       {
         // do nothing
       }
@@ -202,7 +202,7 @@ namespace MAT
        * ddPII_5 = \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
        * \f]
        */
-      virtual void AddDerivativesPrincipal(
+      virtual void add_derivatives_principal(
           CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
           CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
           const CORE::LINALG::Matrix<3, 1>&
@@ -263,7 +263,7 @@ namespace MAT
        * \partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} ;
        * \f]
        */
-      virtual void AddThirdDerivativesPrincipalIso(
+      virtual void add_third_derivatives_principal_iso(
           CORE::LINALG::Matrix<10, 1>&
               dddPIII_iso,  ///< third derivative with respect to invariants
           const CORE::LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
@@ -319,7 +319,7 @@ namespace MAT
        * \overline{II}_{\boldsymbol{C}}} ;
        * \f]
        */
-      virtual void AddDerivativesModified(
+      virtual void add_derivatives_modified(
           CORE::LINALG::Matrix<3, 1>&
               dPmodI,  ///< first derivative with respect to modified invariants
           CORE::LINALG::Matrix<6, 1>&
@@ -389,7 +389,7 @@ namespace MAT
        * @param gp Gauss-Point
        * @param eleGID Global element id
        */
-      virtual void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+      virtual void evaluate_first_derivatives_aniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
           CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
 
       /*!
@@ -416,7 +416,7 @@ namespace MAT
        * @param gp Gauss-Point
        * @param eleGID Global element id
        */
-      virtual void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+      virtual void evaluate_second_derivatives_aniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
           CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
 
       /*!
@@ -555,7 +555,7 @@ namespace MAT
        * VIII_{\boldsymbol C}}
        * \f]
        */
-      virtual void AddStressAnisoPrincipal(
+      virtual void add_stress_aniso_principal(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
@@ -566,7 +566,7 @@ namespace MAT
         return;  // do nothing
       };
 
-      virtual void AddCoefficientsViscoPrincipal(
+      virtual void add_coefficients_visco_principal(
           const CORE::LINALG::Matrix<3, 1>& inv,  ///< invariants of right Cauchy-Green tensor
           CORE::LINALG::Matrix<8, 1>& mu,         ///< see above
           CORE::LINALG::Matrix<33, 1>& xi,        ///< see above
@@ -578,7 +578,7 @@ namespace MAT
         return;  // do nothing
       };
 
-      virtual void AddCoefficientsViscoModified(
+      virtual void add_coefficients_visco_modified(
           const CORE::LINALG::Matrix<3, 1>&
               modinv,                          ///< modified invariants of right Cauchy-Green tensor
           CORE::LINALG::Matrix<8, 1>& modmu,   ///< see above
@@ -591,7 +591,7 @@ namespace MAT
       };
 
       //! Read material parameters of viscogenmax or viscofract
-      virtual void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
+      virtual void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
           double& beta,   ///< emphasis of viscous to elastic part
           double& alpha,  ///< fractional order derivative (just for visoc_fract)
           std::string&
@@ -602,8 +602,8 @@ namespace MAT
       };
 
       //! GeneralizedGenMax
-      virtual void ReadMaterialParameters(int& numbranch,  //!< number of visco branches
-          const std::vector<int>*& matids,                 //!< material ids of visco branches
+      virtual void read_material_parameters(int& numbranch,  //!< number of visco branches
+          const std::vector<int>*& matids,                   //!< material ids of visco branches
           std::string& solve  //!< solution variant for time evolution of viscous stress
       )
       {
@@ -611,15 +611,15 @@ namespace MAT
       };
 
       //! GeneralizedGenMax
-      virtual void ReadMaterialParameters(double& nummat,  //!< number of visco branches
-          const std::vector<int>*& matids                  //!< material ids of visco branches
+      virtual void read_material_parameters(double& nummat,  //!< number of visco branches
+          const std::vector<int>*& matids                    //!< material ids of visco branches
       )
       {
         return;  // not implemented in base class. May be overridden in subclass.
       };
 
       /// Retrieve stress and cmat of summand for fiber directions with respect to modified strains
-      virtual void AddStressAnisoModified(
+      virtual void add_stress_aniso_modified(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
@@ -636,7 +636,7 @@ namespace MAT
       /*!
        * @brief Answer if coefficients with respect to principal stretches are provided
        */
-      virtual bool HaveCoefficientsStretchesPrincipal() { return false; }
+      virtual bool have_coefficients_stretches_principal() { return false; }
 
       /*!
        * @brief Add coefficients with respect to principal stretches (or zeros)
@@ -652,7 +652,7 @@ namespace MAT
        * \f]
        * @note These parameters have \e nothing in common with Kronecker's delta.
        */
-      virtual void AddCoefficientsStretchesPrincipal(
+      virtual void add_coefficients_stretches_principal(
           CORE::LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
           CORE::LINALG::Matrix<6, 1>&
               delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
@@ -666,7 +666,7 @@ namespace MAT
       /*!
        * Answer if coefficients with respect to modified principal stretches are provided
        */
-      virtual bool HaveCoefficientsStretchesModified() { return false; }
+      virtual bool have_coefficients_stretches_modified() { return false; }
 
       /*!
        * Add coefficients with respect to modified principal stretches (or zeros)
@@ -684,7 +684,7 @@ namespace MAT
        * = \frac{\partial^2\Psi}{\partial\bar{\lambda}_\alpha \partial\bar{\lambda}_\beta}
        * \f]
        */
-      virtual void AddCoefficientsStretchesModified(
+      virtual void add_coefficients_stretches_modified(
           CORE::LINALG::Matrix<3, 1>&
               modgamma,  ///< see above, [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
           CORE::LINALG::Matrix<6, 1>&
@@ -739,7 +739,7 @@ namespace MAT
           ) = 0;
 
       //! Indicator for the chosen viscoelastic formulations
-      virtual void SpecifyViscoFormulation(
+      virtual void specify_visco_formulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according to the
                               ///< SLS-Model

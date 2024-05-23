@@ -75,7 +75,7 @@ namespace NOX
          *
          *  \author hiermeier \date 08/18 */
         template <class T>
-        ::NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
+        ::NOX::StatusTest::Generic* get_outer_status_test_with_quantity(
             const NOX::NLN::StatusTest::QuantityType qtype) const;
 
         //! Returns the ::NOX::Utils object

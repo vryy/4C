@@ -37,7 +37,7 @@ void MAT::ELASTIC::CoupSimoPister::AddStrainEnergy(double& psi,
   psi += 0.5 * mue * (prinv(0) - 3.) - mue * log(std::pow(prinv(2), 0.5));
 }
 
-void MAT::ELASTIC::CoupSimoPister::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+void MAT::ELASTIC::CoupSimoPister::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {

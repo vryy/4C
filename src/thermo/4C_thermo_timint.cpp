@@ -154,7 +154,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
  | equilibrate system at initial state                      bborn 08/09 |
  | and identify consistent temperature rate (only dynamic case)         |
  *----------------------------------------------------------------------*/
-void THR::TimInt::DetermineCapaConsistTempRate()
+void THR::TimInt::determine_capa_consist_temp_rate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
@@ -167,7 +167,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // get external force
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext);
-  // ApplyForceExternalConv is applied in the derived classes!
+  // apply_force_external_conv is applied in the derived classes!
 
   // initialise matrices
   tang_->Zero();
@@ -226,7 +226,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   // leave this hell
   return;
 
-}  // DetermineCapaConsistTempRate()
+}  // determine_capa_consist_temp_rate()
 
 
 /*----------------------------------------------------------------------*
@@ -355,7 +355,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
     // if state already exists, add restart information
     if (writeglobevery_ and (step_ % writeglobevery_ == 0))
     {
-      AddRestartToOutputState();
+      add_restart_to_output_state();
       return;
     }
   }
@@ -383,7 +383,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
       ((writeheatflux_ != INPAR::THR::heatflux_none) or
           (writetempgrad_ != INPAR::THR::tempgrad_none)))
   {
-    OutputHeatfluxTempgrad(datawritten);
+    output_heatflux_tempgrad(datawritten);
   }
 
   // output energy
@@ -457,7 +457,7 @@ void THR::TimInt::OutputState(bool& datawritten)
 /*----------------------------------------------------------------------*
  | add restart information to OutputStatewrite restart      ghamm 10/13 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::AddRestartToOutputState()
+void THR::TimInt::add_restart_to_output_state()
 {
   // write all force vectors which are later read in restart
   WriteRestartForce(output_);
@@ -475,14 +475,14 @@ void THR::TimInt::AddRestartToOutputState()
         "------------------\n");
     fflush(stdout);
   }
-}  // AddRestartToOutputState()
+}  // add_restart_to_output_state()
 
 
 /*----------------------------------------------------------------------*
  | heatflux calculation and output                          bborn 06/08 |
  | originally by lw                                                     |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
+void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -557,7 +557,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // leave me alone
   return;
 
-}  // OutputHeatfluxTempgrad()
+}  // output_heatflux_tempgrad()
 
 
 /*----------------------------------------------------------------------*
@@ -662,7 +662,7 @@ void THR::TimInt::ApplyForceExternal(const double time,  //!< evaluation time
 /*----------------------------------------------------------------------*
  | evaluate convection boundary conditions at t_{n+1}        dano 01/11 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceExternalConv(Teuchos::ParameterList& p,
+void THR::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
     const double time,                               //!< evaluation time
     const Teuchos::RCP<Epetra_Vector> tempn,         //!< temperature state T_n
     const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
@@ -702,13 +702,13 @@ void THR::TimInt::ApplyForceExternalConv(Teuchos::ParameterList& p,
   // go away
   return;
 
-}  // ApplyForceExternalConv()
+}  // apply_force_external_conv()
 
 
 /*----------------------------------------------------------------------*
  | evaluate ordinary internal force, its tangent at state   bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceTangInternal(
+void THR::TimInt::apply_force_tang_internal(
     Teuchos::ParameterList& p, const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
     const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
@@ -753,14 +753,14 @@ void THR::TimInt::ApplyForceTangInternal(
   // that's it
   return;
 
-}  // ApplyForceTangInternal()
+}  // apply_force_tang_internal()
 
 
 /*----------------------------------------------------------------------*
  | evaluate ordinary internal force, its tangent at state   bborn 10/09 |
  | overloaded function specified for ost time integration               |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyForceTangInternal(
+void THR::TimInt::apply_force_tang_internal(
     Teuchos::ParameterList& p, const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
     const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
@@ -816,7 +816,7 @@ void THR::TimInt::ApplyForceTangInternal(
   // that's it
   return;
 
-}  // ApplyForceTangInternal()
+}  // apply_force_tang_internal()
 
 
 /*----------------------------------------------------------------------*
@@ -853,7 +853,7 @@ void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double tim
   // where the fun starts
   return;
 
-}  // ApplyForceTangInternal()
+}  // apply_force_tang_internal()
 
 
 /*----------------------------------------------------------------------*
@@ -911,8 +911,8 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
     {
       std::vector<int> localdofs;
       localdofs.push_back(0);
-      discret_->EvaluateInitialField("Temperature", (*temp_)(0), localdofs);
-      discret_->EvaluateInitialField("Temperature", tempn_, localdofs);
+      discret_->evaluate_initial_field("Temperature", (*temp_)(0), localdofs);
+      discret_->evaluate_initial_field("Temperature", tempn_, localdofs);
 
       break;
     }  // initfield_field_by_condition
@@ -939,7 +939,7 @@ void THR::TimInt::SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload)
 /*-----------------------------------------------------------------------------*
  *   evaluate error compared to analytical solution                vuong 03/15 |
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analytical_sol()
 {
   switch (calcerror_)
   {
@@ -1056,7 +1056,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
       FOUR_C_THROW("unknown type of error calculation!");
       return Teuchos::null;
   }
-}  // end EvaluateErrorComparedToAnalyticalSol
+}  // end evaluate_error_compared_to_analytical_sol
 /*----------------------------------------------------------------------*/
 
 FOUR_C_NAMESPACE_CLOSE

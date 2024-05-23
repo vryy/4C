@@ -61,8 +61,8 @@ namespace DRT
           ) override;
 
       //! evaluate an electrode kinetics boundary condition
-      virtual void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                          ///< element matrix
+      virtual void evaluate_elch_boundary_kinetics(const DRT::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,                             ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
@@ -81,21 +81,21 @@ namespace DRT
       );
 
       //! process an electrode kinetics boundary condition
-      void CalcElchBoundaryKinetics(DRT::FaceElement* ele,  ///< current element
-          Teuchos::ParameterList& params,                   ///< parameter list
-          DRT::Discretization& discretization,              ///< discretization
-          DRT::Element::LocationArray& la,                  ///< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
+      void calc_elch_boundary_kinetics(DRT::FaceElement* ele,  ///< current element
+          Teuchos::ParameterList& params,                      ///< parameter list
+          DRT::Discretization& discretization,                 ///< discretization
+          DRT::Element::LocationArray& la,                     ///< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,     ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element right-hand side vector
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
 
       //! evaluate electrode kinetics status information
-      void EvaluateElectrodeStatus(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseVector& scalars,          ///< scalars to be integrated
-          Teuchos::ParameterList& params,                    ///< parameter list
-          Teuchos::RCP<CORE::Conditions::Condition> cond,    ///< condition
+      void evaluate_electrode_status(const DRT::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseVector& scalars,            ///< scalars to be integrated
+          Teuchos::ParameterList& params,                      ///< parameter list
+          Teuchos::RCP<CORE::Conditions::Condition> cond,      ///< condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -110,7 +110,7 @@ namespace DRT
       );
 
       //! evaluate linearization of nernst equation
-      void CalcNernstLinearization(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void calc_nernst_linearization(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);

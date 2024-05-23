@@ -562,7 +562,7 @@ namespace CONTACT
      \brief Set deltawear to value
 
      */
-    void AddDeltaWeightedWearValue(double& val);
+    void add_delta_weighted_wear_value(double& val);
 
     /*!
      \brief Write nodal entries of D and M to Dold and Mold
@@ -589,7 +589,7 @@ namespace CONTACT
      is initialized.
 
      */
-    void InitializeDataContainer() override;
+    void initialize_data_container() override;
 
     /*!
      \brief Resets the data container of the node

@@ -55,7 +55,8 @@ void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
 /*----------------------------------------------------------------------*
  |  Evaluate regularized normal forces (nodes)                popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange)
+void CONTACT::Interface::assemble_reg_normal_forces(
+    bool& localisincontact, bool& localactivesetchange)
 {
   // penalty parameter
   double pp = InterfaceParams().get<double>("PENALTYPARAM");
@@ -189,7 +190,7 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact, bool& l
 /*----------------------------------------------------------------------*
  |  Evaluate regularized tangential forces                gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleRegTangentForcesPenalty()
+void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
 {
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
@@ -545,7 +546,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
  |  Evaluate regularized tangential forces                gitterle 10/09|
  |  (Uzawa Aug. Lagr.)                                                  |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleRegTangentForcesUzawa()
+void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
 {
   // penalty parameter in tangential direction
   double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
@@ -4238,7 +4239,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
   return;
 }
 
-void CONTACT::Interface::AssembleNormalContactRegularization(
+void CONTACT::Interface::assemble_normal_contact_regularization(
     CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
@@ -4312,7 +4313,7 @@ void CONTACT::Interface::AssembleNormalContactRegularization(
   return;
 }
 
-void CONTACT::Interface::AssembleLinSlipNormalRegularization(
+void CONTACT::Interface::assemble_lin_slip_normal_regularization(
     CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {

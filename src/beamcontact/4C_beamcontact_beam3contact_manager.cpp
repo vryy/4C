@@ -88,13 +88,13 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   // read parameter lists from GLOBAL::Problem
   sbeamcontact_ = GLOBAL::Problem::Instance()->BeamContactParams();
   sbeampotential_ = GLOBAL::Problem::Instance()->BeamPotentialParams();
-  scontact_ = GLOBAL::Problem::Instance()->ContactDynamicParams();
-  sstructdynamic_ = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  scontact_ = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  sstructdynamic_ = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // indicate if beam-to-solid contact is applied
-  btsol_ = CORE::UTILS::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
+  btsol_ = CORE::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_BTSOL");
 
-  InitBeamContactDiscret();
+  init_beam_contact_discret();
 
   // check input parameters
   if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
@@ -457,7 +457,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   t_start = Teuchos::Time::wallTime();
 
   // process the found element pairs and fill the BTB, BTSOL, BTSPH interaction pair vectors
-  FillContactPairsVectors(elementpairs);
+  fill_contact_pairs_vectors(elementpairs);
 
   if (linechargeconds_.size() != 0)
   {
@@ -491,7 +491,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
                                << IO::endl;
     }
 
-    FillPotentialPairsVectors(elementpairspot);
+    fill_potential_pairs_vectors(elementpairspot);
   }
 
   // update element state of all pairs with current positions (already calculated in
@@ -605,7 +605,7 @@ void CONTACT::Beam3cmanager::ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vec
 /*----------------------------------------------------------------------*
  | setup of contact discretization btsoldiscret_             grill 05/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::InitBeamContactDiscret()
+void CONTACT::Beam3cmanager::init_beam_contact_discret()
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -913,7 +913,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
   // pass new fully overlapping node and element maps to beam contact discretization
   BTSolDiscret().ExportColumnNodes(*newnodecolmap);
-  BTSolDiscret().ExportColumnElements(*newelecolmap);
+  BTSolDiscret().export_column_elements(*newelecolmap);
 
   // complete beam contact discretization based on the new column maps
   // (this also assign new degrees of freedom what we actually do not
@@ -1129,7 +1129,7 @@ void CONTACT::Beam3cmanager::SetState(
   {
     for (int i = 0; i < (int)pairs_.size(); ++i)
     {
-      pairs_[i]->UpdateEleSmoothTangents(currentpositions);
+      pairs_[i]->update_ele_smooth_tangents(currentpositions);
     }
   }
 
@@ -1271,7 +1271,7 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
  |  process the found element pairs and fill the corresponding
  |  BTB, BTSOL and BTSPH contact pair vectors                grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::FillContactPairsVectors(
+void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     const std::vector<std::vector<DRT::Element*>> elementpairs)
 {
   std::vector<std::vector<DRT::Element*>> formattedelementpairs;
@@ -1303,7 +1303,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
   // beam contact simulations are only possible when using beam elements of one type!
   if (!elementtypeset_ and formattedelementpairs.size() > 0)
   {
-    SetElementTypeAndDistype((formattedelementpairs[0])[0]);
+    set_element_type_and_distype((formattedelementpairs[0])[0]);
     elementtypeset_ = true;
   }
 
@@ -1451,7 +1451,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
  |  process the found element pairs and fill the corresponding
  |  BTB, BTSOL and BTSPH potential pair vectors              grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
+void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     const std::vector<std::vector<DRT::Element*>> elementpairs)
 {
   std::vector<std::vector<DRT::Element*>> formattedelementpairs;
@@ -1484,7 +1484,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
    * variables numnodes_ and numnodaldofs_. This has only to be done once in the beginning, since
    * beam contact simulations are only possible when using beam elements of one type! */
   if (numnodalvalues_ == 0 and formattedelementpairs.size() > 0)
-    SetElementTypeAndDistype((formattedelementpairs[0])[0]);
+    set_element_type_and_distype((formattedelementpairs[0])[0]);
 
   // Create Beam3tobeampotentialinterface instances in the btbpotpairs_ vector
   for (int k = 0; k < (int)formattedelementpairs.size(); k++)
@@ -1783,13 +1783,13 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
         // if NOT neighbouring and NOT found before
         // create new beam3contact object and store it into pairs_
 
-        // Here we additonally apply the method CloseMidpointDistance which sorts out all pairs with
-        // a midpoint distance larger than sphericalsearchradius. Thus with this additional method
-        // the search is based on spherical bounding boxes and node on node distances any longer.
-        // The radius of these spheres is sphericalsearchradius/2.0, the center of such a sphere is
-        // (r1+r2)/2, with r1 and r2 representing the nodal positions.
+        // Here we additonally apply the method close_midpoint_distance which sorts out all pairs
+        // with a midpoint distance larger than sphericalsearchradius. Thus with this additional
+        // method the search is based on spherical bounding boxes and node on node distances any
+        // longer. The radius of these spheres is sphericalsearchradius/2.0, the center of such a
+        // sphere is (r1+r2)/2, with r1 and r2 representing the nodal positions.
         if (!elements_neighbouring && !foundbefore &&
-            CloseMidpointDistance(ele1, ele2, currentpositions, sphericalsearchradius))
+            close_midpoint_distance(ele1, ele2, currentpositions, sphericalsearchradius))
         {
           std::vector<DRT::Element*> contactelementpair;
           contactelementpair.clear();
@@ -1987,7 +1987,7 @@ void CONTACT::Beam3cmanager::Update(
 
   // If the original gap function definition is applied, the displacement per time is not allowed
   // to be larger than the smalles beam cross section radius occurring in the discretization!
-  bool newgapfunction = CORE::UTILS::IntegralValue<int>(BeamContactParameters(), "BEAMS_NEWGAP");
+  bool newgapfunction = CORE::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_NEWGAP");
   if (!newgapfunction)
   {
     double maxdeltadisscalefac = sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC", 1.0);
@@ -2345,7 +2345,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
             // this cast is necessary in order to use the method ->Tref() and others
             const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
 
-            if (ele->HermiteCenterlineInterpolation())
+            if (ele->hermite_centerline_interpolation())
             {
               // mark as already done
               done = true;
@@ -2704,7 +2704,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
-          GMSH_SolidSurfaceElementNumbers(element, disrow, gmshfilecontent);
+          gmsh_solid_surface_element_numbers(element, disrow, gmshfilecontent);
         }
       }
 #endif
@@ -3029,7 +3029,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
 /*----------------------------------------------------------------------*
  |  Compute rotation matrix R                                cyron 01/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::TransformAngleToTriad(
+void CONTACT::Beam3cmanager::transform_angle_to_triad(
     CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R)
 {
   // compute spin matrix according to Crisfield Vol. 2, equation (16.8)
@@ -3284,10 +3284,10 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 void CONTACT::Beam3cmanager::UpdateAllPairs()
 {
   // loop over all potential contact pairs
-  for (int i = 0; i < (int)pairs_.size(); ++i) pairs_[i]->UpdateClassVariablesStep();
+  for (int i = 0; i < (int)pairs_.size(); ++i) pairs_[i]->update_class_variables_step();
 
   // loop over all potential beam to solid contact pairs
-  for (int i = 0; i < (int)btsolpairs_.size(); ++i) btsolpairs_[i]->UpdateClassVariablesStep();
+  for (int i = 0; i < (int)btsolpairs_.size(); ++i) btsolpairs_[i]->update_class_variables_step();
 }
 
 /*----------------------------------------------------------------------*
@@ -3658,7 +3658,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
   // Compute rotation matirx R
-  TransformAngleToTriad(theta, R);
+  transform_angle_to_triad(theta, R);
 
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -3841,7 +3841,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
-    TransformAngleToTriad(theta, R);
+    transform_angle_to_triad(theta, R);
 
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -3975,7 +3975,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
-  double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
+  double eleradius = thisbeam->get_circular_cross_section_radius_for_interactions();
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -4043,7 +4043,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
-    TransformAngleToTriad(theta, R);
+    transform_angle_to_triad(theta, R);
 
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -4176,7 +4176,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
-  double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
+  double eleradius = thisbeam->get_circular_cross_section_radius_for_interactions();
 
 
   // declaring variable for color of elements
@@ -4255,7 +4255,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
     for (int j = 0; j < 3; ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
-    TransformAngleToTriad(theta, R);
+    transform_angle_to_triad(theta, R);
 
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -4586,7 +4586,7 @@ void CONTACT::Beam3cmanager::GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& 
 
   const double centercoord[] = {coord(0, 0), coord(1, 0), coord(2, 0)};
   for (unsigned int i = 0; i < facelist.size(); ++i)
-    PrintGmshTriangleToStream(gmshfilecontent, vertexlist, facelist[i][0], facelist[i][1],
+    print_gmsh_triangle_to_stream(gmshfilecontent, vertexlist, facelist[i][0], facelist[i][1],
         facelist[i][2], color, centercoord);
 
   // ********************* end: visualization as an icosphere
@@ -4598,7 +4598,7 @@ void CONTACT::Beam3cmanager::GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& 
 /*----------------------------------------------------------------------*
  |  print Gmsh Triangle to stringstream (private)            grill 03/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
+void CONTACT::Beam3cmanager::print_gmsh_triangle_to_stream(std::stringstream& gmshfilecontent,
     const std::vector<std::vector<double>>& vertexlist, int i, int j, int k, double color,
     const double centercoord[])
 {
@@ -4789,7 +4789,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
 /*----------------------------------------------------------------------*
  | Compute Gmsh output for solid surface element numbers                |
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GMSH_SolidSurfaceElementNumbers(
+void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
     const DRT::Element* element, const Epetra_Vector& disrow, std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
@@ -4960,12 +4960,12 @@ void CONTACT::Beam3cmanager::GMSH_ST(
 /*----------------------------------------------------------------------*
  |  Determine number of nodes and nodal DoFs of element      meier 02/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
+void CONTACT::Beam3cmanager::set_element_type_and_distype(DRT::Element* ele1)
 {
   const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele1);
 
   numnodes_ = ele->NumCenterlineNodes();
-  numnodalvalues_ = ele->HermiteCenterlineInterpolation() ? 2 : 1;
+  numnodalvalues_ = ele->hermite_centerline_interpolation() ? 2 : 1;
 
   return;
 }
@@ -4973,7 +4973,7 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
 /*----------------------------------------------------------------------*
  | Is element midpoint distance smaller than search radius?  meier 02/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1,
+bool CONTACT::Beam3cmanager::close_midpoint_distance(const DRT::Element* ele1,
     const DRT::Element* ele2, std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const double sphericalsearchradius)
 {

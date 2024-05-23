@@ -40,20 +40,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8fbarType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBAR"; }
     };
 
     /*!
@@ -205,7 +205,7 @@ namespace DRT
       SoHex8fbar& operator=(const SoHex8fbar& old);
 
       // compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress) override;
       // compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
@@ -239,7 +239,7 @@ namespace DRT
       void InitJacobianMapping() override;
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDH8FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBAR"; }
     };  // class So_hex8fbar
 
     //=======================================================================

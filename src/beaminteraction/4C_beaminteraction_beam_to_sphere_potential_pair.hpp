@@ -89,13 +89,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get coordinates of all interacting points on element1 and element2
     */
-    void GetAllInteractingPointCoordsElement1(
+    void get_all_interacting_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("not implemented yet");
     }
 
-    void GetAllInteractingPointCoordsElement2(
+    void get_all_interacting_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("not implemented yet");
@@ -104,13 +104,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get forces at all interacting points on element1 and element2
     */
-    void GetForcesAtAllInteractingPointsElement1(
+    void get_forces_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       FOUR_C_THROW("not implemented yet");
     }
 
-    void GetForcesAtAllInteractingPointsElement2(
+    void get_forces_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       FOUR_C_THROW("not implemented yet");
@@ -119,13 +119,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get moments at all interacting points on element1 and element2
     */
-    void GetMomentsAtAllInteractingPointsElement1(
+    void get_moments_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       FOUR_C_THROW("not implemented yet");
     }
 
-    void GetMomentsAtAllInteractingPointsElement2(
+    void get_moments_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       FOUR_C_THROW("not implemented yet");
@@ -144,7 +144,7 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential element pair to screen
      *
      *  \author grill */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
+    void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods
@@ -210,7 +210,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces and stiffness contribution resulting from potential-based interaction
     */
-    void EvaluateFpotandStiffpot_LargeSepApprox();
+    void evaluate_fpotand_stiffpot_large_sep_approx();
 
     /*!
     \brief Calculate shape function values for given parameter values

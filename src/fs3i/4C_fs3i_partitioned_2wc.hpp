@@ -46,11 +46,11 @@ namespace FS3I
 
     // void SetFSIValuesInScaTra();
 
-    void SetScaTraValuesInFSI();
+    void set_sca_tra_values_in_fsi();
 
     bool ConvergenceCheck(int itnum);
 
-    bool ScatraConvergenceCheck(int itnum) override;
+    bool scatra_convergence_check(int itnum) override;
 
     void TimeUpdateAndOutput();
 

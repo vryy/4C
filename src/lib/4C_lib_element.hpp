@@ -1156,7 +1156,7 @@ might become invalid after a redistribution of the discretization.
 
     \param elements (in): A map of all elements of a discretization
     */
-    virtual bool BuildElementPointers(std::map<int, Teuchos::RCP<DRT::Element>>& elements)
+    virtual bool build_element_pointers(std::map<int, Teuchos::RCP<DRT::Element>>& elements)
     {
       return true;
     }
@@ -1171,7 +1171,7 @@ might become invalid after a redistribution of the discretization.
 
     \param p (in): Parameter list coming from the time integrator.
      */
-    virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p){
+    virtual void set_params_interface_ptr(const Teuchos::ParameterList& p){
         /* This is a dummy function. Please implement the function in the derived classes, if
            necessary. */
     };
@@ -1209,12 +1209,12 @@ might become invalid after a redistribution of the discretization.
      * @param point_coordinates (in/out) point coordinates for the representation of this element
      * @return Number of added points
      */
-    virtual unsigned int AppendVisualizationGeometry(const DRT::Discretization& discret,
+    virtual unsigned int append_visualization_geometry(const DRT::Discretization& discret,
         std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const;
 
     /**
      * \brief Add dof based results to point data vector, such that the data matches the geometry
-     * created in AppendVisualizationGeometry.
+     * created in append_visualization_geometry.
      *
      * @param discret (in) Discretization
      * @param result_data_dofbased (in) Global vector with results
@@ -1224,7 +1224,7 @@ might become invalid after a redistribution of the discretization.
      * @param vtu_point_result_data (in/out) Result data vector.
      * @return Number of points added by this element.
      */
-    virtual unsigned int AppendVisualizationDofBasedResultDataVector(
+    virtual unsigned int append_visualization_dof_based_result_data_vector(
         const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
         unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
@@ -1418,7 +1418,7 @@ might become invalid after a redistribution of the discretization.
     \param master: parent element which shares the orientation of faces
     \param lface_master: local number of face within master element
     */
-    void SetParentMasterElement(DRT::Element* master, const int lface_master)
+    void set_parent_master_element(DRT::Element* master, const int lface_master)
     {
       parent_master_ = master;
       lface_master_ = lface_master;
@@ -1436,7 +1436,7 @@ might become invalid after a redistribution of the discretization.
     \param slave: second parent element when there already is a master element
     \param lface_slave: local number of face within slave element
     */
-    void SetParentSlaveElement(DRT::Element* slave, const int lface_slave)
+    void set_parent_slave_element(DRT::Element* slave, const int lface_slave)
     {
       parent_slave_ = slave;
       lface_slave_ = lface_slave;

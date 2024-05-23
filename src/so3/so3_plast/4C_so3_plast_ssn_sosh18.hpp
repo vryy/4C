@@ -43,14 +43,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoSh18PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDSH18PLAST"; }
     };  // class SoSh18PlastType
 
     class SoSh18Plast : public virtual So3Plast<CORE::FE::CellType::hex18>, public virtual SoSh18
@@ -164,7 +164,7 @@ namespace DRT
       // don't want = operator
       SoSh18Plast& operator=(const SoSh18Plast& old) = delete;
 
-      std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDSH18PLAST"; }
 
      protected:
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices

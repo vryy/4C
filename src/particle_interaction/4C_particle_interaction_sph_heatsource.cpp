@@ -46,7 +46,7 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -63,7 +63,7 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-        particlematerial_->GetPtrToParticleMatParameter(type_i));
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
   // set of potential absorbing particle types
   std::set<PARTICLEENGINE::TypeEnum> potentialabsorbingtypes = {
@@ -117,11 +117,11 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* basematerial_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
@@ -137,7 +137,7 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
       double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.EvaluateTimeDerivative(pos_i, evaltime, 0, 0);
+      funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += thermomaterial_i->thermalAbsorptivity_ * funct[0] *
@@ -194,7 +194,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -205,14 +205,14 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+  neighborpairs_->get_relevant_particle_pair_indices_for_disjoint_combination(
       absorbingtypes_, nonabsorbingtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -227,17 +227,17 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     const MAT::PAR::ParticleMaterialBase* material_j =
-        particlematerial_->GetPtrToParticleMatParameter(type_j);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -292,11 +292,11 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* basematerial_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
@@ -326,7 +326,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.EvaluateTimeDerivative(pos_i, evaltime, 0, 0);
+      funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += f_i_proj * thermomaterial_i->thermalAbsorptivity_ * funct[0] *

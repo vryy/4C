@@ -100,7 +100,7 @@ double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetViscosity(const double a
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetDerivOfViscosityWrtAbsPressGrad(
+double MAT::PAR::FluidPoroViscosityLawCellAdherence::get_deriv_of_viscosity_wrt_abs_press_grad(
     const double abspressgrad) const
 {
   // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / | grad(pressure)

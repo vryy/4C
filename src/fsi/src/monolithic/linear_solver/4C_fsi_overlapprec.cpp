@@ -112,7 +112,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::BlockPreconditioningMatrix::LocalBlockRichardson(
+void FSI::BlockPreconditioningMatrix::local_block_richardson(
     Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& innerOp,
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
     int iterations, double omega, FILE* err, const Epetra_Comm& comm)

@@ -44,7 +44,7 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -75,7 +75,7 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -89,11 +89,11 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get equation of state for current particle type
     const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
-        equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
+        equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
@@ -101,7 +101,7 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
   }
 
   // refresh pressure of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(pressuretorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(pressuretorefresh_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -60,10 +60,10 @@ namespace DRT
           ) override;
 
       //! Clear all chemotaxtis related class variable (i.e. set them to zero)
-      void ClearChemotaxisTerms();
+      void clear_chemotaxis_terms();
 
       //! Get and save all chemotaxtis related class variable
-      virtual void GetChemotaxisCoefficients(
+      virtual void get_chemotaxis_coefficients(
           const Teuchos::RCP<const CORE::MAT::Material> material  //!< pointer to current material
       );
 

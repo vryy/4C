@@ -52,18 +52,19 @@ namespace MAT
       virtual double EvaluateSaturation(const std::vector<double>& pressure) = 0;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
+      virtual double evaluate_deriv_of_saturation_wrt_pressure(
           int doftoderive, const std::vector<double>& pressure) = 0;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+      virtual double evaluate_second_deriv_of_saturation_wrt_pressure(
           int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) = 0;
 
       //! evaluate generalized pressure related to phase law
       virtual double EvaluateGenPressure(double saturation) = 0;
 
       //! evaluate derivative of pressure w.r.t. saturation
-      virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) = 0;
+      virtual double evaluate_deriv_of_pressure_wrt_saturation(
+          int doftoderive, double saturation) = 0;
     };
 
     /*----------------------------------------------------------------------*/
@@ -99,15 +100,15 @@ namespace MAT
       double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
-          const std::vector<double>& pressure) override;
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int firstdoftoderive,
+          int seconddoftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate derivative of pressure w.r.t. saturtion
-      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
+      double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override;
     };
     // class FluidPoroPhaseLawLinear
 
@@ -143,18 +144,18 @@ namespace MAT
       double EvaluateSaturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
-          const std::vector<double>& pressure) override;
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int firstdoftoderive,
+          int seconddoftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
       double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
-      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
+      double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override;
     };
     // class FluidPoroPhaseLawTangent
 
@@ -189,7 +190,7 @@ namespace MAT
       };
 
       //! evaluate derivative of saturation w.r.t. pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int doftoderive, const std::vector<double>& pressure) override
       {
         FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
@@ -197,7 +198,7 @@ namespace MAT
       };
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(
+      double evaluate_second_deriv_of_saturation_wrt_pressure(
           int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) override
       {
         FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
@@ -212,7 +213,7 @@ namespace MAT
       };
 
       //! evaluate derivative of pressure w.r.t. saturation
-      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override
+      double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override
       {
         FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
@@ -250,18 +251,18 @@ namespace MAT
       double EvaluateSaturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
-          const std::vector<double>& pressure) override;
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int firstdoftoderive,
+          int seconddoftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
       double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
-      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
+      double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override;
 
      private:
       //! templated internal Initialize implementation
@@ -270,20 +271,20 @@ namespace MAT
 
       //! templated internal EvaluateSaturation implementation
       template <int dim>
-      double EvaluateSaturationInternal(const std::vector<double>& pressure);
+      double evaluate_saturation_internal(const std::vector<double>& pressure);
 
-      //! templated internal EvaluateDerivOfSaturationWrtPressure implementation
+      //! templated internal evaluate_deriv_of_saturation_wrt_pressure implementation
       template <int dim>
-      double EvaluateDerivOfSaturationWrtPressureInternal(
+      double evaluate_deriv_of_saturation_wrt_pressure_internal(
           int doftoderive, const std::vector<double>& pressure);
 
-      //! templated internal EvaluateDerivOfPressureWrtSaturation implementation
+      //! templated internal evaluate_deriv_of_pressure_wrt_saturation implementation
       template <int dim>
-      double EvaluateDerivOfPressureWrtSaturationInternal(int doftoderive, double saturation);
+      double evaluate_deriv_of_pressure_wrt_saturation_internal(int doftoderive, double saturation);
 
       //! templated internal EvaluateGenPressure implementation
       template <int dim>
-      double EvaluateGenPressureInternal(double saturation);
+      double evaluate_gen_pressure_internal(double saturation);
 
 
       //! vector for input of differential pressure to function

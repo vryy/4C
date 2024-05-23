@@ -134,7 +134,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   double eta_last_gauss_point = 1e10;
   double beam_jacobian = 0.0;
   const double penalty_parameter =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+      this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter();
 
   // Calculate the mesh tying forces.
   // Loop over segments.
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<GEOMETRYPAIR::t_line3>(
           L, eta, q_rot.shape_function_data_);
 
-      triad_interpolation_scheme_.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+      triad_interpolation_scheme_.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
           I_tilde_vector, eta);
       for (unsigned int i_node = 0; i_node < n_nodes_rot_; i_node++)
         for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
@@ -167,7 +167,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
             I_tilde(i_dim_0, i_node * 3 + i_dim_1) = I_tilde_vector[i_node](i_dim_0, i_dim_1);
 
       // Get the rotation vector at this Gauss point.
-      triad_interpolation_scheme_.GetInterpolatedQuaternionAtXi(quaternion_double, eta);
+      triad_interpolation_scheme_.get_interpolated_quaternion_at_xi(quaternion_double, eta);
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, rotation_vector_double);
       T_beam_double = CORE::LARGEROTATIONS::Tmatrix(rotation_vector_double);
       set_q_fad(rotation_vector_double, rotation_vector_fad, beam::n_dof_ + solid::n_dof_);
@@ -302,11 +302,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::GetTr
 {
   if (reference)
   {
-    this->triad_interpolation_scheme_ref_.GetInterpolatedTriadAtXi(triad, xi);
+    this->triad_interpolation_scheme_ref_.get_interpolated_triad_at_xi(triad, xi);
   }
   else
   {
-    this->triad_interpolation_scheme_.GetInterpolatedTriadAtXi(triad, xi);
+    this->triad_interpolation_scheme_.get_interpolated_triad_at_xi(triad, xi);
   }
 }
 

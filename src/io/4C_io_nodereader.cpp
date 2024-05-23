@@ -41,7 +41,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
     std::vector<ElementReader>& element_readers, int& max_node_id)
 {
   // Check if there are any nodes to be read. If not, leave right away.
-  const int numnodes = reader.ExcludedSectionLength(node_section_name);
+  const int numnodes = reader.excluded_section_length(node_section_name);
   const auto& comm = reader.Comm();
 
   if (numnodes == 0) return;
@@ -73,7 +73,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
   if (myrank == 0)
   {
     file.open(inputfile_name.c_str());
-    file.seekg(reader.ExcludedSectionPosition(node_section_name));
+    file.seekg(reader.excluded_section_position(node_section_name));
   }
   std::string tmp;
   std::string tmp2;

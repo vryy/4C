@@ -166,11 +166,12 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la);
 
       //! extract turbulence approach
-      void ExtractTurbulenceApproach(DRT::Element* ele, Teuchos::ParameterList& params,
+      void extract_turbulence_approach(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la, int& nlayer);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
@@ -197,19 +198,19 @@ namespace DRT
       );
 
       //! further node-based source terms not given via Neumann volume condition
-      void OtherNodeBasedSourceTerms(const std::vector<int>& lm,  //!< location vector
-          DRT::Discretization& discretization,                    //!< discretization
-          Teuchos::ParameterList& params                          //!< parameterlist
+      void other_node_based_source_terms(const std::vector<int>& lm,  //!< location vector
+          DRT::Discretization& discretization,                        //!< discretization
+          Teuchos::ParameterList& params                              //!< parameterlist
       );
 
       //! read element coordinates
-      virtual void ReadElementCoordinates(const DRT::Element* ele);
+      virtual void read_element_coordinates(const DRT::Element* ele);
 
       //! evaluate shape functions and their derivatives at element center
-      virtual double EvalShapeFuncAndDerivsAtEleCenter();
+      virtual double eval_shape_func_and_derivs_at_ele_center();
 
       //! evaluate shape functions and their derivatives at current integration point
-      virtual double EvalShapeFuncAndDerivsAtIntPoint(
+      virtual double eval_shape_func_and_derivs_at_int_point(
           const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad                                            //!< id of current Gauss point
       );
@@ -223,13 +224,13 @@ namespace DRT
           const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsInParameterSpace();
+      double eval_shape_func_and_derivs_in_parameter_space();
 
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS();
+      virtual void set_internal_variables_for_mat_and_rhs();
 
       //! add nodal displacements to point coordinates
-      virtual void UpdateNodeCoordinates() { xyze_ += edispnp_; };
+      virtual void update_node_coordinates() { xyze_ += edispnp_; };
 
       //! finite difference check for debugging purposes
       virtual void FDCheck(DRT::Element* ele,         //!< the element we are dealing with
@@ -243,22 +244,22 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate mass matrix and rhs for determining initial time derivative
-      virtual void CalcInitialTimeDerivative(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                 //!< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,                 //!< element residual
-          Teuchos::ParameterList& params,                        //!< parameter list
-          DRT::Discretization& discretization,                   //!< discretization
-          DRT::Element::LocationArray& la                        //!< location array
+      virtual void calc_initial_time_derivative(DRT::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat,                    //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,                    //!< element residual
+          Teuchos::ParameterList& params,                           //!< parameter list
+          DRT::Discretization& discretization,                      //!< discretization
+          DRT::Element::LocationArray& la                           //!< location array
       );
 
       //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
-      virtual void CorrectRHSFromCalcRHSLinMass(CORE::LINALG::SerialDenseVector& erhs, const int k,
-          const double fac, const double densnp, const double phinp);
+      virtual void correct_rhs_from_calc_rhs_lin_mass(CORE::LINALG::SerialDenseVector& erhs,
+          const int k, const double fac, const double densnp, const double phinp);
 
       //!  integrate shape functions over domain
-      void IntegrateShapeFunctions(const DRT::Element* ele,  //!< the element we are dealing with
-          CORE::LINALG::SerialDenseVector& elevec1,          //!< rhs vector
-          const CORE::LINALG::IntSerialDenseVector& dofids   //!< index of current scalar
+      void integrate_shape_functions(const DRT::Element* ele,  //!< the element we are dealing with
+          CORE::LINALG::SerialDenseVector& elevec1,            //!< rhs vector
+          const CORE::LINALG::IntSerialDenseVector& dofids     //!< index of current scalar
       );
 
       //!  calculate weighted mass flux (no reactive flux so far)
@@ -283,14 +284,15 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi);
 
       //! calculate scalar time derivative(s) and domain integral
-      void CalculateScalarTimeDerivatives(
+      void calculate_scalar_time_derivatives(
           const DRT::Discretization& discretization,  //!< discretization
           const std::vector<int>& lm,                 //!< location vector
           CORE::LINALG::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );
 
-      void CalculateMomentumAndVolume(const DRT::Element* ele,  //!< the element we are dealing with
+      void calculate_momentum_and_volume(
+          const DRT::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseVector&
               momandvol,  //!< element (volume) momentum vector and minus domain volume
           const double interface_thickness  //!< interface thickness of smoothing function.
@@ -301,16 +303,17 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! calculate error of numerical solution with respect to analytical solution
-      virtual void CalErrorComparedToAnalytSolution(
+      virtual void cal_error_compared_to_analyt_solution(
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void CalcHeteroReacMatAndRHS(DRT::Element* ele,  //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& emat,               //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs                //!< element rhs to calculate
+      virtual void calc_hetero_reac_mat_and_rhs(
+          DRT::Element* ele,                      //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
 
@@ -388,7 +391,7 @@ namespace DRT
       );
 
       //! calculation of tau according to Taylor, Hughes and Zarins
-      virtual void CalcTauTaylorHughesZarins(
+      virtual void calc_tau_taylor_hughes_zarins(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
@@ -398,7 +401,7 @@ namespace DRT
       );
 
       //! calculation of tau according to Franca and Valentin
-      virtual void CalcTauFrancaValentin(
+      virtual void calc_tau_franca_valentin(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
@@ -409,7 +412,7 @@ namespace DRT
       );
 
       //! calculation of tau according to Franca, Shakib and Codina
-      virtual void CalcTauFrancaShakibCodina(
+      virtual void calc_tau_franca_shakib_codina(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
@@ -431,7 +434,7 @@ namespace DRT
       );
 
       //! calculation of tau according to Franca, Madureira and Valentin
-      virtual void CalcTauFrancaMadureiraValentin(
+      virtual void calc_tau_franca_madureira_valentin(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
@@ -488,13 +491,13 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate mean turbulent Prandtl number
-      void GetMeanPrtOfHomogenousDirection(
+      void get_mean_prt_of_homogenous_direction(
           Teuchos::ParameterList& turbmodelparams,  //!< turbulence parameter list
           int& nlayer                               //!< layer of homogeneous plane
       );
 
       //! output of model parameters
-      void StoreModelParametersForOutput(
+      void store_model_parameters_for_output(
           const DRT::Element* ele,                 //!< the element we are dealing with
           const bool isowned,                      //!< owner
           Teuchos::ParameterList& turbulencelist,  //!< turbulence parameter list
@@ -509,7 +512,7 @@ namespace DRT
       );
 
       //!  calculate fine-scale art. subgrid diffusivity
-      void CalcFineScaleSubgrDiff(double& sgdiff,        //!< subgrid-scale diffusion
+      void calc_fine_scale_subgr_diff(double& sgdiff,    //!< subgrid-scale diffusion
           CORE::LINALG::SerialDenseVector& subgrdiff,    //!< subgrid-scale diffusion vector
           DRT::Element* ele,                             //!< the element we are dealing with
           const double vol,                              //!< element volume
@@ -520,7 +523,7 @@ namespace DRT
       );
 
       //! calculation of coefficients B and D for multifractal subgrid-scales
-      void CalcBAndDForMultifracSubgridScales(
+      void calc_b_and_d_for_multifrac_subgrid_scales(
           CORE::LINALG::Matrix<nsd_, 1>&
               B_mfs,            //!< coefficient for fine-scale velocity (will be filled)
           double& D_mfs,        //!< coefficient for fine-scale scalar (will be filled)
@@ -554,10 +557,11 @@ namespace DRT
           const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
-      virtual void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel);
+      virtual void calc_subgr_velocity_visc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel);
 
       //! calculate turbulent Prandtl number for dynamic Smagorinsky model
-      void scatra_calc_smag_const_LkMk_and_MkMk(Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
+      void scatra_calc_smag_const_lk_mk_and_mk_mk(
+          Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel_temp,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_rateofstrain_temp,
@@ -590,7 +594,7 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate the Laplacian in strong form for all shape functions
-      void GetLaplacianStrongForm(
+      void get_laplacian_strong_form(
           CORE::LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
@@ -648,9 +652,9 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,  //!< ?
-          const int vi,                       //!< ?
-          const int ui                        //!< ?
+      void get_laplacian_weak_form(double& val,  //!< ?
+          const int vi,                          //!< ?
+          const int ui                           //!< ?
       )
       {
         val = 0.0;
@@ -661,7 +665,7 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,                //!< ?
+      void get_laplacian_weak_form(double& val,             //!< ?
           const CORE::LINALG::Matrix<nsd_, nsd_>& diffus3,  //!< ?
           const int vi,                                     //!< ?
           const int ui                                      //!< ?
@@ -678,7 +682,7 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,          //!< ?
+      void get_laplacian_weak_form_rhs(double& val,      //!< ?
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< ?
           const int vi                                   //!< ?
       )
@@ -722,7 +726,7 @@ namespace DRT
       );
 
       //! calculation of stabilization element matrix
-      void CalcMatTransConvDiffStab(
+      void calc_mat_trans_conv_diff_stab(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double
@@ -799,7 +803,7 @@ namespace DRT
       );
 
       //! adaption of residual with respect to time integration
-      void RecomputeScatraResForRhs(
+      void recompute_scatra_res_for_rhs(
           double& scatrares,  //!< residual of convection-diffusion-reaction eq
           const int k,        //!< index of current scalar
           const CORE::LINALG::Matrix<nen_, 1>& diff,  //!< laplace term
@@ -810,7 +814,7 @@ namespace DRT
       );
 
       //! adaption of convective term for rhs
-      virtual void RecomputeConvPhiForRhs(const int k,    //!< index of current scalar
+      virtual void recompute_conv_phi_for_rhs(const int k,  //!< index of current scalar
           const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
           const double densnp,                            //!< density at time_(n+1)
           const double densn,                             //!< density at time_(n)
@@ -818,7 +822,7 @@ namespace DRT
       );
 
       //! standard Galerkin transient, old part of rhs and source term
-      void CalcRHSHistAndSource(
+      void calc_rhs_hist_and_source(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
@@ -839,7 +843,7 @@ namespace DRT
       );
 
       //! transient, convective and diffusive stabilization terms on right hand side
-      void CalcRHSTransConvDiffStab(
+      void calc_rhs_trans_conv_diff_stab(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double rhstaufac,  //!< time-integration factor for rhs times domain-integration
@@ -887,8 +891,8 @@ namespace DRT
 
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
       //! multi-scale simulations
-      virtual void CalcMatAndRhsMultiScale(const DRT::Element* const ele,  //!< element
-          CORE::LINALG::SerialDenseMatrix& emat,                           //!< element matrix
+      virtual void calc_mat_and_rhs_multi_scale(const DRT::Element* const ele,  //!< element
+          CORE::LINALG::SerialDenseMatrix& emat,                                //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const int k,                            //!< species index
           const int iquad,                        //!< Gauss point index
@@ -916,7 +920,7 @@ namespace DRT
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
-      virtual void CalcMatConvAddConsODFluid(
+      virtual void calc_mat_conv_add_cons_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
@@ -943,7 +947,7 @@ namespace DRT
 
       //! standard Galerkin transient, old part of rhs and source term (off diagonal/shapederivative
       //! term mesh)
-      virtual void CalcHistAndSourceODMesh(
+      virtual void calc_hist_and_source_od_mesh(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -968,7 +972,7 @@ namespace DRT
       );
 
       //! standard Galerkin convective term (only shapederivative term mesh)
-      void ApplyShapeDerivsConv(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+      void apply_shape_derivs_conv(CORE::LINALG::SerialDenseMatrix& emat, const int k,
           const double rhsfac, const double densnp, const double J,
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
           const CORE::LINALG::Matrix<nsd_, 1>& convelint);
@@ -1028,7 +1032,7 @@ namespace DRT
       );
 
       //! standard Galerkin transient, old part of rhs and source term (off diagonal terms fluid)
-      virtual void CalcHistAndSourceODFluid(
+      virtual void calc_hist_and_source_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -1204,7 +1208,7 @@ namespace DRT
       }
 
       //! Set the isotropic subgrid diffusion coefficient
-      virtual void SetIsotropicSubGridDiff(const double sgdiff, const int k)
+      virtual void set_isotropic_sub_grid_diff(const double sgdiff, const int k)
       {
         diff_[k] += sgdiff;
         sgdiff_[k] += sgdiff;
@@ -1273,7 +1277,7 @@ namespace DRT
       double GetReaCoeff(const int k) const { return reacoeff_[k]; }
 
       //! Return the stabilization coefficient
-      virtual double GetStabilizationCoeff(const int k, const double phinp_k) const
+      virtual double get_stabilization_coeff(const int k, const double phinp_k) const
       {
         return reacoeff_[k];
       }
@@ -1319,7 +1323,7 @@ namespace DRT
       virtual ~ScaTraEleInternalVariableManager() = default;
 
       // compute and set internal variables
-      void SetInternalVariables(
+      void set_internal_variables(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
@@ -1402,7 +1406,7 @@ namespace DRT
       /*========================================================================*/
       //! @name set methods for internal variables
       /*========================================================================*/
-      // in a perfect world, all values should have been set in SetInternalVariables() and
+      // in a perfect world, all values should have been set in set_internal_variables() and
       // related methods. Single(!) variables should not be manipulated, because this
       // easily leads to inconsistencies. However, this needs to be done in certain places
       // at the moment. Therefore the following set methods. Try to circumvent

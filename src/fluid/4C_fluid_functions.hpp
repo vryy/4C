@@ -45,7 +45,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -68,7 +68,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -89,7 +89,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -115,7 +115,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -139,7 +139,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -160,7 +160,7 @@ namespace FLD
    public:
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -178,7 +178,7 @@ namespace FLD
    public:
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (1); };
@@ -193,7 +193,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (6); };
@@ -217,7 +217,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (3); };
@@ -239,7 +239,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (6); };
@@ -260,7 +260,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (3); };
@@ -280,7 +280,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (6); };
@@ -299,7 +299,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (3); };
@@ -316,7 +316,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (1); };
@@ -332,7 +332,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (6); };
@@ -356,7 +356,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (3); };
@@ -380,7 +380,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (1); };
@@ -402,7 +402,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
@@ -426,7 +426,7 @@ namespace FLD
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     /*!

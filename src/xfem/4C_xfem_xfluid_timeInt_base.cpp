@@ -315,7 +315,7 @@ bool XFEM::XfluidTimeintBase::changedSideSameTime(
     IO::cout << "\n\t\t\t\t\t SIDE-CHECK with side=" << *side_it << IO::endl;
 #endif
 
-    if (callSideEdgeIntersection(sh, *side_it, x1, x2))
+    if (call_side_edge_intersection(sh, *side_it, x1, x2))
     {
 #ifdef DEBUG_TIMINT_STD
       IO::cout << "\n\t\t\t\t\t <<< POINT CHANGED THE SIDE >>>" << IO::endl;
@@ -384,7 +384,7 @@ bool XFEM::XfluidTimeintBase::Neighbors(
 /*------------------------------------------------------------------------------------------------*
  * check if edge between x1 and x2 cuts the side                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XfluidTimeintBase::callSideEdgeIntersection(
+bool XFEM::XfluidTimeintBase::call_side_edge_intersection(
     CORE::GEO::CUT::SideHandle* sh,  /// side handle
     int sid,                         /// side id
     CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
@@ -395,19 +395,19 @@ bool XFEM::XfluidTimeintBase::callSideEdgeIntersection(
   {
     case CORE::FE::CellType::tri3:
     {
-      return callSideEdgeIntersectionT<CORE::FE::CellType::tri3>(sh, sid, x1, x2);
+      return call_side_edge_intersection_t<CORE::FE::CellType::tri3>(sh, sid, x1, x2);
     }
     case CORE::FE::CellType::quad4:
     {
-      return callSideEdgeIntersectionT<CORE::FE::CellType::quad4>(sh, sid, x1, x2);
+      return call_side_edge_intersection_t<CORE::FE::CellType::quad4>(sh, sid, x1, x2);
     }
     case CORE::FE::CellType::quad8:
     {
-      return callSideEdgeIntersectionT<CORE::FE::CellType::quad8>(sh, sid, x1, x2);
+      return call_side_edge_intersection_t<CORE::FE::CellType::quad8>(sh, sid, x1, x2);
     }
     case CORE::FE::CellType::quad9:
     {
-      return callSideEdgeIntersectionT<CORE::FE::CellType::quad9>(sh, sid, x1, x2);
+      return call_side_edge_intersection_t<CORE::FE::CellType::quad9>(sh, sid, x1, x2);
     }
     default:
     {
@@ -423,7 +423,7 @@ bool XFEM::XfluidTimeintBase::callSideEdgeIntersection(
  * check if edge between x1 and x2 cuts the side (templated)                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType sidetype>
-bool XFEM::XfluidTimeintBase::callSideEdgeIntersectionT(
+bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
     CORE::GEO::CUT::SideHandle* sh,  /// side handle
     int sid,                         /// side id
     CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
@@ -458,7 +458,7 @@ bool XFEM::XfluidTimeintBase::callSideEdgeIntersectionT(
 
   // check also limits during the newton scheme and when converged
   double itol;
-  return (static_cast<bool>(intersect->ComputeEdgeSideIntersection(itol)));
+  return (static_cast<bool>(intersect->compute_edge_side_intersection(itol)));
 }
 
 
@@ -930,7 +930,7 @@ XFEM::XfluidStd::XfluidStd(
               for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
               CORE::LINALG::Matrix<1, 1> nodepredummy(true);
-              extractNodalValuesFromVector<1>(nodedispnp, nodepredummy, dispnp_, lm);
+              extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
             }
 
             // constructor for standard computation
@@ -1460,7 +1460,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     DRT::Element::LocationArray cutla(1);
     side->LocationVector(*boundarydis_, cutla, false);
 
-    ComputeStartPoint_Side(
+    compute_start_point_side(
         side, side_xyze, cutla[0].lm_, proj_xi_side, min_dist, proj_x_n, start_point);
   }
   else if (data.proj_ == TimeIntData::onLine_)
@@ -1603,18 +1603,18 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
 
       Teuchos::RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
 
-      call_get_projxn_Line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
+      call_get_projxn_line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 
 
-      ComputeStartPoint_Line(side_1,  ///< pointer to side element
-          side_xyze_1,                ///< side's node coordinates
-          side_2,                     ///< pointer to side element
-          side_xyze_2,                ///< side's node coordinates
-          cutla_1[0].lm_,             ///< local map
-          cutla_2[0].lm_,             ///< local map
-          min_dist,                   ///< distance from point to its projection
-          proj_x_n,                   ///< projected point at t^n
-          start_point                 ///< final start point
+      compute_start_point_line(side_1,  ///< pointer to side element
+          side_xyze_1,                  ///< side's node coordinates
+          side_2,                       ///< pointer to side element
+          side_xyze_2,                  ///< side's node coordinates
+          cutla_1[0].lm_,               ///< local map
+          cutla_2[0].lm_,               ///< local map
+          min_dist,                     ///< distance from point to its projection
+          proj_x_n,                     ///< projected point at t^n
+          start_point                   ///< final start point
       );
     }
   }
@@ -1689,12 +1689,12 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     //----------------------------------------------------
 
 
-    ComputeStartPoint_AVG(surr_sides,  ///< pointer to side element
-        surr_sides_xyze,               ///< side's node coordinates
-        surr_sides_lm,                 ///< local map
-        min_dist,                      ///< distance from point to its projection
-        proj_x_n,                      ///< projected point at t^n
-        start_point                    ///< final start point
+    compute_start_point_avg(surr_sides,  ///< pointer to side element
+        surr_sides_xyze,                 ///< side's node coordinates
+        surr_sides_lm,                   ///< local map
+        min_dist,                        ///< distance from point to its projection
+        proj_x_n,                        ///< projected point at t^n
+        start_point                      ///< final start point
     );
   }
   else
@@ -1714,7 +1714,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
   }
 }
 
-bool XFEM::XfluidStd::FindNearestSurfPoint(
+bool XFEM::XfluidStd::find_nearest_surf_point(
     CORE::LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
     CORE::LINALG::Matrix<3, 1>& proj_x,  ///< coords of projected point
     CORE::GEO::CUT::VolumeCell* vc,      ///< volumcell on that's cut-surface we want to project
@@ -1722,7 +1722,7 @@ bool XFEM::XfluidStd::FindNearestSurfPoint(
 )
 {
   if (vc == nullptr)
-    FOUR_C_THROW("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
+    FOUR_C_THROW("do not call find_nearest_surf_point with Null-Pointer for Volumecell");
 
   //--------------------------------------------------------
   // get involved side ids for projection and distance computation
@@ -1778,7 +1778,7 @@ bool XFEM::XfluidStd::ProjectToSurface(
 )
 {
 #ifdef DEBUG_TIMINT_STD
-  IO::cout << "\n\t * FindNearestSurfPoint for point " << x << IO::endl;
+  IO::cout << "\n\t * find_nearest_surf_point for point " << x << IO::endl;
 #endif
 
   if (points.size() == 0 and sides.size() == 0)
@@ -1892,9 +1892,9 @@ bool XFEM::XfluidStd::ProjectToSurface(
 
 
 
-void XFEM::XfluidStd::ComputeStartPoint_Side(DRT::Element* side,  ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side_xyze,                   ///< side's node coordinates
-    const std::vector<int>& lm,                                   ///< local map
+void XFEM::XfluidStd::compute_start_point_side(DRT::Element* side,  ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side_xyze,                     ///< side's node coordinates
+    const std::vector<int>& lm,                                     ///< local map
     CORE::LINALG::Matrix<2, 1>& xi_side,     ///< local coordinates of projected point w.r.t side
     double& dist,                            ///< distance from point to its projection
     CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
@@ -1903,7 +1903,7 @@ void XFEM::XfluidStd::ComputeStartPoint_Side(DRT::Element* side,  ///< pointer t
 {
   CORE::LINALG::Matrix<3, 1> normal(true);
 
-  callgetNormalSide_tn(side, normal, side_xyze, lm, proj_x_n, xi_side);
+  callget_normal_side_tn(side, normal, side_xyze, lm, proj_x_n, xi_side);
 
   // map point into fluid domain along normal vector
   start_point.Update(1.0, proj_x_n, dist, normal);
@@ -1911,12 +1911,12 @@ void XFEM::XfluidStd::ComputeStartPoint_Side(DRT::Element* side,  ///< pointer t
   return;
 }
 
-void XFEM::XfluidStd::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side1_xyze,                   ///< side's node coordinates
-    DRT::Element* side2,                                           ///< pointer to side element
-    CORE::LINALG::SerialDenseMatrix& side2_xyze,                   ///< side's node coordinates
-    const std::vector<int>& lm1,                                   ///< local map
-    const std::vector<int>& lm2,                                   ///< local map
+void XFEM::XfluidStd::compute_start_point_line(DRT::Element* side1,  ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side1_xyze,                     ///< side's node coordinates
+    DRT::Element* side2,                                             ///< pointer to side element
+    CORE::LINALG::SerialDenseMatrix& side2_xyze,                     ///< side's node coordinates
+    const std::vector<int>& lm1,                                     ///< local map
+    const std::vector<int>& lm2,                                     ///< local map
     double& dist,                            ///< distance from point to its projection
     CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
     CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
@@ -1944,7 +1944,7 @@ void XFEM::XfluidStd::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer 
   xi_side1(0, 0) = xi_1_avg(0, 0);
   xi_side1(1, 0) = xi_1_avg(1, 0);
 
-  callgetNormalSide_tn(side1, normal1, side1_xyze, lm1, proj_x_n_dummy1, xi_side1);
+  callget_normal_side_tn(side1, normal1, side1_xyze, lm1, proj_x_n_dummy1, xi_side1);
 
   normal_avg.Update(1.0, normal1, 1.0);
 
@@ -1958,7 +1958,7 @@ void XFEM::XfluidStd::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer 
     xi_side2(0, 0) = xi_2_avg(0, 0);
     xi_side2(1, 0) = xi_2_avg(1, 0);
 
-    callgetNormalSide_tn(side2, normal2, side2_xyze, lm2, proj_x_n_dummy1, xi_side2);
+    callget_normal_side_tn(side2, normal2, side2_xyze, lm2, proj_x_n_dummy1, xi_side2);
 
     normal_avg.Update(1.0, normal2, 1.0);
   }
@@ -1972,7 +1972,7 @@ void XFEM::XfluidStd::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer 
 }
 
 
-void XFEM::XfluidStd::ComputeStartPoint_AVG(
+void XFEM::XfluidStd::compute_start_point_avg(
     const std::vector<DRT::Element*>& sides,                   ///< pointer to side element
     std::vector<CORE::LINALG::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
     const std::vector<std::vector<int>>& sides_lm,             ///< local map
@@ -2009,7 +2009,7 @@ void XFEM::XfluidStd::ComputeStartPoint_AVG(
     CORE::LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
     CORE::LINALG::Matrix<3, 1> side_normal(true);
 
-    callgetNormalSide_tn(side, side_normal, sides_xyze[it - sides.begin()],
+    callget_normal_side_tn(side, side_normal, sides_xyze[it - sides.begin()],
         sides_lm[it - sides.begin()], proj_x_n_dummy1, side_center);
 
     normal_avg += side_normal;
@@ -2025,11 +2025,11 @@ void XFEM::XfluidStd::ComputeStartPoint_AVG(
 
 
 
-void XFEM::XfluidStd::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to side element
-    CORE::LINALG::Matrix<3, 1>& normal,                         ///< normal vector w.r.t side
-    CORE::LINALG::SerialDenseMatrix& side_xyze,                 ///< side's node coordinates
-    const std::vector<int>& lm,                                 ///< local map
-    CORE::LINALG::Matrix<3, 1>& proj_x_n,                       ///< projected point on side
+void XFEM::XfluidStd::callget_normal_side_tn(DRT::Element* side,  ///< pointer to side element
+    CORE::LINALG::Matrix<3, 1>& normal,                           ///< normal vector w.r.t side
+    CORE::LINALG::SerialDenseMatrix& side_xyze,                   ///< side's node coordinates
+    const std::vector<int>& lm,                                   ///< local map
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,                         ///< projected point on side
     CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
 )
 {
@@ -2167,7 +2167,7 @@ void XFEM::XfluidStd::getNormalSide_tn(
  * call and prepare the projection of point to side                                  schott 07/12
  **
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::call_get_projxn_Line(
+void XFEM::XfluidStd::call_get_projxn_line(
     DRT::Element* side,  ///< pointer to structural side element
     DRT::Element* line,  ///< pointer to structural line of side element
     CORE::LINALG::Matrix<3, 1>& proj_x_n, double& xi_line)
@@ -3409,7 +3409,7 @@ void XFEM::XfluidStd::exportFinalData()
         for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
         CORE::LINALG::Matrix<1, 1> nodepredummy(true);
-        extractNodalValuesFromVector<1>(nodedispnp, nodepredummy, dispnp_, lm);
+        extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
       }
 
       timeIntData_->push_back(TimeIntData(*discret_->gNode(gid), nds_np, nodedispnp, startpoint,

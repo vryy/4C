@@ -64,13 +64,13 @@ namespace DRT
        * @param doboundaryconditions: flag for call to fill complete on cloned dis
        * @return the cloned discretization
        */
-      Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretization(
+      Teuchos::RCP<DRT::Discretization> create_matching_discretization(
           const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
           bool clonedofs = true, bool assigndegreesoffreedom = true, bool initelements = true,
           bool doboundaryconditions = true) const;
 
       //! Base class version for creation of matching discretization without material
-      Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      Teuchos::RCP<DRT::Discretization> create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< discretization with condition
           const CORE::Conditions::Condition&
               cond,  ///< condition, from which the derived discretization is derived
@@ -92,12 +92,12 @@ namespace DRT
         const std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond.Geometry();
         sourceelements.insert(geo.begin(), geo.end());
 
-        return CreateMatchingDiscretizationFromCondition(
+        return create_matching_discretization_from_condition(
             sourcedis, sourceelements, discret_name, element_name, conditions_to_copy);
-      };  // CreateMatchingDiscretizationFromCondition
+      };  // create_matching_discretization_from_condition
 
       //! Base class version for creation of matching discretization without material
-      Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      Teuchos::RCP<DRT::Discretization> create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< discretization with condition
           const std::string& condname,           ///< name of the condition, by which the derived
                                                  ///< discretization is identified
@@ -119,12 +119,12 @@ namespace DRT
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
         CORE::Conditions::FindConditionObjects(sourcedis, sourceelements, condname, label);
 
-        return CreateMatchingDiscretizationFromCondition(
+        return create_matching_discretization_from_condition(
             sourcedis, sourceelements, discret_name, element_name, conditions_to_copy);
-      };  // CreateDiscretizationFromCondition
+      };  // create_discretization_from_condition
 
       //! method for cloning a new discretization from an existing condition without material
-      Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(
+      Teuchos::RCP<DRT::Discretization> create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< discretization with condition
           const std::map<int, Teuchos::RCP<DRT::Element>>&
               sourceelements,               ///< element map/geometry of the condition
@@ -236,7 +236,7 @@ namespace DRT
         Finalize(sourcedis, *targetdis);
 
         return targetdis;
-      };  // CreateDiscretizationFromCondition without material
+      };  // create_discretization_from_condition without material
 
      protected:
       //! construct row nodes for cloned target discretization
@@ -289,8 +289,8 @@ namespace DRT
       explicit DiscretizationCreator(){};
 
       /// Create the clone field material map from the input file
-      void CreateCloneFieldMatMap(std::map<int, int>& matmap, const DRT::Discretization& sourcedis,
-          const DRT::Discretization& targetdis) const
+      void create_clone_field_mat_map(std::map<int, int>& matmap,
+          const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
       {
         if (matmap.size()) FOUR_C_THROW("The input material map is supposed to be empty!");
 
@@ -306,10 +306,10 @@ namespace DRT
               sourcedis.Name().c_str(), targetdis.Name().c_str());
 
         return;
-      };  // CreateCloneFieldMatMap
+      };  // create_clone_field_mat_map
 
       /// method for cloning a new discretization from an existing one
-      void CreateMatchingDiscretization(
+      void create_matching_discretization(
           Teuchos::RCP<DRT::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
           Teuchos::RCP<DRT::Discretization>
               targetdis,   ///< Teuchos::RCP to empty target discretization
@@ -341,13 +341,13 @@ namespace DRT
           }
         }
 
-        CreateMatchingDiscretization(sourcedis, targetdis, matmap);
+        create_matching_discretization(sourcedis, targetdis, matmap);
 
         return;
-      };  // CreateMatchingDiscretization
+      };  // create_matching_discretization
 
       /// method for cloning a new discretization from an existing one
-      void CreateMatchingDiscretization(
+      void create_matching_discretization(
           Teuchos::RCP<DRT::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
           Teuchos::RCP<DRT::Discretization>
               targetdis,  ///< Teuchos::RCP to empty target discretization
@@ -391,11 +391,11 @@ namespace DRT
 
         // call Redistribute, FillComplete etc.
         Finalize(*sourcedis, *targetdis);
-      };  // CreateMatchingDiscretization
+      };  // create_matching_discretization
 
       /// method for cloning a new discretization from an existing condition using the actual
       /// condition
-      void CreateMatchingDiscretizationFromCondition(
+      void create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< ref. to source discretization
           const std::vector<CORE::Conditions::Condition*>&
               conds,  ///< vector of conditions containing the elements to clone
@@ -419,13 +419,13 @@ namespace DRT
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
         CORE::Conditions::FindConditionObjects(sourceelements, conds);
 
-        CreateMatchingDiscretizationFromCondition(sourcedis, sourceelements, targetdis, matmap);
+        create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
         return;
-      };  // CreateMatchingDiscretizationFromCondition
+      };  // create_matching_discretization_from_condition
 
       /// method for cloning a new discretization from an existing condition using the condition
       /// name
-      void CreateMatchingDiscretizationFromCondition(
+      void create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< ref. to source discretization
           const std::string& condname,     ///< string to identify conditioned elements to clone
           DRT::Discretization& targetdis,  ///< Teuchos::RCP to empty target discretization
@@ -438,13 +438,13 @@ namespace DRT
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
         CORE::Conditions::FindConditionObjects(sourcedis, sourceelements, condname);
 
-        CreateMatchingDiscretizationFromCondition(sourcedis, sourceelements, targetdis, matmap);
+        create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
         return;
-      };  // CreateMatchingDiscretizationFromCondition
+      };  // create_matching_discretization_from_condition
 
      private:
       /// method for cloning a new discretization from an existing condition with material
-      void CreateMatchingDiscretizationFromCondition(
+      void create_matching_discretization_from_condition(
           const DRT::Discretization& sourcedis,  ///< ref. to source discretization
           const std::map<int, Teuchos::RCP<DRT::Element>>&
               sourceelements,              ///< conditioned element map to clone
@@ -463,7 +463,7 @@ namespace DRT
             dynamic_cast<DRT::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
         bool buildimmersednode(inode != nullptr);
 
-        AnalyzeConditionedSourceDis(
+        analyze_conditioned_source_dis(
             sourcedis, sourceelements, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
 
         // do the node business
@@ -472,7 +472,7 @@ namespace DRT
         targetnodecolmap_ = CreateMap(colnodeset_, targetdis);
 
         // create elements
-        CreateElementsFromCondition(sourceelements, targetdis, matmap, isnurbsdis);
+        create_elements_from_condition(sourceelements, targetdis, matmap, isnurbsdis);
         targetelerowmap_ = CreateMap(roweleset_, targetdis);
         targetelecolmap_ = CreateMap(coleleset_, targetdis);
 
@@ -482,7 +482,7 @@ namespace DRT
 
         // call Redistribute, FillComplete etc.
         Finalize(sourcedis, targetdis);
-      };  // CreateMatchingDiscretizationFromCondition with material
+      };  // create_matching_discretization_from_condition with material
 
       /// get element type std::strings and global id's and nodes from source discretization
       void AnalyzeSourceDis(Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -529,7 +529,7 @@ namespace DRT
 
       /// get element type std::strings and global id's and nodes from conditioned source
       /// discretization
-      void AnalyzeConditionedSourceDis(const DRT::Discretization& sourcedis,
+      void analyze_conditioned_source_dis(const DRT::Discretization& sourcedis,
           const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
           std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
           std::set<int>& roweleset, std::set<int>& coleleset)
@@ -593,7 +593,7 @@ namespace DRT
         // conditioned subset of the source discretiztation.
         numeleskips_++;
         return;
-      };  // AnalyzeConditionedSourceDis
+      };  // analyze_conditioned_source_dis
 
       /// create new elements and add them to the target discretization
       void CreateElements(Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -694,7 +694,7 @@ namespace DRT
       };  // CreateElements
 
       /// create new elements from the condition and add them to the target discretization
-      void CreateElementsFromCondition(
+      void create_elements_from_condition(
           const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
           DRT::Discretization& targetdis, const std::map<int, int>& matmap, const bool& isnurbsdis)
       {
@@ -817,7 +817,7 @@ namespace DRT
           it++;
         }
         return;
-      }  // CreateElementsFromCondition
+      }  // create_elements_from_condition
 
     };  // class DiscretizationCreator
 
@@ -839,9 +839,9 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->CreateCloneFieldMatMap(matmap, *sourcedis, *targetdis);
+        clonewizard->create_clone_field_mat_map(matmap, *sourcedis, *targetdis);
 
-        clonewizard->CreateMatchingDiscretization(sourcedis, targetdis, matmap);
+        clonewizard->create_matching_discretization(sourcedis, targetdis, matmap);
       }
       if (comm.MyPID() == 0)
       {
@@ -876,9 +876,9 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->CreateCloneFieldMatMap(matmap, *sourcedis_ptr, *targetdis_ptr);
+        clonewizard->create_clone_field_mat_map(matmap, *sourcedis_ptr, *targetdis_ptr);
 
-        clonewizard->CreateMatchingDiscretizationFromCondition(
+        clonewizard->create_matching_discretization_from_condition(
             *sourcedis_ptr, conds, *targetdis_ptr, matmap);
       }
       if (comm.MyPID() == 0)
@@ -910,9 +910,9 @@ namespace DRT
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>());
 
         std::map<int, int> matmap;
-        clonewizard->CreateCloneFieldMatMap(matmap, sourcedis, targetdis);
+        clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis);
 
-        clonewizard->CreateMatchingDiscretizationFromCondition(
+        clonewizard->create_matching_discretization_from_condition(
             sourcedis, condname, targetdis, matmap);
       }
       if (comm.MyPID() == 0)

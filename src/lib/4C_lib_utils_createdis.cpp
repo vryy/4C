@@ -126,7 +126,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization>
-DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
+DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization(
     const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
     bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
@@ -194,7 +194,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   // return identical dis
   return targetdis;
 
-}  // DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization
+}  // DRT::UTILS::DiscretizationCreatorBase::create_matching_discretization
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -205,7 +205,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   targetdis.ExportRowNodes(*targetnoderowmap_);
   targetdis.ExportColumnNodes(*targetnodecolmap_);
   targetdis.ExportRowElements(*targetelerowmap_);
-  targetdis.ExportColumnElements(*targetelecolmap_);
+  targetdis.export_column_elements(*targetelecolmap_);
   targetdis.FillComplete(false, false, false);
 
   // extra work for NURBS discretizations

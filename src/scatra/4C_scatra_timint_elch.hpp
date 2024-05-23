@@ -70,7 +70,7 @@ namespace SCATRA
         const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
-    void BuildBlockNullSpaces(
+    void build_block_null_spaces(
         Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const override;
 
     /*========================================================================*/
@@ -78,15 +78,15 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Set elch-specific parameters
-    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const override;
+    void set_element_specific_sca_tra_parameters(Teuchos::ParameterList& eleparams) const override;
 
     //! contains the nonlinear iteration loop
     void NonlinearSolve() override;
 
     //! calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol() override;
+    void evaluate_error_compared_to_analytical_sol() override;
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test() override;
 
     /*========================================================================*/
     //! @name ELCH methods
@@ -107,33 +107,33 @@ namespace SCATRA
 
     /*--- query and output ---------------------------------------------------*/
 
-    void CheckAndWriteOutputAndRestart() override;
+    void check_and_write_output_and_restart() override;
 
     //! problem-specific outputs
-    void OutputProblemSpecific() override;
+    void output_problem_specific() override;
 
     //! read problem-specific restart data
-    void ReadRestartProblemSpecific(int step, IO::DiscretizationReader& reader) override;
+    void read_restart_problem_specific(int step, IO::DiscretizationReader& reader) override;
 
     //! output electrode domain status information to screen and file
-    void OutputElectrodeInfoDomain();
+    void output_electrode_info_domain();
 
     //! output electrode boundary status information to screen and file
-    void OutputElectrodeInfoBoundary();
+    void output_electrode_info_boundary();
 
     //! \brief evaluate status information on single line or surface electrode
     //!
     //! \param condid      ID of condition to be evaluated
     //! \param condstring  name of condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> EvaluateSingleElectrodeInfo(
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> evaluate_single_electrode_info(
         int condid, const std::string& condstring);
 
     //! \brief evaluate status information on single point electrode
     //!
     //! \param condition   condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> evaluate_single_electrode_info_point(
         Teuchos::RCP<CORE::Conditions::Condition> condition);
 
     //! \brief post-process status information on single electrode
@@ -147,12 +147,12 @@ namespace SCATRA
     //! \param electrodeint   physical dimensions of the electrode region (out)
     //! \param electrodepot   electrode potential on electrode side (out)
     //! \param meanoverpot    mean overpotential (out)
-    void PostProcessSingleElectrodeInfo(CORE::LINALG::SerialDenseVector& scalars, int id,
+    void post_process_single_electrode_info(CORE::LINALG::SerialDenseVector& scalars, int id,
         bool print, double& currentsum, double& currtangent, double& currresidual,
         double& electrodeint, double& electrodepot, double& meanoverpot);
 
     //! output electrode interior status information to screen and files
-    void OutputElectrodeInfoInterior();
+    void output_electrode_info_interior();
 
     //! output cell voltage to screen and file
     void OutputCellVoltage();
@@ -166,7 +166,7 @@ namespace SCATRA
     double FRT() const { return fr_ / temperature_; }
 
     //! current temperature is determined and returned
-    double GetCurrentTemperature() const;
+    double get_current_temperature() const;
 
     //! return elch parameter list
     Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_; }
@@ -196,11 +196,11 @@ namespace SCATRA
     };
 
     //! prepare time integrator specific things before calculation of initial potential field
-    virtual void PreCalcInitialPotentialField() = 0;
+    virtual void pre_calc_initial_potential_field() = 0;
 
-    //! clean up settings from PreCalcInitialPotentialField() after initial potential field is
+    //! clean up settings from pre_calc_initial_potential_field() after initial potential field is
     //! calculated
-    virtual void PostCalcInitialPotentialField() = 0;
+    virtual void post_calc_initial_potential_field() = 0;
 
    protected:
     /*========================================================================*/
@@ -208,7 +208,7 @@ namespace SCATRA
     /*========================================================================*/
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
+    void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;
 
     /*========================================================================*/
     //! @name general framework
@@ -222,7 +222,7 @@ namespace SCATRA
 
     void PrepareTimeStep() override;
 
-    void PrepareFirstTimeStep() override;
+    void prepare_first_time_step() override;
 
     //! initialize meshtying strategy (including standard case without meshtying)
     void CreateScalarHandler() override;
@@ -237,10 +237,10 @@ namespace SCATRA
     void ComputeTimeStepSize(double& dt) final;
 
     //! temperature is computed based on function prescribed in input file
-    double ComputeTemperatureFromFunction() const;
+    double compute_temperature_from_function() const;
 
     //! evaluate SOC and c-rate of electrode
-    void EvaluateElectrodeInfoInterior();
+    void evaluate_electrode_info_interior();
 
     //! evaluate cell voltage of electrode
     void EvaluateCellVoltage();
@@ -249,36 +249,36 @@ namespace SCATRA
     void EvaluateCCCVPhase();
 
     //! extrapolate current state and adapt time step
-    double ExtrapolateStateAdaptTimeStep(double dt);
+    double extrapolate_state_adapt_time_step(double dt);
 
     //! Parameter check for diffusion-conduction formulation
-    void ValidParameterDiffCond();
+    void valid_parameter_diff_cond();
 
     //! Initialize Nernst-BC
     void InitNernstBC();
 
     //! initialize meshtying strategy (including standard case without meshtying)
-    void CreateMeshtyingStrategy() override;
+    void create_meshtying_strategy() override;
 
     //! set up concentration-potential splitter
     void SetupConcPotSplit();
 
     //! set up concentration-potential-potential splitter for macro scale in multi-scale
     //! simulations
-    void SetupConcPotPotSplit();
+    void setup_conc_pot_pot_split();
 
     //! reduces the dimension of the null space by one (if system matrix is partitioned according to
     //! concentration and potential). The original full null space was computed for all degrees of
     //! freedom on the discretization, such that the reduced null spaces still have the full
     //! dimension. Thus, the dimension of each null space is decreased by one, and the corresponding
     //! zero null space vector is removed from the null space.
-    void ReduceDimensionNullSpaceBlocks(
+    void reduce_dimension_null_space_blocks(
         Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
     //! calculate initial electric potential field
-    virtual void CalcInitialPotentialField();
+    virtual void calc_initial_potential_field();
 
     //! \brief computes different conductivity expressions for electrolyte solutions (ELCH)
     //!
@@ -290,14 +290,14 @@ namespace SCATRA
         CORE::LINALG::SerialDenseVector& sigma, bool effCond = false, bool specresist = false);
 
     //! apply galvanostatic control (update electrode potential) (ELCH)
-    bool ApplyGalvanostaticControl();
+    bool apply_galvanostatic_control();
 
     //! \brief evaluate domain or boundary conditions for electrode kinetics
     //!
     //! \param systemmatrix    global system matrix
     //! \param rhs             global right-hand side vector
     //! \param condstring      name of condition to be evaluated
-    void EvaluateElectrodeKineticsConditions(
+    void evaluate_electrode_kinetics_conditions(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
         const std::string& condstring);
 
@@ -305,16 +305,16 @@ namespace SCATRA
     //!
     //! \param systemmatrix  global system matrix
     //! \param rhs           global right-hand side vector
-    void EvaluateElectrodeBoundaryKineticsPointConditions(
+    void evaluate_electrode_boundary_kinetics_point_conditions(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! Add Linearization for Nernst-BC
-    void LinearizationNernstCondition();
+    void linearization_nernst_condition();
 
     //! update time-dependent electrode state variables at the end of an time step
-    virtual void ElectrodeKineticsTimeUpdate() = 0;
+    virtual void electrode_kinetics_time_update() = 0;
 
-    void EvaluateSolutionDependingConditions(
+    void evaluate_solution_depending_conditions(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
@@ -323,13 +323,13 @@ namespace SCATRA
 
     void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads) override;
 
-    void PerformAitkenRelaxation(
+    void perform_aitken_relaxation(
         Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff) override;
 
     /*--- query and output ---------------------------------------------------*/
 
     //! check for negative values of concentrations (ELCH)
-    void CheckConcentrationValues(
+    void check_concentration_values(
         Teuchos::RCP<Epetra_Vector> vec  //!< current phi vector to be checked
     );
 

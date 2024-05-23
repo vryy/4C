@@ -93,7 +93,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ProcZeroDistributeElementsToAll(
+void DRT::Discretization::proc_zero_distribute_elements_to_all(
     Epetra_Map& target, std::vector<int>& gidlist)
 {
   const int myrank = Comm().MyPID();
@@ -201,7 +201,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
+void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
 
@@ -350,7 +350,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportColumnElements(
+void DRT::Discretization::export_column_elements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
@@ -430,7 +430,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::BuildNodeCoordinates(
+Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::build_node_coordinates(
     Teuchos::RCP<const Epetra_Map> noderowmap) const
 {
   // get nodal row map if not given
@@ -453,7 +453,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::BuildNodeCoordinates(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-DRT::Discretization::BuildElementRowColumn(
+DRT::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
   const int myrank = Comm().MyPID();
@@ -628,13 +628,13 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
     bool killcond)
 {
   // build the overlapping and non-overlapping element maps
-  const auto& [elerowmap, elecolmap] = BuildElementRowColumn(noderowmap, nodecolmap);
+  const auto& [elerowmap, elecolmap] = build_element_row_column(noderowmap, nodecolmap);
 
   // export nodes and elements to the new maps
   ExportRowNodes(noderowmap, killdofs, killcond);
   ExportColumnNodes(nodecolmap, killdofs, killcond);
   ExportRowElements(*elerowmap, killdofs, killcond);
-  ExportColumnElements(*elecolmap, killdofs, killcond);
+  export_column_elements(*elecolmap, killdofs, killcond);
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
@@ -652,7 +652,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   ExportRowNodes(noderowmap, killdofs, killcond);
   ExportColumnNodes(nodecolmap, killdofs, killcond);
   ExportRowElements(elerowmap, killdofs, killcond);
-  ExportColumnElements(elecolmap, killdofs, killcond);
+  export_column_elements(elecolmap, killdofs, killcond);
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
@@ -688,7 +688,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
 #endif
 
   // first export the elements according to the processor local element column maps
-  ExportColumnElements(elecolmap);
+  export_column_elements(elecolmap);
 
   // periodic boundary conditions require ghosting of all master and slave nodes,
   // if node of pbc set is contained in list of owned and ghosted elements

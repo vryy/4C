@@ -389,7 +389,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     {
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
-    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *qanp_, *rhs_, *bcval_, *dbctog_);
+    CORE::LINALG::apply_dirichlet_to_system(*sysmat_, *qanp_, *rhs_, *bcval_, *dbctog_);
   }
 
   //-------solve for total new velocities and pressures
@@ -680,14 +680,14 @@ void ART::ArtNetExplicitTimeInt::Output(
     //    discret_->ClearState();
 
     // Export postpro results
-    this->CalcPostprocessingValues();
+    this->calc_postprocessing_values();
     output_.WriteVector("one_d_artery_flow", qn_);
     output_.WriteVector("one_d_artery_pressure", pn_);
     output_.WriteVector("one_d_artery_area", an_);
 
     if (solvescatra_)
     {
-      this->CalcScatraFromScatraFW(export_scatra_, scatraO2np_);
+      this->calc_scatra_from_scatra_fw(export_scatra_, scatraO2np_);
       output_.WriteVector("one_d_o2_scatra", export_scatra_);
     }
 
@@ -711,14 +711,14 @@ void ART::ArtNetExplicitTimeInt::Output(
     output_.WriteVector("qanp", qanp_);
 
     // Export postpro results
-    this->CalcPostprocessingValues();
+    this->calc_postprocessing_values();
     output_.WriteVector("one_d_artery_flow", qn_);
     output_.WriteVector("one_d_artery_pressure", pn_);
     output_.WriteVector("one_d_artery_area", an_);
 
     if (solvescatra_)
     {
-      this->CalcScatraFromScatraFW(export_scatra_, scatraO2np_);
+      this->calc_scatra_from_scatra_fw(export_scatra_, scatraO2np_);
       output_.WriteVector("one_d_o2_scatra", export_scatra_);
     }
 
@@ -793,7 +793,7 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Calculate the post processing values (public)            ismail 04/10|
  *----------------------------------------------------------------------*/
-void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
+void ART::ArtNetExplicitTimeInt::calc_postprocessing_values()
 {
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
@@ -822,10 +822,10 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
-}  // ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
+}  // ART::ArtNetExplicitTimeInt::calc_postprocessing_values
 
 
-void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
+void ART::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
     Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatra_fb)
 {
   scatra->PutScalar(0.0);

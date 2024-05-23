@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
      * @param[out] fluid_force Global force vector acting on the fluid
      * @param[out] beam_force Global force vector acting on the beam
      */
-    void AddGlobalForceStiffnessContributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
+    void add_global_force_stiffness_contributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
         Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<CORE::LINALG::SparseMatrix> kbb,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kbf, Teuchos::RCP<CORE::LINALG::SparseMatrix> kff,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,

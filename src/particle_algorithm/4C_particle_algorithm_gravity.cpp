@@ -40,7 +40,7 @@ void PARTICLEALGORITHM::GravityHandler::Setup()
   // nothing to do
 }
 
-void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
+void PARTICLEALGORITHM::GravityHandler::get_gravity_acceleration(
     const double time, std::vector<double>& scaled_gravity)
 {
   scaled_gravity = gravity_;

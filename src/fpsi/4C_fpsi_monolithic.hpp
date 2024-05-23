@@ -117,13 +117,16 @@ namespace FPSI
     const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
 
     // Couplings for FSI
-    CORE::ADAPTER::Coupling& StructureFluidCoupling_FSI() { return *coupsf_fsi_; }
-    CORE::ADAPTER::Coupling& StructureAleCoupling_FSI() { return *coupsa_fsi_; }
-    CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling_FSI() { return *icoupfa_fsi_; }
+    CORE::ADAPTER::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
+    CORE::ADAPTER::Coupling& structure_ale_coupling_fsi() { return *coupsa_fsi_; }
+    CORE::ADAPTER::Coupling& interface_fluid_ale_coupling_fsi() { return *icoupfa_fsi_; }
 
-    const CORE::ADAPTER::Coupling& StructureFluidCoupling_FSI() const { return *coupsf_fsi_; }
-    const CORE::ADAPTER::Coupling& StructureAleCoupling_FSI() const { return *coupsa_fsi_; }
-    const CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling_FSI() const { return *icoupfa_fsi_; }
+    const CORE::ADAPTER::Coupling& structure_fluid_coupling_fsi() const { return *coupsf_fsi_; }
+    const CORE::ADAPTER::Coupling& structure_ale_coupling_fsi() const { return *coupsa_fsi_; }
+    const CORE::ADAPTER::Coupling& interface_fluid_ale_coupling_fsi() const
+    {
+      return *icoupfa_fsi_;
+    }
 
     //@}
 
@@ -140,7 +143,7 @@ namespace FPSI
     virtual Teuchos::RCP<Epetra_Vector> AleToStruct_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid_FSI(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface_FSI(
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_interface_fsi(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
@@ -213,13 +216,13 @@ namespace FPSI
     void SetupSolver() override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
-    virtual void RecoverLagrangeMultiplier()
+    virtual void recover_lagrange_multiplier()
     {
-      FOUR_C_THROW("RecoverLagrangeMultiplier: Not Implemented in Base Class!");
+      FOUR_C_THROW("recover_lagrange_multiplier: Not Implemented in Base Class!");
     }
 
     /// Extract specific columns from Sparse Matrix
-    void ExtractColumnsfromSparse(Teuchos::RCP<Epetra_CrsMatrix> src,  ///< source Matrix
+    void extract_columnsfrom_sparse(Teuchos::RCP<Epetra_CrsMatrix> src,  ///< source Matrix
         const Teuchos::RCP<const Epetra_Map>&
             colmap,  ///< map with column gids to be extracted! (gid which are not in the source
                      ///< Matrix will be ignored!)
@@ -245,13 +248,13 @@ namespace FPSI
     void CreateLinearSolver();
 
     //! build convergence norms after solve
-    void BuildConvergenceNorms();
+    void build_convergence_norms();
 
     //! print header and results of newton iteration to screen
     void PrintNewtonIter();
 
     //! print header of newton iteration
-    void PrintNewtonIterHeader(FILE* ofile);
+    void print_newton_iter_header(FILE* ofile);
 
     //! print results of newton iteration
     void PrintNewtonIterText(FILE* ofile);
@@ -319,7 +322,7 @@ namespace FPSI
         bool firstiter_) = 0;
 
     /// setup list with default parameters
-    void SetDefaultParameters(const Teuchos::ParameterList& fpsidynparams);
+    void set_default_parameters(const Teuchos::ParameterList& fpsidynparams);
 
     //! block ids of the monolithic system
     int porofluid_block_;

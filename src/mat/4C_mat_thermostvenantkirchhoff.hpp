@@ -174,7 +174,7 @@ namespace MAT
         ) override;
 
     //! return true if Young's modulus is temperature dependent
-    bool YoungsIsTempDependent() const { return this->params_->youngs_.size() > 1; }
+    bool youngs_is_temp_dependent() const { return this->params_->youngs_.size() > 1; }
 
     //! density \f$ \rho \f$
     double Density() const override { return params_->density_; }
@@ -219,7 +219,7 @@ namespace MAT
 
     void GetdSdT(CORE::LINALG::Matrix<6, 1>* dS_dT) override;
 
-    void StressTemperatureModulusAndDeriv(
+    void stress_temperature_modulus_and_deriv(
         CORE::LINALG::Matrix<6, 1>& stm, CORE::LINALG::Matrix<6, 1>& stm_dT) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
@@ -245,24 +245,24 @@ namespace MAT
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void GetCthermoAtTempnp_T(
+    void get_cthermo_at_tempnp_t(
         CORE::LINALG::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
     );
 
     //! calculate temperature dependent material parameter and return value
-    double GetMatParameterAtTempnp(
+    double get_mat_parameter_at_tempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     // tmpr (i) current temperature
     ) const;
 
     //! calculate temperature dependent material parameter and return value
-    double GetMatParameterAtTempnp_T(
+    double get_mat_parameter_at_tempnp_t(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     // tmpr (i) current temperature
     ) const;
 
     //! create thermo material object if specified in input (!= -1)
-    void CreateThermoMaterialIfSet();
+    void create_thermo_material_if_set();
 
     //! my material parameters
     MAT::PAR::ThermoStVenantKirchhoff* params_;

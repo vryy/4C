@@ -32,7 +32,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
     : Cardiovascular0D(discr, conditionname, curID)
 {
   Teuchos::ParameterList artvensyspulpar =
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   num_dof_cardio_ = 34;
@@ -142,7 +142,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
 
   // now set the parameters for the 0D respiratory model
   Teuchos::ParameterList respirpar =
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "RESPIRATORY PARAMETERS");
 
   // set number of degrees of freedom
@@ -244,7 +244,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
   if (!actdisc_->Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
@@ -8945,7 +8945,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
     Teuchos::RCP<Epetra_Vector> sysvec2)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);
 
@@ -8962,11 +8962,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   std::vector<double> initvals(num_dof_);
 
   Teuchos::ParameterList artvensyspulpar =
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   Teuchos::ParameterList respirpar =
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "RESPIRATORY PARAMETERS");
 
   initvals[0] = artvensyspulpar.get("p_at_l_0", 0.0);

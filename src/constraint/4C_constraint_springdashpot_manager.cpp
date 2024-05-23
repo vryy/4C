@@ -45,7 +45,7 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discre
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::StiffnessAndInternalForces(
+void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
@@ -139,7 +139,7 @@ void CONSTRAINTS::SpringDashpotManager::OutputRestart(Teuchos::RCP<IO::Discretiz
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       springs_[i]->OutputPrestrOffset(springoffsetprestr);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      springs_[i]->OutputPrestrOffsetOld(springoffsetprestr_old);
+      springs_[i]->output_prestr_offset_old(springoffsetprestr_old);
   }
 
   // write vector to output for restart

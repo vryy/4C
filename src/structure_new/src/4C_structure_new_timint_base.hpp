@@ -191,7 +191,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() override
       {
         CheckInit();
-        SetStateInSyncWithNOXGroup(false);
+        set_state_in_sync_with_nox_group(false);
         return dataglobalstate_->GetDisNp();
       }
 
@@ -269,21 +269,21 @@ namespace STR
       }
 
       /// do we need a semi-smooth Newton-type plasticity algorithm
-      virtual bool HaveSemiSmoothPlasticity()
+      virtual bool have_semi_smooth_plasticity()
       {
         CheckInitSetup();
         return datasdyn_->HaveEleTech(INPAR::STR::EleTech::plasticity);
       }
 
       /// FixMe get constraint manager defined in the structure
-      Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
+      Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
       {
         FOUR_C_THROW("Not yet implemented!");
         return Teuchos::null;
       }
 
       /// FixMe get contact/meshtying manager
-      Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override
+      Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
       {
         FOUR_C_THROW("Not yet implemented!");
         return Teuchos::null;
@@ -297,14 +297,14 @@ namespace STR
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) override
+      void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
 
       /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) override
+      void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
@@ -421,52 +421,52 @@ namespace STR
       }
 
       //! Get number of times you want to halve your timestep in case nonlinear solver diverges
-      [[nodiscard]] virtual int GetMaxDivConRefineLevel() const
+      [[nodiscard]] virtual int get_max_div_con_refine_level() const
       {
         CheckInitSetup();
-        return datasdyn_->GetMaxDivConRefineLevel();
+        return datasdyn_->get_max_div_con_refine_level();
       }
 
       //! Get random factor for time step adaption
-      [[nodiscard]] virtual double GetRandomTimeStepFactor() const
+      [[nodiscard]] virtual double get_random_time_step_factor() const
       {
         CheckInitSetup();
-        return datasdyn_->GetRandomTimeStepFactor();
+        return datasdyn_->get_random_time_step_factor();
       }
 
       //! Set random factor for time step adaption
-      virtual double SetRandomTimeStepFactor(double rand_tsfac)
+      virtual double set_random_time_step_factor(double rand_tsfac)
       {
         CheckInitSetup();
-        return datasdyn_->GetRandomTimeStepFactor() = rand_tsfac;
+        return datasdyn_->get_random_time_step_factor() = rand_tsfac;
       }
 
       //! Get current refinement level for time step adaption
-      [[nodiscard]] virtual int GetDivConRefineLevel() const
+      [[nodiscard]] virtual int get_div_con_refine_level() const
       {
         CheckInitSetup();
-        return datasdyn_->GetDivConRefineLevel();
+        return datasdyn_->get_div_con_refine_level();
       }
 
       //! Set refinement level for time step adaption
-      virtual int SetDivConRefineLevel(int divconrefinementlevel)
+      virtual int set_div_con_refine_level(int divconrefinementlevel)
       {
         CheckInitSetup();
-        return datasdyn_->GetDivConRefineLevel() = divconrefinementlevel;
+        return datasdyn_->get_div_con_refine_level() = divconrefinementlevel;
       }
 
       //! Get step of current refinement level for time step adaption
-      [[nodiscard]] virtual int GetDivConNumFineStep() const
+      [[nodiscard]] virtual int get_div_con_num_fine_step() const
       {
         CheckInitSetup();
-        return datasdyn_->GetDivConNumFineStep();
+        return datasdyn_->get_div_con_num_fine_step();
       }
 
       //! Set step of current refinement level for time step adaption
-      virtual int SetDivConNumFineStep(int divconnumfinestep)
+      virtual int set_div_con_num_fine_step(int divconnumfinestep)
       {
         CheckInitSetup();
-        return datasdyn_->GetDivConNumFineStep() = divconnumfinestep;
+        return datasdyn_->get_div_con_num_fine_step() = divconnumfinestep;
       }
 
       /// set evaluation action
@@ -485,7 +485,7 @@ namespace STR
       }
 
       /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp() override
+      Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() override
       {
         CheckInitSetup();
         FOUR_C_THROW("Not yet supported!");
@@ -518,7 +518,7 @@ namespace STR
       void Output(bool forced_writerestart) override;
 
       /// Write Gmsh output for structural field
-      void WriteGmshStrucOutputStep() override;
+      void write_gmsh_struc_output_step() override;
 
       /// FixMe Check if there are any elements with the micro material definition.
       /// Maybe the detection can be moved to the element loop in the ad_str_structure_new.cpp.
@@ -584,20 +584,20 @@ namespace STR
       [[nodiscard]] inline const bool& IsRestarting() const { return isrestarting_; }
 
       /// Get the indicator if we need to restart the initial state
-      [[nodiscard]] inline bool IsRestartingInitialState() const
+      [[nodiscard]] inline bool is_restarting_initial_state() const
       {
-        return datasdyn_->IsRestartingInitialState();
+        return datasdyn_->is_restarting_initial_state();
       }
 
       /// Get TimIntBase data for global state quantities (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
+      [[nodiscard]] Teuchos::RCP<const BaseDataGlobalState> get_data_global_state_ptr() const
       {
         CheckInit();
         return dataglobalstate_;
       }
 
       /// Get TimIntBase data for global state quantities (read & write access)
-      Teuchos::RCP<BaseDataGlobalState>& GetDataGlobalStatePtr()
+      Teuchos::RCP<BaseDataGlobalState>& get_data_global_state_ptr()
       {
         CheckInit();
         return dataglobalstate_;
@@ -684,7 +684,7 @@ namespace STR
         return dbc_ptr_;
       }
 
-      [[nodiscard]] bool HasFinalStateBeenWritten() const override;
+      [[nodiscard]] bool has_final_state_been_written() const override;
 
       /// get the indicator state
       [[nodiscard]] inline const bool& IsInit() const { return isinit_; }
@@ -712,22 +712,22 @@ namespace STR
       virtual int MethodSteps() const = 0;
 
       //! Give order of accuracy
-      int MethodOrderOfAccuracy() const
+      int method_order_of_accuracy() const
       {
-        return std::min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
+        return std::min(method_order_of_accuracy_dis(), method_order_of_accuracy_vel());
       }
 
       //! Give local order of accuracy of displacement part
-      virtual int MethodOrderOfAccuracyDis() const = 0;
+      virtual int method_order_of_accuracy_dis() const = 0;
 
       //! Give local order of accuracy of velocity part
-      virtual int MethodOrderOfAccuracyVel() const = 0;
+      virtual int method_order_of_accuracy_vel() const = 0;
 
       //! Return linear error coefficient of displacements
-      virtual double MethodLinErrCoeffDis() const = 0;
+      virtual double method_lin_err_coeff_dis() const = 0;
 
       //! Return linear error coefficient of velocities
-      virtual double MethodLinErrCoeffVel() const = 0;
+      virtual double method_lin_err_coeff_vel() const = 0;
 
       //@}
 
@@ -831,7 +831,7 @@ namespace STR
       void RuntimeOutputState();
 
       /// output reaction forces
-      void OutputReactionForces();
+      void output_reaction_forces();
 
       /// output element volumes
       void OutputElementVolume(IO::DiscretizationWriter& iowriter) const;
@@ -843,13 +843,13 @@ namespace STR
       void OutputEnergy() const;
 
       /// output optional quantity
-      void OutputOptionalQuantity();
+      void output_optional_quantity();
 
       /// write restart information
       void OutputRestart(bool& datawritten);
 
       /// add restart information to output state
-      void AddRestartToOutputState();
+      void add_restart_to_output_state();
 
       /** \brief set the number of nonlinear iterations of the last time step
        *
@@ -857,20 +857,20 @@ namespace STR
        *  step-id is considered.
        *
        *  \author hiermeier \date 11/17 */
-      void SetNumberOfNonlinearIterations();
+      void set_number_of_nonlinear_iterations();
 
       /** \brief decide which contributions to the total system energy shall be
        *         computed and written during simulation
        *
        *  \author grill */
-      void SelectEnergyTypesToBeWritten();
+      void select_energy_types_to_be_written();
 
       /** \brief initialize file stream for energy values and write all the
        *         column headers for the previously selected energy contributions
        *         to be written separately
        *
        *  \author grill */
-      void InitializeEnergyFileStreamAndWriteHeaders();
+      void initialize_energy_file_stream_and_write_headers();
 
      protected:
       /// flag indicating if Init() has been called
@@ -887,12 +887,12 @@ namespace STR
       bool state_is_insync_with_noxgroup_;
 
      protected:
-      inline void SetStateInSyncWithNOXGroup(const bool insync)
+      inline void set_state_in_sync_with_nox_group(const bool insync)
       {
         state_is_insync_with_noxgroup_ = insync;
       }
 
-      inline void ThrowIfStateNotInSyncWithNOXGroup() const
+      inline void throw_if_state_not_in_sync_with_nox_group() const
       {
         if (!state_is_insync_with_noxgroup_)
         {

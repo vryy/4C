@@ -30,7 +30,7 @@ namespace CORE::GEO
       CORE::LINALG::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates in xi_domain
-    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.cell_nodal_pos_xi_domain());
     CORE::GEO::elementToCurrentCoordinates(
         cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;

@@ -72,7 +72,7 @@ namespace MIXTURE
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
     void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 
@@ -93,7 +93,7 @@ namespace MIXTURE
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
     [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
@@ -102,11 +102,11 @@ namespace MIXTURE
    private:
     [[nodiscard]] double EvaluateLambdaf(
         const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
-    [[nodiscard]] CORE::LINALG::Matrix<1, 6> EvaluateDLambdafsqDC(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<1, 6> evaluate_d_lambdafsq_dc(int gp, int eleGID) const;
 
     [[nodiscard]] CORE::LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
     [[nodiscard]] CORE::LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
-    [[nodiscard]] double EvaluateInitialDepositionStretch(double time) const;
+    [[nodiscard]] double evaluate_initial_deposition_stretch(double time) const;
 
     void Initialize();
 

@@ -35,7 +35,7 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
   // generate initial particles
 }
 
-void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<double>& position,
+void PARTICLEALGORITHM::InputGenerator::add_generated_particle(const std::vector<double>& position,
     const PARTICLEENGINE::TypeEnum particletype,
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const
 {

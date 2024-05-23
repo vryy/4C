@@ -114,28 +114,28 @@ namespace BEAMINTERACTION
     /*!
     \brief Get coordinates of all interacting points on element1 and element2
     */
-    virtual void GetAllInteractingPointCoordsElement1(
+    virtual void get_all_interacting_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
-    virtual void GetAllInteractingPointCoordsElement2(
+    virtual void get_all_interacting_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
     \brief Get forces at all interacting points on element1 and element2
     */
-    virtual void GetForcesAtAllInteractingPointsElement1(
+    virtual void get_forces_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const = 0;
 
-    virtual void GetForcesAtAllInteractingPointsElement2(
+    virtual void get_forces_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const = 0;
 
     /*!
     \brief Get moments at all interacting points on element1 and element2
     */
-    virtual void GetMomentsAtAllInteractingPointsElement1(
+    virtual void get_moments_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const = 0;
 
-    virtual void GetMomentsAtAllInteractingPointsElement2(
+    virtual void get_moments_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const = 0;
 
     /*!
@@ -151,7 +151,7 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential element pair to screen
      *
      *  \author grill */
-    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
+    virtual void print_summary_one_line_per_active_segment_pair(std::ostream& out) const = 0;
 
    protected:
     //! returns init state

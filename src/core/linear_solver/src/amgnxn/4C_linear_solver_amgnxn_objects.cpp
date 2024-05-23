@@ -173,9 +173,9 @@ void CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::Apply(
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
-CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(CORE::LINALG::DataAccess access)
+CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::get_block_sparse_matrix(CORE::LINALG::DataAccess access)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedMatrix::get_block_sparse_matrix");
 
   int npr = 0;
   int rows = GetNumRows();
@@ -409,7 +409,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::ParseBlocks(const std::string& 
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
-CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::NewDomainBlockedVector(int NV, bool ZeroIt) const
+CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::new_domain_blocked_vector(int NV, bool ZeroIt) const
 {
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(GetNumCols()));
   for (int i = 0; i < GetNumCols(); i++)
@@ -429,7 +429,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::NewDomainBlockedVector(int NV, bool 
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
-CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::NewRangeBlockedVector(int NV, bool ZeroIt) const
+CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::new_range_blocked_vector(int NV, bool ZeroIt) const
 {
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(GetNumRows()));
   for (int i = 0; i < GetNumRows(); i++)
@@ -447,7 +447,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::NewRangeBlockedVector(int NV, bool Z
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
-CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::NewDomainBlockedVector(
+CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::new_domain_blocked_vector(
     int NV, bool ZeroIt) const
 {
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(GetNumCols()));
@@ -466,7 +466,8 @@ CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::NewDomainBlockedVector(
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
-CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::NewRangeBlockedVector(int NV, bool ZeroIt) const
+CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::new_range_blocked_vector(
+    int NV, bool ZeroIt) const
 {
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(GetNumRows()));
   for (int i = 0; i < GetNumRows(); i++)

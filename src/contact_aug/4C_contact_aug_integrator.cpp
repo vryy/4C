@@ -40,7 +40,7 @@ CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele,
+void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele,
     MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -49,7 +49,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Elem
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
-        "ERROR: IntegrateDerivCell3DAuxPlane called without specific shape "
+        "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
 
   // check for problem dimension
@@ -58,22 +58,22 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Elem
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     FOUR_C_THROW(
-        "ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of "
+        "ERROR: integrate_deriv_cell3_d_aux_plane called on a wrong type of "
         "MORTAR::Element pair!");
   if (cell == Teuchos::null)
-    FOUR_C_THROW("IntegrateDerivCell3DAuxPlane called without integration cell");
+    FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane called without integration cell");
 
   if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     FOUR_C_THROW(
-        "ERROR: IntegrateDerivCell3DAuxPlane supports no Dual shape functions for the "
+        "ERROR: integrate_deriv_cell3_d_aux_plane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
 
-  timer_ptr->start(GlobalTimeID::IntegrateDerivCell3DAuxPlane);
+  timer_ptr->start(GlobalTimeID::integrate_deriv_cell3_d_aux_plane);
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-  integrator_->IntegrateDerivCell3DAuxPlane(sele, mele, *cell, auxn);
-  timer_ptr->stop(GlobalTimeID::IntegrateDerivCell3DAuxPlane);
+  integrator_->integrate_deriv_cell3_d_aux_plane(sele, mele, *cell, auxn);
+  timer_ptr->stop(GlobalTimeID::integrate_deriv_cell3_d_aux_plane);
 
   return;
 }
@@ -89,7 +89,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     FOUR_C_THROW(
-        "ERROR: IntegrateDerivCell3DAuxPlane called without specific shape "
+        "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
 
   // check for problem dimension
@@ -118,7 +118,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
   timer_ptr->start(GlobalTimeID::IntegrateDerivEle3D);
 
-  *proj = INTEGRATOR::FindFeasibleMasterElements(sele, meles, boundary_ele, *this, projInfo_);
+  *proj = INTEGRATOR::find_feasible_master_elements(sele, meles, boundary_ele, *this, projInfo_);
 
   for (auto& info_pair : projInfo_)
   {
@@ -141,33 +141,33 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Element& sele,
+void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
       Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
 
-  IntegrateDerivSlaveElement(sele, comm, cparams_ptr);
+  integrate_deriv_slave_element(sele, comm, cparams_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Element& sele,
+void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), sele.Shape(), *cparams_ptr, this);
-  integrator_->IntegrateDerivSlaveElement(sele);
+  integrator_->integrate_deriv_slave_element(sele);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia,
-    double& sxib, MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Element& sele,
+    double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib,
+    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -176,7 +176,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::Element& 
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    FOUR_C_THROW("IntegrateDerivSegment2D called without specific shape function defined!");
+    FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == CORE::FE::CellType::line3 ||
@@ -195,12 +195,12 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::Element& 
     FOUR_C_THROW("IntegrateAndDerivSegment called with infeasible master limits!");
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
-  timer_ptr->start(GlobalTimeID::IntegrateDerivSegment2D);
+  timer_ptr->start(GlobalTimeID::integrate_deriv_segment2_d);
 
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
-  integrator_->IntegrateDerivSegment2D(sele, sxia, sxib, mele, mxia, mxib);
+  integrator_->integrate_deriv_segment2_d(sele, sxia, sxib, mele, mxia, mxib);
 
-  timer_ptr->stop(GlobalTimeID::IntegrateDerivSegment2D);
+  timer_ptr->stop(GlobalTimeID::integrate_deriv_segment2_d);
 
   return;
 }
@@ -220,7 +220,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    FOUR_C_THROW("IntegrateDerivSegment2D called without specific shape function defined!");
+    FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // check for problem dimension
   if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
@@ -244,7 +244,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
-    if (!mymrtrnode) FOUR_C_THROW("IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment2_d: Null pointer!");
   }
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
@@ -256,7 +256,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
 
   if (*boundary_ele == false || IntegrationType() == INPAR::MORTAR::inttype_elements)
   {
-    INTEGRATOR::FindFeasibleMasterElements(sele, meles, *this, projInfo_);
+    INTEGRATOR::find_feasible_master_elements(sele, meles, *this, projInfo_);
 
     for (auto& info_pair : projInfo_)
     {
@@ -345,7 +345,7 @@ template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.GetVariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
 
   switch (var_type)
   {
@@ -420,7 +420,7 @@ template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.GetVariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
 
   switch (var_type)
   {
@@ -491,9 +491,9 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateDerivSegment2D(
-    MORTAR::Element& sele, double& sxia, double& sxib, MORTAR::Element& mele, double& mxia,
-    double& mxib)
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
+    MORTAR::Element& mele, double& mxia, double& mxib)
 {
   FOUR_C_THROW(
       "Deprecated method! The segmented based integration is no longer "
@@ -505,7 +505,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    IntPolicy>::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntCell& cell, double* auxn)
 {
   FOUR_C_THROW(
@@ -518,7 +518,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateDerivSlaveElement(MORTAR::Element& sele)
+    IntPolicy>::integrate_deriv_slave_element(MORTAR::Element& sele)
 {
   // set evaluator
   const enum MORTAR::ActionType action = CParams().GetActionType();
@@ -535,7 +535,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+    sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
     // evaluate shape function and derivative values (on slave element)
     shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -583,7 +583,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
   {
     case MORTAR::eval_static_constraint_rhs:
     {
-      IntegrateWeightedGap(sele, mele, boundary_ele, projInfo);
+      integrate_weighted_gap(sele, mele, boundary_ele, projInfo);
       break;
     }
     case MORTAR::eval_force_stiff:
@@ -594,7 +594,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
     }
     case MORTAR::eval_wgap_gradient_error:
     {
-      IntegrateWeightedGapGradientError(sele, mele, boundary_ele, projInfo);
+      integrate_weighted_gap_gradient_error(sele, mele, boundary_ele, projInfo);
       break;
     }
     default:
@@ -684,7 +684,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -721,7 +721,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // evaluate at GP and lin char. quantities
       //**********************************************************************
       // calculate the averaged normal + derivative at gp level
-      GP_Normal_DerivNormal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
+      gp_normal_deriv_normal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
 
       // integrate scaling factor kappa
       GP_kappa(sele, lmval_, wgt, jacslave);
@@ -746,7 +746,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // 1-st order derivative of the weighted gap (necessary for the
       // linearization of the constraint equations in case of the complete AND
       // incomplete variational approach)
-      IntPolicy::Get_Deriv1st_WGap_Complete(linsize, sele, mele, sval_, mval_, lmval_, gpn_, mtau,
+      IntPolicy::get_deriv1st_w_gap_complete(linsize, sele, mele, sval_, mval_, lmval_, gpn_, mtau,
           dmxigp_, gapn_sl, gapn_ma, wgt, jacslave, derivjac_);
 
       IntPolicy::Get_Debug(sele, lmval_, gapn_sl, gapn_ma, wgt, jacslave, gpn_, uniqueMxi.A());
@@ -787,7 +787,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::IntegrateWeightedGap(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integrate_weighted_gap(
     MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
@@ -819,7 +819,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -858,7 +858,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::IntegrateWeightedGapGradientError(MORTAR::Element& sele, MORTAR::Element& mele,
+    IntPolicy>::integrate_weighted_gap_gradient_error(MORTAR::Element& sele, MORTAR::Element& mele,
     bool boundary_ele, const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // access unordered maps
@@ -874,7 +874,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
   std::vector<unsigned> active_nlids;
   active_nlids.reserve(my::SLAVENUMNODE);
-  ExtractActiveSlaveNodeLIDs(active_nlids, sele);
+  extract_active_slave_node_li_ds(active_nlids, sele);
 
   {
     // get the gausspoints of this slave / master element pair
@@ -899,7 +899,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
+      sele.evaluate_shape_lag_mult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
 
       // evaluate trace space shape functions (on both elements)
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
@@ -935,7 +935,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       // evaluate at GP and lin char. quantities
       //**********************************************************************
       // calculate the averaged normal + derivative at gp level
-      GP_Normal_DerivNormal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
+      gp_normal_deriv_normal(sele, sval_, gpn_, dn_non_unit_, ddn_non_unit_, dn_unit_, ddn_unit_);
 
       // integrate the inner integral relating to the first order derivative of
       // the discrete normal gap for later usage (for all found slave nodes)
@@ -947,7 +947,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       double gapn_ma = 0.0;
       GapN(sele, mele, sval_, mval_, gpn_, gapn_sl, gapn_ma);
 
-      IntPolicy::Get_Deriv1st_WGapN_Error(sele, active_nlids, lmval_, gpn_, gapn_sl, gapn_ma, wgt,
+      IntPolicy::get_deriv1st_w_gap_n_error(sele, active_nlids, lmval_, gpn_, gapn_sl, gapn_ma, wgt,
           jacslave, derivjac_, mtau, dmxigp_, deriv_gapn_ma_, *grad_error_ma_ptr,
           *grad_error_jac_ptr);
 
@@ -979,7 +979,7 @@ int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GetLinS
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::ExtractActiveSlaveNodeLIDs(std::vector<unsigned>& active_nlids,
+    IntPolicy>::extract_active_slave_node_li_ds(std::vector<unsigned>& active_nlids,
     const MORTAR::Element& sele) const
 {
   const Epetra_Map* active_snode_row_map = this->CParams().template Get<Epetra_Map>(1);

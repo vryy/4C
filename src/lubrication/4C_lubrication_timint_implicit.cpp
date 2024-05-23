@@ -97,7 +97,7 @@ void LUBRICATION::TimIntImpl::Init()
   // -------------------------------------------------------------------
   incremental_ = true;
 
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
+  discret_->compute_null_space_if_necessary(solver_->Params(), true);
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs()))
@@ -168,7 +168,7 @@ void LUBRICATION::TimIntImpl::Init()
 /*----------------------------------------------------------------------*
  | set all general parameters for element                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetElementGeneralParameters() const
+void LUBRICATION::TimIntImpl::set_element_general_parameters() const
 {
   Teuchos::ParameterList eleparams;
 
@@ -210,7 +210,7 @@ void LUBRICATION::TimIntImpl::PrepareTimeLoop()
     Output();
 
     // compute error for problems with analytical solution (initial field!)
-    EvaluateErrorComparedToAnalyticalSol();
+    evaluate_error_compared_to_analytical_sol();
   }
 
   return;
@@ -228,21 +228,21 @@ void LUBRICATION::TimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                       initialization
   // -------------------------------------------------------------------
-  if (step_ == 0) PrepareFirstTimeStep();
+  if (step_ == 0) prepare_first_time_step();
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
   // note the order of the following three functions is important
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
-  //  SetOldPartOfRighthandside();
-  // TODO (Thon): We do not really want to call SetElementTimeParameter() every time step.
+  //  set_old_part_of_righthandside();
+  // TODO (Thon): We do not really want to call set_element_time_parameter() every time step.
   // But for now we just do it since "total time" has to be changed in the parameter class..
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
@@ -259,16 +259,16 @@ void LUBRICATION::TimIntImpl::PrepareTimeStep()
 /*------------------------------------------------------------------------------*
  | initialization procedure prior to evaluation of first time step  wirtz 11/15 |
  *------------------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::PrepareFirstTimeStep()
+void LUBRICATION::TimIntImpl::prepare_first_time_step()
 {
   return;
-}  // LUBRICATION::TimIntImpl::PrepareFirstTimeStep
+}  // LUBRICATION::TimIntImpl::prepare_first_time_step
 
 
 /*----------------------------------------------------------------------*
  | update the height field by function                    faraji        |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
+void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
 {
   // create the parameters for the time
   Teuchos::ParameterList eleparams;
@@ -307,12 +307,12 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
   // provide lubrication discretization with height
   discret_->SetState(nds, "height", height);
 
-}  // LUBRICATION::TimIntImpl::SetHeightFieldPureLub
+}  // LUBRICATION::TimIntImpl::set_height_field_pure_lub
 
 /*----------------------------------------------------------------------*
  | update the velocity field by function                  faraji       |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
+void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
 {
   // create the parameters for the time
   Teuchos::ParameterList eleparams;
@@ -350,7 +350,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
   // provide lubrication discretization with velocity
   discret_->SetState(nds, "av_tang_vel", vel);
 
-}  // LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub
+}  // LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub
 /*----------------------------------------------------------------------*
  | contains the time loop                                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
@@ -374,15 +374,15 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     if (purelub_)
     {
-      SetHeightFieldPureLub(1);
-      SetAverageVelocityFieldPureLub(1);
+      set_height_field_pure_lub(1);
+      set_average_velocity_field_pure_lub(1);
     }
     else
     {
       SetHeightField(1, Teuchos::null);
       SetHeightDotField(1, Teuchos::null);
-      SetRelativeVelocityField(1, Teuchos::null);
-      SetAverageVelocityField(1, Teuchos::null);
+      set_relative_velocity_field(1, Teuchos::null);
+      set_average_velocity_field(1, Teuchos::null);
     }
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
@@ -392,7 +392,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     // evaluate error for problems with analytical solution
     // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
+    evaluate_error_compared_to_analytical_sol();
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -546,7 +546,7 @@ void LUBRICATION::TimIntImpl::ScalingAndNeumann()
   if (incremental_) trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
 
   // add Neumann b.c. scaled with a factor due to time discretization
-  AddNeumannToResidual();
+  add_neumann_to_residual();
 
   return;
 }  // TimIntImpl::ScalingAndNeumann
@@ -570,7 +570,7 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC(
 
   // set time for evaluation of point Neumann conditions as parameter depending on time integration
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
-  SetTimeForNeumannEvaluation(condparams);
+  set_time_for_neumann_evaluation(condparams);
 
   // provide displacement field in case of ALE
   if (isale_) condparams.set<int>("ndsdisp", nds_disp_);
@@ -586,7 +586,7 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC(
 /*----------------------------------------------------------------------*
  | add cavitation penalty contribution to matrix and rhs    seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::AddCavitationPenalty()
+void LUBRICATION::TimIntImpl::add_cavitation_penalty()
 {
   const double penalty_param = params_->get<double>("PENALTY_CAVITATION");
   for (int i = 0; i < DofRowMap()->NumMyElements(); ++i)
@@ -638,14 +638,14 @@ void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
   discret_->ClearState();
 
   // add state vectors according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // call loop over elements
   discret_->Evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   // add cavitation penalty
-  AddCavitationPenalty();
+  add_cavitation_penalty();
 
   // potential residual scaling and potential addition of Neumann terms
   ScalingAndNeumann();  // TODO: do we have to call this function twice??
@@ -672,7 +672,7 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
   PrintTimeStepInfo();
 
   // print header of convergence table to screen
-  PrintConvergenceHeader();
+  print_convergence_header();
 
   // ---------------------------------------------- nonlinear iteration
   // stop nonlinear iteration when increment-norm is below this bound
@@ -702,13 +702,13 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
       if (inf_gap_toggle_lub_ != Teuchos::null)
-        CORE::LINALG::ApplyDirichletToSystem(
+        CORE::LINALG::apply_dirichlet_to_system(
             *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
     }
 
@@ -770,7 +770,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
   double preresnorminf(0.0);
 
   // Calculate problem-specific norms
-  CalcProblemSpecificNorm(preresnorm, incprenorm_L2, prenorm_L2, preresnorminf);
+  calc_problem_specific_norm(preresnorm, incprenorm_L2, prenorm_L2, preresnorminf);
 
   // care for the case that nothing really happens in the pressure
   if (prenorm_L2 < 1e-5)
@@ -782,21 +782,21 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
   // special case of very first iteration step: solution increment is not yet available
   if (itnum == 1)
     // print first line of convergence table to screen
-    PrintConvergenceValuesFirstIter(itnum, itemax, ittol, preresnorm, preresnorminf);
+    print_convergence_values_first_iter(itnum, itemax, ittol, preresnorm, preresnorminf);
 
   // ordinary case later iteration steps: solution increment can be printed and convergence check
   // should be done
   else
   {
     // print current line of convergence table to screen
-    PrintConvergenceValues(
+    print_convergence_values(
         itnum, itemax, ittol, preresnorm, incprenorm_L2, prenorm_L2, preresnorminf);
 
     // convergence check
     if (preresnorm <= ittol and incprenorm_L2 / prenorm_L2 <= ittol)
     {
       // print finish line of convergence table to screen
-      PrintConvergenceFinishLine();
+      print_convergence_finish_line();
 
       return true;
     }
@@ -808,7 +808,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
   if ((preresnorm < abstolres))
   {
     // print finish line of convergence table to screen
-    PrintConvergenceFinishLine();
+    print_convergence_finish_line();
 
     return true;
   }
@@ -868,7 +868,7 @@ void LUBRICATION::TimIntImpl::SetHeightDotField(
 /*----------------------------------------------------------------------*
  | Set nodal value of Relative Velocity at time n+1        Faraji 02/19 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetRelativeVelocityField(
+void LUBRICATION::TimIntImpl::set_relative_velocity_field(
     const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel)
 {
   if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
@@ -879,7 +879,7 @@ void LUBRICATION::TimIntImpl::SetRelativeVelocityField(
 /*----------------------------------------------------------------------*
  | Set the nodal average tangential velocity at time n+1    Seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetAverageVelocityField(
+void LUBRICATION::TimIntImpl::set_average_velocity_field(
     const int nds, Teuchos::RCP<const Epetra_Vector> av_vel)
 {
   if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
@@ -891,7 +891,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityField(
 /*----------------------------------------------------------------------*
  | Calculate problem specific norm                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::CalcProblemSpecificNorm(
+void LUBRICATION::TimIntImpl::calc_problem_specific_norm(
     double& preresnorm, double& incprenorm_L2, double& prenorm_L2, double& preresnorminf)
 {
   residual_->Norm2(&preresnorm);
@@ -906,7 +906,7 @@ void LUBRICATION::TimIntImpl::CalcProblemSpecificNorm(
 /*----------------------------------------------------------------------*
  | print header of convergence table to screen              wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::PrintConvergenceHeader()
+inline void LUBRICATION::TimIntImpl::print_convergence_header()
 {
   if (myrank_ == 0)
     std::cout
@@ -915,13 +915,13 @@ inline void LUBRICATION::TimIntImpl::PrintConvergenceHeader()
         << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::PrintConvergenceHeader
+}  // LUBRICATION::TimIntImpl::print_convergence_header
 
 
 /*----------------------------------------------------------------------*
  | print first line of convergence table to screen          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::PrintConvergenceValuesFirstIter(
+inline void LUBRICATION::TimIntImpl::print_convergence_values_first_iter(
     const int& itnum,            //!< current Newton-Raphson iteration step
     const int& itemax,           //!< maximum number of Newton-Raphson iteration steps
     const double& ittol,         //!< relative tolerance for Newton-Raphson scheme
@@ -938,13 +938,13 @@ inline void LUBRICATION::TimIntImpl::PrintConvergenceValuesFirstIter(
               << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::PrintConvergenceValuesFirstIter
+}  // LUBRICATION::TimIntImpl::print_convergence_values_first_iter
 
 
 /*----------------------------------------------------------------------*
  | print current line of convergence table to screen        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::PrintConvergenceValues(
+inline void LUBRICATION::TimIntImpl::print_convergence_values(
     const int& itnum,             //!< current Newton-Raphson iteration step
     const int& itemax,            //!< maximum number of Newton-Raphson iteration steps
     const double& ittol,          //!< relative tolerance for Newton-Raphson scheme
@@ -965,13 +965,13 @@ inline void LUBRICATION::TimIntImpl::PrintConvergenceValues(
               << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::PrintConvergenceValues
+}  // LUBRICATION::TimIntImpl::print_convergence_values
 
 
 /*----------------------------------------------------------------------*
  | print finish line of convergence table to screen         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::PrintConvergenceFinishLine()
+inline void LUBRICATION::TimIntImpl::print_convergence_finish_line()
 {
   if (myrank_ == 0)
     std::cout
@@ -980,7 +980,7 @@ inline void LUBRICATION::TimIntImpl::PrintConvergenceFinishLine()
         << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::PrintConvergenceFinishLine
+}  // LUBRICATION::TimIntImpl::print_convergence_finish_line
 
 
 /*----------------------------------------------------------------------*
@@ -1019,7 +1019,7 @@ void LUBRICATION::TimIntImpl::OutputState()
 /*----------------------------------------------------------------------*
  | increment time and step for next iteration               wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::IncrementTimeAndStep()
+inline void LUBRICATION::TimIntImpl::increment_time_and_step()
 {
   step_ += 1;
   time_ += dta_;
@@ -1029,7 +1029,7 @@ inline void LUBRICATION::TimIntImpl::IncrementTimeAndStep()
 /*----------------------------------------------------------------------*
  |  calculate error compared to analytical solution         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
+void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
   const INPAR::LUBRICATION::CalcError calcerr =
       CORE::UTILS::IntegralValue<INPAR::LUBRICATION::CalcError>(*params_, "CALCERROR");
@@ -1118,7 +1118,7 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     }
   }
 
-}  // LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol
+}  // LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol
 
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files         wirtz 11/15 |
@@ -1230,20 +1230,20 @@ void LUBRICATION::TimIntImpl::Evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichletToSystem(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
+    CORE::LINALG::apply_dirichlet_to_system(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 }
 
@@ -1251,7 +1251,7 @@ void LUBRICATION::TimIntImpl::Evaluate()
  | Update iteration incrementally with prescribed           wirtz 01/16 |
  | residual pressures                                                   |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::UpdateIterIncrementally(
+void LUBRICATION::TimIntImpl::update_iter_incrementally(
     const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
 )
 {
@@ -1263,11 +1263,11 @@ void LUBRICATION::TimIntImpl::UpdateIterIncrementally(
     prei_->PutScalar(0.0);
 
   // Update using #prei_
-  UpdateIterIncrementally();
+  update_iter_incrementally();
 
   // leave this place
   return;
-}  // UpdateIterIncrementally()
+}  // update_iter_incrementally()
 
 /*----------------------------------------------------------------------*
  | update Newton step                                       wirtz 01/16 |
@@ -1279,7 +1279,7 @@ void LUBRICATION::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> pre
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  UpdateIterIncrementally(prei);
+  update_iter_incrementally(prei);
   return;
 
 }  // UpdateNewton()

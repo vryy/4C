@@ -33,13 +33,14 @@ namespace MAT
       virtual double GetRelPermeability(const double saturation) const = 0;
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const = 0;
+      virtual double get_deriv_of_rel_permeability_wrt_saturation(
+          const double saturation) const = 0;
 
       // check for constant permeability
-      bool HasConstantRelPermeability() const { return constrelpermeability_; }
+      bool has_constant_rel_permeability() const { return constrelpermeability_; }
 
       /// factory method
-      static MAT::PAR::FluidPoroRelPermeabilityLaw* CreateRelPermeabilityLaw(int matID);
+      static MAT::PAR::FluidPoroRelPermeabilityLaw* create_rel_permeability_law(int matID);
 
      private:
       const bool constrelpermeability_;
@@ -62,7 +63,7 @@ namespace MAT
       };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
+      double get_deriv_of_rel_permeability_wrt_saturation(const double saturation) const override
       {
         return 0.0;
       };
@@ -98,7 +99,7 @@ namespace MAT
       };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
+      double get_deriv_of_rel_permeability_wrt_saturation(const double saturation) const override
       {
         if (saturation > minsat_)
           return exp_ * std::pow(saturation, (exp_ - 1.0));

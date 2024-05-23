@@ -218,7 +218,8 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(const CORE::FE::CellType distype) const
+bool DRT::ELEMENTS::RedInterAcinarDep::is_higher_order_element(
+    const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)

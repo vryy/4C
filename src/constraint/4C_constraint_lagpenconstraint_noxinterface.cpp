@@ -87,7 +87,7 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
+double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
     NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
@@ -111,7 +111,7 @@ double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
+double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
     const Epetra_Vector& xOld, double aTol, double rTol,
     NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
 {
@@ -137,9 +137,10 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
-    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
-    ::NOX::Abstract::Vector::NormType type, bool isScaled) const
+double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
+    const Epetra_Vector& xNew, const Epetra_Vector& xOld,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
   if (checkQuantity != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
@@ -164,9 +165,9 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Ep
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double LAGPENCONSTRAINT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-    NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
-    bool isScaled) const
+double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
+    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+    ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
   if (checkQuantity != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
@@ -227,10 +228,10 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::IsCondensedSystem() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LAGPENCONSTRAINT::NoxInterfacePrec::FillMapsForPreconditioner(
+void LAGPENCONSTRAINT::NoxInterfacePrec::fill_maps_for_preconditioner(
     std::vector<Teuchos::RCP<Epetra_Map>>& maps) const
 {
-  //  std::cout << "FillMapsForPreconditioner" << std::endl;
+  //  std::cout << "fill_maps_for_preconditioner" << std::endl;
   return;
 }
 

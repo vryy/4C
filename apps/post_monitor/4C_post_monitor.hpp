@@ -53,15 +53,15 @@ class MonWriter
       PostProblem& problem, std::string& infieldtype, std::string straintype, int node);
 
   //! write something : strain a point
-  void WriteMonPlStrainFile(
+  void write_mon_pl_strain_file(
       PostProblem& problem, std::string& infieldtype, std::string straintype, int node);
 
   //! write something : heatflux a point
-  void WriteMonHeatfluxFile(
+  void write_mon_heatflux_file(
       PostProblem& problem, std::string& infieldtype, std::string heatfluxtype, int node);
 
   //! write something : temperature gradient a point
-  void WriteMonTempgradFile(
+  void write_mon_tempgrad_file(
       PostProblem& problem, std::string& infieldtype, std::string tempgradtype, int node);
 
  protected:

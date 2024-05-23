@@ -98,13 +98,13 @@ namespace STR
       void UpdateStepElement() override{};
 
       //! derived
-      void DetermineStressStrain() override{};
+      void determine_stress_strain() override{};
 
       //! derived
       void DetermineEnergy() override{};
 
       //! derived
-      void DetermineOptionalQuantity() override{};
+      void determine_optional_quantity() override{};
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
@@ -113,13 +113,13 @@ namespace STR
       void ResetStepState() override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void PostOutput() override;

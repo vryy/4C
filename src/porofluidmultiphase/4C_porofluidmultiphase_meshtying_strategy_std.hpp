@@ -38,7 +38,7 @@ namespace POROFLUIDMULTIPHASE
     void Output() override;
 
     //! Initialize the linear solver
-    void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+    void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     //! solve linear system of equations
     void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
@@ -59,7 +59,7 @@ namespace POROFLUIDMULTIPHASE
     void Evaluate() override;
 
     //! extract increments and update mesh tying
-    Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+    Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(
         const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     //! access to global (combined) increment of coupled problem

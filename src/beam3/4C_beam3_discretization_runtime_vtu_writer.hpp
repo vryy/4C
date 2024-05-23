@@ -92,7 +92,8 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendDisplacementField(Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  void append_displacement_field(
+      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append tangent vector field determined from given displacement state to output data
    *
@@ -106,7 +107,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendElementOwningProcessor();
+  void append_element_owning_processor();
 
   /**
    * \brief Append the 4C interal GIDs to all beam elements.
@@ -116,92 +117,92 @@ class BeamDiscretizationRuntimeOutputWriter
   /**
    * \brief Append the element ghosting information.
    */
-  void AppendElementGhostingInformation();
+  void append_element_ghosting_information();
 
   /** \brief append internal (elastic) energy of element
    *
    *  \author eichinger
    *  \date 01/18 */
-  void AppendElementInternalEnergy();
+  void append_element_internal_energy();
 
   /** \brief append kinetic energy of element
    *
    *  \author eichinger
    *  \date 01/18 */
-  void AppendElementKineticEnergy();
+  void append_element_kinetic_energy();
 
   /** \brief append information about to which filament an element belonging
    *
    *  \author eichinger
    *  \date 05/17 */
-  void AppendElementFilamentIdAndType();
+  void append_element_filament_id_and_type();
 
   /** \brief append circular cross-section radius of elements to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendElementCircularCrossSectionRadius();
+  void append_element_circular_cross_section_radius();
 
   /** \brief append a vector field defining orientation and radius of a circular cross-section to
    * output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendPointCircularCrossSectionInformationVector(
+  void append_point_circular_cross_section_information_vector(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append material cross-section strain resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendGaussPointMaterialCrossSectionStrainResultants();
+  void append_gauss_point_material_cross_section_strain_resultants();
 
   /**
    * \brief Append interpolated GP values of the material cross-section strain resultants.
    */
-  void AppendGaussPointMaterialCrossSectionStrainResultantsContinuous();
+  void append_gauss_point_material_cross_section_strain_resultants_continuous();
 
   /** \brief append material cross-section stress resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendGaussPointMaterialCrossSectionStressResultants();
+  void append_gauss_point_material_cross_section_stress_resultants();
 
   /**
    * \brief Append interpolated GP values of the material cross-section stress resultants.
    */
-  void AppendGaussPointMaterialCrossSectionStressResultantsContinuous();
+  void append_gauss_point_material_cross_section_stress_resultants_continuous();
 
   /** \brief append spatial cross-section stress resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendGaussPointSpatialCrossSectionStressResultants();
+  void append_gauss_point_spatial_cross_section_stress_resultants();
 
   /**
    * \brief Append interpolated GP values of the spatial cross-section strain resultants.
    */
-  void AppendGaussPointSpatialCrossSectionStressResultantsContinuous();
+  void append_gauss_point_spatial_cross_section_stress_resultants_continuous();
 
   /** \brief append element Orientation parameter with respect to x,y,z axis
    *
    *  \author eichinger
    *  \date 08/17 */
-  void AppendElementOrientationParamater(
+  void append_element_orientation_paramater(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim
    *
    *  \author eichinger
    *  \date 08/17 */
-  void AppendRVECrosssectionForces(
+  void append_rve_crosssection_forces(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append current internal energy of the elements to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendElementElasticEnergy();
+  void append_element_elastic_energy();
 
   /**
    * \brief append the reference element length of the beam for the Hermitian interpolation.
@@ -217,7 +218,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void SetGeometryFromBeamDiscretization(
+  void set_geometry_from_beam_discretization(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
  private:
@@ -226,14 +227,14 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   // Todo template <typename T>
-  void InsertVectorValuesAtBackOfOtherVector(
+  void insert_vector_values_at_back_of_other_vector(
       const std::vector<double>& vector_input, std::vector<double>& vector_output);
 
   /**
    * \brief Get the global (on all ranks) maximum value of Gauss Point resultants for stress /
    * strain output.
    **/
-  int GetGlobalNumberOfGaussPointsPerBeam(unsigned int my_num_gp) const;
+  int get_global_number_of_gauss_points_per_beam(unsigned int my_num_gp) const;
 
   /**
    * \brief Calculate the polynomial coefficients to interpolate the Gauss point values.
@@ -241,7 +242,7 @@ class BeamDiscretizationRuntimeOutputWriter
    * @param gauss_point_values (in) Values at Gauss points
    * @param coefficients (out) Polynomial coefficients of the interpolated the Gauss point values.
    */
-  void CalcInterpolationPolynomialCoefficients(const CORE::FE::GaussRule1D& gauss_rule,
+  void calc_interpolation_polynomial_coefficients(const CORE::FE::GaussRule1D& gauss_rule,
       const std::vector<double>& gauss_point_values,
       std::vector<double>& polynomial_coefficients) const;
 
@@ -251,7 +252,7 @@ class BeamDiscretizationRuntimeOutputWriter
    * @param xi (in) Point where the polynomial is evalated.
    * @return Interpolated value
    */
-  double EvaluatePolynomialCoefficients(
+  double evaluate_polynomial_coefficients(
       const std::vector<double>& polynomial_coefficients, const double& xi) const;
 
  private:
@@ -269,7 +270,7 @@ class BeamDiscretizationRuntimeOutputWriter
    * visualization point along the beam centerline.
    * @param stress_strain_field (in) Type of stress / strain to append.
    */
-  void AppendContinuousStressStrainResultants(const StressStrainField stress_strain_field);
+  void append_continuous_stress_strain_resultants(const StressStrainField stress_strain_field);
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized

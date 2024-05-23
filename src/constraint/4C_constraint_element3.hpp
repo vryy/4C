@@ -46,7 +46,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
@@ -212,7 +212,7 @@ namespace DRT
       /*!
       \brief Create matrix with material configuration for 3 dimensions and 4 nodes
       */
-      inline void MaterialConfiguration(
+      inline void material_configuration(
           CORE::LINALG::Matrix<4, 3>& x  ///< nodal coords in material frame
       ) const
       {
@@ -231,7 +231,7 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 3 dimensions and 4 nodes
       */
-      inline void SpatialConfiguration(
+      inline void spatial_configuration(
           CORE::LINALG::Matrix<4, 3>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp  ///< displacements
       ) const
@@ -251,7 +251,7 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 3 dimensions and 2 nodes
       */
-      inline void SpatialConfiguration(
+      inline void spatial_configuration(
           CORE::LINALG::Matrix<2, 3>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp  ///< displacements
       ) const
@@ -294,19 +294,19 @@ namespace DRT
       );
 
       /// Compute difference of nodal displacement to masternode in given direction
-      double ComputeWeightedDistance(
+      double compute_weighted_distance(
           const std::vector<double> disp,   ///< displacement vector of current node and masternode
           const std::vector<double> direct  ///< direction to weight with
       );
 
       /// Compute first derivatives nodal displacement to masternode in given direction
-      void ComputeFirstDerivWeightedDistance(
+      void compute_first_deriv_weighted_distance(
           CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
           const std::vector<double> direct             ///< direction to weight with
       );
 
       /// Compute difference of spatial configuration to masternode in given direction
-      double ComputeWeightedDistance(
+      double compute_weighted_distance(
           const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct);
     };  // class ConstraintElement3
 

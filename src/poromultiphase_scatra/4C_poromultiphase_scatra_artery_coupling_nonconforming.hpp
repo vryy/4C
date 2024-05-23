@@ -61,10 +61,10 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
-    virtual void EvaluateAdditionalLinearizationofIntegratedDiam() = 0;
+    virtual void evaluate_additional_linearizationof_integrated_diam() = 0;
 
     //! FE-assemble into global force and stiffness matrix
-    virtual void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid,
+    virtual void fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid,
         const int& ele2gid, const double& integrated_diam,
         std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
@@ -74,7 +74,7 @@ namespace POROMULTIPHASESCATRA
     virtual void SetVaryingDiamFlag();
 
     //! print out the coupling method
-    void PrintOutCouplingMethod() const override;
+    void print_out_coupling_method() const override;
 
     //! the parameters
     const Teuchos::ParameterList& couplingparams_;
@@ -134,7 +134,7 @@ namespace POROMULTIPHASESCATRA
     void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
-    void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+    void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) override;
 
@@ -150,22 +150,22 @@ namespace POROMULTIPHASESCATRA
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
+    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
     //! create interaction pairs for line- or surfacebased coupling (GPTS and MP)
-    void CreateCouplingPairsLineSurfBased();
+    void create_coupling_pairs_line_surf_based();
 
     //! create interaction pairs for ntp coupling
-    void CreateCouplingPairsNTP();
+    void create_coupling_pairs_ntp();
 
     //! calculate the volume fraction occupied by blood vessels
-    void CalculateBloodVesselVolumeFraction();
+    void calculate_blood_vessel_volume_fraction();
 
     //! get the Id from 1D nodes for coupling
-    void GetCouplingIdsfromInput();
+    void get_coupling_idsfrom_input();
 
     //! evaluate the pairs
-    void EvaluateCouplingPairs(
+    void evaluate_coupling_pairs(
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! FE-assemble into global D, M and kappa (MP case)
@@ -174,7 +174,7 @@ namespace POROMULTIPHASESCATRA
         const CORE::LINALG::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
-    void SumDMIntoGlobalForceStiff(
+    void sum_dm_into_global_force_stiff(
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! invert kappa vector
@@ -183,19 +183,19 @@ namespace POROMULTIPHASESCATRA
     //! return appropriate internal implementation class (acts as a simple factory to create single
     //! pairs)
     static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-    CreateNewArteryCouplingPair(std::vector<DRT::Element const*> const& ele_ptrs);
+    create_new_artery_coupling_pair(std::vector<DRT::Element const*> const& ele_ptrs);
 
     //! set the artery diameter in material to be able to use it on 1D discretization
-    virtual void SetArteryDiamInMaterial() = 0;
+    virtual void set_artery_diam_in_material() = 0;
 
     //! get the segment lengths of element 'artelegid'
-    virtual std::vector<double> GetEleSegmentLengths(const int artelegid) = 0;
+    virtual std::vector<double> get_ele_segment_lengths(const int artelegid) = 0;
 
     //! reset the integrated diameter vector to zero
-    virtual void ResetIntegratedDiamToZero() = 0;
+    virtual void reset_integrated_diam_to_zero() = 0;
 
     //! fill Function and Scale vectors as read from input file
-    void FillFunctionAndScaleVectors();
+    void fill_function_and_scale_vectors();
 
     //! set the right-hand side factor for time integration
     void SetTimeFacRhs();

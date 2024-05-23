@@ -223,13 +223,13 @@ namespace DRT::ELEMENTS
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Save number of Gauss Points of the element for gauss point data output
-    gp_data_output_manager.AddElementNumberOfGaussPoints(num_gp);
+    gp_data_output_manager.add_element_number_of_gauss_points(num_gp);
 
     // holder for output quantity names and their size
     std::unordered_map<std::string, int> quantities_map{};
 
     // Ask material for the output quantity names and sizes
-    solid_material.RegisterOutputDataNames(quantities_map);
+    solid_material.register_output_data_names(quantities_map);
 
     // Add quantities to the Gauss point output data manager (if they do not already exist)
     gp_data_output_manager.MergeQuantities(quantities_map);
@@ -273,7 +273,7 @@ namespace DRT::ELEMENTS
           {
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
-                gp_data_output_manager.GetElementCenterData().at(quantity_name);
+                gp_data_output_manager.get_element_center_data().at(quantity_name);
             CORE::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
             break;
           }

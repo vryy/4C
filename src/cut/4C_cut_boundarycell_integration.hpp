@@ -46,12 +46,12 @@ namespace CORE::GEO
       Unlike facet integration facets, whose x-component of normal is zero, cannot be eliminated
       from the integration.
        */
-      CORE::LINALG::SerialDenseVector GenerateBoundaryCellIntegrationRule();
+      CORE::LINALG::SerialDenseVector generate_boundary_cell_integration_rule();
 
       /*!
       \brief Returns the location of Gauss points over the boundarycell
        */
-      std::vector<std::vector<double>> getBcellGaussPointLocation() { return bcellgaus_pts_; }
+      std::vector<std::vector<double>> get_bcell_gauss_point_location() { return bcellgaus_pts_; }
 
      private:
       Element* elem1_;
@@ -63,7 +63,7 @@ namespace CORE::GEO
       /*!
       \brief Distribute the Gauss points over the boundarycell
        */
-      void DistributeBoundaryCellGaussPoints(std::vector<double> eqn,
+      void distribute_boundary_cell_gauss_points(std::vector<double> eqn,
           std::vector<std::vector<double>> corners, std::vector<std::vector<double>>& bcGausspts,
           int ptNos);
 

@@ -33,7 +33,7 @@ Teuchos::RCP<DRT::Element> CONTACT::ElementType::Create(const int id, const int 
   return Teuchos::null;
 }
 
-void CONTACT::ElementType::NodalBlockInformation(
+void CONTACT::ElementType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
@@ -169,7 +169,7 @@ void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDe
 
   // get local coordinates for this node
   double xi[2];
-  LocalCoordinatesOfNode(lid, xi);
+  local_coordinates_of_node(lid, xi);
 
   // build normal derivative at xi and return it
   DerivNormalAtXi(xi, i, elens, derivn);
@@ -404,10 +404,10 @@ void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles,
 }
 
 
-void CONTACT::Element::AssembleDderivToNodes(bool dual)
+void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 {
   if (d_matrix_deriv_ == Teuchos::null)
-    FOUR_C_THROW("AssembleDderivToNodes called w/o PrepareDderiv first");
+    FOUR_C_THROW("assemble_dderiv_to_nodes called w/o PrepareDderiv first");
 
   if (d_matrix_deriv_->size() == 0) return;
 
@@ -441,10 +441,10 @@ void CONTACT::Element::AssembleDderivToNodes(bool dual)
   d_matrix_deriv_ = Teuchos::null;
 }
 
-void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
+void CONTACT::Element::assemble_mderiv_to_nodes(MORTAR::Element& mele)
 {
   if (m_matrix_deriv_ == Teuchos::null)
-    FOUR_C_THROW("AssembleMderivToNodes called w/o PrepareMderiv first");
+    FOUR_C_THROW("assemble_mderiv_to_nodes called w/o PrepareMderiv first");
   if (m_matrix_deriv_->size() == 0) return;
 
   for (int j = 0; j < NumNode(); ++j)

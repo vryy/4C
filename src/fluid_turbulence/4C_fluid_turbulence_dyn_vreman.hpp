@@ -70,11 +70,12 @@ namespace FLD
 
 
 
-    void ApplyFilterForDynamicComputationOfCv(const Teuchos::RCP<const Epetra_Vector> velocity,
+    void apply_filter_for_dynamic_computation_of_cv(
+        const Teuchos::RCP<const Epetra_Vector> velocity,
         const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
         const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
 
-    void ApplyFilterForDynamicComputationOfDt(const Teuchos::RCP<const Epetra_Vector> scalar,
+    void apply_filter_for_dynamic_computation_of_dt(const Teuchos::RCP<const Epetra_Vector> scalar,
         const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 

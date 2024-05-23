@@ -24,14 +24,14 @@ FOUR_C_NAMESPACE_OPEN
 void PrintElementDatHeader()
 {
   INPUT::ElementDefinition ed;
-  ed.PrintElementDatHeaderToStream(std::cout);
+  ed.print_element_dat_header_to_stream(std::cout);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& stream)
+void INPUT::ElementDefinition::print_element_dat_header_to_stream(std::ostream& stream)
 {
-  SetupValidElementLines();
+  setup_valid_element_lines();
 
   PrintSectionHeader(stream, "STRUCTURE ELEMENTS");
 
@@ -175,9 +175,9 @@ void INPUT::ElementDefinition::PrintElementLines(std::ostream& stream, std::stri
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementDefinition::SetupValidElementLines()
+void INPUT::ElementDefinition::setup_valid_element_lines()
 {
-  CORE::COMM::ParObjectFactory::Instance().SetupElementDefinition(definitions_);
+  CORE::COMM::ParObjectFactory::Instance().setup_element_definition(definitions_);
 }
 
 

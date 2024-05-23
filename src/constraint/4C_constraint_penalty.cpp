@@ -179,7 +179,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 
@@ -306,7 +306,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 

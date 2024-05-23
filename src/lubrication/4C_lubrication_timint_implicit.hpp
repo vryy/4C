@@ -103,7 +103,7 @@ namespace LUBRICATION
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! set the nodal film height
-    void SetHeightFieldPureLub(const int nds);
+    void set_height_field_pure_lub(const int nds);
     //! set the nodal film height
     void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
 
@@ -111,14 +111,14 @@ namespace LUBRICATION
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
 
     //! set relative tangential interface velocity for Reynolds equation
-    void SetAverageVelocityFieldPureLub(const int nds);
-    void SetRelativeVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
+    void set_average_velocity_field_pure_lub(const int nds);
+    void set_relative_velocity_field(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
 
     //! set average tangential interface velocity for Reynolds equation
-    void SetAverageVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> av_vel);
+    void set_average_velocity_field(const int nds, Teuchos::RCP<const Epetra_Vector> av_vel);
 
     //! add global state vectors specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) = 0;
+    virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
 
     //! prepare time loop
     virtual void PrepareTimeLoop();
@@ -127,7 +127,7 @@ namespace LUBRICATION
     virtual void PrepareTimeStep();
 
     //! initialization procedure prior to evaluation of first time step
-    virtual void PrepareFirstTimeStep();
+    virtual void prepare_first_time_step();
 
     //! read restart data
     virtual void ReadRestart(int step) = 0;
@@ -150,7 +150,7 @@ namespace LUBRICATION
     );
 
     //! calculate error compared to analytical solution
-    virtual void EvaluateErrorComparedToAnalyticalSol();
+    virtual void evaluate_error_compared_to_analytical_sol();
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -169,12 +169,12 @@ namespace LUBRICATION
     //! from scratch by using the newly updated #prenp_. The method
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors
-    //! (like #PredictConstTempConsistRate)
-    virtual void UpdateIterIncrementally() = 0;
+    //! (like #predict_const_temp_consist_rate)
+    virtual void update_iter_incrementally() = 0;
 
     //! Update iteration incrementally with prescribed residual
     //! pressures
-    void UpdateIterIncrementally(
+    void update_iter_incrementally(
         const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
     );
 
@@ -235,7 +235,7 @@ namespace LUBRICATION
     virtual void OutputMeanPressures(const int num = 0);
 
     //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
-    void OutputDomainOrBoundaryIntegrals(const std::string condstring);
+    void output_domain_or_boundary_integrals(const std::string condstring);
 
    protected:
     /*========================================================================*/
@@ -252,13 +252,13 @@ namespace LUBRICATION
     //! @name set element parameters
     /*========================================================================*/
 
-    virtual void SetElementTimeParameter() const = 0;
+    virtual void set_element_time_parameter() const = 0;
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
+    virtual void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) = 0;
 
     //! Set general element parameters
-    void SetElementGeneralParameters() const;
+    void set_element_general_parameters() const;
 
     /*========================================================================*/
     //! @name general framework
@@ -279,7 +279,7 @@ namespace LUBRICATION
     void ScalingAndNeumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
-    virtual void AddNeumannToResidual() = 0;
+    virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
     void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
@@ -292,7 +292,7 @@ namespace LUBRICATION
     virtual double ResidualScaling() const = 0;
 
     //! penalty term to ensure positive pressures (cavitation)
-    virtual void AddCavitationPenalty();
+    virtual void add_cavitation_penalty();
 
     //! contains the nonlinear iteration loop
     virtual void NonlinearSolve();
@@ -306,7 +306,7 @@ namespace LUBRICATION
     );
 
     //! Calculate problem specific norm
-    virtual void CalcProblemSpecificNorm(
+    virtual void calc_problem_specific_norm(
         double& preresnorm, double& incprenorm_L2, double& prenorm_L2, double& preresnorminf);
 
     /*--- query and output ---------------------------------------------------*/
@@ -321,10 +321,10 @@ namespace LUBRICATION
     void OutputToGmsh(const int step, const double time) const;
 
     //! print header of convergence table to screen
-    virtual void PrintConvergenceHeader();
+    virtual void print_convergence_header();
 
     //! print first line of convergence table to screen
-    virtual void PrintConvergenceValuesFirstIter(
+    virtual void print_convergence_values_first_iter(
         const int& itnum,            //!< current Newton-Raphson iteration step
         const int& itemax,           //!< maximum number of Newton-Raphson iteration steps
         const double& ittol,         //!< relative tolerance for Newton-Raphson scheme
@@ -333,7 +333,7 @@ namespace LUBRICATION
     );
 
     //! print current line of convergence table to screen
-    virtual void PrintConvergenceValues(
+    virtual void print_convergence_values(
         const int& itnum,             //!< current Newton-Raphson iteration step
         const int& itemax,            //!< maximum number of Newton-Raphson iteration steps
         const double& ittol,          //!< relative tolerance for Newton-Raphson scheme
@@ -344,7 +344,7 @@ namespace LUBRICATION
     );
 
     //! print finish line of convergence table to screen
-    virtual void PrintConvergenceFinishLine();
+    virtual void print_convergence_finish_line();
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -353,7 +353,7 @@ namespace LUBRICATION
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! increment time and step value
-    void IncrementTimeAndStep();
+    void increment_time_and_step();
 
     /*========================================================================*/
     //! @name general framework variables

@@ -41,7 +41,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
     const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
 {
   Teuchos::RCP<::NOX::Solver::Generic> solver;
-  Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->GetNlnParameterListPtr();
+  Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->get_nln_parameter_list_ptr();
 
   std::string method = params->get<std::string>("Nonlinear Solver", "Line Search Based");
 

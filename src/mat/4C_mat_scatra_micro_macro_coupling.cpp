@@ -78,25 +78,26 @@ void MAT::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentration(const int gp_id) const
+double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration on micro scale
-  return matgp_.at(gp_id)->EvaluateMeanConcentration();
+  return matgp_.at(gp_id)->evaluate_mean_concentration();
 }
 
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentrationTimeDerivative(const int gp_id) const
+double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration_time_derivative(
+    const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration time derivative on micro scale
-  return matgp_.at(gp_id)->EvaluateMeanConcentrationTimeDerivative();
+  return matgp_.at(gp_id)->evaluate_mean_concentration_time_derivative();
 }
 
 

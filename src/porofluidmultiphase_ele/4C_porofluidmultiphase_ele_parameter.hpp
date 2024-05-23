@@ -32,11 +32,11 @@ namespace DRT
       );
 
       //! set parameters
-      void SetTimeStepParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_time_step_parameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
       //! set parameters
-      void SetGeneralParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_general_parameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
       //! @name access methods
@@ -55,7 +55,7 @@ namespace DRT
       int NdsSolidPressure() const { return nds_solidpressure_; };
       int NdsScalar() const { return nds_scalar_; };
       bool HasScalar() const { return nds_scalar_ > -1; };
-      int NumDomainIntFunctions() const { return domainint_funct_.size(); };
+      int num_domain_int_functions() const { return domainint_funct_.size(); };
       std::vector<int> DomainIntFunctions() const { return domainint_funct_; };
       //@}
 

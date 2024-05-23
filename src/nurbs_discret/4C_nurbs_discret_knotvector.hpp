@@ -135,7 +135,8 @@ namespace DRT
 
       The numbering of the control points is assumed to be accordingly.
       */
-      void ConvertEleGidToKnotIds(const int gid, int& npatch, std::vector<int>& loc_cart_id) const;
+      void convert_ele_gid_to_knot_ids(
+          const int gid, int& npatch, std::vector<int>& loc_cart_id) const;
 
 
       /*!
@@ -172,12 +173,12 @@ namespace DRT
 
       \endverbatim
 
-      \note This is the inverse method to ConvertEleGidToKnotIds. See its documentation for further
-      details.
+      \note This is the inverse method to convert_ele_gid_to_knot_ids. See its documentation for
+      further details.
 
-      \sa ConvertEleGidToKnotIds()
+      \sa convert_ele_gid_to_knot_ids()
       */
-      int ConvertEleKnotIdsToGid(const int& npatch, const std::vector<int>& loc_cart_id);
+      int convert_ele_knot_ids_to_gid(const int& npatch, const std::vector<int>& loc_cart_id);
 
 
       /*!
@@ -252,7 +253,7 @@ namespace DRT
       Zero sized elements are simply to be skipped during
       integration
       */
-      bool GetBoundaryEleAndParentKnots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+      bool get_boundary_ele_and_parent_knots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
           std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
           const int surfaceid) const;
 
@@ -361,7 +362,7 @@ namespace DRT
 
       \return vector number of zero sized elements in knotspan of this patch
       */
-      virtual std::vector<int> Return_n_zerosize_ele(const int npatch);
+      virtual std::vector<int> return_n_zerosize_ele(const int npatch);
 
 
       /*!
@@ -374,7 +375,7 @@ namespace DRT
 
       \return gid of the next nonzero sized element in knotspan
       */
-      virtual int Return_next_nonzero_ele_gid(const int zero_ele_gid);
+      virtual int return_next_nonzero_ele_gid(const int zero_ele_gid);
 
 
       /*!
@@ -382,7 +383,7 @@ namespace DRT
 
       \param npatch (i) The number of the patch
       */
-      virtual std::vector<int> Return_nele_x_mele_x_lele(const int npatch)
+      virtual std::vector<int> return_nele_x_mele_x_lele(const int npatch)
       {
         if (!filled_)
         {

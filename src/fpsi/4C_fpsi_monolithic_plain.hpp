@@ -77,7 +77,7 @@ namespace FPSI
     void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
-    void RecoverLagrangeMultiplier() override;
+    void recover_lagrange_multiplier() override;
 
 
    protected:

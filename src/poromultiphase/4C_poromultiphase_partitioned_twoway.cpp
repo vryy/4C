@@ -140,7 +140,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
     else
     {
       // Inform user that structure field has been disabled
-      PrintStructureDisabledInfo();
+      print_structure_disabled_info();
       // just set displacements and velocities to zero
       SetStructSolution(struct_zeros_, struct_zeros_);
     }
@@ -152,7 +152,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
     PerformRelaxation(FluidField()->Phinp(), itnum_);
 
     // 2.) set fluid solution in structure field
-    SetRelaxedFluidSolution();
+    set_relaxed_fluid_solution();
 
     // check convergence for all fields
     // stop iteration loop if converged
@@ -311,7 +311,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoFluidStep()
 /*----------------------------------------------------------------------*
  | Set relaxed fluid solution on structure             kremheller 09/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetRelaxedFluidSolution()
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::set_relaxed_fluid_solution()
 {
   // set fluid solution on structure
   StructureField()->Discretization()->SetState(1, "porofluid", fluidphinp_);

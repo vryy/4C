@@ -64,7 +64,7 @@ void IO::EveryIterationWriter::Init(const IO::DiscretizationWriter* parent_write
  *----------------------------------------------------------------------------*/
 void IO::EveryIterationWriter::Setup()
 {
-  ThrowIfNotInitialized(__LINE__);
+  throw_if_not_initialized(__LINE__);
 
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
@@ -252,7 +252,7 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::EveryIterationWriter::AddLineSearchIteration(
+void IO::EveryIterationWriter::add_line_search_iteration(
     const int newton_iteration, const int linesearch_iteration)
 {
   ThrowIfNotSetup(__LINE__);

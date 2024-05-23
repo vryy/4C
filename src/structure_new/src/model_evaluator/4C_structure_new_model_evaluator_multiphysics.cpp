@@ -48,9 +48,9 @@ void STR::MODELEVALUATOR::Multiphysics::Setup()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Multiphysics::Reset(const Epetra_Vector& x)
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->Reset(x);
+  get_model_evaluator_from_map(active_mt_)->Reset(x);
 }
 
 
@@ -59,9 +59,9 @@ void STR::MODELEVALUATOR::Multiphysics::Reset(const Epetra_Vector& x)
 bool STR::MODELEVALUATOR::Multiphysics::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->AssembleForce(f, timefac_np);
+  get_model_evaluator_from_map(active_mt_)->AssembleForce(f, timefac_np);
   return true;
 }
 
@@ -71,9 +71,9 @@ bool STR::MODELEVALUATOR::Multiphysics::AssembleForce(
 bool STR::MODELEVALUATOR::Multiphysics::AssembleJacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->AssembleJacobian(jac, timefac_np);
+  get_model_evaluator_from_map(active_mt_)->AssembleJacobian(jac, timefac_np);
   return true;
 }
 
@@ -82,9 +82,9 @@ bool STR::MODELEVALUATOR::Multiphysics::AssembleJacobian(
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Multiphysics::EvaluateForce()
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->EvaluateForce();
+  get_model_evaluator_from_map(active_mt_)->EvaluateForce();
   return true;
 }
 
@@ -93,9 +93,9 @@ bool STR::MODELEVALUATOR::Multiphysics::EvaluateForce()
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Multiphysics::EvaluateStiff()
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->EvaluateStiff();
+  get_model_evaluator_from_map(active_mt_)->EvaluateStiff();
   return true;
 }
 
@@ -104,9 +104,9 @@ bool STR::MODELEVALUATOR::Multiphysics::EvaluateStiff()
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Multiphysics::EvaluateForceStiff()
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->EvaluateForceStiff();
+  get_model_evaluator_from_map(active_mt_)->EvaluateForceStiff();
   return true;
 }
 
@@ -115,9 +115,9 @@ bool STR::MODELEVALUATOR::Multiphysics::EvaluateForceStiff()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Multiphysics::UpdateStepState(const double& timefac_n)
 {
-  CheckActiveModelType();
+  check_active_model_type();
 
-  GetModelEvaluatorFromMap(active_mt_)->UpdateStepState(timefac_n);
+  get_model_evaluator_from_map(active_mt_)->UpdateStepState(timefac_n);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -28,13 +28,14 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
           cardvasc0dman
               .Get0D_dof_m()),  // cardiovascular 0D dofs at generalized mid-point t_{n+\theta}
       havecardio_4elementwindkessel_(
-          cardvasc0dman.GetCardvasc0D4ElementWindkessel()->HaveCardiovascular0D()),
+          cardvasc0dman.get_cardvasc0_d4_element_windkessel()->have_cardiovascular0_d()),
       havecardio_arterialproxdist_(
-          cardvasc0dman.GetCardvasc0DArterialProxDist()->HaveCardiovascular0D()),
+          cardvasc0dman.get_cardvasc0_d_arterial_prox_dist()->have_cardiovascular0_d()),
       havecardio_syspulcirculation_(
-          cardvasc0dman.GetCardvasc0DSysPulCirculation()->HaveCardiovascular0D()),
+          cardvasc0dman.get_cardvasc0_d_sys_pul_circulation()->have_cardiovascular0_d()),
       havecardiorespir_syspulperiphcirculation_(
-          cardvasc0dman.GetCardvascRespir0DSysPulPeriphCirculation()->HaveCardiovascular0D())
+          cardvasc0dman.get_cardvasc_respir0_d_sys_pul_periph_circulation()
+              ->have_cardiovascular0_d())
 {
   // empty
 }

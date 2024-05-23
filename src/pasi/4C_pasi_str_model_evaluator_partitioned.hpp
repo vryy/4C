@@ -46,7 +46,7 @@ namespace STR
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in ADAPTER::PASIStructureWrapper
-      const Teuchos::RCP<Epetra_Vector>& GetInterfaceForceNpPtr()
+      const Teuchos::RCP<Epetra_Vector>& get_interface_force_np_ptr()
       {
         return interface_force_np_ptr_;
       };
@@ -119,13 +119,13 @@ namespace STR
       void UpdateStepElement() override { return; };
 
       //! [derived]
-      void DetermineStressStrain() override { return; };
+      void determine_stress_strain() override { return; };
 
       //! [derived]
       void DetermineEnergy() override { return; };
 
       //! [derived]
-      void DetermineOptionalQuantity() override { return; };
+      void determine_optional_quantity() override { return; };
 
       //! [derived]
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
@@ -140,13 +140,13 @@ namespace STR
       void PostOutput() override { return; };
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! @}
 

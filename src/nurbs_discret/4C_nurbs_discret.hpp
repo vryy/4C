@@ -134,9 +134,9 @@ namespace DRT
       \author gammi
 
       */
-      virtual std::vector<int> Return_nele_x_mele_x_lele(const int npatch)
+      virtual std::vector<int> return_nele_x_mele_x_lele(const int npatch)
       {
-        return (knots_->Return_nele_x_mele_x_lele(npatch));
+        return (knots_->return_nele_x_mele_x_lele(npatch));
       }
 
      private:
@@ -162,7 +162,7 @@ namespace DRT
   {
     class DbcNurbs : public DRT::UTILS::Dbc
     {
-      using Dbc::DoDirichletCondition;
+      using Dbc::do_dirichlet_condition;
 
      public:
       /// constructor
@@ -197,7 +197,7 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        * \author vuong */
-      void DoDirichletCondition(const DRT::Discretization& discret,
+      void do_dirichlet_condition(const DRT::Discretization& discret,
           const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
@@ -218,7 +218,7 @@ namespace DRT
 
       */
       template <CORE::FE::CellType distype>
-      void FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> ele,
+      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, CORE::LINALG::SerialDenseMatrix& elemass,
@@ -239,7 +239,7 @@ namespace DRT
 
       */
       template <CORE::FE::CellType distype>
-      void FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> ele,
+      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Teuchos::RCP<DRT::Element> ele,
           const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, CORE::LINALG::SerialDenseMatrix& elemass,

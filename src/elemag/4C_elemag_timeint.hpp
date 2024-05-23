@@ -88,7 +88,7 @@ namespace ELEMAG
     /*!
     \brief Prints information about the discretization and time integration to screen.
     */
-    virtual void PrintInformationToScreen();
+    virtual void print_information_to_screen();
 
     /*!
     \brief print the name of the scheme as std::string.
@@ -133,7 +133,7 @@ namespace ELEMAG
     /*!
     \brief Import initial electric field from scatra solution
     */
-    void SetInitialElectricField(
+    void set_initial_electric_field(
         Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization>& scatradis);
 
     /*!
@@ -149,7 +149,7 @@ namespace ELEMAG
     \brief ProjectfieldTest is used for debugging purposes.
 
     This function projects a defined function to the interior fields and can be used to check if the
-    global solver works. It is the dual of ProjectFieldTestTrace.
+    global solver works. It is the dual of project_field_test_trace.
     */
     virtual void ProjectFieldTest(int startfuncno);
 
@@ -159,7 +159,7 @@ namespace ELEMAG
     This function projects a defined function to the global trace and can be used to check if the
     local solver works. It is the dual of ProjectFieldTest.
     */
-    virtual void ProjectFieldTestTrace(int startfuncno);
+    virtual void project_field_test_trace(int startfuncno);
 
     /*!
     \brief Initialize the algorithm using BDF1 as first step
@@ -178,8 +178,8 @@ namespace ELEMAG
     Once the solution of the global system has been carried on it is necessary to solve for the
     local problems and update the residual.
     */
-    virtual void UpdateInteriorVariablesAndAssembleRHS();
-    // void UpdateInteriorVariablesAndAssembleRHS();
+    virtual void update_interior_variables_and_assemble_rhs();
+    // void update_interior_variables_and_assemble_rhs();
 
     /*!
     \brief Apply Dirichlet boudnary conditions to system.
@@ -187,7 +187,7 @@ namespace ELEMAG
     \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
     it necessary to compute the matrices AND the RHS (false).
     */
-    void ApplyDirichletToSystem(bool resonly);
+    void apply_dirichlet_to_system(bool resonly);
 
     /*!
     \brief Compute Silver-Mueller boundary conditions.
@@ -201,7 +201,7 @@ namespace ELEMAG
     replace the values in the rhs vector but assembles it. Therefore, by doing both the matrix and
     the vector we would end up summing more than one contribution at once
     */
-    void ComputeSilverMueller(bool do_rhs);
+    void compute_silver_mueller(bool do_rhs);
 
     /*!
     \brief Solve the system for trace and interior variables.
@@ -274,7 +274,7 @@ namespace ELEMAG
     /*!
     \brief increment time and step value
     */
-    virtual void IncrementTimeAndStep()
+    virtual void increment_time_and_step()
     {
       step_ += 1;
       time_ += dtp_;

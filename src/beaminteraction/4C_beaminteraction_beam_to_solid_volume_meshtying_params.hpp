@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
      * section.
      * @return Number of points.
      */
-    inline unsigned int GetNumberOfIntegrationPointsCircumference() const
+    inline unsigned int get_number_of_integration_points_circumference() const
     {
       return integration_points_circumference_;
     }
@@ -58,7 +58,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the type of rotational coupling to be used.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling GetRotationalCouplingType() const
+    inline INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling get_rotational_coupling_type() const
     {
       return rotational_coupling_triad_construction_;
     }
@@ -67,8 +67,8 @@ namespace BEAMINTERACTION
      * \brief Returns the shape function for the mortar Lagrange-multiplicators to interpolate the
      * rotational coupling.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionRotationType()
-        const
+    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions
+    get_mortar_shape_function_rotation_type() const
     {
       return mortar_shape_function_rotation_;
     }
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the penalty parameter for rotational coupling.
      */
-    inline double GetRotationalCouplingPenaltyParameter() const
+    inline double get_rotational_coupling_penalty_parameter() const
     {
       return rotational_coupling_penalty_parameter_;
     }
@@ -86,12 +86,12 @@ namespace BEAMINTERACTION
      * @return Pointer to visualization output parameters.
      */
     Teuchos::RCP<BeamToSolidVolumeMeshtyingVisualizationOutputParams>
-    GetVisualizationOutputParamsPtr();
+    get_visualization_output_params_ptr();
 
     /**
      * \brief Returns if the restart configuration should be coupled.
      */
-    inline bool GetCoupleRestartState() const { return couple_restart_state_; }
+    inline bool get_couple_restart_state() const { return couple_restart_state_; }
 
    private:
     //! Number of integration points along the circumferencial direction in the cross section

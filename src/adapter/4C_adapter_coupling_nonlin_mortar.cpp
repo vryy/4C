@@ -199,8 +199,8 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
   }
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& inputmortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
   input.setParameters(inputmortar);
@@ -212,7 +212,7 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
   if (distype == CORE::FE::ShapeFunctionType::nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
   input.set<int>("DIMENSION", GLOBAL::Problem::Instance()->NDim());
@@ -407,7 +407,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
       Teuchos::RCP<DRT::FaceElement> faceele =
           Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
       double normalfac = 0.0;
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
       // store nurbs specific data to node
@@ -444,8 +444,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
         Teuchos::RCP<DRT::FaceElement> faceele =
             Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
         double normalfac = 0.0;
-        bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
-            faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+        bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
+            normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
         // store nurbs specific data to node
         cele->ZeroSized() = zero_size;
@@ -510,7 +510,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
-      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   const INPAR::MORTAR::ParallelRedist parallelRedist =
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST");
 
@@ -539,7 +539,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   psmdofrowmap_ = CORE::LINALG::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
-  interface->PrintParallelDistribution();
+  interface->print_parallel_distribution();
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -556,7 +556,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     interface->CreateSearchTree();
 
     // print parallel distribution again
-    interface->PrintParallelDistribution();
+    interface->print_parallel_distribution();
   }
 
   // store row maps (after parallel redistribution)
@@ -629,13 +629,13 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // get mortar coupling parameters
   Teuchos::ParameterList input;
   // set default values
-  input.setParameters(GLOBAL::Problem::Instance()->MortarCouplingParams());
-  input.setParameters(GLOBAL::Problem::Instance()->ContactDynamicParams());
+  input.setParameters(GLOBAL::Problem::Instance()->mortar_coupling_params());
+  input.setParameters(GLOBAL::Problem::Instance()->contact_dynamic_params());
   input.setParameters(GLOBAL::Problem::Instance()->WearParams());
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
   switch (distype)
   {
     case CORE::FE::ShapeFunctionType::nurbs:
@@ -729,7 +729,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     bool isFinalDistribution = false;
     const Teuchos::ParameterList& input =
-        GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+        GLOBAL::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
     if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") ==
             INPAR::MORTAR::ParallelRedist::redist_none or
         comm_->NumProc() == 1)
@@ -817,7 +817,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
@@ -829,8 +829,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = MORTAR::MatrixRowColTransform(D_, pslavedofrowmap_, pslavedofrowmap_);
-    DLin_ = MORTAR::MatrixRowColTransform(DLin_, pslavedofrowmap_, pslavedofrowmap_);
+    D_ = MORTAR::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
+    DLin_ = MORTAR::matrix_row_col_transform(DLin_, pslavedofrowmap_, pslavedofrowmap_);
   }
 
   return;
@@ -874,7 +874,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   CreateP();
 
   // transform to initial parallel distrib.
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   // bye bye
   return;
@@ -884,10 +884,10 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
 /*----------------------------------------------------------------------*
  |  transform all matrices and vectors                       farah 02/16|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
+void ADAPTER::CouplingNonLinMortar::matrix_row_col_transform()
 {
   // call base function
-  CORE::ADAPTER::CouplingMortar::MatrixRowColTransform();
+  CORE::ADAPTER::CouplingMortar::matrix_row_col_transform();
 
   // safety check
   CheckSetup();
@@ -895,7 +895,7 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
@@ -908,19 +908,19 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != Teuchos::null)
-      DLin_ = MORTAR::MatrixRowColTransform(DLin_, pslavedofrowmap_, psmdofrowmap_);
+      DLin_ = MORTAR::matrix_row_col_transform(DLin_, pslavedofrowmap_, psmdofrowmap_);
 
     if (MLin_ != Teuchos::null)
-      MLin_ = MORTAR::MatrixRowColTransform(MLin_, pmasterdofrowmap_, psmdofrowmap_);
+      MLin_ = MORTAR::matrix_row_col_transform(MLin_, pmasterdofrowmap_, psmdofrowmap_);
 
     if (H_ != Teuchos::null)
-      H_ = MORTAR::MatrixRowColTransform(H_, pslavedofrowmap_, pslavedofrowmap_);
+      H_ = MORTAR::matrix_row_col_transform(H_, pslavedofrowmap_, pslavedofrowmap_);
 
     if (T_ != Teuchos::null)
-      T_ = MORTAR::MatrixRowColTransform(T_, pslavedofrowmap_, pslavedofrowmap_);
+      T_ = MORTAR::matrix_row_col_transform(T_, pslavedofrowmap_, pslavedofrowmap_);
 
     if (N_ != Teuchos::null)
-      N_ = MORTAR::MatrixRowColTransform(N_, pslavedofrowmap_, psmdofrowmap_);
+      N_ = MORTAR::matrix_row_col_transform(N_, pslavedofrowmap_, psmdofrowmap_);
 
     // transform gap vector
     if (gap_ != Teuchos::null)
@@ -974,7 +974,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   CreateP();
 
   // transform to initial parallel distrib.
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   return;
 }
@@ -1026,7 +1026,7 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   CreateP();
 
   // transform to initial parallel distrib.
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   return;
 }
@@ -1071,8 +1071,8 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = Dinv_->ReplaceDiagonalValues(*diag);
-  if (err > 0) FOUR_C_THROW("ERROR: ReplaceDiagonalValues failed!");
+  err = Dinv_->replace_diagonal_values(*diag);
+  if (err > 0) FOUR_C_THROW("ERROR: replace_diagonal_values failed!");
 
   // complete inverse D matrix
   Dinv_->Complete();

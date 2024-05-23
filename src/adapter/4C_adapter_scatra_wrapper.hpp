@@ -36,7 +36,7 @@ namespace ADAPTER
     explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
 
     /// compute contribution of mechanical state to eq. system
-    virtual void EvaluateAdditionalSolutionDependingModels(
+    virtual void evaluate_additional_solution_depending_models(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
@@ -50,9 +50,9 @@ namespace ADAPTER
     };
 
     //! add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override
     {
-      scatra_timint_->AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+      scatra_timint_->add_time_integration_specific_vectors(forcedincrementalsolver);
     };
 
     //! return number of dofset associated with displacement dofs

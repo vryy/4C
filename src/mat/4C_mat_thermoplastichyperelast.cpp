@@ -894,11 +894,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   (*stress)(5) = 0.5 * (PK2(0, 2) + PK2(2, 0));
 
   // ----------------------- consistent elastoplastic tangent modulus (Box 9.2)
-  SetupCmatElastoPlastic(*cmat,  // (o) elasto-plastic tangent modulus
-      Dgamma,                    // plastic multiplier
-      Hiso_temp,                 // H(T)
-      sigma_y0infty_temp,        // trial value of saturation yield stress
-      sigma_y0_temp,             // trial value of initial yield stress
+  setup_cmat_elasto_plastic(*cmat,  // (o) elasto-plastic tangent modulus
+      Dgamma,                       // plastic multiplier
+      Hiso_temp,                    // H(T)
+      sigma_y0infty_temp,           // trial value of saturation yield stress
+      sigma_y0_temp,                // trial value of initial yield stress
       mubar, q_trial,
       *defgrd,        // F
       invdefgrdcurr,  // F^{-1}
@@ -915,7 +915,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
 /*----------------------------------------------------------------------*
  | Calculation of consistent elastoplastic tangent modulus   dano 09/13 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
+void MAT::ThermoPlasticHyperElast::setup_cmat_elasto_plastic(
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,  // elasto-plastic tangent modulus (out)
     double Dgamma, double Hiso_temp, double sigma_y0infty_temp, double sigma_y0_temp, double mubar,
@@ -1030,13 +1030,13 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
   // cmat = C_ep = C_e + Cbar_trial + Cbar_p
   cmat = Cmat;
 
-}  // SetupCmatElastoPlastic()
+}  // setup_cmat_elasto_plastic()
 
 
 /*----------------------------------------------------------------------*
  | calculate final isochoric elastic LCG bbar^e_{n+1}        dano 09/13 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticHyperElast::CalculateCurrentBebar(
+void MAT::ThermoPlasticHyperElast::calculate_current_bebar(
     const CORE::LINALG::Matrix<3, 3>& devtau,  // s_{n+1}
     double G,                                  // shear modulus
     const CORE::LINALG::Matrix<3, 3>& id2,     // second-order identity
@@ -1085,7 +1085,7 @@ void MAT::ThermoPlasticHyperElast::CalculateCurrentBebar(
   bebarcurr_->at(gp).Scale(1 / G);
   bebarcurr_->at(gp).Update(third_Ibar_1, id2, 1.0);
 
-}  // CalculateCurrentBebar()
+}  // calculate_current_bebar()
 
 
 /*----------------------------------------------------------------------*

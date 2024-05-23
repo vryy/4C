@@ -120,7 +120,7 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void IntersectLineWithOther(const ElementData<line, scalar_type>& element_data_line,
+    void intersect_line_with_other(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start,
@@ -154,7 +154,7 @@ namespace GEOMETRYPAIR
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
      * the initial residual satisfies the convergence check.
      */
-    void IntersectLineWithSurfaceEdge(const ElementData<line, scalar_type>& element_data_line,
+    void intersect_line_with_surface_edge(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
         CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
@@ -164,7 +164,7 @@ namespace GEOMETRYPAIR
      * \brief Get an approximate influence direction along the surface normal direction (both
      * outward and inward).
      */
-    double GetSurfaceNormalInfluenceDirection(
+    double get_surface_normal_influence_direction(
         const ElementData<surface, scalar_type>& element_data_surface) const;
 
     /**
@@ -181,7 +181,7 @@ namespace GEOMETRYPAIR
      * @param face_fixed_parameters (out) Index of fixed parameter.
      * @param face_fixed_values (out) Value of fixed parameter.
      */
-    void GetFaceFixedParameters(unsigned int& n_faces,
+    void get_face_fixed_parameters(unsigned int& n_faces,
         std::vector<unsigned int>& face_fixed_parameters,
         std::vector<double>& face_fixed_values) const;
 

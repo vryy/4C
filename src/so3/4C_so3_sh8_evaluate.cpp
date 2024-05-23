@@ -44,10 +44,10 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   // get parameter interface
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
@@ -497,7 +497,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(
+        StrParamsInterface().add_contribution_to_energy_type(
             sosh8_calc_energy(mydisp, params), STR::internal_energy);
       }
       else  // old structural time integration
@@ -1630,7 +1630,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
   // calculate deformation gradient consistent with modified GL strain tensor
   if ((eastype_ != soh8_easnone || anstype_ == ansnone) &&
       (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd()))
-    CalcConsistentDefgrd(defgrd, glstrain, defgrd);
+    calc_consistent_defgrd(defgrd, glstrain, defgrd);
 }
 
 /*----------------------------------------------------------------------*

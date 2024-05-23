@@ -56,7 +56,7 @@ namespace STR
   {
    public:
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
-    enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda(
+    enum INPAR::STR::TimAdaKind map_name_tim_int_to_tim_ada(
         const enum INPAR::STR::DynamicType term  //!< input enum term
     ) const
     {
@@ -105,11 +105,11 @@ namespace STR
       }
 
       // check order
-      if (sta_->MethodOrderOfAccuracyDis() > sti_->MethodOrderOfAccuracyDis())
+      if (sta_->method_order_of_accuracy_dis() > sti_->method_order_of_accuracy_dis())
       {
         ada_ = ada_upward;
       }
-      else if (sta_->MethodOrderOfAccuracyDis() < sti_->MethodOrderOfAccuracyDis())
+      else if (sta_->method_order_of_accuracy_dis() < sti_->method_order_of_accuracy_dis())
       {
         ada_ = ada_downward;
       }
@@ -166,7 +166,7 @@ namespace STR
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void IntegrateStepAuxiliar() override
+    void integrate_step_auxiliar() override
     {
       // integrate the auxiliary time integrator one step in time
       sta_->IntegrateStep();
@@ -189,20 +189,26 @@ namespace STR
     //! Provide the name
     enum INPAR::STR::TimAdaKind MethodName() const override
     {
-      return MapNameTimIntToTimAda(sti_->MethodName());
+      return map_name_tim_int_to_tim_ada(sti_->MethodName());
     }
 
     //! Provide local order of accuracy of displacements
-    int MethodOrderOfAccuracyDis() const override { return sta_->MethodOrderOfAccuracyDis(); }
+    int method_order_of_accuracy_dis() const override
+    {
+      return sta_->method_order_of_accuracy_dis();
+    }
 
     //! Provide local order of accuracy of velocities
-    int MethodOrderOfAccuracyVel() const override { return sta_->MethodOrderOfAccuracyVel(); }
+    int method_order_of_accuracy_vel() const override
+    {
+      return sta_->method_order_of_accuracy_vel();
+    }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override { return sta_->MethodLinErrCoeffDis(); }
+    double method_lin_err_coeff_dis() const override { return sta_->method_lin_err_coeff_dis(); }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override { return sta_->MethodLinErrCoeffVel(); }
+    double method_lin_err_coeff_vel() const override { return sta_->method_lin_err_coeff_vel(); }
 
     //! Provide type of algorithm
     enum AdaEnum MethodAdaptDis() const override { return ada_; }

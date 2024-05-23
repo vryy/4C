@@ -31,7 +31,7 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nod
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lline);
+  set_parent_master_element(parent, lline);
   return;
 }
 

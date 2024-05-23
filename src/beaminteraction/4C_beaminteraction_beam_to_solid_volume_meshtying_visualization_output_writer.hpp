@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
      * (and probably can not) have a RCP to itself.
      * @param i_iteration (in) current number of iteration.
      */
-    void WriteOutputRuntimeIteration(
+    void write_output_runtime_iteration(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const;
 
    private:
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
      * iteration visualization).
      * @param time (in) Scalar time value for this visualization step.
      */
-    void WriteOutputBeamToSolidVolumeMeshTying(
+    void write_output_beam_to_solid_volume_mesh_tying(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const;
 

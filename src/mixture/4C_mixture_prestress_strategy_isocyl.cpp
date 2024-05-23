@@ -35,7 +35,7 @@ MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStra
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::IsotropicCylinderPrestressStrategy::CreatePrestressStrategy()
+MIXTURE::PAR::IsotropicCylinderPrestressStrategy::create_prestress_strategy()
 {
   std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
       new MIXTURE::IsotropicCylinderPrestressStrategy(this));
@@ -102,7 +102,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
 
   Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
-      cosy->GetCylinderCoordinateSystem();
+      cosy->get_cylinder_coordinate_system();
 
   if (Teuchos::is_null(cylinderCosy))
   {
@@ -120,7 +120,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
   }
 
   double initial_constituent_reference_density =
-      growth_remodel_rule.GetConstituentInitialReferenceMassDensity(constituent);
+      growth_remodel_rule.get_constituent_initial_reference_mass_density(constituent);
 
   double Res = 1.0;
   double dResdlamb_pre;
@@ -183,7 +183,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
     Teuchos::ParameterList& params, int gp, int eleGID) const
 {
   Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
-      cosy->GetCylinderCoordinateSystem();
+      cosy->get_cylinder_coordinate_system();
 
   if (Teuchos::is_null(cylinderCosy))
   {
@@ -212,10 +212,10 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   const auto& growth_remodel_rule =
       dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
   double initial_constituent_reference_density =
-      growth_remodel_rule.GetConstituentInitialReferenceMassDensity(constituent);
+      growth_remodel_rule.get_constituent_initial_reference_mass_density(constituent);
 
   CORE::LINALG::Matrix<6, 1> Smembrane(false);
-  membraneEvaluation.EvaluateMembraneStress(Smembrane, params, gp, eleGID);
+  membraneEvaluation.evaluate_membrane_stress(Smembrane, params, gp, eleGID);
   Smembrane.Scale(initial_constituent_reference_density);
 
   double total_stress = S_stress.Dot(Acir);      // stress of all constituents in circular direction

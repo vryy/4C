@@ -109,9 +109,9 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+      void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-      virtual void SetBrownianDynParamsInterfacePtr();
+      virtual void set_brownian_dyn_params_interface_ptr();
 
       /** \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
@@ -124,11 +124,11 @@ namespace DRT
        *  \author hiermeier
        *  \date 04/16 */
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
-      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> BrownianDynParamsInterfacePtr() const;
+      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> brownian_dyn_params_interface_ptr() const;
 
       //! computes the number of different random numbers required in each time step for generation
       //! of stochastic forces
-      virtual int HowManyRandomNumbersINeed() const = 0;
+      virtual int how_many_random_numbers_i_need() const = 0;
 
       /** \brief get access to the element reference length
        *        (i.e. arc-length in stress-free configuration)
@@ -145,7 +145,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 02/17 */
-      double GetCircularCrossSectionRadiusForInteractions() const;
+      double get_circular_cross_section_radius_for_interactions() const;
 
       /** \brief get number of nodes used for centerline interpolation
        *
@@ -191,7 +191,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void RotationVecDofIndices(
+      virtual void rotation_vec_dof_indices(
           std::vector<int>& rotvecdofs, const DRT::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
@@ -200,7 +200,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void Rotation1DDofIndices(
+      virtual void rotation1_d_dof_indices(
           std::vector<int>& twistdofs, const DRT::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
@@ -208,14 +208,14 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void TangentLengthDofIndices(
+      virtual void tangent_length_dof_indices(
           std::vector<int>& tangnormdofs, const DRT::Node& node) const = 0;
 
       /** \brief get element local indices of those Dofs that are used for centerline interpolation
        *
        *  \author grill
        *  \date 12/16 */
-      virtual void CenterlineDofIndicesOfElement(
+      virtual void centerline_dof_indices_of_element(
           std::vector<unsigned int>& centerlinedofindices) const = 0;
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
@@ -228,10 +228,10 @@ namespace DRT
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
-          std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
-          std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
-          std::vector<double>& curvature_3_GPs) const
+      virtual inline void get_material_strain_resultants_at_all_g_ps(
+          std::vector<double>& axial_strain_GPs, std::vector<double>& shear_strain_2_GPs,
+          std::vector<double>& shear_strain_3_GPs, std::vector<double>& twist_GPs,
+          std::vector<double>& curvature_2_GPs, std::vector<double>& curvature_3_GPs) const
       {
         FOUR_C_THROW("not implemented");
       }
@@ -240,7 +240,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void GetSpatialStressResultantsAtAllGPs(
+      virtual inline void get_spatial_stress_resultants_at_all_g_ps(
           std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs, std::vector<double>& spatial_torque_GPs,
@@ -254,7 +254,8 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void GetSpatialForcesAtAllGPs(std::vector<double>& spatial_axial_force_GPs,
+      virtual inline void get_spatial_forces_at_all_g_ps(
+          std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs) const
       {
@@ -265,7 +266,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void GetSpatialMomentsAtAllGPs(std::vector<double>& spatial_torque_GPs,
+      virtual inline void get_spatial_moments_at_all_g_ps(std::vector<double>& spatial_torque_GPs,
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const
       {
@@ -276,7 +277,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void GetMaterialStressResultantsAtAllGPs(
+      virtual inline void get_material_stress_resultants_at_all_g_ps(
           std::vector<double>& material_axial_force_GPs,
           std::vector<double>& material_shear_force_2_GPs,
           std::vector<double>& material_shear_force_3_GPs, std::vector<double>& material_torque_GPs,
@@ -335,7 +336,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 11/16 */
-      virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      virtual void get_generalized_interpolation_matrix_variations_at_xi(
           CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi,
           const std::vector<double>& disp) const
       {
@@ -348,7 +349,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      virtual void get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
           CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
           const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
       {
@@ -360,7 +361,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 11/16 */
-      virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      virtual void get_generalized_interpolation_matrix_increments_at_xi(
           CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi,
           const std::vector<double>& disp) const
       {
@@ -379,7 +380,7 @@ namespace DRT
           CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
 
       //! get directions in which element might be cut by a periodic boundary
-      virtual void GetDirectionsOfShifts(std::vector<double>& disp,
+      virtual void get_directions_of_shifts(std::vector<double>& disp,
           CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
           std::vector<bool>& shift_in_dim) const;
 
@@ -388,13 +389,13 @@ namespace DRT
        *
        *  \author grill
        *  \date 11/16 */
-      virtual void ExtractCenterlineDofValuesFromElementStateVector(
+      virtual void extract_centerline_dof_values_from_element_state_vector(
           const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
           bool add_reference_values = false) const = 0;
 
       /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
        */
-      inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_; }
+      inline bool hermite_centerline_interpolation() const { return centerline_hermite_; }
 
      protected:
       //! vector holding reference tangent at the centerline nodes
@@ -414,7 +415,7 @@ namespace DRT
         return *interface_ptr_;
       }
 
-      inline BROWNIANDYN::ParamsInterface& BrownianDynParamsInterface() const
+      inline BROWNIANDYN::ParamsInterface& brownian_dyn_params_interface() const
       {
         return *browndyn_interface_ptr_;
       }
@@ -427,14 +428,14 @@ namespace DRT
        * @param pos_ref_centerline Vector containing the centerline reference position values
        */
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
-      void AddRefValuesDispCenterline(
+      void add_ref_values_disp_centerline(
           CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& pos_ref_centerline) const
       {
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (unsigned int node = 0; node < nnodecl; ++node)
           {
             pos_ref_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
-            if (HermiteCenterlineInterpolation())
+            if (hermite_centerline_interpolation())
               pos_ref_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
           }
       }
@@ -461,7 +462,7 @@ namespace DRT
           tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
         double reflength = tempvec.Norm2();
 
-        if (HermiteCenterlineInterpolation())
+        if (hermite_centerline_interpolation())
         {
           const auto gausspoints =
               CORE::FE::IntegrationPoints1D(CORE::FE::GaussRule1D::line_10point);
@@ -490,7 +491,7 @@ namespace DRT
        *
        * The parameter disp_totlag has to contain the absolute (total Lagrange) values of the
        * centerline degrees of freedom, i.e., the reference values + the current displacement
-       * values (\ref UpdateDispTotlag or \ref AddRefValuesDispCenterline).
+       * values (\ref UpdateDispTotlag or \ref add_ref_values_disp_centerline).
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void GetPosAtXi(CORE::LINALG::Matrix<3, 1, T>& r, const double& xi,
@@ -561,14 +562,14 @@ namespace DRT
        *
        */
       template <typename T>
-      MAT::BeamMaterialTemplated<T>& GetTemplatedBeamMaterial() const;
+      MAT::BeamMaterialTemplated<T>& get_templated_beam_material() const;
 
       /** \brief setup constitutive matrices from material law
        *
        *  \author grill
        *  \date 03/16 */
       template <typename T>
-      void GetConstitutiveMatrices(
+      void get_constitutive_matrices(
           CORE::LINALG::Matrix<3, 3, T>& CN, CORE::LINALG::Matrix<3, 3, T>& CM) const;
 
       /** \brief setup mass inertia tensors from material law
@@ -576,7 +577,7 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <typename T>
-      void GetTranslationalAndRotationalMassInertiaTensor(
+      void get_translational_and_rotational_mass_inertia_tensor(
           double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const;
 
       /** \brief setup only translational mass inertia factor from material law
@@ -585,18 +586,18 @@ namespace DRT
        *
        *  \author grill
        *  \date 03/17 */
-      void GetTranslationalMassInertiaFactor(double& mass_inertia_translational) const;
+      void get_translational_mass_inertia_factor(double& mass_inertia_translational) const;
 
       //! @name Methods and variables for Brownian dynamics or beaminteraction simulations
       //! @{
       //! computes damping coefficients
-      void GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>& gamma) const;
+      void get_damping_coefficients(CORE::LINALG::Matrix<3, 1>& gamma) const;
 
       //! computes velocity of background fluid and gradient of that velocity at a certain
       //! evaluation point in the physical space and adds respective terms to internal forces and
       //! damping matrix
       template <unsigned int ndim, typename T>  // number of dimensions of embedding space
-      void GetBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
+      void get_background_velocity(Teuchos::ParameterList& params,  //!< parameter list
           const CORE::LINALG::Matrix<ndim, 1, T>&
               evaluationpoint,  //!< point at which background velocity and its gradient has to be
                                 //!< computed
@@ -613,7 +614,7 @@ namespace DRT
 
       //! get triad at binding spot with locn x stored in element parameter space coordinates \in
       //! [-1,1] from displacement state vector
-      void GetTriadOfBindingSpot(CORE::LINALG::Matrix<3, 3>& triad, std::vector<double>& disp,
+      void get_triad_of_binding_spot(CORE::LINALG::Matrix<3, 3>& triad, std::vector<double>& disp,
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn) const;
 
       /** \brief get entire binding spot information of element
@@ -630,13 +631,14 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 06/17 */
-      unsigned int GetNumberOfBindingSpotTypes() const { return bspotposxi_.size(); }
+      unsigned int get_number_of_binding_spot_types() const { return bspotposxi_.size(); }
 
       /** \brief get number of binding spots of certain binding spot type on this element
        *
        *  \author eichinger
        *  \date 06/17 */
-      unsigned int GetNumberOfBindingSpots(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+      unsigned int get_number_of_binding_spots(
+          INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
       {
         return bspotposxi_.at(linkertype).size();
       }
@@ -669,7 +671,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 03/17 */
-      void SetPositionsOfBindingSpotType(
+      void set_positions_of_binding_spot_type(
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, std::vector<double> const& bspotposxi)
       {
         bspotposxi_[linkertype] = bspotposxi;

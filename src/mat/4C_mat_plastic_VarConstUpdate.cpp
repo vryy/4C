@@ -493,8 +493,8 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
     input_dLp.Scale(-1.);
     CORE::LINALG::Matrix<3, 3> expOut(input_dLp);
     CORE::LINALG::Matrix<6, 6> dexpOut_mat;
-    MatrixExponentialDerivativeSym3x3(input_dLp, dexpOut_mat);
-    MatrixExponential3x3(expOut);
+    matrix_exponential_derivative_sym3x3(input_dLp, dexpOut_mat);
+    matrix_exponential3x3(expOut);
 
     plastic_defgrd_inverse_[gp].Multiply(last_plastic_defgrd_inverse_[gp], expOut);
     delta_alpha_i_[gp] = sqrt(2. / 3.) * dLp.Norm2();
@@ -702,7 +702,7 @@ bool MAT::PlasticElastHyperVCU::VisData(
 
 
 // 2nd matrix exponential derivatives with 6 parameters
-void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3x6(
+void MAT::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
     const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<3, 3>& exp,
     CORE::LINALG::Matrix<6, 6>& dexp_mat, CORE::LINALG::Matrix<6, 6>* MatrixExp2ndDerivVoigt)
 {
@@ -812,7 +812,7 @@ void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3x6(
  | Calculate second derivative of matrix exponential via polar decomposition |
  | following Ortiz et.al. 2001                                   seitz 02/14 |
  *---------------------------------------------------------------------------*/
-void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3(
+void MAT::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
     const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<3, 3>& exp,
     std::vector<CORE::LINALG::Matrix<3, 3>>& MatrixExp1stDeriv,
     std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& MatrixExp2ndDeriv)
@@ -923,15 +923,15 @@ void MAT::PlasticElastHyperVCU::EvaluateRHS(const int gp, const CORE::LINALG::Ma
   CORE::LINALG::Matrix<3, 3> dLpIn(dLp);
   dLpIn.Scale(-1.);
   CORE::LINALG::Matrix<3, 3> expOut(dLpIn);
-  MatrixExponential3x3(expOut);
+  matrix_exponential3x3(expOut);
   CORE::LINALG::Matrix<6, 6> dexpOut_mat;
-  MatrixExponentialDerivativeSym3x3(dLpIn, dexpOut_mat);
+  matrix_exponential_derivative_sym3x3(dLpIn, dexpOut_mat);
 
   CORE::LINALG::Matrix<3, 3> fpi_incr(dLp);
   fpi_incr.Scale(-1.);
   CORE::LINALG::Matrix<6, 6> derivExpMinusLP;
-  MatrixExponentialDerivativeSym3x3(fpi_incr, derivExpMinusLP);
-  MatrixExponential3x3(fpi_incr);
+  matrix_exponential_derivative_sym3x3(fpi_incr, derivExpMinusLP);
+  matrix_exponential3x3(fpi_incr);
 
   CORE::LINALG::Matrix<3, 3> fetrial;
   fetrial.Multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
@@ -1022,7 +1022,7 @@ void MAT::PlasticElastHyperVCU::EvaluatePlast(CORE::LINALG::Matrix<6, 9>& dPK2dF
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2, FpiCe, 0.5 * delta(7));
 }
 
-void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int gp, const int eleGID,
+void MAT::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int eleGID,
     const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>* fpi,
     CORE::LINALG::Matrix<3, 1>& gamma, CORE::LINALG::Matrix<8, 1>& delta,
     CORE::LINALG::Matrix<3, 3>& id2, CORE::LINALG::Matrix<6, 1>& Cpi,
@@ -1126,8 +1126,8 @@ void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int gp, const int eleGID,
   CORE::LINALG::Matrix<3, 3> FpiCe;
   CORE::LINALG::Matrix<9, 1> CFpiCe;
   CORE::LINALG::Matrix<6, 1> CpiCCpi;
-  EvaluateKinQuantPlast(gp, eleGID, defgrd, fpi, gamma, delta, id2, Cpi, CpiC, CFpi, CFpiCei, ircg,
-      FpiCe, CFpiCe, CpiCCpi);
+  evaluate_kin_quant_plast(gp, eleGID, defgrd, fpi, gamma, delta, id2, Cpi, CpiC, CFpi, CFpiCei,
+      ircg, FpiCe, CFpiCe, CpiCCpi);
 
   EvaluatePlast(dPK2dFpinvIsoprinc, gamma, delta, id2, Cpi, *fpi, CpiC, CFpi, CFpiCei, ircg, FpiCe,
       CFpiCe, CpiCCpi);
@@ -1174,7 +1174,7 @@ void MAT::PlasticElastHyperVCU::Ce2ndDeriv(const CORE::LINALG::Matrix<3, 3>* def
   CORE::LINALG::Matrix<3, 3> exp_dLp;
   CORE::LINALG::Matrix<6, 6> Dexp_dLp_mat;
   CORE::LINALG::Matrix<6, 6> D2exp_VOIGT[6];
-  MatrixExponentialSecondDerivativeSym3x3x6(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
+  matrix_exponential_second_derivative_sym3x3x6(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
 
   CORE::LINALG::Matrix<3, 3> exp_dLp_cetrial;
   exp_dLp_cetrial.Multiply(exp_dLp, cetrial);

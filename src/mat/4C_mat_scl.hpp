@@ -152,22 +152,22 @@ namespace MAT
     double Valence() const { return params_->valence_; }
 
     /// computation of the transference number based on the defined curve
-    double ComputeTransferenceNumber(const double cint) const;
+    double compute_transference_number(const double cint) const;
 
     /// computation of the first derivative of the transference number based on the defined curve
-    double ComputeFirstDerivTrans(const double cint) const;
+    double compute_first_deriv_trans(const double cint) const;
 
-    double ComputeDiffusionCoefficient(
+    double compute_diffusion_coefficient(
         const double concentration, const double temperature) const override;
 
-    double ComputeConcentrationDerivativeOfDiffusionCoefficient(
+    double compute_concentration_derivative_of_diffusion_coefficient(
         const double concentration, const double temperature) const override;
 
     /// computation of dielectric susceptibility (currently a constant)
-    double ComputeSusceptibility() const { return params_->susceptibility_; }
+    double compute_susceptibility() const { return params_->susceptibility_; }
 
     /// computation of 1/(z^2F^2) with valence of cations
-    double InvValValenceFaradaySquared() const;
+    double inv_val_valence_faraday_squared() const;
 
     /// Computation of dielectric permittivity based on dieelectric susceptibility
     double ComputePermittivity() const;
@@ -176,10 +176,10 @@ namespace MAT
     double BulkConcentration() const { return params_->cbulk_; }
 
     /// computation of mobility factor in linear onsager ansatz
-    double ComputeOnsagerCoefficient(const double concentration, const double temperature) const;
+    double compute_onsager_coefficient(const double concentration, const double temperature) const;
 
     /// computation of the derivative of the mobility factor w.r.t to cation concentration
-    double ComputeConcentrationDerivativeOfOnsagerCoefficient(
+    double compute_concentration_derivative_of_onsager_coefficient(
         const double concentration, const double temperature) const;
 
    private:

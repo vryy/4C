@@ -160,7 +160,7 @@ void STR::Dbc::UpdateLocSysManager()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::Dbc::GetDirichletIncrement()
+Teuchos::RCP<Epetra_Vector> STR::Dbc::get_dirichlet_increment()
 {
   Teuchos::RCP<const Epetra_Vector> disn = timint_ptr_->GetDataGlobalState().GetDisN();
   Teuchos::RCP<Epetra_Vector> dbcincr = Teuchos::rcp(new Epetra_Vector(*disn));
@@ -215,32 +215,32 @@ void STR::Dbc::ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::ApplyDirichletToLocalSystem(
+void STR::Dbc::apply_dirichlet_to_local_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const
 {
   CheckInitSetup();
-  ApplyDirichletToLocalRhs(b);
-  ApplyDirichletToLocalJacobian(A);
+  apply_dirichlet_to_local_rhs(b);
+  apply_dirichlet_to_local_jacobian(A);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::ApplyDirichletToVector(Teuchos::RCP<Epetra_Vector>& vec) const
+void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
 {
   CheckInitSetup();
   // rotate the coordinate system if desired
   RotateGlobalToLocal(vec);
   // apply the dbc
-  CORE::LINALG::ApplyDirichletToSystem(*vec, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
   // rotate back
   RotateLocalToGlobal(vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::ApplyDirichletToLocalRhs(Teuchos::RCP<Epetra_Vector>& b) const
+void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
   CheckInitSetup();
 
@@ -248,7 +248,7 @@ void STR::Dbc::ApplyDirichletToLocalRhs(Teuchos::RCP<Epetra_Vector>& b) const
   RotateGlobalToLocal(b);
 
   ExtractFreact(b);
-  CORE::LINALG::ApplyDirichletToSystem(*b, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
 
 
   return;
@@ -260,7 +260,7 @@ void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
   CheckInitSetup();
 
-  ApplyDirichletToLocalRhs(b);
+  apply_dirichlet_to_local_rhs(b);
 
   // rotate back: local --> global
   RotateLocalToGlobal(b);
@@ -270,7 +270,7 @@ void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::ApplyDirichletToLocalJacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const
+void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const
 {
   CheckInitSetup();
   // don't do it twice...
@@ -283,13 +283,13 @@ void STR::Dbc::ApplyDirichletToLocalJacobian(Teuchos::RCP<CORE::LINALG::SparseOp
   if (RotateGlobalToLocal(A))
   {
     Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> mats =
-        GState().ExtractDisplRowOfBlocks(*A);
+        GState().extract_displ_row_of_blocks(*A);
 
     for (unsigned i = 0; i < mats->size(); ++i)
     {
       CORE::LINALG::SparseMatrix& mat = *(*mats)[i];
 
-      mat.ApplyDirichletWithTrafo(*GetLocSysTrafo(), *(dbcmap_ptr_->CondMap()), (i == 0), false);
+      mat.apply_dirichlet_with_trafo(*GetLocSysTrafo(), *(dbcmap_ptr_->CondMap()), (i == 0), false);
     }
 
     if (not A->Filled()) A->Complete();
@@ -338,7 +338,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<CORE::LINALG::SparseOperat
   if (not IsLocSys()) return false;
 
   Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> mats =
-      GState().ExtractDisplRowOfBlocks(*A);
+      GState().extract_displ_row_of_blocks(*A);
 
   for (unsigned i = 0; i < mats->size(); ++i)
     locsysman_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(*(*mats)[i]));
@@ -399,7 +399,7 @@ void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
   Freact().Scale(-1.0);
 
   // put zeros on all non-DBC dofs
-  InsertVectorInNonDbcDofs(zeros_ptr_, Teuchos::rcpFromRef(Freact()));
+  insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(Freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
   RotateLocalToGlobal(Teuchos::rcpFromRef(Freact()));
@@ -407,7 +407,7 @@ void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::InsertVectorInNonDbcDofs(
+void STR::Dbc::insert_vector_in_non_dbc_dofs(
     Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const
 {
   CheckInitSetup();
@@ -496,14 +496,15 @@ NOX::NLN::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const STR::Dbc>& dbc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::Dbc::runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
-    CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
+void NOX::NLN::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
+    ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
+    const NOX::NLN::LinearSystem& linsys)
 {
   ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs_epetra.getEpetraVector(), false);
   Teuchos::RCP<CORE::LINALG::SparseOperator> jac_ptr = Teuchos::rcp(&jac, false);
   // apply the dirichlet condition and rotate the system if desired
-  dbc_ptr_->ApplyDirichletToLocalSystem(jac_ptr, rhs_ptr);
+  dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_ptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

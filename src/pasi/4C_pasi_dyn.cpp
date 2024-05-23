@@ -40,7 +40,7 @@ void pasi_dyn()
   // modification of time parameters of subproblems
   PASI::UTILS::ChangeTimeParameter(comm, params,
       const_cast<Teuchos::ParameterList&>(problem->ParticleParams()),
-      const_cast<Teuchos::ParameterList&>(problem->StructuralDynamicParams()));
+      const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params()));
 
   // create particle structure interaction algorithm
   Teuchos::RCP<PASI::PartitionedAlgo> algo = Teuchos::null;

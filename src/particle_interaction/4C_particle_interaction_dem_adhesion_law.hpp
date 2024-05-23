@@ -87,7 +87,7 @@ namespace PARTICLEINTERACTION
 
    private:
     //! calculate gap at which vdW-curve intersects linear ramp
-    void CalculateIntersectionGap(
+    void calculate_intersection_gap(
         double a, double b, double c, double d, double& gap_intersect) const;
 
     //! hamaker constant

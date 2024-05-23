@@ -119,7 +119,7 @@ namespace CORE::UTILS
      * @param[in] c  solution vector of linear system that defines the polynomial coefficients of
      *               the cubic spline interpolation, i.e. coefficient vector #c_
      */
-    void SetupInternalVectors(const CORE::LINALG::SerialDenseVector& c);
+    void setup_internal_vectors(const CORE::LINALG::SerialDenseVector& c);
 
     /*!
      * @brief solves linear system \f$ \boldsymbol{A} \vec{c} = \vec{b} \f$

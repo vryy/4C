@@ -116,10 +116,11 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
+    void postprocess_quantities(IO::DiscretizationWriter& output) final;
 
     //! [derived]
-    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+    void postprocess_quantities_per_interface(
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
 
     /*!
     \brief Write time step restart data/results of meshtying interfaces to output

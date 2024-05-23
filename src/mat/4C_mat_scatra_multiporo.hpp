@@ -266,7 +266,7 @@ namespace MAT
     virtual double MinSat() const { return params_->min_sat_; }
 
     /// return ID of relative mobility function
-    [[nodiscard]] int RelativeMobilityFunctId() const
+    [[nodiscard]] int relative_mobility_funct_id() const
     {
       return params_->relative_mobility_funct_id_;
     }
@@ -350,7 +350,7 @@ namespace MAT
     virtual double Delta() const { return params_->delta_; }
 
     /// return ID of relative mobility function
-    [[nodiscard]] int RelativeMobilityFunctId() const
+    [[nodiscard]] int relative_mobility_funct_id() const
     {
       return params_->relative_mobility_funct_id_;
     }

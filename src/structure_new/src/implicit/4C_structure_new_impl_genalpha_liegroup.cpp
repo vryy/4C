@@ -59,7 +59,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
-    EquilibrateInitialState();
+    equilibrate_initial_state();
   }
   else
   {
@@ -75,7 +75,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
     /* ToDo tolerance value is experience and based on following consideration:
      * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
      * initial, stress free state of order 1e-8 */
-    if (not CurrentStateIsEquilibrium(1.0e-6) and GlobalState().GetMyRank() == 0)
+    if (not current_state_is_equilibrium(1.0e-6) and GlobalState().GetMyRank() == 0)
       std::cout << "\nSERIOUS WARNING: Initially non vanishing acceleration states "
                    "in case of ml_rotation = true,\ni.e. an initial state where the system "
                    "is not equilibrated, cannot yet be computed correctly.\nThis means your "
@@ -99,7 +99,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
 
   if (IsPredictorState()) return;
 
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------
@@ -168,7 +168,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::UpdateStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::UpdateConstantStateContributions()
+void STR::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
 {
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
@@ -207,7 +207,7 @@ double STR::IMPLICIT::GenAlphaLieGroup::GetIntParam() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(Epetra_Vector& f) const
+void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -217,7 +217,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(Epetra_Vector& f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(
+void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
@@ -232,7 +232,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::PredictConstDisConsistVelAcc(
+void STR::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
@@ -260,7 +260,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PredictConstDisConsistVelAcc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlphaLieGroup::PredictConstVelConsistAcc(
+bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();

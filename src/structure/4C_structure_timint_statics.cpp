@@ -51,7 +51,7 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
 
   auto dyntype = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   const INPAR::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
 
   if (pre_stress_type != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
   {
@@ -101,7 +101,7 @@ void STR::TimIntStatics::Setup()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::TimIntStatics::PredictConstDisConsistVelAcc()
+void STR::TimIntStatics::predict_const_dis_consist_vel_acc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -121,13 +121,13 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
 
 /*----------------------------------------------------------------------*/
 /* linear extrapolation of displacement field */
-void STR::TimIntStatics::PredictConstVelConsistAcc()
+void STR::TimIntStatics::predict_const_vel_consist_acc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
   if (step_ == 0)
   {
-    PredictTangDisConsistVelAcc();
+    predict_tang_dis_consist_vel_acc();
     return;
   }
   else
@@ -135,7 +135,7 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
     // Displacement increment over last time step
     Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
-    CORE::LINALG::ApplyDirichletToSystem(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -154,12 +154,12 @@ void STR::TimIntStatics::PredictConstAcc()
   // an extrapolation. Hence, we do TangDis
   if (step_ == 0)
   {
-    PredictTangDisConsistVelAcc();
+    predict_tang_dis_consist_vel_acc();
     return;
   }
   else if (step_ == 1)
   {
-    PredictConstVelConsistAcc();
+    predict_const_vel_consist_acc();
     return;
   }
   else
@@ -168,7 +168,7 @@ void STR::TimIntStatics::PredictConstAcc()
     Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
-    CORE::LINALG::ApplyDirichletToSystem(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -182,7 +182,7 @@ void STR::TimIntStatics::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
+void STR::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
 {
   // get info about prediction step from parameter list
   bool predict = false;
@@ -195,7 +195,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -206,20 +206,20 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   fintn_->PutScalar(0.0);
 
   // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
+  apply_force_stiff_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
 
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon;  // apply empty parameterlist, no scaling necessary
-  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
+  apply_force_stiff_constraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // add forces and stiffness due to Cardiovascular0D bcs
   Teuchos::ParameterList pwindk;
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
+  apply_force_stiff_cardiovascular0_d(timen_, disn_, fintn_, stiff_, pwindk);
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  ApplyForceStiffSpringDashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
+  apply_force_stiff_spring_dashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
 
   // ************************** (3) INERTIAL FORCES ***************************
   // This is statics, so there are no intertial forces.
@@ -239,7 +239,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -247,10 +247,10 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // i.e. do nothing here
 
   // apply forces and stiffness due to beam contact
-  ApplyForceStiffBeamContact(stiff_, fres_, disn_, predict);
+  apply_force_stiff_beam_contact(stiff_, fres_, disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_, fres_, disn_, predict);
+  apply_force_stiff_contact_meshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
   stiff_->Complete();
@@ -260,11 +260,11 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
 
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
- * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntStatics::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
+ * relaxation solution with solve_relaxation_linear */
+void STR::TimIntStatics::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-1.0, *fifc_, 0.0);
@@ -272,7 +272,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidualRelax(Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*/
 /* Evaluate residual */
-void STR::TimIntStatics::EvaluateForceResidual()
+void STR::TimIntStatics::evaluate_force_residual()
 {
   // ************************** (1) EXTERNAL FORCES ***************************
 
@@ -309,7 +309,7 @@ void STR::TimIntStatics::EvaluateForceResidual()
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;
@@ -343,7 +343,7 @@ double STR::TimIntStatics::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntStatics::UpdateIterIncrementally()
+void STR::TimIntStatics::update_iter_incrementally()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -352,7 +352,7 @@ void STR::TimIntStatics::UpdateIterIncrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::TimIntStatics::UpdateIterIteratively()
+void STR::TimIntStatics::update_iter_iteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -369,7 +369,7 @@ void STR::TimIntStatics::UpdateStepState()
   // calculate pseudo velocity and acceleration for predictor and/or binning
   // of the contact interface before updates
   if (pred_ == INPAR::STR::pred_constvel || pred_ == INPAR::STR::pred_constacc ||
-      HaveContactMeshtying())
+      have_contact_meshtying())
     veln_->Update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
   if (pred_ == INPAR::STR::pred_constacc)
     accn_->Update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
@@ -390,19 +390,19 @@ void STR::TimIntStatics::UpdateStepState()
   acc_->UpdateSteps(*accn_);
 
   // update constraints
-  UpdateStepConstraint();
+  update_step_constraint();
 
   // update Cardiovascular0D
-  UpdateStepCardiovascular0D();
+  update_step_cardiovascular0_d();
 
   // update constraints
-  UpdateStepSpringDashpot();
+  update_step_spring_dashpot();
 
   // update contact / meshtying
-  UpdateStepContactMeshtying();
+  update_step_contact_meshtying();
 
   // update beam contact
-  UpdateStepBeamContact();
+  update_step_beam_contact();
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}

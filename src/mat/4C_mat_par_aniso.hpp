@@ -42,7 +42,7 @@ namespace MAT
       ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata);
 
       /// return pointer to strategy
-      const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& StructuralTensorStrategy()
+      const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structural_tensor_strategy()
       {
         return structural_tensor_strategy_;
       };

@@ -133,7 +133,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   if (solvescatra_)
   {
     const Teuchos::ParameterList& myscatraparams =
-        GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+        GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
     if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
@@ -226,7 +226,7 @@ void ART::ArtNetImplStationary::SolveScatra()
 void ART::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *sysmat_, *pressureincnp_, *rhs_, *zeros_, *(dbcmaps_->CondMap()));
 }
 
@@ -269,7 +269,7 @@ void ART::ArtNetImplStationary::AssembleMatAndRHS()
   discret_->ClearState();
 
   // potential addition of Neumann terms
-  AddNeumannToResidual();
+  add_neumann_to_residual();
 
   // finalize the complete matrix
   sysmat_->Complete();
@@ -357,7 +357,7 @@ void ART::ArtNetImplStationary::ApplyDirichletBC()
 /*----------------------------------------------------------------------*
  | reset artery diameter of previous time step         kremheller 11/20 |
  *----------------------------------------------------------------------*/
-void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
+void ART::ArtNetImplStationary::reset_artery_diam_previous_time_step()
 {
   // set the diameter in material
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
@@ -371,7 +371,7 @@ void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
     if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     const double diam = arterymat->Diam();
-    arterymat->SetDiamPreviousTimeStep(diam);
+    arterymat->set_diam_previous_time_step(diam);
   }
 }
 
@@ -397,7 +397,7 @@ void ART::ArtNetImplStationary::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                            kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::ArtNetImplStationary::AddNeumannToResidual()
+void ART::ArtNetImplStationary::add_neumann_to_residual()
 {
   rhs_->Update(1.0, *neumann_loads_, 1.0);
   return;
@@ -416,12 +416,12 @@ void ART::ArtNetImplStationary::AddNeumannToResidual()
 void ART::ArtNetImplStationary::TimeUpdate()
 {
   // reset the artery diameter of the previous time step
-  ResetArteryDiamPreviousTimeStep();
+  reset_artery_diam_previous_time_step();
 
   if (solvescatra_)
   {
     scatra_->ScaTraField()->Update();
-    scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+    scatra_->ScaTraField()->evaluate_error_compared_to_analytical_sol();
   }
 
   return;
@@ -445,7 +445,7 @@ void ART::ArtNetImplStationary::PrepareTimeLoop()
   if (step_ == 0)
   {
     // set artery diameter of previous time step to intial artery diameter
-    ResetArteryDiamPreviousTimeStep();
+    reset_artery_diam_previous_time_step();
     // write out initial state
     Output(false, Teuchos::null);
   }
@@ -489,7 +489,7 @@ void ART::ArtNetImplStationary::Output(
     // output of flow
     OutputFlow();
 
-    if (solvescatra_) scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
+    if (solvescatra_) scatra_->ScaTraField()->check_and_write_output_and_restart();
   }
 
   return;
@@ -585,7 +585,7 @@ void ART::ArtNetImplStationary::TestResults()
   GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
   if (solvescatra_)
   {
-    GLOBAL::Problem::Instance()->AddFieldTest(scatra_->CreateScaTraFieldTest());
+    GLOBAL::Problem::Instance()->AddFieldTest(scatra_->create_sca_tra_field_test());
   }
   GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
@@ -639,7 +639,7 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
     const double diam = 2.0 * (*ele_radius_col)[i];
 
     // reset (if element is collapsed in previous step, set to zero)
-    arterymat->SetDiamPreviousTimeStep(diam);
+    arterymat->set_diam_previous_time_step(diam);
     arterymat->SetDiam(diam);
     if (diam < arterymat->CollapseThreshold()) arterymat->SetDiam(0.0);
   }
@@ -696,7 +696,7 @@ void ART::ArtNetImplStationary::SetInitialField(
       const std::string field = "Artery";
       std::vector<int> localdofs;
       localdofs.push_back(0);
-      discret_->EvaluateInitialField(field, pressurenp_, localdofs);
+      discret_->evaluate_initial_field(field, pressurenp_, localdofs);
 
       break;
     }

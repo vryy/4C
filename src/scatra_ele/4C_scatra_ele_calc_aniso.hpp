@@ -86,12 +86,12 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate the Laplacian for all shape functions(strong form)
-      void GetLaplacianStrongForm(
+      void get_laplacian_strong_form(
           CORE::LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,                   //!< ?
+      void get_laplacian_weak_form(double& val,                //!< ?
           const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const int vi,                                        //!< ?
           const int ui                                         //!< ?
@@ -109,7 +109,7 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,                //!< ?
+      void get_laplacian_weak_form_rhs(double& val,            //!< ?
           const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
           const int vi                                         //!< ?

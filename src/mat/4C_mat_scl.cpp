@@ -123,7 +123,7 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeTransferenceNumber(const double cint) const
+double MAT::Scl::compute_transference_number(const double cint) const
 {
   if (TransNrCurve() < 0)
     return EvalPreDefinedFunct(TransNrCurve(), cint, TransNrParams());
@@ -139,12 +139,12 @@ double MAT::Scl::ComputeTransferenceNumber(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
+double MAT::Scl::compute_first_deriv_trans(const double cint) const
 {
   if (TransNrCurve() < 0)
-    return EvalFirstDerivPreDefinedFunct(TransNrCurve(), cint, TransNrParams());
+    return eval_first_deriv_pre_defined_funct(TransNrCurve(), cint, TransNrParams());
   else if (TransNrCurve() == 0)
-    return EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
+    return eval_first_deriv_pre_defined_funct(-1, cint, TransNrParams());
   else
   {
     return GLOBAL::Problem::Instance()
@@ -155,11 +155,11 @@ double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeDiffusionCoefficient(
+double MAT::Scl::compute_diffusion_coefficient(
     const double concentration, const double temperature) const
 {
   // L indicates the mobility factor corresponding to the linear onsager relation
-  const double LRT = params_->R_ * InvValValenceFaradaySquared() *
+  const double LRT = params_->R_ * inv_val_valence_faraday_squared() *
                      ComputeConductivity(concentration, temperature) *
                      (1.0 / (1.0 - (concentration - params_->cbulk_) * params_->delta_nu_)) *
                      temperature;
@@ -211,15 +211,16 @@ double MAT::Scl::ComputeDiffusionCoefficient(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeConcentrationDerivativeOfDiffusionCoefficient(
+double MAT::Scl::compute_concentration_derivative_of_diffusion_coefficient(
     const double concentration, const double temperature) const
 {
   // L indicates the mobility factor corresponding to the linear onsager relation, which is
   // dependent on cation concentration
   const double LRT =
-      params_->R_ * ComputeOnsagerCoefficient(concentration, temperature) * temperature;
+      params_->R_ * compute_onsager_coefficient(concentration, temperature) * temperature;
   const double LRTderconc =
-      params_->R_ * ComputeConcentrationDerivativeOfOnsagerCoefficient(concentration, temperature) *
+      params_->R_ *
+      compute_concentration_derivative_of_onsager_coefficient(concentration, temperature) *
       temperature;
   const double c_max = params_->cmax_;
   double diff_coeff_der = 0.0;
@@ -255,7 +256,7 @@ double MAT::Scl::ComputeConcentrationDerivativeOfDiffusionCoefficient(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::InvValValenceFaradaySquared() const
+double MAT::Scl::inv_val_valence_faraday_squared() const
 {
   return std::pow(Valence() * params_->faraday_, -2);
 }
@@ -264,26 +265,26 @@ double MAT::Scl::InvValValenceFaradaySquared() const
 /*----------------------------------------------------------------------*/
 double MAT::Scl::ComputePermittivity() const
 {
-  const double susceptibility = ComputeSusceptibility();
+  const double susceptibility = compute_susceptibility();
   return ((1.0 + susceptibility) * params_->epsilon_0_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeOnsagerCoefficient(
+double MAT::Scl::compute_onsager_coefficient(
     const double concentration, const double temperature) const
 {
   // onsager coefficient (mobility factor) is derived from the measurable ionic conductivity and is
   // also related to deltanu, the difference between the partial molar volumes of vacancies and
   // cations
   const double conductivity = ComputeConductivity(concentration, temperature);
-  return InvValValenceFaradaySquared() * conductivity /
+  return inv_val_valence_faraday_squared() * conductivity /
          (1.0 - (concentration - params_->cbulk_) * params_->delta_nu_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputeConcentrationDerivativeOfOnsagerCoefficient(
+double MAT::Scl::compute_concentration_derivative_of_onsager_coefficient(
     const double concentration, const double temperature) const
 {
   // derivative of mobility factor w.r.t concentration depends on the concentration dependence of
@@ -291,12 +292,12 @@ double MAT::Scl::ComputeConcentrationDerivativeOfOnsagerCoefficient(
   // (usually, deltanu = 0.0)
   const double conductivity = ComputeConductivity(concentration, temperature);
   const double conductivityderconc =
-      ComputeConcentrationDerivativeOfConductivity(concentration, temperature);
+      compute_concentration_derivative_of_conductivity(concentration, temperature);
   const double cbulk = params_->cbulk_;
   const double delta_nu = params_->delta_nu_;
 
   const double onsagercoeffderconc =
-      InvValValenceFaradaySquared() *
+      inv_val_valence_faraday_squared() *
       (conductivity *
               (delta_nu / (std::pow(1.0 + cbulk * delta_nu - concentration * delta_nu, 2))) +
           conductivityderconc / (1.0 - (concentration - cbulk) * delta_nu));

@@ -70,7 +70,7 @@ namespace BEAMINTERACTION
      */
     static Teuchos::RCP<
         BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-    CreateAssemblyManager(Teuchos::RCP<const DRT::Discretization> discretization1,
+    create_assembly_manager(Teuchos::RCP<const DRT::Discretization> discretization1,
         Teuchos::RCP<const DRT::Discretization> discretization2,
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,

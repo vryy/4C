@@ -41,7 +41,7 @@ void STR::MODELEVALUATOR::Constraints::Setup()
   constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView(), true));
 
   SetSubModelTypes();
-  CreateSubModelEvaluators();
+  create_sub_model_evaluators();
 
 
   issetup_ = true;
@@ -76,7 +76,7 @@ void STR::MODELEVALUATOR::Constraints::SetSubModelTypes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::CreateSubModelEvaluators()
+void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
 {
   // Create vector with the Sub-model-evaluators
   sub_model_vec_ptr_ = STR::MODELEVALUATOR::Constraints::SubmodelevaluatorVector(0);
@@ -165,7 +165,7 @@ void STR::MODELEVALUATOR::Constraints::PreEvaluate()
 {
   for (auto& sme : sub_model_vec_ptr_)
   {
-    sme->EvaluateCouplingTerms(*GStatePtr());
+    sme->evaluate_coupling_terms(*GStatePtr());
   }
 }
 /*----------------------------------------------------------------------------*
@@ -226,7 +226,7 @@ void STR::MODELEVALUATOR::Constraints::UpdateStepElement() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::DetermineStressStrain() {}
+void STR::MODELEVALUATOR::Constraints::determine_stress_strain() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -237,7 +237,7 @@ void STR::MODELEVALUATOR::Constraints::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::DetermineOptionalQuantity() {}
+void STR::MODELEVALUATOR::Constraints::determine_optional_quantity() {}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::ResetStepState()
@@ -251,30 +251,30 @@ void STR::MODELEVALUATOR::Constraints::OutputStepState(IO::DiscretizationWriter&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::RuntimePreOutputStepState() {}
+void STR::MODELEVALUATOR::Constraints::runtime_pre_output_step_state() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::RuntimeOutputStepState() const {}
+void STR::MODELEVALUATOR::Constraints::runtime_output_step_state() const {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::get_block_dof_row_map_ptr() const
 {
   return GState().DofRowMap();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::get_current_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::GetLastTimeStepSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::Constraints::get_last_time_step_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
@@ -285,14 +285,14 @@ void STR::MODELEVALUATOR::Constraints::PostOutput() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::EvaluateJacobianContributionsFromElementLevelForPTC()
+void STR::MODELEVALUATOR::Constraints::evaluate_jacobian_contributions_from_element_level_for_ptc()
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::AssembleJacobianContributionsFromElementLevelForPTC(
+void STR::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -307,7 +307,7 @@ void STR::MODELEVALUATOR::Constraints::CreateBackupState(const Epetra_Vector& di
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::RecoverFromBackupState()
+void STR::MODELEVALUATOR::Constraints::recover_from_backup_state()
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

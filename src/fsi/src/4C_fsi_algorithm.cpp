@@ -50,7 +50,7 @@ void FSI::Algorithm::Setup()
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // access the fsi dynamic params
   Teuchos::ParameterList& fsidyn =
@@ -71,15 +71,15 @@ void FSI::Algorithm::Setup()
   // build structure
   if (sdyn.get<std::string>("INT_STRATEGY") == "Standard")
   {
-    adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr_ = ADAPTER::build_structure_algorithm(sdyn);
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-    adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", fsi_model_ptr);
+    adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->Setup();
     structure_ =
         Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(adapterbase_ptr_->StructureField());
 
     // set pointer in FSIStructureWrapper
-    structure_->SetModelEvaluatorPtr(
+    structure_->set_model_evaluator_ptr(
         Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedFSI>(fsi_model_ptr));
 
     if (structure_ == Teuchos::null)
@@ -137,7 +137,7 @@ void FSI::Algorithm::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   PrintHeader();
 
@@ -194,12 +194,12 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() { return *coupsf_; }
+CORE::ADAPTER::Coupling& FSI::Algorithm::structure_fluid_coupling() { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const CORE::ADAPTER::Coupling& FSI::Algorithm::StructureFluidCoupling() const { return *coupsf_; }
+const CORE::ADAPTER::Coupling& FSI::Algorithm::structure_fluid_coupling() const { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/

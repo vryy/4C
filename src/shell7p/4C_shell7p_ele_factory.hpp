@@ -27,13 +27,13 @@ namespace DRT::ELEMENTS
     //! copy constructor
     Shell7pFactory() = default;
 
-    static std::unique_ptr<Shell7pEleCalcInterface> ProvideShell7pCalculationInterface(
+    static std::unique_ptr<Shell7pEleCalcInterface> provide_shell7p_calculation_interface(
         const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech);
 
    private:
     //! define shell calculation instances dependent on element technology
     template <CORE::FE::CellType distype>
-    static std::unique_ptr<Shell7pEleCalcInterface> DefineCalculationInterfaceType(
+    static std::unique_ptr<Shell7pEleCalcInterface> define_calculation_interface_type(
         const std::set<INPAR::STR::EleTech>& eletech);
   };  // class Shell7pFactory
 }  // namespace DRT::ELEMENTS

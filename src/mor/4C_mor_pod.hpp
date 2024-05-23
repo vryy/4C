@@ -74,11 +74,11 @@ namespace MOR
     int GetRedDim() { return projmatrix_->NumVectors(); };
 
    private:
-    void MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector>, char,
+    void multiply_epetra_multi_vectors(Teuchos::RCP<Epetra_MultiVector>, char,
         Teuchos::RCP<Epetra_MultiVector>, char, Teuchos::RCP<Epetra_Map>,
         Teuchos::RCP<Epetra_Import>, Teuchos::RCP<Epetra_MultiVector>);
 
-    void EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_MultiVector> multivect,
+    void epetra_multi_vector_to_linalg_sparse_matrix(Teuchos::RCP<Epetra_MultiVector> multivect,
         Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat);
 

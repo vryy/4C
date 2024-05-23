@@ -36,7 +36,7 @@ namespace CORE::LINEAR_SOLVER
       coordinates as well as block information and number of degrees of freedom
       into the solver parameter list.
     */
-    static void ComputeSolverParameters(
+    static void compute_solver_parameters(
         DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
 
     /*!
@@ -65,7 +65,7 @@ namespace CORE::LINEAR_SOLVER
      * @return Xpetra-style multi vector with nullspace data
      */
     static Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-    ExtractNullspaceFromParameterlist(
+    extract_nullspace_from_parameterlist(
         const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& row_map,
         Teuchos::ParameterList& list);
   };

@@ -83,7 +83,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
 )
 {
   // get parameter interface
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // reference coord. of element
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
       // displacement-based deformation gradient
       CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
       defgrd_disp.MultiplyNT(defgrd_loc, invJ_[gp]);
-      CalcConsistentDefgrd(defgrd_disp, glstrain, defgrd);
+      calc_consistent_defgrd(defgrd_disp, glstrain, defgrd);
     }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1080,7 +1080,7 @@ void DRT::ELEMENTS::SoSh18::CalculateGeoStiff(const CORE::LINALG::Matrix<9, 1>& 
   // end of integrate `geometric' stiffness******************************
 }
 
-void DRT::ELEMENTS::SoSh18::CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+void DRT::ELEMENTS::SoSh18::calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
     CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod)
 {
   CORE::LINALG::Matrix<3, 3> R;       // rotation tensor
@@ -1132,7 +1132,7 @@ void DRT::ELEMENTS::SoSh18::CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_shear_r(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_shear_r(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r)
 {
   dsg_shear_r.Clear();
@@ -1178,7 +1178,7 @@ void DRT::ELEMENTS::SoSh18::Integrate_dsg_shear_r(
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_shear_s(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_shear_s(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s)
 {
   dsg_shear_s.Clear();
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::SoSh18::Integrate_dsg_shear_s(
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_rs(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_membrane_rs(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs)
 {
   dsg_membrane_rs.Clear();
@@ -1277,7 +1277,7 @@ void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_rs(
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_r(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_membrane_r(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r)
 {
   dsg_membrane_r.Clear();
@@ -1322,7 +1322,7 @@ void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_r(
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_s(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_membrane_s(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s)
 {
   dsg_membrane_s.Clear();
@@ -1367,7 +1367,7 @@ void DRT::ELEMENTS::SoSh18::Integrate_dsg_membrane_s(
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18::Integrate_dsg_transverse_t(
+void DRT::ELEMENTS::SoSh18::integrate_dsg_transverse_t(
     const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t)
 {
   // reset
@@ -1431,18 +1431,18 @@ void DRT::ELEMENTS::SoSh18::SetupDSG()
   {
     if (dsg_shear_)
     {
-      Integrate_dsg_shear_r(gp, dsg_shear_r_[gp]);
-      Integrate_dsg_shear_s(gp, dsg_shear_s_[gp]);
+      integrate_dsg_shear_r(gp, dsg_shear_r_[gp]);
+      integrate_dsg_shear_s(gp, dsg_shear_s_[gp]);
     }
     if (dsg_membrane_)
     {
-      Integrate_dsg_membrane_r(gp, dsg_membrane_r_[gp]);
-      Integrate_dsg_membrane_s(gp, dsg_membrane_s_[gp]);
-      Integrate_dsg_membrane_rs(gp, dsg_membrane_rs_[gp]);
+      integrate_dsg_membrane_r(gp, dsg_membrane_r_[gp]);
+      integrate_dsg_membrane_s(gp, dsg_membrane_s_[gp]);
+      integrate_dsg_membrane_rs(gp, dsg_membrane_rs_[gp]);
     }
     if (dsg_ctl_)
     {
-      Integrate_dsg_transverse_t(gp, dsg_transverse_t_[gp]);
+      integrate_dsg_transverse_t(gp, dsg_transverse_t_[gp]);
     }
   }
 
@@ -1593,7 +1593,7 @@ void DRT::ELEMENTS::SoSh18::Recover(const std::vector<double>& residual)
   if (StrParamsInterface().IsDefaultStep())
   {
     // first, store the eas state of the previous accepted Newton step
-    StrParamsInterface().SumIntoMyPreviousSolNorm(
+    StrParamsInterface().sum_into_my_previous_sol_norm(
         NOX::NLN::StatusTest::quantity_eas, num_eas, alpha_eas_.A(), Owner());
 
     feas_.Multiply(1., Kad_, res_d, 1.);

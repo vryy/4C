@@ -68,7 +68,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
          * if true. */
         LinSolMap::iterator iter = linsolvers->find(INPAR::STR::model_structure);
         if (iter == linsolvers->end())
-          (*linsolvers)[INPAR::STR::model_structure] = BuildStructureLinSolver(sdyn, actdis);
+          (*linsolvers)[INPAR::STR::model_structure] = build_structure_lin_solver(sdyn, actdis);
         break;
       }
       /* ToDo Check if this makes sense for simulations where both, meshtying and
@@ -76,13 +76,13 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
        *      implementation (maps for pre-conditioning, etc.). */
       case INPAR::STR::model_contact:
       case INPAR::STR::model_meshtying:
-        (*linsolvers)[*mt_iter] = BuildMeshtyingContactLinSolver(actdis);
+        (*linsolvers)[*mt_iter] = build_meshtying_contact_lin_solver(actdis);
         break;
       case INPAR::STR::model_lag_pen_constraint:
-        (*linsolvers)[*mt_iter] = BuildLagPenConstraintLinSolver(sdyn, actdis);
+        (*linsolvers)[*mt_iter] = build_lag_pen_constraint_lin_solver(sdyn, actdis);
         break;
       case INPAR::STR::model_cardiovascular0d:
-        (*linsolvers)[*mt_iter] = BuildCardiovascular0DLinSolver(sdyn, actdis);
+        (*linsolvers)[*mt_iter] = build_cardiovascular0_d_lin_solver(sdyn, actdis);
         break;
       default:
         FOUR_C_THROW("No idea which solver to use for the given model type %s",
@@ -97,7 +97,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
+Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_solver(
     const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
@@ -125,7 +125,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
     case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
     case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
     {
-      actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
+      actdis.compute_null_space_if_necessary(linsolver->Params());
       break;
     }
     case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
@@ -159,17 +159,17 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
       Teuchos::RCP<Epetra_Map> rowmap2 =
           Teuchos::rcp(new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.Comm()));
 
-      linsolver->PutSolverParamsToSubParams("Inverse1", linsolverparams);
+      linsolver->put_solver_params_to_sub_params("Inverse1", linsolverparams);
       linsolver->Params()
           .sublist("Inverse1")
           .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap1);
-      actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("Inverse1"));
+      actdis.compute_null_space_if_necessary(linsolver->Params().sublist("Inverse1"));
 
-      linsolver->PutSolverParamsToSubParams("Inverse2", linsolverparams);
+      linsolver->put_solver_params_to_sub_params("Inverse2", linsolverparams);
       linsolver->Params()
           .sublist("Inverse2")
           .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap2);
-      actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("Inverse2"));
+      actdis.compute_null_space_if_necessary(linsolver->Params().sublist("Inverse2"));
 
       break;
     }
@@ -183,10 +183,10 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
+Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
     DRT::Discretization& actdis) const
 {
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
 
   const enum INPAR::CONTACT::SolvingStrategy sol_type =
       static_cast<INPAR::CONTACT::SolvingStrategy>(
@@ -197,12 +197,12 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 
   const int lin_solver_id = mcparams.get<int>("LINEAR_SOLVER");
 
-  return BuildMeshtyingContactLinSolver(actdis, sol_type, sys_type, lin_solver_id);
+  return build_meshtying_contact_lin_solver(actdis, sol_type, sys_type, lin_solver_id);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
+Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
     DRT::Discretization& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
     enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
@@ -275,7 +275,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
 
-      actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
+      actdis.compute_null_space_if_necessary(linsolver->Params());
 
       // feed the solver object with additional information
       if (onlycontact or meshtyingandcontact)
@@ -296,7 +296,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
         if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
         {
           // Inverse2 is created within blockpreconditioners.cpp
-          actdis.ComputeNullSpaceIfNecessary(
+          actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
         }
         else if (prec == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
@@ -317,7 +317,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       // build meshtying solver
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
-      actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
+      actdis.compute_null_space_if_necessary(linsolver->Params());
     }
     break;
   }
@@ -328,13 +328,14 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolver(
+Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
     const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& strparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& strparams =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // solution algorithm - direct, simple or Uzawa
   INPAR::STR::ConSolveAlgo algochoice =
@@ -350,7 +351,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-      linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
+      linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
     }
     break;
@@ -362,7 +363,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-      linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
+      linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
       if (!linsolver->Params().isSublist("Belos Parameters"))
@@ -375,16 +376,16 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
         case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
-          // tell Inverse1 block about NodalBlockInformation
+          // tell Inverse1 block about nodal_block_information
           Teuchos::ParameterList& inv1 =
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-          inv1.sublist("NodalBlockInformation") =
-              linsolver->Params().sublist("NodalBlockInformation");
+          inv1.sublist("nodal_block_information") =
+              linsolver->Params().sublist("nodal_block_information");
 
           // calculate null space information
-          actdis.ComputeNullSpaceIfNecessary(
+          actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-          actdis.ComputeNullSpaceIfNecessary(
+          actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
 
           linsolver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
@@ -414,21 +415,21 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolver(
+Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
     const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
 
   const Teuchos::ParameterList& cardvasc0dstructparams =
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams();
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
   linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-  linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
+  linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // solution algorithm - direct or simple
@@ -449,16 +450,16 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
         case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
-          // tell Inverse1 block about NodalBlockInformation
+          // tell Inverse1 block about nodal_block_information
           Teuchos::ParameterList& inv1 =
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-          inv1.sublist("NodalBlockInformation") =
-              linsolver->Params().sublist("NodalBlockInformation");
+          inv1.sublist("nodal_block_information") =
+              linsolver->Params().sublist("nodal_block_information");
 
           // calculate null space information
-          actdis.ComputeNullSpaceIfNecessary(
+          actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-          actdis.ComputeNullSpaceIfNecessary(
+          actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
 
           linsolver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");

@@ -74,7 +74,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8PlastType::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
     return ele;
@@ -283,10 +283,10 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
 /*---------------------------------------------------------------------*
 |                                                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh8PlastType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
@@ -295,12 +295,12 @@ void DRT::ELEMENTS::SoSh8PlastType::SetupElementDefinition(
                      .AddNamedString("EAS")
                      .AddNamedString("ANS")
                      .AddNamedString("THICKDIR")
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
                      .Build();
 
-}  // SetupElementDefinition()
+}  // setup_element_definition()
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 05/14 |
@@ -317,7 +317,7 @@ DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -513,7 +513,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   dDp_last_iter_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
   dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
-  Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->SemiSmoothPlastParams();
+  Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->semi_smooth_plast_params();
   CORE::UTILS::AddEnumClassToParameterList(
       "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
@@ -1009,7 +1009,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
     InvalidGpData();
     // shape functions (shapefunct) and their first derivatives (deriv)
     CORE::FE::shape_function<CORE::FE::CellType::hex8>(xsi_[gp], SetShapeFunction());
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(xsi_[gp], SetDerivShapeFunction());
+    CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(xsi_[gp], set_deriv_shape_function());
 
     Kinematics(gp);
 
@@ -1020,7 +1020,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
      */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    SetDerivShapeFunctionXYZ().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
+    set_deriv_shape_function_xyz().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
 
     AnsStrains(gp, jac_sps, jac_cur_sps);
     if (eastype_ != soh8p_easnone)
@@ -1175,19 +1175,19 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
       if (HavePlasticSpin())
       {
         if (eastype_ != soh8p_easnone)
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
               nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
         else
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
               nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
       else
       {
         if (eastype_ != soh8p_easnone)
-          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
               nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
         else
-          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+          CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
               nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
     }  // plastic modifications
@@ -1442,7 +1442,7 @@ void DRT::ELEMENTS::SoSh8Plast::AnsStrains(const int gp,
   SetRCG()(0, 2) = SetRCG()(2, 0) = glstrain(5);
 
   // calculate deformation gradient consistent with modified GL strain tensor
-  CalcConsistentDefgrd();
+  calc_consistent_defgrd();
 }
 
 FOUR_C_NAMESPACE_CLOSE

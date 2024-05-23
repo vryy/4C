@@ -271,7 +271,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         }
       }
 
-      vc->CreateTet4IntegrationCells(mesh, tets, sides_xyz);
+      vc->create_tet4_integration_cells(mesh, tets, sides_xyz);
 
       if (vc->Empty())
       {
@@ -865,8 +865,8 @@ void CORE::GEO::CUT::TetMesh::CollectCoordinates(
 
     // Plausible: Might not need this check.
     //  However, left as is, as Tetmeshintersection is still not well understood.
-    if (p1->HasAssociatedBoundaryCellFacet() and p2->HasAssociatedBoundaryCellFacet() and
-        p3->HasAssociatedBoundaryCellFacet())
+    if (p1->has_associated_boundary_cell_facet() and p2->has_associated_boundary_cell_facet() and
+        p3->has_associated_boundary_cell_facet())
     {
       side_coords.push_back(p1);
       side_coords.push_back(p2);

@@ -81,7 +81,7 @@ Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams() { return SDyn().G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Generic::GetDefaultStepLength() const
+double STR::IMPLICIT::Generic::get_default_step_length() const
 {
   const Teuchos::ParameterList& p_nox = TimInt().GetDataSDyn().GetNoxParams();
   const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
@@ -109,16 +109,16 @@ void STR::IMPLICIT::Generic::ResetEvalParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const
+void STR::IMPLICIT::Generic::print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const
 {
   const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
 
-  timint_impl.PrintJacobianInMatlabFormat(curr_grp);
+  timint_impl.print_jacobian_in_matlab_format(curr_grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::NLN::CorrectionType type,
     const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
     Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
@@ -169,7 +169,7 @@ void STR::IMPLICIT::Generic::ConditionNumber(const NOX::NLN::Group& grp) const
 {
   const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
 
-  timint_impl.ComputeConditionNumber(grp);
+  timint_impl.compute_condition_number(grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -207,7 +207,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver:
 {
   double step = 0.0;
   const bool isdefaultstep = getStep(step, solver);
-  const int num_corrs = getNumberOfModifiedNewtonCorrections(solver);
+  const int num_corrs = get_number_of_modified_newton_corrections(solver);
 
   impl_.ModelEval().RunPostIterate(solver, step, isdefaultstep, num_corrs);
 }
@@ -224,24 +224,24 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const ::NOX::Solver::Ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreApplyJacobianInverse(
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::run_pre_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
-  impl_.ModelEval().RunPreApplyJacobianInverse(
-      convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
+  impl_.ModelEval().run_pre_apply_jacobian_inverse(convert2_epetra_vector(rhs),
+      convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
-  impl_.ModelEval().RunPostApplyJacobianInverse(
-      convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
+  impl_.ModelEval().run_post_apply_jacobian_inverse(convert2_epetra_vector(rhs),
+      convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
 
-  impl_.PrintJacobianInMatlabFormat(grp);
+  impl_.print_jacobian_in_matlab_format(grp);
   impl_.ConditionNumber(grp);
 
   // reset any possible set correction type at this point
@@ -252,7 +252,7 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
+Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2_epetra_vector(
     ::NOX::Abstract::Vector& vec) const
 {
   ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<::NOX::Epetra::Vector*>(&vec);
@@ -264,7 +264,7 @@ Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
+const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2_epetra_vector(
     const ::NOX::Abstract::Vector& vec) const
 {
   const ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<const ::NOX::Epetra::Vector*>(&vec);
@@ -301,7 +301,7 @@ bool NOX::NLN::PrePostOp::IMPLICIT::Generic::getStep(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::PrePostOp::IMPLICIT::Generic::getNumberOfModifiedNewtonCorrections(
+int NOX::NLN::PrePostOp::IMPLICIT::Generic::get_number_of_modified_newton_corrections(
     const ::NOX::Solver::Generic& solver) const
 {
   int number_of_corr = 0;
@@ -316,17 +316,17 @@ int NOX::NLN::PrePostOp::IMPLICIT::Generic::getNumberOfModifiedNewtonCorrections
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
+void STR::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
-  ModelEval().ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
+  ModelEval().compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const
+void STR::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  ModelEval().RemoveCondensedContributionsFromRhs(rhs);
+  ModelEval().remove_condensed_contributions_from_rhs(rhs);
 }
 
 FOUR_C_NAMESPACE_CLOSE

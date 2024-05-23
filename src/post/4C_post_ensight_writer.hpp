@@ -125,14 +125,14 @@ class EnsightWriter : public PostWriterBase
    \author ghamm
    \date 03/13
    */
-  void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
-      const std::string groupname,                 ///< name of the result group in the control file
-      const std::string name,                      ///< name of the result to be written
-      const ResultType restype,  ///< type of the result to be written (nodal-/element-based)
-      const int numdf,           ///< number of dofs per node to this result
-      bool firststep,            ///< bool whether this is the first time step
-      bool laststep,             ///< bool whether this is the last time step
-      const int from = 0         ///< start position of values in nodes
+  void write_result_one_time_step(PostResult& result,  ///< result group in the control file
+      const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,       ///< name of the result to be written
+      const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
+      const int numdf,              ///< number of dofs per node to this result
+      bool firststep,               ///< bool whether this is the first time step
+      bool laststep,                ///< bool whether this is the last time step
+      const int from = 0            ///< start position of values in nodes
       ) override;
 
   /*!
@@ -174,7 +174,7 @@ class EnsightWriter : public PostWriterBase
       const std::string str                ///< string to be written to file
   ) const;
   void WriteGeoFile(const std::string& geofilename);
-  void WriteGeoFileOneTimeStep(std::ofstream& file,
+  void write_geo_file_one_time_step(std::ofstream& file,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string name);
 
@@ -189,7 +189,7 @@ class EnsightWriter : public PostWriterBase
       nodes of elements displayed in paraview) are just the node
       coordinates of the nodes in the discretization.
     */
-  void WriteCoordinatesForPolynomialShapefunctions(std::ofstream& geofile,
+  void write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
       const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
@@ -198,7 +198,7 @@ class EnsightWriter : public PostWriterBase
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
   */
-  void WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
+  void write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
       const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   virtual void WriteCells(std::ofstream& geofile,  ///< filestream for the geometry
@@ -271,8 +271,9 @@ class EnsightWriter : public PostWriterBase
   };
 
 
-  void WriteNodeConnectivityPar(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
-      const std::vector<int>& nodevector, const Teuchos::RCP<Epetra_Map> proc0map) const;
+  void write_node_connectivity_par(std::ofstream& geofile,
+      const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
+      const Teuchos::RCP<Epetra_Map> proc0map) const;
   void WriteDofResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
@@ -308,34 +309,34 @@ class EnsightWriter : public PostWriterBase
     \param int                              (i)          potential offset in dof numbering
 
   */
-  void WriteDofResultStepForNurbs(std::ofstream& file, const int numdf,
+  void write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
       const Teuchos::RCP<Epetra_Vector> data, const std::string name, const int offset) const;
 
   //! perform interpolation of result data to visualization points.
-  void InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
+  void interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
       const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
       const DRT::Element* actele, DRT::NURBS::NurbsDiscretization* nurbsdis,
       const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
       const CORE::LINALG::SerialDenseVector& weights, const int numdf,
       const std::vector<double>& my_data) const;
 
-  void WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,
+  void write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
       const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const;
 
-  void WriteNodalResultStep(std::ofstream& file, PostResult& result,
+  void write_nodal_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf);
-  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
-  void WriteElementDOFResultStep(std::ofstream& file, PostResult& result,
+  void write_element_dof_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdof,
       const int from) const;
-  void WriteElementResultStep(std::ofstream& file, PostResult& result,
+  void write_element_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from);
-  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -346,7 +347,7 @@ class EnsightWriter : public PostWriterBase
    * \brief create string for the VARIABLE section
    *        that corresponds to the current field
    */
-  std::string GetVariableEntryForCaseFile(
+  std::string get_variable_entry_for_case_file(
       int numdf,  ///< degrees of freedom per node for this field
       unsigned int fileset, const std::string name, const std::string filename,
       const int timeset) const;
@@ -392,16 +393,16 @@ class EnsightWriter : public PostWriterBase
       const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const;
 
   //! create string for one TIME section in the case file
-  std::string GetTimeSectionString(const int timeset,  ///< number of timeset to be written
+  std::string get_time_section_string(const int timeset,  ///< number of timeset to be written
       const std::vector<double>& times  ///< vector with time value for each time step
   ) const;
 
   //! create string for TIME section in the case file
-  std::string GetTimeSectionStringFromTimesets(
+  std::string get_time_section_string_from_timesets(
       const std::map<std::string, std::vector<double>>& timesetmap) const;
 
   //! create string for FILE section in the case file
-  std::string GetFileSectionStringFromFilesets(const std::map<std::string, std::vector<int>>&
+  std::string get_file_section_string_from_filesets(const std::map<std::string, std::vector<int>>&
           filesetmap  ///< filesets when using multiple huge binary files
   ) const;
 

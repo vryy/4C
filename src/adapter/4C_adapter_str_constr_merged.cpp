@@ -47,13 +47,13 @@ void ADAPTER::StructureConstrMerged::Setup()
     FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // build merged dof row map
-  dofrowmap_ = CORE::LINALG::MergeMap(
-      *(structure_->DofRowMap()), *(structure_->GetConstraintManager()->GetConstraintMap()), false);
+  dofrowmap_ = CORE::LINALG::MergeMap(*(structure_->DofRowMap()),
+      *(structure_->get_constraint_manager()->GetConstraintMap()), false);
 
   // set up interface between merged and single maps
   conmerger_ = Teuchos::rcp(new CORE::LINALG::MapExtractor);
-  conmerger_->Setup(
-      *dofrowmap_, structure_->DofRowMap(), structure_->GetConstraintManager()->GetConstraintMap());
+  conmerger_->Setup(*dofrowmap_, structure_->DofRowMap(),
+      structure_->get_constraint_manager()->GetConstraintMap());
 
   // setup fsi-Interface
   interface_ = Teuchos::rcp(new STR::MapExtractor);
@@ -72,7 +72,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
   // get initial guesses from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
   Teuchos::RCP<const Epetra_Vector> lagrGuess = Teuchos::rcp(
-      new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()), true));
+      new Epetra_Vector(*(structure_->get_constraint_manager()->GetConstraintMap()), true));
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedGuess = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -88,7 +88,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::RHS()
 {
   // get rhs-vectors from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> struRHS = structure_->RHS();
-  Teuchos::RCP<const Epetra_Vector> lagrRHS = structure_->GetConstraintManager()->GetError();
+  Teuchos::RCP<const Epetra_Vector> lagrRHS = structure_->get_constraint_manager()->GetError();
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedRHS = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -106,7 +106,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp() const
   // get current state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispnp();
   Teuchos::RCP<const Epetra_Vector> lagrmult =
-      structure_->GetConstraintManager()->GetLagrMultVector();
+      structure_->get_constraint_manager()->GetLagrMultVector();
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -124,7 +124,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn() const
   // get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispn();
   Teuchos::RCP<const Epetra_Vector> lagrmult =
-      structure_->GetConstraintManager()->GetLagrMultVectorOld();
+      structure_->get_constraint_manager()->get_lagr_mult_vector_old();
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -140,8 +140,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Veln() const
 {
   // get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Veln();
-  Teuchos::RCP<const Epetra_Vector> lagrmult = Teuchos::rcp(
-      new Epetra_Vector(structure_->GetConstraintManager()->GetLagrMultVectorOld()->Map(), true));
+  Teuchos::RCP<const Epetra_Vector> lagrmult = Teuchos::rcp(new Epetra_Vector(
+      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -157,8 +157,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Accn() const
 {
   // get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Accn();
-  Teuchos::RCP<const Epetra_Vector> lagrmult = Teuchos::rcp(
-      new Epetra_Vector(structure_->GetConstraintManager()->GetLagrMultVectorOld()->Map(), true));
+  Teuchos::RCP<const Epetra_Vector> lagrmult = Teuchos::rcp(new Epetra_Vector(
+      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
 
   // merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
@@ -185,7 +185,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemM
   strustiff->Complete();
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> constiff =
-      structure_->GetConstraintManager()->GetConstrMatrix();
+      structure_->get_constraint_manager()->GetConstrMatrix();
   constiff->Complete();
 
   // Add matrices together
@@ -223,7 +223,7 @@ void ADAPTER::StructureConstrMerged::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   {
     // Extract increments for lagr multipliers and do update
     Teuchos::RCP<Epetra_Vector> lagrincr = conmerger_->ExtractOtherVector(dispstepinc);
-    structure_->UpdateIterIncrConstr(lagrincr);
+    structure_->update_iter_incr_constr(lagrincr);
     dispstructstepinc = conmerger_->ExtractCondVector(dispstepinc);
   }
   // Hand down incremental displacements,
@@ -237,12 +237,12 @@ void ADAPTER::StructureConstrMerged::Evaluate(Teuchos::RCP<const Epetra_Vector> 
 const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap() const
 {
   return *(CORE::LINALG::MergeMap(
-      structure_->DomainMap(), *(structure_->GetConstraintManager()->GetConstraintMap()), false));
+      structure_->DomainMap(), *(structure_->get_constraint_manager()->GetConstraintMap()), false));
 }
 
 /*----------------------------------------------------------------------*/
 // Apply interface forces
-void ADAPTER::StructureConstrMerged::ApplyInterfaceForcesTemporaryDeprecated(
+void ADAPTER::StructureConstrMerged::apply_interface_forces_temporary_deprecated(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   // create vector with displacement and constraint DOFs
@@ -258,7 +258,7 @@ void ADAPTER::StructureConstrMerged::ApplyInterfaceForcesTemporaryDeprecated(
   // set interface forces within the structural time integrator
   SetForceInterface(fifcdisp);
 
-  PreparePartitionStep();
+  prepare_partition_step();
 
   return;
 }

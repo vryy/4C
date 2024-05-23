@@ -55,7 +55,7 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
 {
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound =
-      GLOBAL::Problem::Instance()->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
+      GLOBAL::Problem::Instance()->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND");
   int degree_gp_fluid_bound = 3;
   if (num_gp_fluid_bound == 8)
     degree_gp_fluid_bound = 3;
@@ -95,7 +95,7 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
+void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocity(
     const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
@@ -135,7 +135,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     // evaluate momentum residual once for all stabilization right hand sides
     for (int rr = 0; rr < nsd_; ++rr)
     {
-      if (immersedele_->HasProjectedDirichlet())
+      if (immersedele_->has_projected_dirichlet())
         my::momres_old_(rr) = my::densam_ * my::accint_(rr) +
                               my::densaf_ * (my::conv_old_(rr) + conv_old_cons(rr)) +
                               my::gradp_(rr) - 2 * my::visceff_ * my::visc_old_(rr) +
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     }
 
     // add consistency terms for MFS if applicable
-    my::MultfracSubGridScalesConsistentResidual();
+    my::multfrac_sub_grid_scales_consistent_residual();
   }
   else
   {
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr = 0; rr < nsd_; ++rr)
       {
-        if (immersedele_->HasProjectedDirichlet())
+        if (immersedele_->has_projected_dirichlet())
           my::momres_old_(rr) = ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->Dt() +
                                      my::fldparatimint_->Theta() *
                                          (my::densaf_ * (my::conv_old_(rr) + conv_old_cons(rr)) +
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
       // compute stationary momentum residual:
       for (int rr = 0; rr < nsd_; ++rr)
       {
-        if (immersedele_->HasProjectedDirichlet())
+        if (immersedele_->has_projected_dirichlet())
           my::momres_old_(rr) = my::densaf_ * (my::conv_old_(rr) + conv_old_cons(rr)) +
                                 my::gradp_(rr) - 2 * my::visceff_ * my::visc_old_(rr) +
                                 my::reacoeff_ * my::velint_(rr) - my::rhsmom_(rr);
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
       }
 
       // add consistency terms for MFS if applicable
-      my::MultfracSubGridScalesConsistentResidual();
+      my::multfrac_sub_grid_scales_consistent_residual();
     }
   }
 
@@ -301,7 +301,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     sgvelintaf.Clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
-      my::tds_->UpdateSvelnpInOneDirection(fac1, fac2, fac3, my::momres_old_(rr),
+      my::tds_->update_svelnp_in_one_direction(fac1, fac2, fac3, my::momres_old_(rr),
           my::fldparatimint_->AlphaF(), rr, iquad,
           my::sgvelint_(
               rr),  // sgvelint_ is set to sgvelintnp, but is then overwritten below anyway!
@@ -380,7 +380,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
 
   // convection, convective part (conservative addition)
-  if (immersedele_->HasProjectedDirichlet())
+  if (immersedele_->has_projected_dirichlet())
   {
     for (int ui = 0; ui < nen_; ++ui)
     {
@@ -415,15 +415,15 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalPart(
+void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_gal_part(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, CORE::LINALG::Matrix<nsd_, 1>& resM_Du,
     const double& rhsfac)
 {
-  my::InertiaConvectionReactionGalPart(estif_u, velforce, lin_resM_Du, resM_Du, rhsfac);
+  my::inertia_convection_reaction_gal_part(estif_u, velforce, lin_resM_Du, resM_Du, rhsfac);
 
-  if (immersedele_->HasProjectedDirichlet())
+  if (immersedele_->has_projected_dirichlet())
   {
     for (int idim = 0; idim < nsd_; ++idim)
     {
@@ -473,19 +473,20 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
   if (not immersedele_->IsImmersed()) preforce.Update(-rhsfac * my::vdiv_, my::funct_, 1.0);
 
   if (immersedele_->IsBoundaryImmersed())
-    preforce.Update(rhsfac * immersedele_->ProjectedIntPointDivergence(gp_iquad_), my::funct_, 1.0);
+    preforce.Update(
+        rhsfac * immersedele_->projected_int_point_divergence(gp_iquad_), my::funct_, 1.0);
 
 
   return;
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ConservativeFormulation(
+void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
     CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
-  if (not(immersedele_->HasProjectedDirichlet()))
-    my::ConservativeFormulation(estif_u, velforce, timefacfac, rhsfac);
+  if (not(immersedele_->has_projected_dirichlet()))
+    my::conservative_formulation(estif_u, velforce, timefacfac, rhsfac);
   return;
 }
 

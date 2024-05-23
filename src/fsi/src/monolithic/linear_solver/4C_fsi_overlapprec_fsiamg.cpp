@@ -524,7 +524,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       SelectMLAPISmoother(type, i, subp, p, pushlist);
       if (blocksmoother_[i] == "Schur")  // Schur Complement block smoother
       {
-        SchurComplementOperator(Schurff_[i], Ass_[i], Aff_[i], Aaa_[i], ASF_[i], AFS_[i], AFA_[i],
+        schur_complement_operator(Schurff_[i], Ass_[i], Aff_[i], Aaa_[i], ASF_[i], AFS_[i], AFA_[i],
             AAF_[i], schuromega_[i], structuresplit_);
         S = Teuchos::rcp(new MLAPI::InverseOperator());
         S->Reshape(Schurff_[i], type, p, &pushlist);
@@ -551,7 +551,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     if (blocksmoother_[fnlevel_ - 1] == "Schur")
     {
       const int i = fnlevel_ - 1;
-      SchurComplementOperator(Schurff_[i], Ass_[i], Aff_[i], Aaa_[i], ASF_[i], AFS_[i], AFA_[i],
+      schur_complement_operator(Schurff_[i], Ass_[i], Aff_[i], Aaa_[i], ASF_[i], AFS_[i], AFA_[i],
           AAF_[i], schuromega_[i], structuresplit_);
       S->Reshape(Schurff_[fnlevel_ - 1], "Amesos-KLU");
     }
@@ -646,7 +646,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::SchurComplementOperator(MLAPI::Operator& Schur,
+void FSI::OverlappingBlockMatrixFSIAMG::schur_complement_operator(MLAPI::Operator& Schur,
     MLAPI::Operator& Ass, MLAPI::Operator& Aff, MLAPI::Operator& Aaa, MLAPI::Operator& Asf,
     MLAPI::Operator& Afs, MLAPI::Operator& Afa, MLAPI::Operator& Aaf, const double omega,
     const bool structuresplit)
@@ -953,12 +953,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(const int level, con
     // the simple smoothing schemes within the level. In case a field does not
     // have a remaining "leftover peak", direct solve will be called
     // automatically.
-    ExplicitBlockGaussSeidelSmoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, true);
+    explicit_block_gauss_seidel_smoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, true);
     return;
   }
 
   //-------------------------- presmoothing block Gauss Seidel
-  ExplicitBlockGaussSeidelSmoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, false);
+  explicit_block_gauss_seidel_smoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, false);
 
   //----------------------------------- coarse level residuals
   // structure
@@ -1019,14 +1019,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(const int level, con
 
   //---------------------------- postsmoothing block Gauss Seidel
   // (do NOT zero initial guess)
-  ExplicitBlockGaussSeidelSmoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, false);
+  explicit_block_gauss_seidel_smoother(level, mlsy, mlfy, mlay, mlsx, mlfx, mlax, false);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(const int level,
+void FSI::OverlappingBlockMatrixFSIAMG::explicit_block_gauss_seidel_smoother(const int level,
     MLAPI::MultiVector& mlsy, MLAPI::MultiVector& mlfy, MLAPI::MultiVector& mlay,
     const MLAPI::MultiVector& mlsx, const MLAPI::MultiVector& mlfx, const MLAPI::MultiVector& mlax,
     const bool amgsolve) const
@@ -1047,7 +1047,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(const i
       sx = sx - ASF_[level] * mlfy;
       // zero initial guess
       sz = 0.0;
-      LocalBlockRichardson(siterations_[level], somega_[level], level, amgsolve, snlevel_, sz, sx,
+      local_block_richardson(siterations_[level], somega_[level], level, amgsolve, snlevel_, sz, sx,
           Ass_, Sss_, Pss_, Rss_);
       // if (!amgsolve) Sss_[level].Apply(sx,sz);
       // else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
@@ -1064,7 +1064,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(const i
         ax = ax - AAF_[level] * mlsy;
       // zero initial guess
       az = 0.0;
-      LocalBlockRichardson(aiterations_[level], aomega_[level], level, amgsolve, anlevel_, az, ax,
+      local_block_richardson(aiterations_[level], aomega_[level], level, amgsolve, anlevel_, az, ax,
           Aaa_, Saa_, Paa_, Raa_);
       // if (!amgsolve) Saa_[level].Apply(ax,az);
       // else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
@@ -1079,7 +1079,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(const i
       fx = fx - AFA_[level] * mlay;
       // zero initial guess
       fz = 0.0;
-      LocalBlockRichardson(fiterations_[level], fomega_[level], level, amgsolve, fnlevel_, fz, fx,
+      local_block_richardson(fiterations_[level], fomega_[level], level, amgsolve, fnlevel_, fz, fx,
           Aff_, Sff_, Pff_, Rff_);
       // if (!amgsolve) Sff_[level].Apply(fx,fz);
       // else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
@@ -1093,7 +1093,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(const i
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(const int iterations,
+void FSI::OverlappingBlockMatrixFSIAMG::local_block_richardson(const int iterations,
     const double omega, const int level, const bool amgsolve, const int nlevel,
     MLAPI::MultiVector& z, const MLAPI::MultiVector& b, const std::vector<MLAPI::Operator>& A,
     const std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,

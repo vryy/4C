@@ -55,15 +55,16 @@ namespace MAT
       virtual double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const = 0;
 
       //! evaluate derivative of saturation with respect to pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
+      virtual double evaluate_deriv_of_saturation_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& pressure) const = 0;
 
       //! evaluate 2nd derivative of saturation with respect to pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,
-          int seconddoftoderive, const std::vector<double>& pressure) const = 0;
+      virtual double evaluate_second_deriv_of_saturation_wrt_pressure(int phasenum,
+          int firstdoftoderive, int seconddoftoderive,
+          const std::vector<double>& pressure) const = 0;
 
       //! evaluate derivative of degree of freedom with respect to pressure
-      virtual double EvaluateDerivOfDofWrtPressure(
+      virtual double evaluate_deriv_of_dof_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& state) const = 0;
     };
 
@@ -91,15 +92,15 @@ namespace MAT
       double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate 2nd derivative of saturation with respect to pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int phasenum, int firstdoftoderive,
           int seconddoftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate derivative of degree of freedom with respect to pressure
-      double EvaluateDerivOfDofWrtPressure(
+      double evaluate_deriv_of_dof_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& state) const override;
 
      protected:
@@ -133,15 +134,15 @@ namespace MAT
       double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate 2nd derivative of saturation with respect to pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int phasenum, int firstdoftoderive,
           int seconddoftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate derivative of degree of freedom with respect to pressure
-      double EvaluateDerivOfDofWrtPressure(
+      double evaluate_deriv_of_dof_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& state) const override;
 
      protected:
@@ -177,15 +178,15 @@ namespace MAT
       double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
-      double EvaluateDerivOfSaturationWrtPressure(
+      double evaluate_deriv_of_saturation_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate 2nd derivative of saturation with respect to pressure
-      double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,
+      double evaluate_second_deriv_of_saturation_wrt_pressure(int phasenum, int firstdoftoderive,
           int seconddoftoderive, const std::vector<double>& pressure) const override;
 
       //! evaluate derivative of degree of freedom with respect to pressure
-      double EvaluateDerivOfDofWrtPressure(
+      double evaluate_deriv_of_dof_wrt_pressure(
           int phasenum, int doftoderive, const std::vector<double>& pressure) const override;
 
      protected:

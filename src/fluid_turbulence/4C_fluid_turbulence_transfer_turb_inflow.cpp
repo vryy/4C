@@ -171,7 +171,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     nodematchingoctree.Setup();
 
     // create map from gid masternode -> gid corresponding slavenode
-    nodematchingoctree.CreateGlobalEntityMatching(
+    nodematchingoctree.create_global_entity_matching(
         slavenodeids, dofsforpbcplane, rotangle, midtosid_);
     // sanity check
     for (std::map<int, std::vector<int>>::iterator pair = midtosid_.begin();
@@ -280,7 +280,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         ReceiveBlock(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
-        UnpackLocalMasterValues(mymasters, mymasters_vel, rblock);
+        unpack_local_master_values(mymasters, mymasters_vel, rblock);
       }
 
       // in the last step, we keep everything on this proc
@@ -288,13 +288,13 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       {
         // -----------------------
         // do what we wanted to do
-        SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
+        set_values_available_on_this_proc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
         CORE::COMM::PackBuffer data;
-        PackLocalMasterValues(mymasters, mymasters_vel, data);
+        pack_local_master_values(mymasters, mymasters_vel, data);
         data.StartPacking();
-        PackLocalMasterValues(mymasters, mymasters_vel, data);
+        pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
         SendBlock(sblock, exporter, request);
@@ -451,7 +451,7 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<int>& mymasters,
+void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vector<int>& mymasters,
     std::vector<std::vector<double>>& mymasters_vel, std::vector<char>& rblock)
 {
   mymasters.clear();
@@ -541,7 +541,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 
   rblock.clear();
   return;
-}  // UnpackLocalMasterValues
+}  // unpack_local_master_values
 
 
 
@@ -555,7 +555,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<int>& mymasters,
+void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector<int>& mymasters,
     std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock)
 {
   int size = mymasters.size();
@@ -615,7 +615,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
   }
 
   return;
-}  // PackLocalMasterValues
+}  // pack_local_master_values
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -627,7 +627,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
+void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
     Teuchos::RCP<Epetra_Vector> velnp)
 {
@@ -682,7 +682,7 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
   }
 
   return;
-}  // SetValuesAvailableOnThisProc
+}  // set_values_available_on_this_proc
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -812,7 +812,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         ReceiveBlock(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
-        UnpackLocalMasterValues(mymasters, mymasters_vel, rblock);
+        unpack_local_master_values(mymasters, mymasters_vel, rblock);
       }
 
       // in the last step, we keep everything on this proc
@@ -820,13 +820,13 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       {
         // -----------------------
         // do what we wanted to do
-        SetValuesAvailableOnThisProc(mymasters, mymasters_vel, velnp);
+        set_values_available_on_this_proc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
         CORE::COMM::PackBuffer data;
-        PackLocalMasterValues(mymasters, mymasters_vel, data);
+        pack_local_master_values(mymasters, mymasters_vel, data);
         data.StartPacking();
-        PackLocalMasterValues(mymasters, mymasters_vel, data);
+        pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
         SendBlock(sblock, exporter, request);
@@ -846,7 +846,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
+void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
     Teuchos::RCP<Epetra_Vector> velnp)
 {
@@ -918,7 +918,7 @@ void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
   }
 
   return;
-}  // SetValuesAvailableOnThisProc (XW)
+}  // set_values_available_on_this_proc (XW)
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1002,7 +1002,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         ReceiveBlock(rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
-        UnpackLocalMasterValues(mymasters, mymasters_vec, rblock);
+        unpack_local_master_values(mymasters, mymasters_vec, rblock);
       }
 
       // in the last step, we keep everything on this proc
@@ -1010,13 +1010,13 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       {
         // -----------------------
         // do what we wanted to do
-        SetValuesAvailableOnThisProc(mymasters, mymasters_vec, outvec);
+        set_values_available_on_this_proc(mymasters, mymasters_vec, outvec);
 
         // Pack info into block to send
         CORE::COMM::PackBuffer data;
-        PackLocalMasterValues(mymasters, mymasters_vec, data);
+        pack_local_master_values(mymasters, mymasters_vec, data);
         data.StartPacking();
-        PackLocalMasterValues(mymasters, mymasters_vec, data);
+        pack_local_master_values(mymasters, mymasters_vec, data);
         swap(sblock, data());
 
         SendBlock(sblock, exporter, request);
@@ -1036,7 +1036,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowConditionNodal::SetValuesAvailableOnThisProc(
+void FLD::TransferTurbulentInflowConditionNodal::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vec,
     Teuchos::RCP<Epetra_Vector> outvec)
 {
@@ -1058,6 +1058,6 @@ void FLD::TransferTurbulentInflowConditionNodal::SetValuesAvailableOnThisProc(
   }
 
   return;
-}  // SetValuesAvailableOnThisProc (Nodal)
+}  // set_values_available_on_this_proc (Nodal)
 
 FOUR_C_NAMESPACE_CLOSE

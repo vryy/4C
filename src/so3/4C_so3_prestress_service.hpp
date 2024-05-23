@@ -31,7 +31,7 @@ namespace PRESTRESS
   static inline INPAR::STR::PreStress GetType()
   {
     static INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
 
     return pstype;
   }
@@ -44,7 +44,7 @@ namespace PRESTRESS
   static inline double GetPrestressTime()
   {
     static double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
     return pstime;
   }
@@ -129,7 +129,7 @@ namespace PRESTRESS
   static inline bool IsAny()
   {
     return Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-               GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+               GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") !=
            INPAR::STR::PreStress::none;
   }
 
@@ -156,9 +156,9 @@ namespace PRESTRESS
   static inline bool IsActive(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 

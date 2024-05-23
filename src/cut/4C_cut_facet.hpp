@@ -67,7 +67,7 @@ namespace CORE::GEO
       /*!
       \brief Return true if this facet is on a marked side from the background mesh
        */
-      bool OnMarkedBackgroundSide() const;
+      bool on_marked_background_side() const;
 
       /* Check if the Facet belongs to a side which is either cut OR marked
        * -> i.e. it should create boundary cells.
@@ -147,7 +147,7 @@ namespace CORE::GEO
       \brief If this Facet has a CommonEdge with another facet, based on this edge the point
       ordering is checked
       */
-      bool HaveConsistantNormal(Facet* f,  // f ... facetpointer to facet to compare with!
+      bool have_consistant_normal(Facet* f,  // f ... facetpointer to facet to compare with!
           bool& result);  // result == true --> normal points in the same direction!
 
       VolumeCell* Neighbor(VolumeCell* cell);
@@ -288,7 +288,7 @@ namespace CORE::GEO
       bool isConvex();
 
       /// Belongs to a LevelSetSide
-      bool BelongsToLevelSetSide();
+      bool belongs_to_level_set_side();
 
      private:
       Facet(const Facet&);

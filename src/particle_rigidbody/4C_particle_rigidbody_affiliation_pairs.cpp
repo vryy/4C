@@ -43,13 +43,13 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::WriteRestart() const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =
-      particleengineinterface_->GetBinDiscretizationWriter();
+      particleengineinterface_->get_bin_discretization_writer();
 
   // prepare buffer
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
   // pack all affiliation pairs
-  if (not affiliationdata_.empty()) PackAllAffiliationPairs(*buffer);
+  if (not affiliationdata_.empty()) pack_all_affiliation_pairs(*buffer);
 
   binwriter->WriteCharVector("RigidBodyAffiliationData", buffer);
 }
@@ -63,14 +63,14 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::ReadRestart(
   reader->ReadCharVector(buffer, "RigidBodyAffiliationData");
 
   // unpack affiliation pairs
-  if (buffer->size() > 0) UnpackAffiliationPairs(*buffer);
+  if (buffer->size() > 0) unpack_affiliation_pairs(*buffer);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::DistributeAffiliationPairs()
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::distribute_affiliation_pairs()
 {
   // relate all particles to all processors
   std::vector<int> particlestoproc(0);
-  particleengineinterface_->RelateAllParticlesToAllProcs(particlestoproc);
+  particleengineinterface_->relate_all_particles_to_all_procs(particlestoproc);
 
   // allocate memory
   std::vector<std::vector<int>> particletargets(comm_.NumProc());
@@ -92,20 +92,20 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::DistributeAffiliationPairs()
   }
 
   // communicate specific affiliation pairs
-  CommunicateSpecificAffiliationPairs(particletargets);
+  communicate_specific_affiliation_pairs(particletargets);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::CommunicateAffiliationPairs()
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::communicate_affiliation_pairs()
 {
   // get reference to particles being communicated to target processors
   const std::vector<std::vector<int>>& particletargets =
-      particleengineinterface_->GetCommunicatedParticleTargets();
+      particleengineinterface_->get_communicated_particle_targets();
 
   // communicate specific affiliation pairs
-  CommunicateSpecificAffiliationPairs(particletargets);
+  communicate_specific_affiliation_pairs(particletargets);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::CommunicateSpecificAffiliationPairs(
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::communicate_specific_affiliation_pairs(
     const std::vector<std::vector<int>>& particletargets)
 {
   // prepare buffer for sending and receiving
@@ -125,7 +125,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::CommunicateSpecificAffiliatio
       if (it == affiliationdata_.end()) continue;
 
       // add affiliation pair to buffer
-      AddAffiliationPairToBuffer(sdata[torank], globalid, it->second);
+      add_affiliation_pair_to_buffer(sdata[torank], globalid, it->second);
 
       // erase affiliation pair
       affiliationdata_.erase(it);
@@ -136,21 +136,21 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::CommunicateSpecificAffiliatio
   PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // unpack affiliation pairs
-  for (auto& p : rdata) UnpackAffiliationPairs(p.second);
+  for (auto& p : rdata) unpack_affiliation_pairs(p.second);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::PackAllAffiliationPairs(
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::pack_all_affiliation_pairs(
     std::vector<char>& buffer) const
 {
   // iterate over all affiliation pairs
   for (auto& it : affiliationdata_)
   {
     // add affiliation pair to buffer
-    AddAffiliationPairToBuffer(buffer, it.first, it.second);
+    add_affiliation_pair_to_buffer(buffer, it.first, it.second);
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::UnpackAffiliationPairs(
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::unpack_affiliation_pairs(
     const std::vector<char>& buffer)
 {
   std::vector<char>::size_type position = 0;
@@ -167,7 +167,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::UnpackAffiliationPairs(
     FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
-void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::AddAffiliationPairToBuffer(
+void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::add_affiliation_pair_to_buffer(
     std::vector<char>& buffer, int globalid, int rigidbody) const
 {
   CORE::COMM::PackBuffer data;

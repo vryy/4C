@@ -126,7 +126,7 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpScatraStatistics(int step);
+    void dump_scatra_statistics(int step);
 
 
    protected:
@@ -258,7 +258,7 @@ namespace FLD
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrhov_;
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumv_t_;
 
-    void convertStringToGeoType(const std::string& geotype);
+    void convert_string_to_geo_type(const std::string& geotype);
   };
 
 }  // namespace FLD

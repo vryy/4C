@@ -47,7 +47,7 @@ namespace
     MAT::ELASTIC::IsoOgden isoogden_;
   };
 
-  TEST_F(IsoOgdenTest, AddCoefficientsStretchesModified)
+  TEST_F(IsoOgdenTest, add_coefficients_stretches_modified)
   {
     // define correct reference values
     const std::array<double, 3> ref_modgamma = {-0.990546182, -21.175823681, -681.759084419};
@@ -64,8 +64,8 @@ namespace
     CORE::LINALG::Matrix<3, 1> modgamma(true);
     CORE::LINALG::Matrix<6, 1> moddelta(true);
 
-    // call AddCoefficientsStretchesModified function with test modified principal strains
-    isoogden_.AddCoefficientsStretchesModified(modgamma, moddelta, modstr);
+    // call add_coefficients_stretches_modified function with test modified principal strains
+    isoogden_.add_coefficients_stretches_modified(modgamma, moddelta, modstr);
 
     // test member function results using reference stress values
     FOUR_C_EXPECT_NEAR(modgamma, ref_modgamma, 1.e-9);

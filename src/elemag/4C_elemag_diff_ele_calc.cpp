@@ -66,7 +66,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
 {
   // check if this is an hdg element and init completepoly
   DRT::ELEMENTS::ElemagDiff* hdgele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
-  usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
+  usescompletepoly_ = hdgele->uses_complete_polynomial_space();
   // else FOUR_C_THROW("cannot cast element to elemag element");
 
   ELEMAG::Action action;
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::project_electric_from_scatra_field:
     {
       ElementInit(hdgele, params);
-      local_solver_->ProjectElectricFieldFromScatra(hdgele, params, mat, elevec1);
+      local_solver_->project_electric_field_from_scatra(hdgele, params, mat, elevec1);
       break;
     }
     case ELEMAG::compute_error:
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::project_field_test_trace:
     {
-      local_solver_->ProjectFieldTestTrace(hdgele, params, elevec1);
+      local_solver_->project_field_test_trace(hdgele, params, elevec1);
 
       break;
     }
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::ele_init_from_restart:
     {
-      ElementInitFromRestart(hdgele, discretization);
+      element_init_from_restart(hdgele, discretization);
       break;
     }
     case ELEMAG::interpolate_hdg_to_node:
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       // extremely expensive.
       // TODO: Improve post processing efficiency
       // localSolver_->PostProcessing(*hdgele);
-      InterpolateSolutionToNodes(hdgele, discretization, elevec1);
+      interpolate_solution_to_nodes(hdgele, discretization, elevec1);
       break;
     }
     case ELEMAG::calc_abc:
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::bd_integrate:
     {
       int face = params.get<int>("face");
-      localSolver_->ComputeBoundaryIntegral(hdgele, params, face);
+      localSolver_->compute_boundary_integral(hdgele, params, face);
 
       break;
     }
@@ -251,7 +251,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
         localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_);
       */
 
-      UpdateInteriorVariablesAndComputeResidual(
+      update_interior_variables_and_compute_residual(
           params, *hdgele, mat, elevec1, dt, errormaps, updateonly);
 
       break;
@@ -415,10 +415,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::FillRestartVectors(
 }
 
 /*----------------------------------------------------------------------*
- * ElementInitFromRestart
+ * element_init_from_restart
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInitFromRestart(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   DRT::ELEMENTS::ElemagDiff* elemagele = dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
@@ -604,10 +604,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
 }
 
 /*----------------------------------------------------------------------*
- * ProjectElectricFieldFromScatra
+ * project_electric_field_from_scatra
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricFieldFromScatra(
+int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric_field_from_scatra(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec)
 {
@@ -739,7 +739,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     // Evaluate error function and its derivatives in the integration point (real) coordinates
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     EvaluateAll(func, time, xsi, analytical);
-    ComputeFunctionGradient(func, time, xsi, analytical_grad);
+    compute_function_gradient(func, time, xsi, analytical_grad);
 
     for (unsigned int d = 0; d < nsd_; ++d)
     {
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
       // Evaluate error function and its derivatives in the integration point (real) coordinates
       for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes_post.xyzreal(idim, q);
       EvaluateAll(func, time, xsi, analytical);
-      ComputeFunctionGradient(func, time, xsi, analytical_grad);
+      compute_function_gradient(func, time, xsi, analytical_grad);
 
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -1093,10 +1093,10 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
 }
 
 /*----------------------------------------------------------------------*
- * ProjectFieldTestTrace
+ * project_field_test_trace
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
+int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test_trace(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -1315,10 +1315,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
 }
 
 /*----------------------------------------------------------------------*
- * ComputeFunctionGradient
+ * compute_function_gradient
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGradient(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_gradient(
     const int start_func, const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseMatrix& v) const
 {
@@ -1341,7 +1341,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   {
     std::vector<double> deriv = GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                                    .EvaluateSpatialDerivative(xyz.A(), t, d % numComp);
+                                    .evaluate_spatial_derivative(xyz.A(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
 
@@ -1349,10 +1349,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
 }
 
 /*----------------------------------------------------------------------*
- * ComputeFunctionTimeDerivative
+ * compute_function_time_derivative
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTimeDerivative(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_time_derivative(
     const int start_func, const double t, const double dt, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseVector& v) const
 {
@@ -1385,14 +1385,14 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
 }
 
 /*----------------------------------------------------------------------*
- | InterpolateSolutionToNodes                          berardocco 04/18 |
+ | interpolate_solution_to_nodes                          berardocco 04/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
+int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes(
     DRT::ELEMENTS::ElemagDiff* ele, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::InterpolateSolutionToNodes");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::interpolate_solution_to_nodes");
   InitializeShapes(ele);
 
   // Check if the vector has the correct size
@@ -1639,16 +1639,16 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
 }
 
 /*----------------------------------------------------------------------*
- * UpdateInteriorVariablesAndComputeResidual
+ * update_interior_variables_and_compute_residual
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComputeResidual(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_and_compute_residual(
     Teuchos::ParameterList& params, DRT::ELEMENTS::ElemagDiff& ele,
     const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec,
     double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "DRT::ELEMENTS::ElemagDiffEleCalc::UpdateInteriorVariablesAndComputeResidual");
+      "DRT::ELEMENTS::ElemagDiffEleCalc::update_interior_variables_and_compute_residual");
 
   // *****************************************************
   // update interior variables first
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
   CORE::LINALG::multiplyTN(1.0, elevec, 1.0, local_solver_->Cmat, yVec);  //  = Ix - Jy
 
   return;
-}  // UpdateInteriorVariablesAndComputeResidual
+}  // update_interior_variables_and_compute_residual
 
 /*----------------------------------------------------------------------*
  * ComputeAbsorbingBC
@@ -1974,8 +1974,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
 
     // Evaluate time derivative of the source term
     // We evaluate at tn and tp as they are already the next time step
-    ComputeFunctionTimeDerivative(funcno, tn, dt, xyz, source[0]);
-    ComputeFunctionTimeDerivative(funcno, tp, dt, xyz, source[1]);
+    compute_function_time_derivative(funcno, tn, dt, xyz, source[0]);
+    compute_function_time_derivative(funcno, tp, dt, xyz, source[1]);
 
     // add it all up
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -1992,17 +1992,17 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
 }
 
 /*----------------------------------------------------------------------*
- * ComputeInteriorMatrices
+ * compute_interior_matrices
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
+void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_interior_matrices(
     double dt, double sigma, double mu, double epsilon)
 {
   // The definitions of the matrices created here can be found in the internal
   // paper from Berardocco "A hybridizable discontinous Galerkin method for
   // electromagnetics in subsurface applications".
   // The explicit form of these matrices is reported for convenience?
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::ComputeInteriorMatrices");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::compute_interior_matrices");
   // Why is this made in this order? Is it faster in this order? Or is it better
   // to have it shape_functions->quadrature_points?
   // loop quadrature points
@@ -2461,7 +2461,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices(
   Lmat.putScalar(0.0);
 
   // Here is the computation for the matrices of volume integrals
-  ComputeInteriorMatrices(dt, sigma, mu, epsilon);
+  compute_interior_matrices(dt, sigma, mu, epsilon);
 
   // sumindex is going to be used to decide where we are inside the face matrix
   // because for every face we move to different dofs

@@ -162,26 +162,26 @@ namespace MAT
     }
 
     //! compute reaction tensor - 2D
-    void ComputeReactionTensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction tensor - 3D
-    void ComputeReactionTensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction coefficient
-    double ComputeReactionCoeff() const;
+    double compute_reaction_coeff() const;
 
     //! compute linearization of reaction tensor - 2D
-    void ComputeLinMatReactionTensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
+    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
         CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! compute linearization of reaction tensor - 3D
-    void ComputeLinMatReactionTensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
+    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
         CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
@@ -197,7 +197,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     //! return permeability function
-    PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const
+    PAR::PoroFlowPermeabilityFunction permeability_function() const
     {
       return params_->permeability_func_;
     }

@@ -90,7 +90,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcFreeCharge(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcFreeChargeDerConc()
+double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_free_charge_der_conc()
 {
   return DiffManager()->GetValence(0) * myelch::elchparams_->Faraday();
 }
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
     for (unsigned ui = 0; ui < my::nen_; ++ui)
     {
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // linearization of the ohmic term
       //
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
     double laplawfrhs_gradpot(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
         fac * invf * cond_invperm * epsilon * laplawfrhs_gradpot;
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
           // linearization wrt DiffCoeff
           emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim, ui * my::numdofpernode_ + k) +=
               timefacfac * DiffManager()->GetPhasePoroTort(0) *
-              DiffManager()->GetConcDerivIsoDiffCoef(k, k) * my::funct_(vi) *
+              DiffManager()->get_conc_deriv_iso_diff_coef(k, k) * my::funct_(vi) *
               (gradphi[k])(idim)*my::funct_(ui);
         }
       }
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
   //---------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and free current
   //---------------------------------------------------------------------
-  // see function CalcMatAndRhsOutsideScalarLoop()
+  // see function calc_mat_and_rhs_outside_scalar_loop()
 
   //-----------------------------------------------------------------------
   // 4) element right hand side vector (neg. residual of nonlinear problem)
@@ -290,7 +290,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
 
   // add RHS and history contribution
   // Integrate RHS (@n) over element volume ==> total impact of timestep n
-  my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+  my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   if (not diffcondparams_->CurSolVar())  // not utilized in previous investigations
   {
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
+void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::calc_mat_and_rhs_outside_scalar_loop(
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
     const double timefacfac, const double rhsfac)
 {
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhsOutside
     for (int k = 0; k < my::numscal_; ++k)
     {
       CalcMatPotSrc(emat, k, timefacfac, VarManager()->InvF(),
-          DiffManager()->GetCond() / DiffManager()->GetPermittivity(), CalcFreeChargeDerConc());
+          DiffManager()->GetCond() / DiffManager()->GetPermittivity(), calc_free_charge_der_conc());
 
       CalcRhsPotSrc(erhs, k, rhsfac, VarManager()->InvF(),
           DiffManager()->GetCond() / DiffManager()->GetPermittivity(),
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhsOutside
     for (int k = 0; k < my::numscal_; ++k)
     {
       CalcMatPotSrc(emat, k, timefacfac, VarManager()->InvF(),
-          DiffManager()->GetCond() / DiffManager()->GetPermittivity(), CalcFreeChargeDerConc());
+          DiffManager()->GetCond() / DiffManager()->GetPermittivity(), calc_free_charge_der_conc());
 
       CalcRhsPotSrc(erhs, k, rhsfac, VarManager()->InvF(),
           DiffManager()->GetCond() / DiffManager()->GetPermittivity(),

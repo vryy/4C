@@ -88,7 +88,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
-    sum->RegisterAnisotropyExtensions(anisotropy_);
+    sum->register_anisotropy_extensions(anisotropy_);
   }
 }
 
@@ -173,7 +173,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     for (auto& p : potsum_)
     {
       p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(anisotropy_);
+      p->register_anisotropy_extensions(anisotropy_);
     }
 
     // in the postprocessing mode, we do not unpack everything we have packed
@@ -249,8 +249,8 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 
   // Setup summands
   for (auto& p : potsum_)
@@ -270,7 +270,7 @@ void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 
 void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
-  anisotropy_.ReadAnisotropyFromParameterList(params);
+  anisotropy_.read_anisotropy_from_parameter_list(params);
 
   // Forward PostSetup call to all summands
   for (auto& p : potsum_)
@@ -357,7 +357,7 @@ void MAT::ElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void MAT::ElastHyper::evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     int eleGID, CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
     CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp)
 {
@@ -365,8 +365,8 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& pri
   {
     if (summandProperties_.isoprinc)
     {
-      i->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
-      i->AddThirdDerivativesPrincipalIso(dddPIII, prinv, gp, eleGID);
+      i->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
+      i->add_third_derivatives_principal_iso(dddPIII, prinv, gp, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       FOUR_C_THROW("not implemented for this form of strain energy function");
@@ -375,11 +375,12 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& pri
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
-    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-    double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
-    CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2, CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
+    const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 1>& n,
+    const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF, CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
     CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
     const double* concentration, const double* temp, double* d_cauchyndir_dT,
     CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
@@ -414,7 +415,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
   dPI.Clear();
   ddPII.Clear();
   dddPIII.Clear();
-  EvaluateCauchyDerivs(prinv, gp, eleGID, dPI, ddPII, dddPIII, temp);
+  evaluate_cauchy_derivs(prinv, gp, eleGID, dPI, ddPII, dddPIII, temp);
 
   const double prefac = 2.0 / std::sqrt(prinv(2));
 
@@ -489,7 +490,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
   CORE::LINALG::VOIGT::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
   if (temp != nullptr)
-    EvaluateCauchyTempDeriv(prinv, nddir, bdnddir, ibdnddir, temp, d_cauchyndir_dT, iFTV,
+    evaluate_cauchy_temp_deriv(prinv, nddir, bdnddir, ibdnddir, temp, d_cauchyndir_dT, iFTV,
         d_bdnddir_dFV, d_ibdnddir_dFV, d_I1_dF, d_I2_dF, d_I3_dF, d2_cauchyndir_dF_dT);
 
   if (d_cauchyndir_dF != nullptr)
@@ -795,7 +796,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matri
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::VisNames(std::map<std::string, int>& names)
 {
-  if (AnisotropicPrincipal() or AnisotropicModified())
+  if (anisotropic_principal() or AnisotropicModified())
   {
     std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);
@@ -824,7 +825,7 @@ bool MAT::ElastHyper::VisData(
 {
   //
   int return_val = 0;
-  if (AnisotropicPrincipal() or AnisotropicModified())
+  if (anisotropic_principal() or AnisotropicModified())
   {
     std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);

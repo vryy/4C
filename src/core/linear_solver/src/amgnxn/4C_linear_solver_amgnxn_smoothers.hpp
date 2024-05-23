@@ -57,8 +57,8 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void Solve(
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override
     {
-      CheckSingleFieldVector(X);
-      CheckSingleFieldVector(Y);
+      check_single_field_vector(X);
+      check_single_field_vector(Y);
       Apply(*(X.GetVector(0)), *(Y.GetVector(0)), InitialGuessIsZero);
       return;
     }
@@ -67,7 +67,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const = 0;
 
    protected:
-    void CheckSingleFieldVector(const BlockedVector& V) const
+    void check_single_field_vector(const BlockedVector& V) const
     {
       if (not V.HasOnlyOneBlock()) FOUR_C_THROW("We need here a single field vector");
       return;
@@ -355,7 +355,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     std::string GetType();
     std::string GetVerbosity();
     NullSpaceInfo GetNullSpace();
-    std::vector<NullSpaceInfo> GetNullSpaceAllBlocks();
+    std::vector<NullSpaceInfo> get_null_space_all_blocks();
 
     void SetOperator(Teuchos::RCP<BlockedMatrix> in);
     void SetParams(const Teuchos::ParameterList& in);
@@ -368,7 +368,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void SetType(std::string in);
     void SetVerbosity(std::string in);
     void SetNullSpace(const NullSpaceInfo& in);
-    void SetNullSpaceAllBlocks(const std::vector<NullSpaceInfo>& in);
+    void set_null_space_all_blocks(const std::vector<NullSpaceInfo>& in);
 
     bool IsSetOperator();
     bool IsSetParams();
@@ -381,7 +381,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     bool IsSetType();
     bool IsSetVerbosity();
     bool IsSetNullSpace();
-    bool IsSetNullSpaceAllBlocks();
+    bool is_set_null_space_all_blocks();
 
    private:
     Teuchos::RCP<BlockedMatrix> operator_;
@@ -457,7 +457,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    private:
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ApproximateInverse(
         const CORE::LINALG::SparseMatrixBase& A, const std::string& method);
-    Teuchos::RCP<BlockedMatrix> ComputeSchurComplement(const BlockedMatrix& invApp,
+    Teuchos::RCP<BlockedMatrix> compute_schur_complement(const BlockedMatrix& invApp,
         const BlockedMatrix& Aps, const BlockedMatrix& Asp, const BlockedMatrix& Ass);
   };
 

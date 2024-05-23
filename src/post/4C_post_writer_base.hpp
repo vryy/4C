@@ -92,7 +92,7 @@ class PostWriterBase
    because Paraview is not able to load it due to some weird wild card
    issue.
    */
-  virtual void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
+  virtual void write_result_one_time_step(PostResult& result,  ///< result group in the control file
       const std::string groupname,  ///< name of the result group in the control file
       const std::string name,       ///< name of the result to be written
       const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
@@ -118,7 +118,7 @@ class PostWriterBase
   /*!
    \brief Write one step of a nodal result
    */
-  virtual void WriteNodalResultStep(std::ofstream& file,
+  virtual void write_nodal_result_step(std::ofstream& file,
       const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) = 0;
@@ -126,7 +126,7 @@ class PostWriterBase
   /*!
    \brief Write one step of an element result
    */
-  virtual void WriteElementResultStep(std::ofstream& file,
+  virtual void write_element_result_step(std::ofstream& file,
       const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from) = 0;

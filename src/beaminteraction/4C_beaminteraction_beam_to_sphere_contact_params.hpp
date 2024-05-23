@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
       if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
-    inline double BeamToSpherePenaltyParam() const { return penalty_parameter_; }
+    inline double beam_to_sphere_penalty_param() const { return penalty_parameter_; }
 
    private:
     bool isinit_;

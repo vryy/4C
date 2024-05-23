@@ -29,7 +29,7 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
       {"TransportVolumeNeumann", "VolumeNeumann"},
       {"TransportNeumannInflow", "TransportNeumannInflow"}, {"FSICoupling", "FSICoupling"},
       {"ScaTraCoupling", "ScaTraCoupling"}, {"ScaTraFluxCalc", "ScaTraFluxCalc"},
-      {"Initfield", "Initfield"}, {"SSIInterfaceMeshtying", "S2IMeshtying"},
+      {"Initfield", "Initfield"}, {"ssi_interface_meshtying", "S2IMeshtying"},
       {"SSIInterfaceContact", "S2INoEvaluation"}, {"S2IKinetics", "S2IKinetics"},
       {"ScatraPartitioning", "ScatraPartitioning"}, {"ElectrodeSOC", "ElectrodeSOC"},
       {"CellVoltage", "CellVoltage"}, {"CellVoltagePoint", "CellVoltagePoint"},

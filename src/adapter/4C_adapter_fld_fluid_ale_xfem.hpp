@@ -35,7 +35,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
+    Teuchos::RCP<DRT::Discretization> boundary_discretization();
 
     /// communication object at the struct interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface();
@@ -60,7 +60,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -68,10 +68,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
     //@}
     //@}
   };

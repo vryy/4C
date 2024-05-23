@@ -105,8 +105,8 @@ namespace CORE::COUPLING
 
     \return  bool        false if node is not in bounding box of
                          local octree  */
-    virtual bool SearchClosestEntityOnThisProc(const std::vector<double>& x, int& idofclosestpoint,
-        double& distofclosestpoint, bool searchsecond = false);
+    virtual bool search_closest_entity_on_this_proc(const std::vector<double>& x,
+        int& idofclosestpoint, double& distofclosestpoint, bool searchsecond = false);
 
     //@}
 
@@ -135,7 +135,7 @@ namespace CORE::COUPLING
         std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
-    virtual int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) = 0;
+    virtual int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) = 0;
 
     //! create an octree element
     virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -179,7 +179,7 @@ namespace CORE::COUPLING
     \param  midtosid         (o) map from master to slavenodes
 
     \return void  */
-    virtual void CreateGlobalEntityMatching(const std::vector<int>& slavenodeids,
+    virtual void create_global_entity_matching(const std::vector<int>& slavenodeids,
         const std::vector<int>& dofsforpbcplane, const double rotangle,
         std::map<int, std::vector<int>>& midtosid);
 
@@ -215,7 +215,7 @@ namespace CORE::COUPLING
       \param slavedis     (i) discretization the slave entity belongs to
       \param slavenodeids (i) gids of entity to match
       \param coupling     (o) slave entity gid to (slave entity gid, distance, owned) */
-    virtual void FillSlaveToMasterGIDMapping(const DRT::Discretization& slavedis,
+    virtual void fill_slave_to_master_gid_mapping(const DRT::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::vector<double>>& coupling);
 
     //@}
@@ -299,7 +299,7 @@ namespace CORE::COUPLING
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) override;
+    int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -337,7 +337,7 @@ namespace CORE::COUPLING
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o) override;
+    int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
@@ -419,7 +419,7 @@ namespace CORE::COUPLING
     \param   searchsecond       (i) flag for search of second match
 
     \return void  */
-    virtual void SearchClosestNodeInLeaf(const std::vector<double>& x, int& idofclosestpoint,
+    virtual void search_closest_node_in_leaf(const std::vector<double>& x, int& idofclosestpoint,
         double& distofclosestpoint, const double& elesize, bool searchsecond);
 
     //! @name Octree element functions
@@ -433,7 +433,7 @@ namespace CORE::COUPLING
     \param x         (i) coordinate of point
 
     \return  bool true if point in bounding box  */
-    bool IsPointInBoundingBox(const std::vector<double>& x);
+    bool is_point_in_bounding_box(const std::vector<double>& x);
 
     /*! \brief Question if octree element is leaf
 
@@ -457,7 +457,7 @@ namespace CORE::COUPLING
     \param   x   (i) coordinate
 
     \return  Teuchos::RCP<OctreeElement> child  */
-    Teuchos::RCP<OctreeElement> ReturnChildContainingPoint(const std::vector<double>& x);
+    Teuchos::RCP<OctreeElement> return_child_containing_point(const std::vector<double>& x);
 
     /*! \brief Print some information on the octree leaf
 

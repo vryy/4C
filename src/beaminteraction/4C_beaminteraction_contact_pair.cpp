@@ -94,7 +94,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
         dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
     const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
-    const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+    const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;
 
     switch (numnodalvalues)
     {

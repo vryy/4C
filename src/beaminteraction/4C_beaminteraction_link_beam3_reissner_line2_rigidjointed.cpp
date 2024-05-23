@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!
 
-  linkele_->SetCenterlineHermite(false);
+  linkele_->set_centerline_hermite(false);
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
@@ -112,7 +112,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one
   CORE::LINALG::Matrix<3, 1> linkelerotvec(true);
-  CORE::LARGEROTATIONS::quaterniontoangle(GetBindSpotQuaternion1(), linkelerotvec);
+  CORE::LARGEROTATIONS::quaterniontoangle(get_bind_spot_quaternion1(), linkelerotvec);
 
   std::vector<double> refpos(6, 0.0);
   std::vector<double> refrotvec(6, 0.0);
@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
     refrotvec[3 + i] = linkelerotvec(i);
   }
 
-  linkele_->SetUpReferenceGeometry<2, 2, 1>(refpos, refrotvec);
+  linkele_->set_up_reference_geometry<2, 2, 1>(refpos, refrotvec);
 
   //  std::cout << "\nSetup():";
   //  this->Print(std::cout);
@@ -195,11 +195,11 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForce(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseVector force(12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, nullptr, nullptr, &force, nullptr);
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
@@ -224,11 +224,11 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateStiff(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, nullptr, nullptr, nullptr);
 
   // Todo can we use std::copy here or even set up 'stiffmat' as a view on the
@@ -257,12 +257,12 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseVector force(12, true);
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, nullptr, &force, nullptr);
 
   std::copy(&force(0), &force(0) + 6, &forcevec1(0));
@@ -284,7 +284,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::FillStateVariablesForElementEvaluation(
+void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_element_evaluation(
     CORE::LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
     std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode) const
 {
@@ -294,8 +294,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::FillStateVariablesForElem
     disp_totlag_centerline(3 + i) = GetBindSpotPos2()(i);
   }
 
-  Qnode.push_back(GetBindSpotQuaternion1());
-  Qnode.push_back(GetBindSpotQuaternion2());
+  Qnode.push_back(get_bind_spot_quaternion1());
+  Qnode.push_back(get_bind_spot_quaternion2());
 }
 
 /*----------------------------------------------------------------------------*

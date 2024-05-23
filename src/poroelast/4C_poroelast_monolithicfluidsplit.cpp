@@ -68,7 +68,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);
 
-  SetupCouplingAndMatrices();
+  setup_coupling_and_matrices();
 
   BuildCombinedDBCMap();
 
@@ -95,7 +95,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS(bool firstcall)
     double ftiparam = FluidField()->TimIntParam();
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf = FluidField()->BlockSystemMatrix();
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = StructFluidCouplingBlockMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = struct_fluid_coupling_block_matrix();
     if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
     CORE::LINALG::SparseMatrix& fig = blockf->Matrix(0, 1);
@@ -103,7 +103,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS(bool firstcall)
     CORE::LINALG::SparseMatrix& kig = k_sf->Matrix(0, 1);
     CORE::LINALG::SparseMatrix& kgg = k_sf->Matrix(1, 1);
 
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_interface_veln();
     double timescale = FluidField()->TimeScaling();
     double scale = FluidField()->ResidualScaling();
 
@@ -125,7 +125,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS(bool firstcall)
     rhs->Scale(
         (1.0 - stiparam) / (1.0 - ftiparam));  // scale 'rhs' due to consistent time integration
 
-    rhs = FluidToStructureAtInterface(rhs);
+    rhs = fluid_to_structure_at_interface(rhs);
     rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
 
     Extractor()->AddVector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
@@ -180,7 +180,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   // build mechanical-fluid block
 
   // create empty matrix
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = StructFluidCouplingBlockMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = struct_fluid_coupling_block_matrix();
   if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
@@ -191,11 +191,11 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   // build fluid-mechanical block
 
   // create empty matrix
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_fs = FluidStructCouplingBlockMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_fs = fluid_struct_coupling_block_matrix();
   if (k_fs == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
-  ApplyFluidCouplMatrix(k_fs);
+  apply_fluid_coupl_matrix(k_fs);
 
   /*----------------------------------------------------------------------*/
 
@@ -283,7 +283,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   {
     Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
-    Teuchos::RCP<Epetra_Vector> fcx = StructureToFluidAtInterface(scx);
+    Teuchos::RCP<Epetra_Vector> fcx = structure_to_fluid_at_interface(scx);
     Teuchos::RCP<const Epetra_Vector> fox = Extractor()->ExtractVector(x, 1);
 #ifdef FLUIDSPLITAMG
     fox = FluidField()->Interface()->ExtractOtherVector(fox);
@@ -298,7 +298,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
     FluidField()->Interface()->InsertFSICondVector(fcx, f);
 
     auto zeros = Teuchos::rcp(new const Epetra_Vector(f->Map(), true));
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *f, *zeros, *(FluidField()->GetDBCMapExtractor()->CondMap()));
 
     fx = f;
@@ -330,9 +330,9 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
     fx = Extractor()->ExtractVector(x, 1);
 }
 
-void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplierAfterTimeStep()
+void POROELAST::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplier");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::recover_lagrange_multiplier");
 
   if (evaluateinterface_)
   {

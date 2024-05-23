@@ -64,7 +64,7 @@ namespace MORTAR
 
     @return Maximum dof number of this dofset
     */
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! @}

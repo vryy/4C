@@ -41,10 +41,10 @@ PARTICLEINTERACTION::SPHTemperature::~SPHTemperature() = default;
 void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // init heat source handler
-  InitHeatSourceHandler();
+  init_heat_source_handler();
 
   // init evaporation induced heat loss handler
-  InitHeatLossEvaporationHandler();
+  init_heat_loss_evaporation_handler();
 
   // init with potential integrated thermo particle types
   intthermotypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -91,7 +91,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-        particlematerial_->GetPtrToParticleMatParameter(type_i));
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
     // safety check
     if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
@@ -116,7 +116,7 @@ void PARTICLEINTERACTION::SPHTemperature::SetCurrentStepSize(const double curren
   dt_ = currentstepsize;
 }
 
-void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHTemperature::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -154,27 +154,27 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   if (heatsource_) heatsource_->EvaluateHeatSource(time_);
 
   // evaluate evaporation induced heat loss
-  if (heatlossevaporation_) heatlossevaporation_->EvaluateEvaporationInducedHeatLoss();
+  if (heatlossevaporation_) heatlossevaporation_->evaluate_evaporation_induced_heat_loss();
 
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // update temperature of all particles
     container_i->UpdateState(1.0, PARTICLEENGINE::Temperature, dt_, PARTICLEENGINE::TemperatureDot);
   }
 
   // refresh temperature of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(temptorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(temptorefresh_);
 
   // evaluate temperature gradient
   if (temperaturegradient_) TemperatureGradient();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
+void PARTICLEINTERACTION::SPHTemperature::init_heat_source_handler()
 {
   // get type of heat source
   INPAR::PARTICLE::HeatSourceType heatsourcetype =
@@ -211,7 +211,7 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
   if (heatsource_) heatsource_->Init();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::InitHeatLossEvaporationHandler()
+void PARTICLEINTERACTION::SPHTemperature::init_heat_loss_evaporation_handler()
 {
   if (CORE::UTILS::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
     heatlossevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation>(
@@ -228,14 +228,14 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature dot state
     container_i->ClearState(PARTICLEENGINE::TemperatureDot);
   }
 
   // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  for (auto& particlepair : neighborpairs_->get_ref_to_particle_pair_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -250,16 +250,16 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* basematerial_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
     const MAT::PAR::ParticleMaterialBase* basematerial_j =
-        particlematerial_->GetPtrToParticleMatParameter(type_j);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
@@ -312,14 +312,14 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature gradient state
     container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
   }
 
   // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  for (auto& particlepair : neighborpairs_->get_ref_to_particle_pair_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -334,16 +334,16 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* basematerial_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
     const MAT::PAR::ParticleMaterialBase* basematerial_j =
-        particlematerial_->GetPtrToParticleMatParameter(type_j);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);

@@ -34,7 +34,7 @@ namespace ADAPTER
     \note if param FPSI = false the base class version of this method is called
 
     */
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn(bool FPSI = false);
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispn(bool FPSI = false);
 
     /*!
     \brief  extract interface displacements at \f$t_{n+1}\f$
@@ -44,7 +44,7 @@ namespace ADAPTER
     \note if param FPSI = false the base class version of this method is called
 
     */
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI = false);
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp(bool FPSI = false);
   };
 }  // namespace ADAPTER
 FOUR_C_NAMESPACE_CLOSE

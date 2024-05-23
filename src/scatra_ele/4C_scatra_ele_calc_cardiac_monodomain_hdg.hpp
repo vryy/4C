@@ -104,22 +104,22 @@ namespace DRT
           ) override;
 
       //! get material internal state for output
-      void GetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
+      void get_material_internal_state(const DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization) override;
 
       //! set material internal state after restart
-      void SetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
+      void set_material_internal_state(const DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization) override;
 
       //! project material field
-      int ProjectMaterialField(const DRT::Element* ele) override;
+      int project_material_field(const DRT::Element* ele) override;
 
       //! project material field
-      int ProjectMaterialFieldAll(const DRT::Element* ele);
+      int project_material_field_all(const DRT::Element* ele);
 
       //! project material field for Tet elements, because quadrature not working for higher order
       //! polynomials with Intrepid
-      int ProjectMaterialFieldTet(const DRT::Element* ele);
+      int project_material_field_tet(const DRT::Element* ele);
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material

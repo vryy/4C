@@ -44,7 +44,7 @@ namespace SCATRA
         ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield);
 
     //! calculate initial field
-    void CalculateInitialField();
+    void calculate_initial_field();
 
    protected:
     //! sort criterium for double values up to a tolerance of 10-9
@@ -59,7 +59,7 @@ namespace SCATRA
 
    private:
     //! estimate energy form given scalar variance spectrum (function for E_phi)
-    double CalculateEnergyFromSpectrum(double k);
+    double calculate_energy_from_spectrum(double k);
 
     //! scatra discretization
     Teuchos::RCP<DRT::Discretization> discret_;

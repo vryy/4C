@@ -39,7 +39,7 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const CORE::LINALG::
          a;
 }
 
-void MAT::ELASTIC::CoupExpPol::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+void MAT::ELASTIC::CoupExpPol::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {

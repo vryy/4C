@@ -43,10 +43,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
       is_part_of_multifield_problem_(false),
       porosity_splitter_(porosity_splitter),
       matchinggrid_(CORE::UTILS::IntegralValue<bool>(
-          GLOBAL::Problem::Instance()->PoroelastDynamicParams(), "MATCHINGGRID")),
+          GLOBAL::Problem::Instance()->poroelast_dynamic_params(), "MATCHINGGRID")),
       oldstructimint_(CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
-                          GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
-                      INPAR::STR::int_old)
+                          GLOBAL::Problem::Instance()->structural_dynamic_params(),
+                          "INT_STRATEGY") == INPAR::STR::int_old)
 {
   if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::poroelast)
     is_part_of_multifield_problem_ = true;
@@ -73,7 +73,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // create the structural time integrator (Init() called inside)
   // clean up as soon as old time integration is unused!
@@ -89,7 +89,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   else
   {
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-        ADAPTER::BuildStructureAlgorithm(sdyn);
+        ADAPTER::build_structure_algorithm(sdyn);
     adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr->Setup();
     structure_ =
@@ -127,7 +127,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
       *StructureField()->DofRowMap(), StructureField()->DofRowMap(0)));
 
   // look for special poro conditions and set flags
-  CheckForPoroConditions();
+  check_for_poro_conditions();
 
   // do some checks
   {
@@ -188,7 +188,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     // access the problem-specific parameter lists
-    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     auto physicaltype =
         CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
     if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
@@ -284,7 +284,7 @@ void POROELAST::PoroBase::ReadRestart(const int step)
 void POROELAST::PoroBase::PrepareTimeStep()
 {
   // counter and print header
-  IncrementTimeAndStep();
+  increment_time_and_step();
   if (!is_part_of_multifield_problem_) PrintHeader();
 
   // set fluid velocities and pressures onto the structure
@@ -307,12 +307,12 @@ void POROELAST::PoroBase::Update()
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
-    if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
+    if (StructureField()->meshtying_contact_bridge() != Teuchos::null)
     {
-      if (StructureField()->MeshtyingContactBridge()->HaveContact() && !nit_contact_)
+      if (StructureField()->meshtying_contact_bridge()->HaveContact() && !nit_contact_)
       {
         (static_cast<CONTACT::LagrangeStrategyPoro&>(
-             StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy()))
+             StructureField()->meshtying_contact_bridge()->ContactManager()->GetStrategy()))
             .UpdatePoroContact();
       }
     }
@@ -331,7 +331,7 @@ void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
   GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
+Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> iv)
 {
   if (matchinggrid_)
@@ -343,7 +343,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
   }
   else
   {
-    Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->ApplyVectorMapping21(iv);
+    Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->apply_vector_mapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
         CORE::LINALG::CreateVector(*(FluidField()->VelPresSplitter()->OtherMap()));
@@ -369,11 +369,11 @@ void POROELAST::PoroBase::SetStructSolution()
   Teuchos::RCP<const Epetra_Vector> velnp = StructureField()->Velnp();
 
   // transfer the current structure displacement to the fluid field
-  Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);
-  FluidField()->ApplyMeshDisplacement(structdisp);
+  Teuchos::RCP<Epetra_Vector> structdisp = structure_to_fluid_field(dispnp);
+  FluidField()->apply_mesh_displacement(structdisp);
 
   // transfer the current structure velocity to the fluid field
-  Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(velnp);
+  Teuchos::RCP<Epetra_Vector> structvel = structure_to_fluid_field(velnp);
   FluidField()->ApplyMeshVelocity(structvel);
 }
 
@@ -386,7 +386,7 @@ void POROELAST::PoroBase::SetFluidSolution()
   else
   {
     StructureField()->Discretization()->SetState(
-        1, "fluidvel", volcoupl_->ApplyVectorMapping12(FluidField()->Velnp()));
+        1, "fluidvel", volcoupl_->apply_vector_mapping12(FluidField()->Velnp()));
   }
 }
 
@@ -519,7 +519,7 @@ void POROELAST::PoroBase::ReplaceDofSets()
   structdis->FillComplete(true, true, true);
 }
 
-void POROELAST::PoroBase::CheckForPoroConditions()
+void POROELAST::PoroBase::check_for_poro_conditions()
 {
   std::vector<CORE::Conditions::Condition*> nopencond;
   FluidField()->Discretization()->GetCondition("NoPenetration", nopencond);
@@ -536,7 +536,7 @@ void POROELAST::PoroBase::CheckForPoroConditions()
   if (poroPresInt.size()) pres_int_cond_ = true;
 }
 
-void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(
+void POROELAST::NoPenetrationConditionHandle::buid_no_penetration_map(
     const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap)
 {
   std::vector<int> condIDs;
@@ -557,7 +557,7 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
   if (has_cond_)
   {
     const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopenetration_->Map(1);
-    CORE::LINALG::ApplyDirichletToSystem(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
+    CORE::LINALG::apply_dirichlet_to_system(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
   }
 }
 
@@ -621,7 +621,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
-POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::Coupltype coupltype)
+POROELAST::NoPenetrationConditionHandle::struct_vel_constraint_matrix(
+    POROELAST::Coupltype coupltype)
 {
   if (has_cond_)
   {

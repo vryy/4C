@@ -276,7 +276,7 @@ namespace MORTAR
     \brief Initialize internal variables
 
      */
-    void InitInternalVariables() final;
+    void init_internal_variables() final;
 
     /*!
     \brief Calculate minimal element length / inflation factor "enlarge"
@@ -290,8 +290,8 @@ namespace MORTAR
     */
     void UpdateTreeTopDown()
     {
-      EvaluateUpdateTreeTopDown(sroot_);
-      EvaluateUpdateTreeTopDown(mroot_);
+      evaluate_update_tree_top_down(sroot_);
+      evaluate_update_tree_top_down(mroot_);
       return;
     }
 
@@ -299,7 +299,7 @@ namespace MORTAR
     \brief Evaluate update of master and slave tree in a top down way
 
     */
-    void EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode);
+    void evaluate_update_tree_top_down(Teuchos::RCP<BinaryTreeNode> treenode);
 
     /*!
     \brief Updates master and slave tree in a bottom up way
@@ -307,8 +307,8 @@ namespace MORTAR
     */
     void UpdateTreeBottomUp()
     {
-      EvaluateUpdateTreeBottomUp(streenodesmap_);
-      EvaluateUpdateTreeBottomUp(mtreenodesmap_);
+      evaluate_update_tree_bottom_up(streenodesmap_);
+      evaluate_update_tree_bottom_up(mtreenodesmap_);
       return;
     }
 
@@ -316,7 +316,7 @@ namespace MORTAR
     \brief Evaluate update of master and slave tree in a bottom up way
 
     */
-    void EvaluateUpdateTreeBottomUp(
+    void evaluate_update_tree_bottom_up(
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
 
     /*!

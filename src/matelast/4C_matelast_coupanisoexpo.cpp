@@ -41,9 +41,9 @@ MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor(int gp) cons
 }
 
 const CORE::LINALG::Matrix<6, 1>&
-MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int gp) const
+MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::get_structural_tensor_stress(int gp) const
 {
-  return DefaultAnisotropyExtension<1>::GetStructuralTensor_stress(gp, 0);
+  return DefaultAnisotropyExtension<1>::get_structural_tensor_stress(gp, 0);
 }
 
 MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(
@@ -59,17 +59,17 @@ MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* par
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),
       anisotropy_extension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
-          params_->StructuralTensorStrategy(), params->fiber_id_)
+          params_->structural_tensor_strategy(), params->fiber_id_)
 {
-  anisotropy_extension_.RegisterNeededTensors(
+  anisotropy_extension_.register_needed_tensors(
       FiberAnisotropyExtension<1>::FIBER_VECTORS |
       FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
       FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::ELASTIC::CoupAnisoExpo::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MAT::ELASTIC::CoupAnisoExpo::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const

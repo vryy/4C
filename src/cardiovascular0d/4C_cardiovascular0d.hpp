@@ -84,7 +84,7 @@ namespace UTILS
     /*!
      \brief Return if there are Cardiovascular0D functions
     */
-    bool HaveCardiovascular0D() { return cardiovascular0dtype_ != none; };
+    bool have_cardiovascular0_d() { return cardiovascular0dtype_ != none; };
 
     /// Set state of the underlying discretization
     void SetState(const std::string& state,  ///< name of state to set
@@ -121,11 +121,11 @@ namespace UTILS
     /// Return type of Cardiovascular0D function
     Cardiovascular0DType Type() { return cardiovascular0dtype_; }
 
-    std::vector<CORE::Conditions::Condition*> GetCardiovascular0DCondition()
+    std::vector<CORE::Conditions::Condition*> get_cardiovascular0_d_condition()
     {
       return cardiovascular0dcond_;
     }
-    std::vector<CORE::Conditions::Condition*> GetCardiovascular0DStructureCouplingCondition()
+    std::vector<CORE::Conditions::Condition*> get_cardiovascular0_d_structure_coupling_condition()
     {
       return cardiovascular0dstructcoupcond_;
     }
@@ -163,7 +163,7 @@ namespace UTILS
     Cardiovascular0D(const Cardiovascular0D& old);
 
     //! Return the Cardiovascular0DType based on the condition name
-    Cardiovascular0DType GetCardiovascular0DType(const std::string& Name  ///< condition name
+    Cardiovascular0DType get_cardiovascular0_d_type(const std::string& Name  ///< condition name
     );
 
   };  // class

@@ -188,7 +188,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
   double t_start = Teuchos::Time::wallTime();
 #endif
   // initialize class vectors
-  InitializeOctreeSearch();
+  initialize_octree_search();
 
 #ifdef OCTREEDEBUG
   double t_01 = Teuchos::Time::wallTime();
@@ -212,7 +212,7 @@ std::vector<std::vector<DRT::Element*>> Beam3ContactOctTree::OctTreeSearch(
   std::vector<std::vector<DRT::Element*>> contactpairelements;
   if (bboxesfound)
   {
-    BoundingBoxIntersection(currentpositions, contactpairelements);
+    bounding_box_intersection(currentpositions, contactpairelements);
 
 #ifdef OCTREEDEBUG
     t_04 = Teuchos::Time::wallTime();
@@ -453,7 +453,7 @@ void Beam3ContactOctTree::OctreeOutput(
  |  Bounding Box creation function (private)               mueller 01/12|
  |  Initialize octree class vectors and specifications                  |
  *----------------------------------------------------------------------*/
-void Beam3ContactOctTree::InitializeOctreeSearch()
+void Beam3ContactOctTree::initialize_octree_search()
 {
 #ifdef OCTREEDEBUG
   if (!discret_.Comm().MyPID())
@@ -487,7 +487,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
             eot == DRT::ELEMENTS::Beam3ebType::Instance())
         {
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element))
-                                      ->GetCircularCrossSectionRadiusForInteractions();
+                                      ->get_circular_cross_section_radius_for_interactions();
         }
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
@@ -616,7 +616,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
   }
   // communication of findings
   Epetra_MultiVector allbboxesrow(*(searchdis_.ElementRowMap()), allbboxes_->NumVectors(), true);
-  CommunicateMultiVector(allbboxesrow, *allbboxes_);
+  communicate_multi_vector(allbboxesrow, *allbboxes_);
 
   if (periodic_bc_)
   {
@@ -651,7 +651,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
   if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
 
   // factor by which the box is extruded in each dimension
-  double extrusionvalue = GetBoundingBoxExtrusionValue();
+  double extrusionvalue = get_bounding_box_extrusion_value();
 
   if (elecolid < 0 || elecolid >= searchdis_.ElementColMap()->NumMyElements())
     FOUR_C_THROW("Given Element Column Map ID is %d !", elecolid);
@@ -661,7 +661,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) undo_effect_of_periodic_boundary_condition(coord, cut, numshifts);
 
   // directional vector (of the non-interrupted bounding box/ beam element
   CORE::LINALG::Matrix<3, 1> dir;
@@ -759,9 +759,9 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) undo_effect_of_periodic_boundary_condition(coord, cut, numshifts);
 
-  double extrusionvalue = GetBoundingBoxExtrusionValue();
+  double extrusionvalue = get_bounding_box_extrusion_value();
 
 
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
@@ -862,10 +862,10 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) undo_effect_of_periodic_boundary_condition(coord, cut, numshifts);
 
   // Note: diameter_ is used as the sphere diameter in the context of SPBBs
-  double extrusionvalue = GetBoundingBoxExtrusionValue();
+  double extrusionvalue = get_bounding_box_extrusion_value();
 
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
 
@@ -985,7 +985,7 @@ bool Beam3ContactOctTree::locateAll()
   //  std::cout<<allbboxes_->MyLength()<<", "<<allbboxes_->NumVectors()<<std::endl;
   std::vector<std::vector<double>> allbboxesstdvec(
       allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(), 0.0));
-  EpetraMultiVecToStdVec(*allbboxes_, allbboxesstdvec);
+  epetra_multi_vec_to_std_vec(*allbboxes_, allbboxesstdvec);
 
   // initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
@@ -1034,11 +1034,11 @@ bool Beam3ContactOctTree::locateAll()
   if (!searchdis_.Comm().MyPID())
   {
     bbox2octant_->PutScalar(-9.0);
-    StdVecToEpetraMultiVec(bbox2octant, *bbox2octant_);
+    std_vec_to_epetra_multi_vec(bbox2octant, *bbox2octant_);
   }
 
   Epetra_MultiVector bbox2octantrow(*(searchdis_.ElementRowMap()), maxnumoctglobal, true);
-  CommunicateMultiVector(bbox2octantrow, *bbox2octant_);
+  communicate_multi_vector(bbox2octantrow, *bbox2octant_);
 
   searchdis_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
   searchdis_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
@@ -1069,11 +1069,11 @@ bool Beam3ContactOctTree::locateAll()
       //      for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
       //        for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
       //          (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
-      StdVecToEpetraMultiVec(bboxesinoctants, *bboxesinoctants_);
+      std_vec_to_epetra_multi_vec(bboxesinoctants, *bboxesinoctants_);
     }
 
     // Communication
-    CommunicateMultiVector(bboxinoctrow, *bboxesinoctants_);
+    communicate_multi_vector(bboxinoctrow, *bboxesinoctants_);
 
 #ifdef OCTREEDEBUG
     std::ostringstream filename;
@@ -1115,7 +1115,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
     std::vector<std::vector<int>>& bboxesinoctants, std::vector<std::vector<int>>& bbox2octant,
     int& treedepth)
 {
-  double extrusionvalue = GetBoundingBoxExtrusionValue();
+  double extrusionvalue = get_bounding_box_extrusion_value();
 
   // edge length vector of the suboctants
   CORE::LINALG::Matrix<3, 1> newedgelength;
@@ -1507,7 +1507,7 @@ bool Beam3ContactOctTree::SPBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
  |  Intersects Bounding Boxes in same line of map OctreeMap                          |
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::BoundingBoxIntersection(
+void Beam3ContactOctTree::bounding_box_intersection(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     std::vector<std::vector<DRT::Element*>>& contactpairelements)
 {
@@ -1627,7 +1627,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
 #endif
 
   return;
-}  // end of method BoundingBoxIntersection()
+}  // end of method bounding_box_intersection()
 
 /*-----------------------------------------------------------------------------------*
  |  Axis Aligned Bounding Box Intersection function when both bounding boxes         |
@@ -1881,7 +1881,7 @@ void Beam3ContactOctTree::CommunicateVector(
 /*-----------------------------------------------------------------------*
  | communicate MultiVector to all Processors               mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::CommunicateMultiVector(Epetra_MultiVector& InVec,
+void Beam3ContactOctTree::communicate_multi_vector(Epetra_MultiVector& InVec,
     Epetra_MultiVector& OutVec, bool zerofy, bool doexport, bool doimport)
 {
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
@@ -1945,7 +1945,7 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
 /*-----------------------------------------------------------------------*
  | unshift coordinates               mueller 02/15 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::UndoEffectOfPeriodicBoundaryCondition(
+void Beam3ContactOctTree::undo_effect_of_periodic_boundary_condition(
     CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
 {
   if (coord.numRows() != 3 || coord.numCols() != 2)
@@ -1974,7 +1974,7 @@ void Beam3ContactOctTree::UndoEffectOfPeriodicBoundaryCondition(
 /*-----------------------------------------------------------------------*
  | Get bounding-box-specific extrusion value               mueller 02/15 |
  *-----------------------------------------------------------------------*/
-double Beam3ContactOctTree::GetBoundingBoxExtrusionValue()
+double Beam3ContactOctTree::get_bounding_box_extrusion_value()
 {
   double extrusionvalue = -1.0;
   switch (boundingbox_)

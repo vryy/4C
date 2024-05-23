@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * @param writer_name_key (in) Key for the new writer in the writer map.
      * @return RCP to the newly created writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> AddVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> add_visualization_writer(
         const std::string& writer_name, const std::string& writer_name_key);
 
     /**
@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
      * @param writer_name (in) Name of the new writer. If the name already exists, throw an error.
      * @return RCP to the newly created writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> AddVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> add_visualization_writer(
         const std::string& writer_name);
 
     /**
@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
      * be returned.
      * @return RCP to the writer.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> GetVisualizationWriter(
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> get_visualization_writer(
         const std::string& writer_name);
 
     /**

@@ -136,7 +136,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   CORE::FE::ExtractMyValues(*convel, myconvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  my::rotsymmpbc_->RotateMyValuesIfNecessary(myconvel);
+  my::rotsymmpbc_->rotate_my_values_if_necessary(myconvel);
 
   // define vector for normal diffusive and velocity fluxes
   std::vector<double> mynormdiffflux(lm.size());
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   // NOTE: add integral value only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())
   {
-    NormDiffFluxAndVelIntegral(ele, params, mynormdiffflux, mynormvel);
+    norm_diff_flux_and_vel_integral(ele, params, mynormdiffflux, mynormvel);
   }
 }
 
@@ -332,7 +332,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
  | calculate integral of normal diffusive flux and velocity     vg 09/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAndVelIntegral(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::norm_diff_flux_and_vel_integral(
     const DRT::Element* ele, Teuchos::ParameterList& params,
     const std::vector<double>& enormdiffflux, const std::vector<double>& enormvel)
 {
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAnd
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
-    const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+    const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
     // compute integral of normal flux
     for (int node = 0; node < nen_; ++node)
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAnd
   params.set<double>("normal velocity integral", normvelint);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAndVelIntegral
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::norm_diff_flux_and_vel_integral
 
 
 // template classes

@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::ConstrMonolithic::ConstrMonolithic(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : BlockMonolithic(comm, timeparams), conman_(StructureField()->GetConstraintManager())
+    : BlockMonolithic(comm, timeparams), conman_(StructureField()->get_constraint_manager())
 {
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   coupsaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
@@ -57,7 +57,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  SetDefaultParameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, NOXParameterList());
 
   // ToDo: Set more detailed convergence tolerances like in standard FSI
   // additionally set tolerance for volume constraint
@@ -69,25 +69,25 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // right now we use matching meshes at the interface
 
-  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
+  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
   CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // structure to fluid
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+  coupsf.setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+  coupsa.setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+  icoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 

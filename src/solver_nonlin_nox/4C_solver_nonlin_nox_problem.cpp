@@ -114,12 +114,12 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
 
   Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
   const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq =
-      noxNlnGlobalData_->GetRequiredInterface();
+      noxNlnGlobalData_->get_required_interface();
   const std::string nlnSolver = params.get<std::string>("Nonlinear Solver", "");
   if (noxNlnGlobalData_->GetIsConstrained())
   {
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr =
-        noxNlnGlobalData_->GetConstraintInterfaces();
+        noxNlnGlobalData_->get_constraint_interfaces();
     noxgrp = Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
         params.sublist("Group Options"), iReq, **xVector_, linSys, iconstr));
   }
@@ -140,7 +140,7 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CreateOuterStatusTest(
+void NOX::NLN::Problem::create_outer_status_test(
     Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const
 {
   Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
@@ -149,7 +149,7 @@ void NOX::NLN::Problem::CreateOuterStatusTest(
   Teuchos::ParameterList& oParams =
       p.sublist("Status Test", true).sublist("Outer Status Test", true);
   outerTests =
-      NOX::NLN::StatusTest::BuildOuterStatusTests(oParams, noxNlnGlobalData_->GetNoxUtils());
+      NOX::NLN::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->GetNoxUtils());
 }
 
 /*----------------------------------------------------------------------------*
@@ -157,7 +157,7 @@ void NOX::NLN::Problem::CreateOuterStatusTest(
 void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
 {
-  CreateOuterStatusTest(outerTests);
+  create_outer_status_test(outerTests);
 
   // A "Inner Status Test" is optional in some cases.
   // Check if there is a "Inner Status Test" sublist and if it is filled.
@@ -166,7 +166,7 @@ void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generi
       p.sublist("Status Test").sublist("Inner Status Test").numParams() != 0)
   {
     Teuchos::ParameterList& iParams = p.sublist("Status Test", true).sublist("Inner Status Test");
-    innerTests = NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(
+    innerTests = NOX::NLN::INNER::StatusTest::build_inner_status_tests(
         iParams, noxNlnGlobalData_->GetNoxUtils());
   }
 

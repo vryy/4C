@@ -175,7 +175,7 @@ namespace FLD
     \brief remote access method to general mean statistics manager
 
     */
-    Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+    Teuchos::RCP<TurbulenceStatisticsGeneralMean> get_turbulence_statistics_general_mean() const
     {
       return statistics_general_mean_;
     }
@@ -338,7 +338,7 @@ namespace FLD
     //! turbulence statistics for Taylor-Green Vortex
     Teuchos::RCP<TurbulenceStatisticsTgv> statistics_tgv_;
 
-  };  // end class TurbulenceStatisticManager
+  };  // end class turbulence_statistic_manager
 
 }  // end namespace FLD
 

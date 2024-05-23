@@ -60,7 +60,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
 
   // Get beam cross-section diameter.
   auto beam_ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1());
-  const double beam_cross_section_radius = beam_ptr->GetCircularCrossSectionRadiusForInteractions();
+  const double beam_cross_section_radius =
+      beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
   CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
@@ -141,7 +142,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       }
 
       // Get the contact force.
-      scalar_type force = PenaltyForce(gap, this->Params()->BeamToSolidSurfaceContactParams());
+      scalar_type force = PenaltyForce(gap, this->Params()->beam_to_solid_surface_contact_params());
 
       // Add the Gauss point contributions to the pair force vector.
       gap_variation_times_normal.Scale(
@@ -200,7 +201,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
 
   // Get beam cross-section diameter.
   auto beam_ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1());
-  const double beam_cross_section_radius = beam_ptr->GetCircularCrossSectionRadiusForInteractions();
+  const double beam_cross_section_radius =
+      beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
   CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
@@ -256,7 +258,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
 
       // Get the contact force.
       potential += projected_gauss_point.GetGaussWeight() * segment_jacobian *
-                   PenaltyPotential(gap, this->Params()->BeamToSolidSurfaceContactParams());
+                   PenaltyPotential(gap, this->Params()->beam_to_solid_surface_contact_params());
     }
   }
 

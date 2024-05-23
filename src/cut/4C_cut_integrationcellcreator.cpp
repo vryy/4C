@@ -196,7 +196,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateLine2Cell(
   line_corner_points.reserve(2);
 
   const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
-      mesh.CreateOptions().GenBoundaryCellPosition();
+      mesh.CreateOptions().gen_boundary_cell_position();
 
   for (plain_facet_set::const_iterator cit = facets.begin(); cit != facets.end(); ++cit)
   {
@@ -238,7 +238,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell(
   if (facets.size() != numfaces) return false;
 
   const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
-      mesh.CreateOptions().GenBoundaryCellPosition();
+      mesh.CreateOptions().gen_boundary_cell_position();
 
   IMPL::SimplePointGraph2D pg = IMPL::SimplePointGraph2D();
   pg.FindLineFacetCycles(facets, cell->ParentElement());

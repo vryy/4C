@@ -128,7 +128,7 @@ namespace MAT
       explicit InelasticDefgradLinScalar(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! molar factor that causes growth
-      double Scalar1MolarGrowthFac() { return scalar1_molar_growth_fac_; }
+      double scalar1_molar_growth_fac() { return scalar1_molar_growth_fac_; }
 
      private:
       //! molar factor that causes growth
@@ -193,10 +193,10 @@ namespace MAT
       explicit InelasticDefgradPolyIntercalFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// return value of polynomial at reference intercalation fraction
-      double GetPolynomReferenceValue() const { return polynom_reference_value_; }
+      double get_polynom_reference_value() const { return polynom_reference_value_; }
 
       // set value of polynomial at reference intercalation fraction
-      void SetPolynomReferenceValue(double polynomReferenceValue)
+      void set_polynom_reference_value(double polynomReferenceValue)
       {
         polynom_reference_value_ = polynomReferenceValue;
       }
@@ -298,7 +298,7 @@ namespace MAT
      * @param[in] value           value the linear relation shall be evaluated for
      * @return growth factor
      */
-    double EvaluateLinearGrowth(double value) const;
+    double evaluate_linear_growth(double value) const;
 
     /// growth factor (needed for linearizations)
     double GrowthFac() const { return growth_fac_; }
@@ -335,7 +335,7 @@ namespace MAT
      *
      * @param[in] x  value the polynomial is evaluated at
      */
-    void CheckPolynomialBounds(double x) const;
+    void check_polynomial_bounds(double x) const;
 
     /*!
      * @brief Evaluate the polynomial defined by #PolyCoeffs_ at the current position X
@@ -352,7 +352,7 @@ namespace MAT
      * @param[in] x  value the polynomial is evaluated at
      * @return value the first derivative of the polynomial evaluated at x
      */
-    double ComputePolynomialDerivative(double x);
+    double compute_polynomial_derivative(double x);
 
    private:
     /// coefficients of the polynomial to be evaluated
@@ -405,7 +405,7 @@ namespace MAT
      * @param[in] defgrad  Deformation gradient
      * @param[out] iFinM   Inverse inelastic deformation gradient
      */
-    virtual void EvaluateInverseInelasticDefGrad(
+    virtual void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) = 0;
 
     /*!
@@ -419,7 +419,7 @@ namespace MAT
      *                     deformation gradient of current inelastic contribution
      * @param[in,out] cmatadd  Additional elasticity tensor
      */
-    virtual void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    virtual void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) = 0;
 
@@ -430,7 +430,7 @@ namespace MAT
      * @param[out] dFindx      derivative of inelastic deformation gradient w.r.t. primary variable
      *                         of different field
      */
-    virtual void EvaluateInelasticDefGradDerivative(
+    virtual void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) = 0;
 
     /*!
@@ -509,14 +509,14 @@ namespace MAT
      */
     explicit InelasticDefgradNoGrowth(CORE::MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -549,14 +549,14 @@ namespace MAT
    public:
     explicit InelasticDefgradTimeFunct(CORE::MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override{};
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override{};
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -596,12 +596,12 @@ namespace MAT
      */
     explicit InelasticDefgradScalar(CORE::MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
         CORE::LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override = 0;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -669,19 +669,19 @@ namespace MAT
      * @param[in] detjacobian   determinant of the deformation gradient
      * @return first derivative of the polynomial describing the growth
      */
-    double EvaluatePolynomialDerivative(double concentration, double detjacobian);
+    double evaluate_polynomial_derivative(double concentration, double detjacobian);
 
     CORE::Materials::MaterialType MaterialType() const override = 0;
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override = 0;
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
         CORE::LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override = 0;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -706,7 +706,7 @@ namespace MAT
         This inelastic deformation gradient provides an isotropic growth law. Volumetric change due
         to this law is dependent on the current concentration \f$ c \f$ as follows :
       \f[
-      \boldsymbol{F} _\text{in} = \left[1 + \text { Scalar1MolarGrowthFac }
+      \boldsymbol{F} _\text{in} = \left[1 + \text { scalar1_molar_growth_fac }
       \left(c \det \boldsymbol{F} - \text { Scalar1refconc } \right) \right] ^ { 1 / 3 }
       \boldsymbol{I}
       \f]
@@ -728,14 +728,14 @@ namespace MAT
       return CORE::Materials::mfi_lin_scalar_iso;
     }
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -762,7 +762,7 @@ namespace MAT
      Volumetric change due to this law is dependent on the current concentration \f$ c \f$ as
      follows:
      \f[
-     \mathbf{F}_\text{in} = \mathbf{I} + \left[ \text{Scalar1MolarGrowthFac}
+     \mathbf{F}_\text{in} = \mathbf{I} + \left[ \text{scalar1_molar_growth_fac}
      \left( c \det\mathbf{F}  - \text{Scalar1refconc} \right) \right] \mathbf{G},
      \f]
      where \f$ \mathbf{G} \f$ (#growthdirmat_) is a matrix providing the information of the
@@ -789,14 +789,14 @@ namespace MAT
       return CORE::Materials::mfi_lin_scalar_aniso;
     }
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -845,14 +845,14 @@ namespace MAT
       return CORE::Materials::mfi_poly_intercal_frac_iso;
     }
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -900,14 +900,14 @@ namespace MAT
       return CORE::Materials::mfi_poly_intercal_frac_aniso;
     }
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
@@ -934,14 +934,14 @@ namespace MAT
    public:
     explicit InelasticDefgradLinTempIso(CORE::MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
-    void EvaluateInelasticDefGradDerivative(
+    void evaluate_inelastic_def_grad_derivative(
         double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
     void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,

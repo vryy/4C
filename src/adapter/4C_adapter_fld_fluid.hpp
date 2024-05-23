@@ -215,7 +215,7 @@ namespace ADAPTER
         const INPAR::FLUID::InitialField initfield, const int startfuncno) = 0;
 
     /// set initial flow field
-    virtual void SetInitialPorosityField(
+    virtual void set_initial_porosity_field(
         const INPAR::POROELAST::InitialField initfield, const int startfuncno) = 0;
 
     /// apply external forces to the fluid
@@ -223,7 +223,7 @@ namespace ADAPTER
 
     /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without
     /// residual scaling)
-    virtual void AddContributionToExternalLoads(
+    virtual void add_contribution_to_external_loads(
         const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
 
     /// expand dirichlet dbc set by provided map containing dofs to add
@@ -238,7 +238,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0) = 0;
 
     /// set scalar fields within outer iteration loop for low-Mach-number flow
-    virtual void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    virtual void set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
@@ -253,7 +253,7 @@ namespace ADAPTER
     virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
 
     /// provide access to the turbulence statistic manager
-    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() = 0;
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() = 0;
     /// provide access to the box filter class for dynamic Smaorinsky model
     virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() = 0;
     virtual Teuchos::RCP<FLD::Vreman> Vreman() = 0;
@@ -275,7 +275,7 @@ namespace ADAPTER
     virtual void PrepareTimeStep() = 0;
 
     /// increment the time and the step
-    virtual void IncrementTimeAndStep() = 0;
+    virtual void increment_time_and_step() = 0;
 
     /// preparatives for solve
     virtual void PrepareSolve() = 0;
@@ -428,7 +428,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     /// do an intermediate solution step
-    virtual void CalcIntermediateSolution() = 0;
+    virtual void calc_intermediate_solution() = 0;
 
     //@}
 
@@ -491,7 +491,7 @@ namespace ADAPTER
     //! @name Apply interface values
 
     /// at the interface the velocity is prescribed as a Dirichlet condition
-    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) = 0;
+    virtual void apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
     //@}
 
@@ -499,16 +499,16 @@ namespace ADAPTER
     /// Maybe we do not need all of them?
 
     /// extract fluid velocity at the interface from time step n+1
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_velnp() = 0;
 
     /// extract fluid velocity at the interface from time step n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_veln() = 0;
 
     /// extract fluid velocity at the free surface from time step n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> extract_free_surface_veln() = 0;
 
     /// extract fluid forces at the interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_forces() = 0;
 
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
 
@@ -517,13 +517,15 @@ namespace ADAPTER
     //! @name Extract mesh values
 
     /// tell the initial mesh displacement to the fluid solver
-    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) = 0;
+    virtual void apply_initial_mesh_displacement(
+        Teuchos::RCP<const Epetra_Vector> initfluiddisp) = 0;
 
     /// tell the mesh displacement to the fluid solver
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) = 0;
+    virtual void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) = 0;
 
     /// tell the mesh displacement step increment to the fluid solver
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) = 0;
+    virtual void apply_mesh_displacement_increment(
+        Teuchos::RCP<const Epetra_Vector> dispstepinc) = 0;
 
     /// tell the mesh velocity to the fluid solver
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) = 0;
@@ -533,16 +535,16 @@ namespace ADAPTER
     //! @name Conversion between displacement and velocity at interface
 
     /// convert Delta d(n+1,i+1) to the fluid unknown at the interface
-    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+    virtual void displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     /// convert the fluid unknown to Delta d(n+1,i+1) at the interface
-    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+    virtual void velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     /// convert Delta d(n+1,i+1) to the fluid unknown at the free surface
-    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+    virtual void free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     /// convert the fluid unknown to Delta d(n+1,i+1) at the free surface
-    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+    virtual void free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     //@}
 
@@ -558,7 +560,7 @@ namespace ADAPTER
     //@}
 
     /// integrate FSI interface shape functions
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape() = 0;
 
     /// switch fluid field to block matrix
     virtual void UseBlockMatrix(bool splitmatrix) = 0;

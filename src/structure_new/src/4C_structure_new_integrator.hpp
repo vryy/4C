@@ -103,7 +103,8 @@ namespace STR
     virtual void SetState(const Epetra_Vector& x) = 0;
 
     //! Set initial displacement field
-    virtual void SetInitialDisplacement(const INPAR::STR::InitialDisp init, const int startfuncno);
+    virtual void set_initial_displacement(
+        const INPAR::STR::InitialDisp init, const int startfuncno);
 
     /*! \brief Reset state variables of all models
      *  (incl. the structural dynamic state variables)
@@ -117,7 +118,7 @@ namespace STR
      *         evaluators. This is due to the fact, that some models use a different
      *         time integration scheme for their terms (e.g. GenAlpha for the structure
      *         and OST for the remaining things). */
-    virtual void AddViscoMassContributions(Epetra_Vector& f) const = 0;
+    virtual void add_visco_mass_contributions(Epetra_Vector& f) const = 0;
 
     /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
      *
@@ -126,7 +127,7 @@ namespace STR
      *         time integration scheme for their terms (e.g. GenAlpha for the structure
      *         and OST for the remaining things). Furthermore, constraint/Lagrange
      *         multiplier blocks need no scaling anyway. */
-    virtual void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const = 0;
+    virtual void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
     virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
@@ -149,14 +150,14 @@ namespace STR
     /*! \brief Modify the right hand side and Jacobian corresponding to the requested correction
      * action of one (or several) second order constraint (SOC) model(s)
      */
-    virtual bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+    virtual bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
         const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
 
     /*! \brief Remove contributions from the structural right-hand side stemming
      *  from any condensation operations (typical example is contact)
      */
-    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const = 0;
+    virtual void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const = 0;
 
     /*! \brief Calculate characteristic/reference norms for forces
      *
@@ -168,7 +169,7 @@ namespace STR
     virtual double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const = 0;
 
     //! compute the scaling operator for element based scaling using PTC
-    virtual void ComputeJacobianContributionsFromElementLevelForPTC(
+    virtual void compute_jacobian_contributions_from_element_level_for_ptc(
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
@@ -186,7 +187,7 @@ namespace STR
     void CreateBackupState(const Epetra_Vector& dir);
 
     //! recover state from the stored backup
-    void RecoverFromBackupState();
+    void recover_from_backup_state();
 
     //! return integration factor
     virtual double GetIntParam() const = 0;
@@ -236,7 +237,7 @@ namespace STR
     virtual void UpdateStepElement() = 0;
 
     //! calculate stresses and strains in the different model evaluators
-    void DetermineStressStrain();
+    void determine_stress_strain();
 
     //! calculate the energy in the different model evaluators
     void DetermineEnergy();
@@ -246,16 +247,16 @@ namespace STR
 
     /*! return the total structural energy evaluated at the actual mid-time
      *  in accordance to the used time integration scheme */
-    double GetTotalMidTimeStrEnergy(const Epetra_Vector& x);
+    double get_total_mid_time_str_energy(const Epetra_Vector& x);
 
     /// update the structural energy variable in the end of a successful time step
-    void UpdateStructuralEnergy();
+    void update_structural_energy();
 
     //! calculate an optional quantity in the different model evaluators
-    void DetermineOptionalQuantity();
+    void determine_optional_quantity();
 
     /// compute the current volumes of all elements
-    bool DetermineElementVolumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
+    bool determine_element_volumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
     /*! \brief Output to file
      *
@@ -269,7 +270,7 @@ namespace STR
     /**
      * \brief Do stuff that has to be done before runtime output is written.
      */
-    void RuntimePreOutputStepState();
+    void runtime_pre_output_step_state();
 
     /*! \brief Output to file during runtime (no filter necessary)
      *
@@ -278,7 +279,7 @@ namespace STR
      *  upon object prior to writing stuff here.
      *
      *                                                     \date 04/17 */
-    void RuntimeOutputStepState() const;
+    void runtime_output_step_state() const;
 
     /** \brief reset step configuration after time step
      *
@@ -294,7 +295,7 @@ namespace STR
     virtual void PostTimeLoop(){};
 
     //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
-    virtual void UpdateConstantStateContributions() = 0;
+    virtual void update_constant_state_contributions() = 0;
 
     //! things that should be done after output
     virtual void PostOutput();
@@ -305,14 +306,15 @@ namespace STR
     //! @name Accessors
     //!@{
 
-    double GetCondensedUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    double get_condensed_update_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
-    double GetCondensedPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    double GetCondensedSolutionUpdateRMS(
+    double get_condensed_previous_sol_norm(
         const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
-    int GetCondensedDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    double get_condensed_solution_update_rms(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    int get_condensed_dof_number(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
     STR::ModelEvaluator& ModelEval();
@@ -353,7 +355,7 @@ namespace STR
 
     /*! \brief Equilibriate system at initial state and identify consistent accelerations
      */
-    void EquilibrateInitialState();
+    void equilibrate_initial_state();
 
     /*! \brief Check if current state is equilibrium (with respect to
      *  a given tolerance of the inf-norm)
@@ -362,7 +364,7 @@ namespace STR
      *  and non-additive rotation pseudo-vector DoFs where
      *  determination of consistent accelerations is more intricate
      *  and not supported yet */
-    bool CurrentStateIsEquilibrium(const double& tol);
+    bool current_state_is_equilibrium(const double& tol);
 
     //! Return the structural dynamic data container
     STR::TIMINT::BaseDataSDyn& SDyn();
@@ -385,7 +387,7 @@ namespace STR
     //! reset the time step dependent parameters for the element evaluation
     virtual void ResetEvalParams(){};
 
-    double GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    double get_condensed_global_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
    protected:
@@ -405,7 +407,7 @@ namespace STR
       void Setup();
 
       /// can this container be used?
-      bool IsCorrectlyConfigured() const;
+      bool is_correctly_configured() const;
 
       bool StoreEnergyN() const;
 

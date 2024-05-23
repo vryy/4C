@@ -141,7 +141,7 @@ namespace CONTACT
     /*!
       \brief Update of class variables at the end of a time step
     */
-    virtual void UpdateClassVariablesStep() = 0;
+    virtual void update_class_variables_step() = 0;
 
     /*!
       \brief Shift current normal vector to old normal vector at the end of a time step. This is
@@ -158,7 +158,7 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    virtual void UpdateEleSmoothTangents(
+    virtual void update_ele_smooth_tangents(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) = 0;
 
     //! brief Struct for debug data in Gmsh
@@ -303,7 +303,7 @@ namespace CONTACT
     /*!
       \brief Update of class variables at the end of a time step
     */
-    void UpdateClassVariablesStep() override;
+    void update_class_variables_step() override;
 
     /*!
       \brief Shift current normal vector to old normal vector at the end of a time step. This is
@@ -320,7 +320,7 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    void UpdateEleSmoothTangents(
+    void update_ele_smooth_tangents(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) override;
 
     /*!
@@ -436,7 +436,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact forces and stiffness for one contact interval
     */
-    void EvaluateContactInterval(const double& pp,
+    void evaluate_contact_interval(const double& pp,
         const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_a,
         const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_b,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
@@ -454,7 +454,8 @@ namespace CONTACT
     /*!
     \brief Evaluate penalty force law for different regularizations
     */
-    void EvaluatePenaltyForceLaw(const double& pp, const TYPEBTS& gap, TYPEBTS& fp, TYPEBTS& dfp);
+    void evaluate_penalty_force_law(
+        const double& pp, const TYPEBTS& gap, TYPEBTS& fp, TYPEBTS& dfp);
 
     /*!
     \brief Evaluate contact forces
@@ -471,7 +472,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact stiffness
     */
-    void EvaluateStiffcContact(const TYPEBTS& fp, const TYPEBTS& dfp, const TYPEBTS& gap,
+    void evaluate_stiffc_contact(const TYPEBTS& fp, const TYPEBTS& dfp, const TYPEBTS& gap,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
             3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
         CORE::LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
@@ -568,7 +569,7 @@ namespace CONTACT
     /*!
     \brief Assemble contact forces and stiffness
     */
-    void AssembleFcAndStiffcContact(
+    void assemble_fc_and_stiffc_contact(
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> fc1,
         const CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS> fc2, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
@@ -589,13 +590,14 @@ namespace CONTACT
     /*!
     \brief Find contact interval borders
     */
-    void GetContactIntervalBorders(
+    void get_contact_interval_borders(
         std::vector<std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>>& parsets);
 
     /*!
     \brief Calculate beam shape function values for given parameter value eta
     */
-    void GetBeamShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
+    void get_beam_shape_functions(
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta,
         const TYPEBTS& eta);
@@ -603,7 +605,7 @@ namespace CONTACT
     /*!
     \brief Calculate solid surface shape function values for given parameter values xi1 and xi2
     */
-    void GetSurfShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+    void get_surf_shape_functions(CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
         CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
         CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
         CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
@@ -615,7 +617,7 @@ namespace CONTACT
     /*!
     \brief Assemble beam shape functions into corresponding matrices
     */
-    void AssembleBeamShapefunctions(
+    void assemble_beam_shapefunctions(
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_eta,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_etaeta,
@@ -626,7 +628,7 @@ namespace CONTACT
     /*!
     \brief Assemble solid surface shape functions into corresponding matrices
     */
-    void AssembleSurfShapefunctions(const CORE::LINALG::Matrix<1, numnodessol, TYPEBTS>& N_i,
+    void assemble_surf_shapefunctions(const CORE::LINALG::Matrix<1, numnodessol, TYPEBTS>& N_i,
         const CORE::LINALG::Matrix<2, numnodessol, TYPEBTS>& N_i_xi,
         const CORE::LINALG::Matrix<3, numnodessol, TYPEBTS>& N_i_xixi,
         CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
@@ -640,7 +642,7 @@ namespace CONTACT
     /*!
     \brief Compute beam coordinates and their derivatives from the discretization
     */
-    void ComputeBeamCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
+    void compute_beam_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
         CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_eta, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_etaeta,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
@@ -649,7 +651,7 @@ namespace CONTACT
     /*!
     \brief Compute solid surface coordinates and their derivatives from the discretization
     */
-    void ComputeSurfCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
+    void compute_surf_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
         CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi1, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi2,
         CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi1,
         CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi2,
@@ -666,21 +668,21 @@ namespace CONTACT
     /*!
     \brief Compute distance vector rD, its norm norm_rD and unit distance vector nD
     */
-    void ComputeDistanceNormal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& r1,
+    void compute_distance_normal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& r1,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
         TYPEBTS& norm_rD, CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD);
 
     /*!
     \brief Compute tangent cross product a2, its norm norm_a2 and surface unit normal vector n2
     */
-    void ComputeSurfaceNormal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
+    void compute_surface_normal(const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& a2,
         TYPEBTS& norm_a2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& n2);
 
     /*!
     \brief Utility method for CPP (evaluate nonlinear function f)
     */
-    void EvaluateOrthogonalityCondition(CORE::LINALG::Matrix<2, 1, TYPEBTS>& f,
+    void evaluate_orthogonality_condition(CORE::LINALG::Matrix<2, 1, TYPEBTS>& f,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& delta_r, const double norm_delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi,
@@ -690,7 +692,7 @@ namespace CONTACT
     /*!
     \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
     */
-    void EvaluateLinOrthogonalityCondition(CORE::LINALG::Matrix<2, 2, TYPEBTS>& df,
+    void evaluate_lin_orthogonality_condition(CORE::LINALG::Matrix<2, 2, TYPEBTS>& df,
         CORE::LINALG::Matrix<2, 2, TYPEBTS>& dfinv,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& delta_r, const double norm_delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& r1_xi,
@@ -714,7 +716,8 @@ namespace CONTACT
     */
     void ShiftNodalPositions();
 
-    void FADCheckLinParameter(const int& fixed_par, const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
+    void fad_check_lin_parameter(const int& fixed_par,
+        const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
@@ -730,13 +733,13 @@ namespace CONTACT
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             eta_d);
 
-    void FADCheckLinOrthogonalityCondition(const int& fixed_par,
+    void fad_check_lin_orthogonality_condition(const int& fixed_par,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
         CORE::LINALG::Matrix<2, 2, TYPEBTS>& J_FAD, const CORE::LINALG::Matrix<2, 2, TYPEBTS>& J);
 
-    void FADCheckLinGapAndDistanceVector(const TYPEBTS& gap,
+    void fad_check_lin_gap_and_distance_vector(const TYPEBTS& gap,
         const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             xi1_d,

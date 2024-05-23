@@ -157,26 +157,26 @@ namespace BEAMINTERACTION
     /*!
     \brief Get number of active contact point pairs on this element pair
     */
-    virtual unsigned int GetNumAllActiveContactPointPairs() const = 0;
+    virtual unsigned int get_num_all_active_contact_point_pairs() const = 0;
 
     /*!
     \brief Get coordinates of all active contact points on element1 and element2
     */
-    virtual void GetAllActiveContactPointCoordsElement1(
+    virtual void get_all_active_contact_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
-    virtual void GetAllActiveContactPointCoordsElement2(
+    virtual void get_all_active_contact_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    virtual void GetAllActiveContactForces(std::vector<double>& forces) const = 0;
+    virtual void get_all_active_contact_forces(std::vector<double>& forces) const = 0;
 
     /*!
     \brief Get all (scalar) gap values of this contact pair
     */
-    virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const = 0;
+    virtual void get_all_active_contact_gaps(std::vector<double>& gaps) const = 0;
 
     //  virtual CORE::LINALG::Matrix< 3, 1,TYPE>* GetNormalOld()=0;
     //
@@ -194,12 +194,12 @@ namespace BEAMINTERACTION
     //  /*!
     //    \Get energy of perp penalty contact without transition factor contribution.
     //  */
-    //  virtual double GetUnscaledPerpEnergy()=0;
+    //  virtual double get_unscaled_perp_energy()=0;
     //
     //  /*!
     //    \Get energy of parallel penalty contact without transition factor contribution.
     //  */
-    //  virtual double GetUnscaledParallelEnergy()=0;
+    //  virtual double get_unscaled_parallel_energy()=0;
     //
     //  virtual bool FirstTimeStep()=0;
     //
@@ -220,7 +220,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 05/16 */
-    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
+    virtual void print_summary_one_line_per_active_segment_pair(std::ostream& out) const = 0;
 
     /**
      * \brief Per default it is assumed, that the contributions of a pair can be directly assembled
@@ -303,7 +303,7 @@ namespace BEAMINTERACTION
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    virtual void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -321,7 +321,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list with possible needed data to generate the
      * visualization in the pairs.
      */
-    virtual void GetPairVisualization(
+    virtual void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const
     {
@@ -353,7 +353,7 @@ namespace BEAMINTERACTION
      * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
      * step, for all contained elements (Vector of vector).
      */
-    virtual void SetRestartDisplacement(
+    virtual void set_restart_displacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_)
     {
       CheckInitSetup();

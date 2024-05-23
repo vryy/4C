@@ -110,7 +110,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Saturation() const = 0;
 
     //! return valid volume fraction species dof vector
-    virtual Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> valid_vol_frac_spec_dofs() const = 0;
 
     //! return phase flux field at time n+1
     virtual Teuchos::RCP<const Epetra_MultiVector> Flux() const = 0;
@@ -128,7 +128,7 @@ namespace ADAPTER
     virtual void Update() = 0;
 
     //! calculate error compared to analytical solution
-    virtual void EvaluateErrorComparedToAnalyticalSol() = 0;
+    virtual void evaluate_error_compared_to_analytical_sol() = 0;
 
     //! general solver call for coupled algorithms
     virtual void Solve() = 0;
@@ -137,7 +137,7 @@ namespace ADAPTER
     virtual void PrepareTimeLoop() = 0;
 
     //! return number of dof set associated with solid pressure
-    virtual int GetDofSetNumberOfSolidPressure() const = 0;
+    virtual int get_dof_set_number_of_solid_pressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
@@ -152,30 +152,30 @@ namespace ADAPTER
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     //! reconstruct pressures and saturation from current solution
-    virtual void ReconstructPressuresAndSaturations() = 0;
+    virtual void reconstruct_pressures_and_saturations() = 0;
 
     //! reconstruct flux from current solution
     virtual void ReconstructFlux() = 0;
 
     //! calculate phase velocities from current solution
-    virtual void CalculatePhaseVelocities() = 0;
+    virtual void calculate_phase_velocities() = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     virtual void Evaluate() = 0;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
-    virtual void AssembleFluidStructCouplingMat(
+    virtual void assemble_fluid_struct_coupling_mat(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) = 0;
 
     // Assemble Off-Diagonal Fluid-scatra Coupling matrix
-    virtual void AssembleFluidScatraCouplingMat(
+    virtual void assemble_fluid_scatra_coupling_mat(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) = 0;
 
     //! direct access to system matrix
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     //! direct access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const = 0;
 
     // return arterial network time integrator
     virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() = 0;

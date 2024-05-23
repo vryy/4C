@@ -103,7 +103,7 @@ namespace MAT
       }
 
       /// reset problem index to read from, i.e. to index 0
-      void ResetReadFromProblem() { materialreadfromproblem_ = 0; }
+      void reset_read_from_problem() { materialreadfromproblem_ = 0; }
 
      private:
       /// the map linking material IDs to input materials

@@ -91,11 +91,12 @@ namespace CORE::Dofsets
     virtual void SetMinGID(int mingid) { minGID_ = mingid; }
 
     /// Get Reserved Max Number Dofs per Node
-    void GetReservedMaxNumDofperNode(int& maxnodenumdf) override
+    void get_reserved_max_num_dofper_node(int& maxnodenumdf) override
     {
       if (maxnodenumdf > numMyReservedDofsperNode_)
       {
-        FOUR_C_THROW("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
+        FOUR_C_THROW(
+            "FixedSizeDofSet::get_reserved_max_num_dofper_node: Not enough Dofs reserved!!!");
         return;
       }
       maxnodenumdf = numMyReservedDofsperNode_;
@@ -103,11 +104,11 @@ namespace CORE::Dofsets
       return;
     }
 
-    /// get the number of reserved DoF's (see also NumMyReservedDofsPerNode())
+    /// get the number of reserved DoF's (see also num_my_reserved_dofs_per_node())
     int NumMyReservedDofs() const { return numMyReservedDofs_; }
 
     /// get the number of reserved DoF's per node
-    int NumMyReservedDofsPerNode() const { return numMyReservedDofsperNode_; }
+    int num_my_reserved_dofs_per_node() const { return numMyReservedDofsperNode_; }
 
     /// minimal global dof id
     int minGID_;

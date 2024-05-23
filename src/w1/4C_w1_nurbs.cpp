@@ -51,7 +51,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation(
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
@@ -65,7 +65,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNul
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLNURBS"];

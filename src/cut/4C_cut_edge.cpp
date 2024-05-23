@@ -37,7 +37,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
   return Edge::Create(DRT::ShardsKeyToDisType(shardskey), nodes);
 }
 
-bool CORE::GEO::CUT::Edge::FindCutPointsLevelSet(
+bool CORE::GEO::CUT::Edge::find_cut_points_level_set(
     Mesh& mesh, Element* element, Side& side, Side& other)
 {
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
@@ -73,14 +73,14 @@ bool CORE::GEO::CUT::Edge::FindCutPointsLevelSet(
 bool CORE::GEO::CUT::Edge::FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other)
 {
   // dispatch function call between side = LevelSetSide and  normal side
-  return other.FindCutPointsDispatch(mesh, element, side, *this);
+  return other.find_cut_points_dispatch(mesh, element, side, *this);
 }
 
 
 /*-----------------------------------------------------------------------------*
  *  Find points at which this edge which is in "side" cuts the "other"
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Edge::FindCutPointsMeshCut(
+bool CORE::GEO::CUT::Edge::find_cut_points_mesh_cut(
     Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints)
 {
   bool cut = false;
@@ -532,7 +532,7 @@ void CORE::GEO::CUT::Edge::SelfCutPosition(Point::PointPosition pos)
  *  Changes the selfcutposition of this edge and spreads the positional
  *  information                                                 wirtz 07/16
  *------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Edge::ChangeSelfCutPosition(Point::PointPosition pos)
+void CORE::GEO::CUT::Edge::change_self_cut_position(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
@@ -540,12 +540,12 @@ void CORE::GEO::CUT::Edge::ChangeSelfCutPosition(Point::PointPosition pos)
     for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
     {
       Node* n = *i;
-      n->ChangeSelfCutPosition(pos);
+      n->change_self_cut_position(pos);
     }
     for (plain_side_set::iterator i = sides_.begin(); i != sides_.end(); ++i)
     {
       Side* s = *i;
-      s->ChangeSelfCutPosition(pos);
+      s->change_self_cut_position(pos);
     }
   }
 }
@@ -588,7 +588,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Jus
   Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = IntersectionPtr(side.Shape());
 
   inter_ptr->Init(&mesh, this, &side, false, false, false);
-  return (inter_ptr->HandleParallelIntersection(cuts, skip_id) > 0);
+  return (inter_ptr->handle_parallel_intersection(cuts, skip_id) > 0);
 }
 
 template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
@@ -732,8 +732,8 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
       Point* edge_point = edge_node->point();
       if (CORE::GEO::CUT::DistanceBetweenPoints(p, edge_point) < SIDE_DETECTION_TOLERANCE)
       {
-        p->DumpConnectivityInfo();
-        edge_point->DumpConnectivityInfo();
+        p->dump_connectivity_info();
+        edge_point->dump_connectivity_info();
         std::stringstream err_msg;
         err_msg << "Distance between points is " << std::setprecision(15)
                 << CORE::GEO::CUT::DistanceBetweenPoints(p, edge_point)
@@ -772,13 +772,13 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
   inter_ptr->Init(xyze_other, xyze_this, false, false, false, &(mesh->GetOptions()));
 
   bool edges_parallel =
-      HandleParallelCut(other, side, cut_points, mesh->GetOptions().GeomDistance_Floattype());
+      HandleParallelCut(other, side, cut_points, mesh->GetOptions().geom_distance_floattype());
 
   if (not edges_parallel)
   {
     // perform the actual edge - edge intersection
     const enum IntersectionStatus istatus =
-        inter_ptr->ComputeEdgeSideIntersection(tolerance, true, nullptr);
+        inter_ptr->compute_edge_side_intersection(tolerance, true, nullptr);
 
     enum IntersectionStatus retstatus = istatus;
 
@@ -834,7 +834,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
         std::vector<CORE::LINALG::Matrix<probDim, 1>> xyz_cuts;
         std::vector<CORE::LINALG::Matrix<dimEdge, 1>> r_cuts;
         inter_ptr->FinalPoints(xyz_cuts);
-        inter_ptr->LocalSideCoordinates(r_cuts);
+        inter_ptr->local_side_coordinates(r_cuts);
 
         FOUR_C_ASSERT(xyz_cuts.size() == r_cuts.size(), "Size mismatch!");
 

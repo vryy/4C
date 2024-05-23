@@ -46,25 +46,25 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overla
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
-      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      CORE::Conditions::ConditionedElementMap(dis, "FREESURFCoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FREESURFCoupling");
   Teuchos::RCP<std::set<int>> condelements3 =
-      CORE::Conditions::ConditionedElementMap(dis, "StructAleCoupling");
+      CORE::Conditions::conditioned_element_map(dis, "StructAleCoupling");
   Teuchos::RCP<std::set<int>> condelements4 =
-      CORE::Conditions::ConditionedElementMap(dis, "AleWear");
+      CORE::Conditions::conditioned_element_map(dis, "AleWear");
   Teuchos::RCP<std::set<int>> condelements5 =
-      CORE::Conditions::ConditionedElementMap(dis, "BioGrCoupling");
+      CORE::Conditions::conditioned_element_map(dis, "BioGrCoupling");
   Teuchos::RCP<std::set<int>> condelements6 =
-      CORE::Conditions::ConditionedElementMap(dis, "ALEUPDATECoupling");
+      CORE::Conditions::conditioned_element_map(dis, "ALEUPDATECoupling");
   Teuchos::RCP<std::set<int>> condelements7 =
-      CORE::Conditions::ConditionedElementMap(dis, "FPSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FPSICoupling");
   Teuchos::RCP<std::set<int>> condelements8 =
-      CORE::Conditions::ConditionedElementMap(dis, "Mortar");
+      CORE::Conditions::conditioned_element_map(dis, "Mortar");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   std::copy(condelements3->begin(), condelements3->end(),

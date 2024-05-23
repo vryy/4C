@@ -100,16 +100,17 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
     int GetNumCols() const { return cols_; }
 
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix(
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> get_block_sparse_matrix(
         CORE::LINALG::DataAccess access);
 
     void ParseBlocks(const std::string& block_string, const std::vector<int>& blocks,
         std::vector<std::vector<int>>& superblocks_to_blocks,
         std::vector<std::vector<int>>& superblocks_to_blocks_local);
 
-    virtual Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const;
+    virtual Teuchos::RCP<BlockedVector> new_domain_blocked_vector(
+        int NV, bool ZeroIt = false) const;
 
-    virtual Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const;
+    virtual Teuchos::RCP<BlockedVector> new_range_blocked_vector(int NV, bool ZeroIt = false) const;
 
    protected:
     std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> matrices_;  // Row major order
@@ -146,7 +147,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
       return *this;
     }
 
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> get_block_sparse_matrix()
     {
       FOUR_C_THROW("Function not implemented yet.");
       return Teuchos::null;
@@ -154,9 +155,11 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
     void Apply(const BlockedVector& in, BlockedVector& out) const override;
 
-    Teuchos::RCP<BlockedVector> NewDomainBlockedVector(int NV, bool ZeroIt = false) const override;
+    Teuchos::RCP<BlockedVector> new_domain_blocked_vector(
+        int NV, bool ZeroIt = false) const override;
 
-    Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const override;
+    Teuchos::RCP<BlockedVector> new_range_blocked_vector(
+        int NV, bool ZeroIt = false) const override;
   };
 
   // class BlockAggrupator

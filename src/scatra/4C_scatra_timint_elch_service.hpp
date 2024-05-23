@@ -40,7 +40,7 @@ namespace SCATRA
         const CORE::Conditions::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
 
     //! Get phase of half cycle
-    INPAR::ELCH::CCCVHalfCyclePhase GetCCCVHalfCyclePhase() const { return phase_cccv_; };
+    INPAR::ELCH::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const { return phase_cccv_; };
 
     //! Get ID of this half cycle condition
     int GetConditionID() const { return halfcyclecondition_id_; };
@@ -55,10 +55,10 @@ namespace SCATRA
     double GetRelaxEndTime() const { return relaxendtime_; };
 
     //! does this phase have adaptive time stepping?
-    bool IsAdaptiveTimeSteppingPhase() const;
+    bool is_adaptive_time_stepping_phase() const;
 
     //! is this half cycle completed after updating the phase?
-    bool IsEndOfHalfCycleNextPhase(double time, bool print);
+    bool is_end_of_half_cycle_next_phase(double time, bool print);
 
     //! reset phase of this half cycle to constant current
     void ResetPhase();
@@ -111,27 +111,27 @@ namespace SCATRA
     bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };
 
     //! phase of active half cycle
-    INPAR::ELCH::CCCVHalfCyclePhase GetCCCVHalfCyclePhase() const;
+    INPAR::ELCH::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const;
 
     //! ID of current half cycle
-    int GetHalfCycleConditionID() const;
+    int get_half_cycle_condition_id() const;
 
     double GetInitialRelaxTime() const { return initrelaxtime_; };
 
     //! number of current half cycle
-    int GetNumCurrentHalfCycle() const { return ihalfcycle_; };
+    int get_num_current_half_cycle() const { return ihalfcycle_; };
 
     //! Step when phase was changed last time
-    int GetStepLastPhaseChange() const { return steplastphasechange_; };
+    int get_step_last_phase_change() const { return steplastphasechange_; };
 
     //! get end time of current relaxation phase
     double GetRelaxEndTime() const;
 
     //! does this phase have adaptive time stepping?
-    bool IsAdaptiveTimeSteppingPhase() const;
+    bool is_adaptive_time_stepping_phase() const;
 
     //! is this phase finished?
-    bool IsEndOfHalfCyclePhase(double cellvoltage, double cellcrate, double time) const;
+    bool is_end_of_half_cycle_phase(double cellvoltage, double cellcrate, double time) const;
 
     //! is cut off c rate exceeded?
     bool ExceedCellCRate(double expected_cellcrate) const;
@@ -149,15 +149,15 @@ namespace SCATRA
     bool IsPhaseChanged() const { return phasechanged_; };
 
     //! are we in initial relaxation phase?
-    bool IsPhaseInitialRelaxation() const { return phaseinitialrelaxation_; };
+    bool is_phase_initial_relaxation() const { return phaseinitialrelaxation_; };
 
     //! true if difference between @p step and the step when the phase was last changed is equal
     //! or more than  num_add_adapt_timesteps_
-    bool ExceedMaxStepsFromLastPhaseChange(int step);
+    bool exceed_max_steps_from_last_phase_change(int step);
 
     //! return minimum amount of time steps the initial relaxation time of cccv condition has to be
     //! discretized with
-    int MinTimeStepsDuringInitRelax() const { return min_time_steps_during_init_relax_; }
+    int min_time_steps_during_init_relax() const { return min_time_steps_during_init_relax_; }
 
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
@@ -170,13 +170,13 @@ namespace SCATRA
     void ReadRestart(IO::DiscretizationReader& reader);
 
     //! reset phasechanged_
-    void ResetPhaseChangeObserver();
+    void reset_phase_change_observer();
 
     //! initialize first half cycle
-    void SetFirstCCCVHalfCycle(int step);
+    void set_first_cccv_half_cycle(int step);
 
     //! start counting steps from now on (phase was changed)
-    void SetPhaseChangeObserver(int step);
+    void set_phase_change_observer(int step);
 
    private:
     //! adaptive time stepping for initial relaxation?

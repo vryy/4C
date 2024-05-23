@@ -72,7 +72,7 @@ namespace MIXTURE
         Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
         CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(

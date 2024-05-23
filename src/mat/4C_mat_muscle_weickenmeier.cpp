@@ -135,11 +135,12 @@ MAT::MuscleWeickenmeier::MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params
   lambda_m_old_ = 1.0;
 
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy_.register_anisotropy_extension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.register_needed_tensors(
+      MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
@@ -200,8 +201,8 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
 void MAT::MuscleWeickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 }
 
 void MAT::MuscleWeickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
@@ -276,7 +277,7 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double derivPa = 0.0;
   if (params_->muTypesNum_ != 0)
   {  // if active material
-    EvaluateActiveNominalStress(params, lambdaM, Pa, derivPa);
+    evaluate_active_nominal_stress(params, lambdaM, Pa, derivPa);
   }  // else: Pa and derivPa remain 0.0
 
   // computation of activation level omegaa and derivative w.r.t. fiber stretch
@@ -287,7 +288,7 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // derivative are zero
   if (Pa != 0.0)
   {
-    EvaluateActivationLevel(lambdaM, Pa, derivPa, omegaa, derivOmegaa);
+    evaluate_activation_level(lambdaM, Pa, derivPa, omegaa, derivOmegaa);
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
   CORE::LINALG::Matrix<6, 1> domegaadCv(Mv);
@@ -349,7 +350,7 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::MuscleWeickenmeier::EvaluateActiveNominalStress(
+void MAT::MuscleWeickenmeier::evaluate_active_nominal_stress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
   // save current simulation time
@@ -421,7 +422,7 @@ void MAT::MuscleWeickenmeier::EvaluateActiveNominalStress(
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MAT::MuscleWeickenmeier::EvaluateActivationLevel(const double lambdaM, const double Pa,
+void MAT::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, const double Pa,
     const double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters

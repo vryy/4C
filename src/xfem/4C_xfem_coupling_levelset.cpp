@@ -57,7 +57,7 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::SetCouplingDofsets()
 {
-  bg_nds_phi_ = GetCouplingDofsetNds("phi_scatra_proxy_in_fluid");
+  bg_nds_phi_ = get_coupling_dofset_nds("phi_scatra_proxy_in_fluid");
 }
 
 
@@ -76,7 +76,7 @@ void XFEM::LevelSetCoupling::SetConditionsToCopy()
 // TODO: needs to be generalized!
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::SetCutterDiscretization()
+void XFEM::LevelSetCoupling::set_cutter_discretization()
 {
   if (&*cond_dis_ != &*bg_dis_)  // check not required for two-phase anymore
     FOUR_C_THROW(
@@ -154,7 +154,7 @@ void XFEM::LevelSetCoupling::InitStateVectors()
   // initialize state vectors w.r.t. background discretization
   InitStateVectors_Bg();
   // initialize state vectors w.r.t. cutter (potential subset of scatra) discretization
-  InitStateVectors_Cutter();
+  init_state_vectors_cutter();
 }
 
 
@@ -173,7 +173,7 @@ void XFEM::LevelSetCoupling::InitStateVectors_Bg()
 // mesh coupling?)
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::InitStateVectors_Cutter()
+void XFEM::LevelSetCoupling::init_state_vectors_cutter()
 {
   // cutter-dis related state vectors
   const Epetra_Map* cutter_dofrowmap =
@@ -204,7 +204,7 @@ void XFEM::LevelSetCoupling::PrepareCutterOutput()
   {
     cutter_dis_->SetWriter(Teuchos::rcp(
         new IO::DiscretizationWriter(cutter_dis_, GLOBAL::Problem::Instance()->OutputControlFile(),
-            GLOBAL::Problem::Instance()->SpatialApproximationType())));
+            GLOBAL::Problem::Instance()->spatial_approximation_type())));
   }
 
   bg_output_ = bg_dis_->Writer();
@@ -213,20 +213,20 @@ void XFEM::LevelSetCoupling::PrepareCutterOutput()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::DoConditionSpecificSetup()
+void XFEM::LevelSetCoupling::do_condition_specific_setup()
 {
   // TODO: remove the smoothed normal stuff from this function!!!
   // read initial level-set field
   SetLevelSetField(time_);
 
   // set level-boolean type (may be overwritten in constructors of derived class
-  SetLevelSetBooleanType();
+  set_level_set_boolean_type();
 }
 
 // TODO: store the first element condition to access cutterele_conds_[0] at several places
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::SetLevelSetBooleanType()
+void XFEM::LevelSetCoupling::set_level_set_boolean_type()
 {
   if (cutterele_conds_.size() == 0)
     FOUR_C_THROW(
@@ -252,7 +252,7 @@ void XFEM::LevelSetCoupling::SetLevelSetBooleanType()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::LevelSetCoupling::ApplyComplementaryOperator()
+bool XFEM::LevelSetCoupling::apply_complementary_operator()
 {
   if (cutterele_conds_.size() == 0)
     FOUR_C_THROW(
@@ -440,7 +440,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
       // This method might be a bit too complicated as we need to save modphinp (size of fluid
       // discretization), as well as gradphinp_smoothed_rownode as the function
-      // ComputeNodalL2Projection returns the row node map.
+      // compute_nodal_l2_projection returns the row node map.
       //----------------------------------------------
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
@@ -497,7 +497,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
       // The following bugfix needs to be check carefully
       {
-        // Convert NodeRowMap from ComputeNodalL2Projection to DofRowMap while assuming identical
+        // Convert NodeRowMap from compute_nodal_l2_projection to DofRowMap while assuming identical
         // ordering
         for (int ivec = 0; ivec < gradphinp_smoothed_rownode->NumVectors(); ivec++)
         {
@@ -576,7 +576,7 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
   }
 }
 
-Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVector()
+Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
   Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ =
       CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
@@ -1015,24 +1015,24 @@ bool XFEM::LevelSetCouplingBC::HasMovingInterface() { return has_interface_moved
 
 
 
-void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(
+void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cond, time_);
+  evaluate_dirichlet_function(ivel, x, cond, time_);
 
   // no interface traction to be evaluated
   itraction.Clear();
 }
 
 // TODO: remove old state implementation?!
-void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
+void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions_old_state(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cond, time_ - dt_);
+  evaluate_dirichlet_function(ivel, x, cond, time_ - dt_);
 
   // no interface traction to be evaluated
   itraction.Clear();
@@ -1040,7 +1040,7 @@ void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingWeakDirichlet::SetupConfigurationMap()
+void XFEM::LevelSetCouplingWeakDirichlet::setup_configuration_map()
 {
   // Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
@@ -1058,7 +1058,7 @@ void XFEM::LevelSetCouplingWeakDirichlet::SetupConfigurationMap()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
+void XFEM::LevelSetCouplingWeakDirichlet::update_configuration_map_gp(
     double& kappa_m,         //< fluid sided weighting
     double& visc_m,          //< master sided dynamic viscosity
     double& visc_s,          //< slave sided dynamic viscosity
@@ -1084,10 +1084,10 @@ void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::DoConditionSpecificSetup()
+void XFEM::LevelSetCouplingNeumann::do_condition_specific_setup()
 {
   // Call Base Class
-  XFEM::LevelSetCouplingBC::DoConditionSpecificSetup();
+  XFEM::LevelSetCouplingBC::do_condition_specific_setup();
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
@@ -1113,7 +1113,7 @@ void XFEM::LevelSetCouplingNeumann::DoConditionSpecificSetup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::SetupConfigurationMap()
+void XFEM::LevelSetCouplingNeumann::setup_configuration_map()
 {
   if (inflow_stab_)
   {
@@ -1126,7 +1126,7 @@ void XFEM::LevelSetCouplingNeumann::SetupConfigurationMap()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::UpdateConfigurationMap_GP(
+void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
     double& kappa_m,         //< fluid sided weighting
     double& visc_m,          //< master sided dynamic viscosity
     double& visc_s,          //< slave sided dynamic viscosity
@@ -1171,7 +1171,7 @@ void XFEM::LevelSetCouplingNeumann::UpdateConfigurationMap_GP(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
     const CORE::Conditions::Condition* cond)
 {
@@ -1179,12 +1179,12 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Mat
   ivel.Clear();
 
   // evaluate interface traction (given by Neumann condition)
-  EvaluateNeumannFunction(itraction, x, cond, time_);
+  evaluate_neumann_function(itraction, x, cond, time_);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
     CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
     const CORE::Conditions::Condition* cond)
 {
@@ -1192,13 +1192,13 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Mat
   ivel.Clear();
 
   // evaluate interface traction (given by Neumann condition)
-  EvaluateNeumannFunction(itraction, x, cond, time_);
+  evaluate_neumann_function(itraction, x, cond, time_);
 }
 
 // TODO: combine it with the function before with optional time parameter?!
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(
+void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
@@ -1206,7 +1206,7 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(
   ivel.Clear();
 
   // evaluate interface traction (given by Neumann condition)
-  EvaluateNeumannFunction(itraction, x, cond, time_ - dt_);
+  evaluate_neumann_function(itraction, x, cond, time_ - dt_);
 }
 
 // TODO: inheritance from the bc seems to be the wrong concept, more delegate functionality to a
@@ -1230,11 +1230,11 @@ XFEM::LevelSetCouplingNavierSlip::LevelSetCouplingNavierSlip(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::SetElementConditions()
+void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
 {
-  XFEM::LevelSetCouplingBC::SetElementConditions();
+  XFEM::LevelSetCouplingBC::set_element_conditions();
 
-  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call SetElementConditions() first!");
+  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
   CORE::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
@@ -1262,20 +1262,20 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementConditions()
   }
 
   // set the navier-slip specific element conditions
-  SetElementSpecificConditions(
+  set_element_specific_conditions(
       cutterele_cond_robin_dirichlet_, "XFEMRobinDirichletVol", robin_dirichlet_id_);
   if (has_neumann_jump_)
-    SetElementSpecificConditions(
+    set_element_specific_conditions(
         cutterele_cond_robin_neumann_, "XFEMRobinNeumannVol", robin_neumann_id_);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
+void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
     std::vector<CORE::Conditions::Condition*>& cutterele_cond, const std::string& cond_name,
     const int& robin_id)
 {
-  // TODO: can we combine this function with SetElementConditions in the coupling base routine!
+  // TODO: can we combine this function with set_element_conditions in the coupling base routine!
 
   // number of column cutter boundary elements
   int nummycolele = cutter_dis_->NumMyColElements();
@@ -1298,7 +1298,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
     CORE::Conditions::FindElementConditions(cutele, cond_name, mycond);
 
     std::vector<CORE::Conditions::Condition*> mynewcond;
-    GetConditionByRobinId(mycond, robin_id, mynewcond);
+    get_condition_by_robin_id(mycond, robin_id, mynewcond);
 
     CORE::Conditions::Condition* cond_unique = nullptr;
 
@@ -1330,29 +1330,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
-{
-  if (cutterele_cond_robin_dirichlet_.size() == 0)
-    FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
-
-  // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_);
-
-  // evaluate interface traction (given by Neumann condition)
-  if (has_neumann_jump_)
-  {
-    if (cutterele_cond_robin_neumann_.size() == 0)
-      FOUR_C_THROW("initialize cutterele_cond_robin_neumann_ first!");
-
-    EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_);
-  }
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
+void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions(
     CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
 {
@@ -1360,7 +1338,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
     FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
 
   // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_ - dt_);
+  evaluate_dirichlet_function(ivel, x, cutterele_cond_robin_dirichlet_[0], time_);
 
   // evaluate interface traction (given by Neumann condition)
   if (has_neumann_jump_)
@@ -1368,7 +1346,29 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
     if (cutterele_cond_robin_neumann_.size() == 0)
       FOUR_C_THROW("initialize cutterele_cond_robin_neumann_ first!");
 
-    EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_ - dt_);
+    evaluate_neumann_function(itraction, x, cutterele_cond_robin_neumann_[0], time_);
+  }
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions_old_state(
+    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+{
+  if (cutterele_cond_robin_dirichlet_.size() == 0)
+    FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
+
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  evaluate_dirichlet_function(ivel, x, cutterele_cond_robin_dirichlet_[0], time_ - dt_);
+
+  // evaluate interface traction (given by Neumann condition)
+  if (has_neumann_jump_)
+  {
+    if (cutterele_cond_robin_neumann_.size() == 0)
+      FOUR_C_THROW("initialize cutterele_cond_robin_neumann_ first!");
+
+    evaluate_neumann_function(itraction, x, cutterele_cond_robin_neumann_[0], time_ - dt_);
   }
 }
 
@@ -1380,14 +1380,14 @@ void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
   if (is_constant_sliplength_)
     slipcoeff = sliplength_;
   else
-    EvaluateScalarFunction(slipcoeff, x.A(), sliplength_, cond, time_);
+    evaluate_scalar_function(slipcoeff, x.A(), sliplength_, cond, time_);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
+void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
 {
-  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call SetElementConditions() first!");
+  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
   CORE::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
@@ -1409,7 +1409,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::GetConditionByRobinId(
+void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
     const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
     std::vector<CORE::Conditions::Condition*>& mynewcond)
 {
@@ -1427,9 +1427,9 @@ void XFEM::LevelSetCouplingNavierSlip::GetConditionByRobinId(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::SetupConfigurationMap()
+void XFEM::LevelSetCouplingNavierSlip::setup_configuration_map()
 {
-  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided)
   {
     // Configuration of Consistency Terms
     configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
@@ -1450,7 +1450,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetupConfigurationMap()
     configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
     configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
   }
-  else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+  else if (get_averaging_strategy() == INPAR::XFEM::invalid)
     FOUR_C_THROW("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
   else
     FOUR_C_THROW(
@@ -1461,7 +1461,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetupConfigurationMap()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
+void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
     double& kappa_m,         //< fluid sided weighting
     double& visc_m,          //< master sided dynamic viscosity
     double& visc_s,          //< slave sided dynamic viscosity

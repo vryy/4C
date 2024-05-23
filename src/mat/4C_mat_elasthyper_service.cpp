@@ -101,7 +101,7 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
     // loop map of associated potential summands
     for (auto& p : potsum)
     {
-      p->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
+      p->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
     }
   }
 
@@ -120,7 +120,7 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
 
     for (auto& p : potsum)
     {
-      p->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
+      p->add_derivatives_modified(dPmodI, ddPmodII, modinv, gp, eleGID);
     }
 
     // convert decoupled derivatives to principal derivatives
@@ -240,7 +240,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     // loop map of associated potential summands
     for (const auto& p : potsum)
     {
-      p->AddCoefficientsStretchesPrincipal(gamma_, delta_, prstr);
+      p->add_coefficients_stretches_principal(gamma_, delta_, prstr);
     }
   }
   if (properties.coeffStretchesMod)
@@ -256,7 +256,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
       // loop map of associated potential summands
       for (const auto& p : potsum)
       {
-        p->AddCoefficientsStretchesModified(modgamma, moddelta, modstr);
+        p->add_coefficients_stretches_modified(modgamma, moddelta, modstr);
       }
     }
     // convert modified coefficients to oridinary counterparts
@@ -394,7 +394,8 @@ void MAT::ElastHyperAddAnisotropicPrinc(CORE::LINALG::Matrix<6, 1>& S_stress,
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
-  for (auto& p : potsum) p->AddStressAnisoPrincipal(C_strain, cmat, S_stress, params, gp, eleGID);
+  for (auto& p : potsum)
+    p->add_stress_aniso_principal(C_strain, cmat, S_stress, params, gp, eleGID);
 }
 
 void MAT::ElastHyperAddAnisotropicMod(CORE::LINALG::Matrix<6, 1>& S_stress,
@@ -409,7 +410,7 @@ void MAT::ElastHyperAddAnisotropicMod(CORE::LINALG::Matrix<6, 1>& S_stress,
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
   for (auto& p : potsum)
-    p->AddStressAnisoModified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID, params);
+    p->add_stress_aniso_modified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID, params);
 }
 
 void MAT::CalculateGammaDelta(CORE::LINALG::Matrix<3, 1>& gamma, CORE::LINALG::Matrix<8, 1>& delta,
@@ -440,8 +441,8 @@ void MAT::ElastHyperProperties(
     p->SpecifyFormulation(properties.isoprinc, properties.isomod, properties.anisoprinc,
         properties.anisomod, properties.viscoGeneral);
 
-    properties.coeffStretchesPrinc |= p->HaveCoefficientsStretchesPrincipal();
-    properties.coeffStretchesMod |= p->HaveCoefficientsStretchesModified();
+    properties.coeffStretchesPrinc |= p->have_coefficients_stretches_principal();
+    properties.coeffStretchesMod |= p->have_coefficients_stretches_modified();
   }
 }
 

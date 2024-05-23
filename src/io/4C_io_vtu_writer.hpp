@@ -38,7 +38,7 @@ class VtuWriter : public VtkWriterBase
       const std::string& restart_name, double restart_time, bool write_binary_output);
 
   //! write the geometry defining this unstructured grid
-  void WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
+  void write_geometry_unstructured_grid(const std::vector<double>& point_coordinates,
       const std::vector<IO::index_type>& point_cell_connectivity,
       const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
       const std::vector<IO::index_type>& face_connectivity,
@@ -46,7 +46,7 @@ class VtuWriter : public VtkWriterBase
 
 
   //! write a data vector with num_component values of type T per point
-  void WritePointDataVector(const IO::visualization_vector_type_variant& data,
+  void write_point_data_vector(const IO::visualization_vector_type_variant& data,
       unsigned int num_components_per_point, const std::string& name);
 
   //! write a data vector with num_component values of type T per cell

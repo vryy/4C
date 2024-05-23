@@ -1138,7 +1138,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::SparseMatrix& trafo,
+void CORE::LINALG::SparseMatrix::apply_dirichlet_with_trafo(const CORE::LINALG::SparseMatrix& trafo,
     const Epetra_Map& dbctoggle, bool diagonalblock, bool complete)
 {
   if (not Filled()) FOUR_C_THROW("expect filled matrix to apply dirichlet conditions");
@@ -1298,7 +1298,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::Spa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::ExtractDirichletRows(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::extract_dirichlet_rows(
     const Teuchos::RCP<Epetra_Vector> dbctoggle)
 {
   if (not Filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
@@ -1338,7 +1338,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::ExtractDiri
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::ExtractDirichletRows(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::extract_dirichlet_rows(
     const Epetra_Map& dbctoggle)
 {
   if (not Filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");

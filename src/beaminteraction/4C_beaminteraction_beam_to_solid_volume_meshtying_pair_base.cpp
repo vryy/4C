@@ -87,7 +87,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvalua
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
@@ -116,14 +116,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestartDisplacement(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::set_restart_displacement(
     const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
-  base_class::SetRestartDisplacement(centerline_restart_vec_);
+  base_class::set_restart_displacement(centerline_restart_vec_);
 
   // We only set the restart displacement, if the current section has the restart coupling flag.
-  if (this->Params()->BeamToSolidVolumeMeshtyingParams()->GetCoupleRestartState())
+  if (this->Params()->beam_to_solid_volume_meshtying_params()->get_couple_restart_state())
   {
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
       ele1posref_offset_(i_dof) = centerline_restart_vec_[0][i_dof];
@@ -139,26 +139,26 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::SetRestar
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
-  base_class::GetPairVisualization(visualization_writer, visualization_params);
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Get the writers.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->GetVisualizationWriter("btsvc-segmentation");
+      visualization_writer->get_visualization_writer("btsvc-segmentation");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->GetVisualizationWriter("btsvc-integration-points");
+          visualization_writer->get_visualization_writer("btsvc-integration-points");
   if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
 
   const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
       visualization_params
           .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
               "btsvc-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
 
   if (visualization_segmentation != Teuchos::null)
   {
@@ -168,7 +168,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization_segmentation->GetVisualizationData();
+    auto& visualization_data = visualization_segmentation->get_visualization_data();
     std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
     std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
 
@@ -216,7 +216,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     CORE::LINALG::Matrix<3, 1, double> force_integration_point;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization_integration_points->GetVisualizationData();
+    auto& visualization_data = visualization_integration_points->get_visualization_data();
     std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
     std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
     std::vector<double>& force = visualization_data.GetPointData<double>("force");
@@ -235,13 +235,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
       // Add the integration points.
       for (const auto& projection_point : segment.GetProjectionPoints())
       {
-        this->EvaluateBeamPositionDouble(projection_point, X, true);
-        this->EvaluateBeamPositionDouble(projection_point, r, false);
+        this->evaluate_beam_position_double(projection_point, X, true);
+        this->evaluate_beam_position_double(projection_point, r, false);
         u = r;
         u -= X;
         GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(),
             GEOMETRYPAIR::ElementDataToDouble<solid>::ToDouble(this->ele2pos_), r_solid);
-        EvaluatePenaltyForceDouble(r, r_solid, force_integration_point);
+        evaluate_penalty_force_double(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
           point_coordinates.push_back(X(dim));
@@ -263,23 +263,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForceDouble(
-    const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
+    solid>::evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
     const CORE::LINALG::Matrix<3, 1, double>& r_solid,
     CORE::LINALG::Matrix<3, 1, double>& force) const
 {
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;
   force -= r_beam;
-  force.Scale(this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter());
+  force.Scale(this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter());
 }
 
 /**
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
-    GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
+    solid>::get_coupling_reference_position(GEOMETRYPAIR::ElementData<beam, double>&
+                                                beam_coupling_ref,
     GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const
 {
   // Add the offset to the reference position.

@@ -63,7 +63,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] numrigidbodies number of rigid bodies
      */
-    void AllocateStoredStates(const int numrigidbodies);
+    void allocate_stored_states(const int numrigidbodies);
 
     //! @name get states (read only access)
     //! @{
@@ -90,13 +90,13 @@ namespace PARTICLERIGIDBODY
     inline const std::vector<std::vector<double>>& GetRefRotation() const { return rotation_; };
 
     //! get angular velocity of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefAngularVelocity() const
+    inline const std::vector<std::vector<double>>& get_ref_angular_velocity() const
     {
       return angularvelocity_;
     };
 
     //! get angular acceleration of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefAngularAcceleration() const
+    inline const std::vector<std::vector<double>>& get_ref_angular_acceleration() const
     {
       return angularacceleration_;
     };
@@ -131,10 +131,13 @@ namespace PARTICLERIGIDBODY
     inline std::vector<std::vector<double>>& GetRefRotation() { return rotation_; };
 
     //! get angular velocity of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefAngularVelocity() { return angularvelocity_; };
+    inline std::vector<std::vector<double>>& get_ref_angular_velocity()
+    {
+      return angularvelocity_;
+    };
 
     //! get angular acceleration of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefAngularAcceleration()
+    inline std::vector<std::vector<double>>& get_ref_angular_acceleration()
     {
       return angularacceleration_;
     };

@@ -56,37 +56,37 @@ void SCATRA::ScaTraTimIntElchOST::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::PreCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
   ApplyNeumannBC(neumann_loads_);
 
   // standard general element parameters without stabilization
-  SetElementGeneralParameters(true);
+  set_element_general_parameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial electric
   // potential field, but the rhs of the standard element routine is used as starting point for this
   // special system of equations. Therefore, the rhs vector has to be scaled correctly.
-  SetElementTimeParameter(true);
+  set_element_time_parameter(true);
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  set_element_turbulence_parameters(true);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::PostCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchOST::post_calc_initial_potential_field()
 {  // and finally undo our temporary settings
-  SetElementGeneralParameters(false);
-  SetElementTimeParameter(false);
-  SetElementTurbulenceParameters(false);
+  set_element_general_parameters(false);
+  set_element_time_parameter(false);
+  set_element_turbulence_parameters(false);
 }
 
 
@@ -217,11 +217,11 @@ void SCATRA::ScaTraTimIntElchOST::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
+void SCATRA::ScaTraTimIntElchOST::electrode_kinetics_time_update()
 {
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    ComputeTimeDerivPot0(false);
+    compute_time_deriv_pot0(false);
 
     std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
@@ -256,7 +256,7 @@ void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor() const
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
+void SCATRA::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
 {
   std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
@@ -306,10 +306,10 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
 /*--------------------------------------------------------------------------*
  | set part of residual vector belonging to previous time step   fang 02/15 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
+void SCATRA::ScaTraTimIntElchOST::set_old_part_of_righthandside()
 {
   // call base class routine
-  TimIntOneStepTheta::SetOldPartOfRighthandside();
+  TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
@@ -372,7 +372,7 @@ void SCATRA::ScaTraTimIntElchBDF2::Setup()
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::PreCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
 {
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
@@ -497,14 +497,14 @@ void SCATRA::ScaTraTimIntElchBDF2::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
+void SCATRA::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
 {
   // The galvanostatic mode and double layer charging has never been tested if it is implemented
   // correctly!! The code have to be checked in detail, if somebody want to use it!!
 
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
-    // ComputeTimeDerivPot0(false);
+    // compute_time_deriv_pot0(false);
 
     std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
@@ -526,7 +526,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
+void SCATRA::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
 {
   std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
@@ -568,10 +568,10 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
 /*--------------------------------------------------------------------------*
  | set part of residual vector belonging to previous time step   fang 02/15 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
+void SCATRA::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
 {
   // call base class routine
-  TimIntBDF2::SetOldPartOfRighthandside();
+  TimIntBDF2::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
@@ -644,40 +644,40 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
 
 /*---------------------------------------------------------------------------*
  ----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::PreCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t = 0
   // the values should match your initial field at the boundary!
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
   ApplyNeumannBC(neumann_loads_);
 
   // for calculation of initial electric potential field, we have to switch off all stabilization
   // and turbulence modeling terms standard general element parameter without stabilization
-  SetElementGeneralParameters(true);
+  set_element_general_parameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial electric
   // potential field, but the rhs of the standard element routine is used as starting point for this
   // special system of equations. Therefore, the rhs vector has to be scaled correctly. Since the
   // genalpha scheme cannot be adapted easily, the backward Euler scheme is used instead.
-  SetElementTimeParameterBackwardEuler();
+  set_element_time_parameter_backward_euler();
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  set_element_turbulence_parameters(true);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::PostCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchGenAlpha::post_calc_initial_potential_field()
 {
   // and finally undo our temporary settings
-  SetElementGeneralParameters();
-  SetElementTimeParameter();
-  SetElementTurbulenceParameters();
+  set_element_general_parameters();
+  set_element_time_parameter();
+  set_element_turbulence_parameters();
 }
 
 
@@ -788,11 +788,11 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
+void SCATRA::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
 {
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    ComputeTimeDerivPot0(false);
+    compute_time_deriv_pot0(false);
 
     std::vector<CORE::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
@@ -812,7 +812,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
+void SCATRA::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
 {
   std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
@@ -911,7 +911,7 @@ void SCATRA::ScaTraTimIntElchStationary::Setup()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::PreCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
 {
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
@@ -1014,7 +1014,7 @@ void SCATRA::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); 
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
+void SCATRA::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init)
 {
   std::vector<CORE::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
@@ -1080,37 +1080,37 @@ void SCATRA::ScaTraTimIntElchSCLOST::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::PreCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
   ApplyNeumannBC(neumann_loads_);
 
   // standard general element parameters without stabilization
-  SetElementGeneralParameters(true);
+  set_element_general_parameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial electric
   // potential field, but the rhs of the standard element routine is used as starting point for this
   // special system of equations. Therefore, the rhs vector has to be scaled correctly.
-  SetElementTimeParameter(true);
+  set_element_time_parameter(true);
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  set_element_turbulence_parameters(true);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::PostCalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchSCLOST::post_calc_initial_potential_field()
 {  // and finally undo our temporary settings
-  SetElementGeneralParameters(false);
-  SetElementTimeParameter(false);
-  SetElementTurbulenceParameters(false);
+  set_element_general_parameters(false);
+  set_element_time_parameter(false);
+  set_element_turbulence_parameters(false);
 }
 
 
@@ -1157,10 +1157,10 @@ void SCATRA::ScaTraTimIntElchSCLOST::ExplicitPredictor() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::SetOldPartOfRighthandside()
+void SCATRA::ScaTraTimIntElchSCLOST::set_old_part_of_righthandside()
 {
   // call base class routine
-  TimIntOneStepTheta::SetOldPartOfRighthandside();
+  TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
   if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
@@ -1185,9 +1185,10 @@ void SCATRA::ScaTraTimIntElchSCLOST::SetOldPartOfRighthandside()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::ScaTraTimIntElchSCLOST::add_time_integration_specific_vectors(
+    bool forcedincrementalsolver)
 {
-  TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
-  ScaTraTimIntElchSCL::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  TimIntOneStepTheta::add_time_integration_specific_vectors(forcedincrementalsolver);
+  ScaTraTimIntElchSCL::add_time_integration_specific_vectors(forcedincrementalsolver);
 }
 FOUR_C_NAMESPACE_CLOSE

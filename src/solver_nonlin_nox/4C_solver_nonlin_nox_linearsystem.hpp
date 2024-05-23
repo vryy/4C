@@ -110,7 +110,7 @@ namespace NOX
       void reset(Teuchos::ParameterList& p);
 
       //! reset PrePostOperator wrapper object
-      void resetPrePostOperator(Teuchos::ParameterList& p);
+      void reset_pre_post_operator(Teuchos::ParameterList& p);
 
       //! Evaluate the Jacobian
       bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
@@ -118,7 +118,7 @@ namespace NOX
       //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
       virtual bool computeFandJacobian(const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs);
 
-      bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+      bool compute_correction_system(const enum NOX::NLN::CorrectionType type,
           const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x,
           ::NOX::Epetra::Vector& rhs);
 
@@ -141,15 +141,15 @@ namespace NOX
           Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const override;
 
       //! adjust the pseudo time step (using a least squares approximation)
-      void adjustPseudoTimeStep(double& delta, const double& stepSize,
+      void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
           const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
       //! ::NOX::Epetra::Interface::Required accessor
-      Teuchos::RCP<const ::NOX::Epetra::Interface::Required> getRequiredInterface() const;
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Required> get_required_interface() const;
 
       //! ::NOX::Epetra::Interface::Jacobian accessor
-      Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian> getJacobianInterface() const;
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian> get_jacobian_interface() const;
 
       //! ::NOX::Epetra::Interface::Preconditioner accessor
       Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
@@ -169,12 +169,12 @@ namespace NOX
       /** \brief get a copy of the block diagonal
        *
        *  \param diag_bid  diagonal block id */
-      Teuchos::RCP<Epetra_Vector> getDiagonalOfJacobian(unsigned diag_bid) const;
+      Teuchos::RCP<Epetra_Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
 
       /** \brief replace the diagonal of the diagonal block in the Jacobian
        *
        *  \param diag_bid  diagonal block id */
-      void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid);
+      void replace_diagonal_of_jacobian(const Epetra_Vector& new_diag, unsigned diag_bid);
 
       //! Returns Jacobian Epetra_Operator pointer
       Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const override;
@@ -183,7 +183,7 @@ namespace NOX
       Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
       //! Returns the operator type of the jacobian
-      const enum NOX::NLN::LinSystem::OperatorType& getJacobianOperatorType() const;
+      const enum NOX::NLN::LinSystem::OperatorType& get_jacobian_operator_type() const;
 
       //! Set the jacobian operator
       //! Derived function: Check if the input operator is a LINALG_SparseOperator
@@ -191,7 +191,7 @@ namespace NOX
           const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
 
       //! Set the jacobian operator of this class
-      void SetJacobianOperatorForSolve(
+      void set_jacobian_operator_for_solve(
           const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp);
 
       Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
@@ -232,11 +232,11 @@ namespace NOX
        *
        *  \return the computed condition number.
        *  \author hiermeier \date 04/18 */
-      void computeSerialEigenvaluesOfJacobian(CORE::LINALG::SerialDenseVector& reigenvalues,
+      void compute_serial_eigenvalues_of_jacobian(CORE::LINALG::SerialDenseVector& reigenvalues,
           CORE::LINALG::SerialDenseVector& ieigenvalues) const;
 
       /// compute the respective condition number (only possible in serial mode)
-      double computeSerialConditionNumberOfJacobian(
+      double compute_serial_condition_number_of_jacobian(
           const LinSystem::ConditionNumber condnum_type) const;
 
      protected:
@@ -270,7 +270,7 @@ namespace NOX
           Teuchos::RCP<CORE::LINALG::Solver>& currSolver) = 0;
 
       //! Set-up the linear problem object
-      virtual void SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
+      virtual void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
           CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const;
 
       /*! \brief Complete the solution vector after a linear solver attempt
@@ -282,26 +282,26 @@ namespace NOX
        *  \param lhs        (out): left-hand-side vector which can be extended
        *
        *  \author hiermeier \date 04/17 */
-      virtual void CompleteSolutionAfterSolve(
+      virtual void complete_solution_after_solve(
           const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const;
 
       /// convert jacobian matrix to dense matrix
-      void convertJacobianToDenseMatrix(CORE::LINALG::SerialDenseMatrix& dense) const;
+      void convert_jacobian_to_dense_matrix(CORE::LINALG::SerialDenseMatrix& dense) const;
 
       /// convert sparse matrix to dense matrix
-      void convertSparseToDenseMatrix(const CORE::LINALG::SparseMatrix& sparse,
+      void convert_sparse_to_dense_matrix(const CORE::LINALG::SparseMatrix& sparse,
           CORE::LINALG::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
           const Epetra_Map& full_domainmap) const;
 
       /// prepare the dense matrix in case of a block sparse matrix
-      void prepareBlockDenseMatrix(const CORE::LINALG::BlockSparseMatrixBase& block_sparse,
+      void prepare_block_dense_matrix(const CORE::LINALG::BlockSparseMatrixBase& block_sparse,
           CORE::LINALG::SerialDenseMatrix& block_dense) const;
 
       /// throw an error if there is a row containing only zeros
       void throwIfZeroRow(const CORE::LINALG::SerialDenseMatrix& block_dense) const;
 
       /// solve the non-symmetric eigenvalue problem
-      void solveNonSymmEigenValueProblem(CORE::LINALG::SerialDenseMatrix& mat,
+      void solve_non_symm_eigen_value_problem(CORE::LINALG::SerialDenseMatrix& mat,
           CORE::LINALG::SerialDenseVector& reigenvalues,
           CORE::LINALG::SerialDenseVector& ieigenvalues) const;
 

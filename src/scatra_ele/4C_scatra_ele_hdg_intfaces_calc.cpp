@@ -88,7 +88,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
+void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
     DRT::ELEMENTS::ScaTraHDGIntFace* intface,               ///< internal face element
     std::vector<int>& nds_master,                           ///< nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                            ///< nodal dofset w.r.t. slave element
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::AssembleInternalFacesUsingNei
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::EvaluateInternalFaces(
+int DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::evaluate_internal_faces(
     DRT::ELEMENTS::ScaTraHDGIntFace* intface,  ///< internal face element
     Teuchos::ParameterList& params,            ///< parameter list
     DRT::Discretization& discretization,       ///< discretization

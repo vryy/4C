@@ -66,7 +66,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
 
   // clone scatra discretization from structure discretization first. Afterwards, clone thermo
   // discretization from scatra discretization
-  CloneDiscretizations(comm);
+  clone_discretizations(comm);
 
   Teuchos::RCP<DRT::Discretization> structuredis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
@@ -76,7 +76,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   if (structparams.get<std::string>("INT_STRATEGY") == "Old")
     FOUR_C_THROW("Old structural time integration is not supported");
 
-  struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(structparams);
+  struct_adapterbase_ptr_ = ADAPTER::build_structure_algorithm(structparams);
 
   // initialize structure base algorithm
   struct_adapterbase_ptr_->Init(
@@ -87,17 +87,17 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
       new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
           problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
   scatra_->Init();
-  scatra_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
-  scatra_->ScaTraField()->SetNumberOfDofSetVelocity(1);
-  scatra_->ScaTraField()->SetNumberOfDofSetThermo(2);
+  scatra_->ScaTraField()->set_number_of_dof_set_displacement(1);
+  scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
+  scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(sstitimeparams,
       CloneThermoParams(scatraparams, thermoparams),
       problem->SolverParams(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
   thermo_->Init();
-  thermo_->ScaTraField()->SetNumberOfDofSetDisplacement(1);
-  thermo_->ScaTraField()->SetNumberOfDofSetVelocity(1);
-  thermo_->ScaTraField()->SetNumberOfDofSetScaTra(2);
-  thermo_->ScaTraField()->SetNumberOfDofSetThermo(3);
+  thermo_->ScaTraField()->set_number_of_dof_set_displacement(1);
+  thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
+  thermo_->ScaTraField()->set_number_of_dof_set_sca_tra(2);
+  thermo_->ScaTraField()->set_number_of_dof_set_thermo(3);
 
   // distribute dofsets among subproblems
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
@@ -175,7 +175,7 @@ void SSTI::SSTIAlgorithm::Setup()
     FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
-  AssignMaterialPointers();
+  assign_material_pointers();
 
   // set up scatra-scatra interface coupling
   if (InterfaceMeshtying())
@@ -212,7 +212,7 @@ void SSTI::SSTIAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::CloneDiscretizations(const Epetra_Comm& comm)
+void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
 {
   // The structure discretization is received from the input.
   // Then, the scatra discretization is cloned.
@@ -246,7 +246,7 @@ void SSTI::SSTIAlgorithm::ReadRestart(int restart)
   SetTimeStep(structure_->TimeOld(), restart);
 
   // Material pointers to other field were deleted during ReadRestart(). They need to be reset.
-  AssignMaterialPointers();
+  assign_material_pointers();
 }
 
 /*----------------------------------------------------------------------*/
@@ -256,15 +256,15 @@ void SSTI::SSTIAlgorithm::TestResults(const Epetra_Comm& comm) const
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
-  problem->AddFieldTest(thermo_->CreateScaTraFieldTest());
+  problem->AddFieldTest(scatra_->create_sca_tra_field_test());
+  problem->AddFieldTest(thermo_->create_sca_tra_field_test());
   problem->AddFieldTest(Teuchos::rcp(new SSTI::SSTIResultTest(*this)));
   problem->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::DistributeStructureSolution()
+void SSTI::SSTIAlgorithm::distribute_structure_solution()
 {
   ScaTraField()->ApplyMeshMovement(structure_->Dispnp());
   ThermoField()->ApplyMeshMovement(structure_->Dispnp());
@@ -280,7 +280,7 @@ void SSTI::SSTIAlgorithm::DistributeStructureSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::DistributeScatraSolution()
+void SSTI::SSTIAlgorithm::distribute_scatra_solution()
 {
   StructureField()->Discretization()->SetState(1, "scalarfield", scatra_->ScaTraField()->Phinp());
   ThermoField()->Discretization()->SetState(2, "scatra", scatra_->ScaTraField()->Phinp());
@@ -300,7 +300,7 @@ void SSTI::SSTIAlgorithm::DistributeScatraSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::DistributeThermoSolution()
+void SSTI::SSTIAlgorithm::distribute_thermo_solution()
 {
   StructureField()->Discretization()->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
@@ -334,16 +334,16 @@ void SSTI::SSTIAlgorithm::DistributeThermoSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::DistributeSolutionAllFields()
+void SSTI::SSTIAlgorithm::distribute_solution_all_fields()
 {
-  DistributeScatraSolution();
-  DistributeStructureSolution();
-  DistributeThermoSolution();
+  distribute_scatra_solution();
+  distribute_structure_solution();
+  distribute_thermo_solution();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::DistributeDtFromScaTra()
+void SSTI::SSTIAlgorithm::distribute_dt_from_sca_tra()
 {
   // get adapted time, timestep, and step (incremented)
   const double newtime = ScaTraField()->Time();
@@ -369,7 +369,7 @@ void SSTI::SSTIAlgorithm::DistributeDtFromScaTra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSTI::SSTIAlgorithm::AssignMaterialPointers()
+void SSTI::SSTIAlgorithm::assign_material_pointers()
 {
   // scatra - structure
   const int numscatraelements = ScaTraField()->Discretization()->NumMyColElements();

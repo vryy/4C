@@ -111,7 +111,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const DRT::Discretization> Discretization() const = 0;
 
     /// writing access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> write_access_discretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(

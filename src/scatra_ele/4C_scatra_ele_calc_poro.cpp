@@ -158,7 +158,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
-      ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
+      extract_element_and_node_values_poro(ele, params, discretization, la);
 
       // calculate scalars and domain integral
       CalculateScalars(ele, elevec1_epetra, inverting, false);
@@ -178,10 +178,10 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
  | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(const DRT::Element* ele)
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(const DRT::Element* ele)
 {
   // call base class
-  my::ReadElementCoordinates(ele);
+  my::read_element_coordinates(ele);
 
   // copy initial node position
   xyze0_ = my::xyze_;
@@ -193,13 +193,13 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(const DRT
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
-  ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
+  extract_element_and_node_values_poro(ele, params, discretization, la);
 
-  my::ExtractElementAndNodeValues(ele, params, discretization, la);
+  my::extract_element_and_node_values(ele, params, discretization, la);
 
   return;
 }
@@ -208,8 +208,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(DRT:
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
@@ -469,7 +469,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate gauss point porosity from fluid and solid and (potentially) scatra solution
     ComputePorosity(ele);

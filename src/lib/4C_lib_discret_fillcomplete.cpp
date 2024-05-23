@@ -85,13 +85,13 @@ int DRT::Discretization::FillComplete(
   BuildElementColMap();
 
   // (re)construct element -> node pointers
-  BuildElementToNodePointers();
+  build_element_to_node_pointers();
 
   // (re)construct node -> element pointers
-  BuildNodeToElementPointers();
+  build_node_to_element_pointers();
 
   // (re)construct element -> element pointers for interface-elements
-  BuildElementToElementPointers();
+  build_element_to_element_pointers();
 
   // set the flag indicating Filled()==true
   // as the following methods make use of maps
@@ -104,9 +104,10 @@ int DRT::Discretization::FillComplete(
     if (myrank == 0)
     {
       IO::cout(IO::verbose)
-          << "| AssignDegreesOfFreedom() ...                                       |" << IO::endl;
+          << "| assign_degrees_of_freedom() ...                                       |"
+          << IO::endl;
     }
-    AssignDegreesOfFreedom(0);
+    assign_degrees_of_freedom(0);
   }
 
   // call element routines to initialize
@@ -126,10 +127,10 @@ int DRT::Discretization::FillComplete(
     if (myrank == 0)
     {
       IO::cout(IO::verbose)
-          << "| BoundaryConditionsGeometry() ...                                   |" << IO::endl;
+          << "| boundary_conditions_geometry() ...                                   |" << IO::endl;
     }
 
-    BoundaryConditionsGeometry();
+    boundary_conditions_geometry();
   }
 
   if (myrank == 0)
@@ -255,7 +256,7 @@ void DRT::Discretization::BuildElementColMap()
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> node (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildElementToNodePointers()
+void DRT::Discretization::build_element_to_node_pointers()
 {
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
@@ -269,12 +270,12 @@ void DRT::Discretization::BuildElementToNodePointers()
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildElementToElementPointers()
+void DRT::Discretization::build_element_to_element_pointers()
 {
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    bool success = elecurr->second->BuildElementPointers(element_);
+    bool success = elecurr->second->build_element_pointers(element_);
     if (!success) FOUR_C_THROW("Building element <-> element topology failed");
   }
   return;
@@ -283,11 +284,11 @@ void DRT::Discretization::BuildElementToElementPointers()
 /*----------------------------------------------------------------------*
  |  Build ptrs node -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildNodeToElementPointers()
+void DRT::Discretization::build_node_to_element_pointers()
 {
   std::map<int, Teuchos::RCP<DRT::Node>>::iterator nodecurr;
   for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
-    nodecurr->second->ClearMyElementTopology();
+    nodecurr->second->clear_my_element_topology();
 
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
@@ -309,7 +310,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
 /*----------------------------------------------------------------------*
  |  set degrees of freedom (protected)                       mwgee 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::AssignDegreesOfFreedom(int start)
+int DRT::Discretization::assign_degrees_of_freedom(int start)
 {
   if (!Filled()) FOUR_C_THROW("Filled()==false");
   if (!NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
@@ -322,7 +323,7 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
   havedof_ = true;
 
   for (unsigned i = 0; i < dofsets_.size(); ++i)
-    start = dofsets_[i]->AssignDegreesOfFreedom(*this, i, start);
+    start = dofsets_[i]->assign_degrees_of_freedom(*this, i, start);
   return start;
 }
 

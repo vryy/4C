@@ -24,14 +24,14 @@ void CONTACT::NitscheStrategySsi::Integrate(const CONTACT::ParamsInterface& cpar
   CONTACT::NitscheStrategy::Integrate(cparams);
 
   fs_ = CreateRhsBlockPtr(CONTACT::VecBlockType::scatra);
-  kss_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra);
-  ksd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ);
-  kds_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra);
+  kss_ = create_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra);
+  ksd_ = create_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ);
+  kds_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategySsi::EvaluateReferenceState()
+void CONTACT::NitscheStrategySsi::evaluate_reference_state()
 {
   // initialize an estimate of TraceHE
   InitTraceHE();
@@ -213,7 +213,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatri
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategySsi::complete_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -242,7 +242,7 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::complete_matrix_block_ptr(bt, kc);
       break;
   }
 }

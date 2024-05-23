@@ -244,7 +244,7 @@ namespace DRT
       /// here: evaluation of Taylor-Couette analytical solution
       double Evaluate(const double* x, double t, std::size_t component) const override;
 
-      std::vector<double> EvaluateSpatialDerivative(
+      std::vector<double> evaluate_spatial_derivative(
           const double* x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t NumberComponents() const override
@@ -277,7 +277,7 @@ namespace DRT
 
       double Evaluate(const double* x, double t, std::size_t component) const override;
 
-      std::vector<double> EvaluateSpatialDerivative(
+      std::vector<double> evaluate_spatial_derivative(
           const double* x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t NumberComponents() const override
@@ -310,7 +310,7 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
 
-      std::vector<double> EvaluateSpatialDerivative(
+      std::vector<double> evaluate_spatial_derivative(
           const double* x, const double t, const std::size_t component) const override
       {
         FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowForce");
@@ -331,7 +331,7 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
 
-      std::vector<double> EvaluateSpatialDerivative(
+      std::vector<double> evaluate_spatial_derivative(
           const double* x, const double t, const std::size_t component) const override
       {
         FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowTraction");

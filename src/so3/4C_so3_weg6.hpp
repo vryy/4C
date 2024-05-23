@@ -56,20 +56,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoWeg6Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDW6"; }
+      std::string get_element_type_string() const { return "SOLIDW6"; }
     };
 
     /*!
@@ -146,7 +146,7 @@ namespace DRT
         \brief Get coordinates of element center
 
         */
-      virtual std::vector<double> ElementCenterRefeCoords();
+      virtual std::vector<double> element_center_refe_coords();
 
       /*!
       \brief Return unique ParObject id
@@ -365,7 +365,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       // compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       // compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
@@ -422,7 +422,7 @@ namespace DRT
       void sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass);
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDW6"; }
+      std::string get_element_type_string() const { return "SOLIDW6"; }
     };  // class So_weg6
 
 

@@ -58,16 +58,16 @@ namespace CONTACT
 
     /*!
      * @note currently there is no support for friction; furthermore we can not call
-     * 'UpdateTraceIneqEtimates' at the moment since at this stage we do not have the gp
+     * 'update_trace_ineq_etimates' at the moment since at this stage we do not have the gp
      * concentrations -> so far no adaptive nitsche penalty possible!
      */
-    void EvaluateReferenceState() override;
+    void evaluate_reference_state() override;
 
     /*!
      * @brief initialize TraceHE parameter of the mortar elements
      *
-     * @note: this approximation is done here since UpdateTraceIneqEtimates() can not be called at
-     * the moment
+     * @note: this approximation is done here since update_trace_ineq_etimates() can not be called
+     * at the moment
      */
     void InitTraceHE();
 
@@ -101,7 +101,7 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bt) override;
 
-    void CompleteMatrixBlockPtr(
+    void complete_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     //! current scalar state vector

@@ -93,7 +93,7 @@ namespace FSI
     /// Update everything
     void Update() override;
 
-    CORE::ADAPTER::Coupling& StructureAleOutflowCoupling() { return *coupsaout_; }
+    CORE::ADAPTER::Coupling& structure_ale_outflow_coupling() { return *coupsaout_; }
 
     void ReadRestart(int step) override;
 
@@ -135,7 +135,7 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -289,7 +289,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    void CreateCombinedDofRowMap() override = 0;
+    void create_combined_dof_row_map() override = 0;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -298,7 +298,7 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    void SetupDBCMapExtractor() override = 0;
+    void setup_dbc_map_extractor() override = 0;
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f) override = 0;

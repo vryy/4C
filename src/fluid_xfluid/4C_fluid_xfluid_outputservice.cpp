@@ -47,7 +47,7 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<DRT::Discretiza
 void FLD::XFluidOutputService::PrepareOutput()
 {
   dofset_out_->Reset();
-  dofset_out_->AssignDegreesOfFreedom(*discret_, 0, 0);
+  dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   // split based on complete fluid field (standard splitter that handles one dofset)
   CORE::LINALG::CreateMapExtractorFromDiscretization(
@@ -304,7 +304,7 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
   cond_manager_->GmshOutput(filename_base, step, gmsh_step_diff_, gmsh_debug_out_screen_);
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputPrevious(
+void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
     const std::string& filename_base,             ///< name for output file
     int step,                                     ///< step number
     const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
@@ -333,7 +333,7 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputPrevious(
       dispnp_col);
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputDebug(
+void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
@@ -354,7 +354,7 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputDebug(
       dispnp_col);
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshResidualOutputDebug(
+void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
@@ -376,7 +376,7 @@ void FLD::XFluidOutputServiceGmsh::GmshResidualOutputDebug(
       Teuchos::null, dispnp_col);
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshIncrementOutputDebug(
+void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
@@ -542,7 +542,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
 
-      e->GetVolumeCellsDofSets(cell_sets, nds_sets, include_inner_);
+      e->get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner_);
 
 
       if (e->IsIntersected())
@@ -564,12 +564,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 
             if (e->IsCut())
             {
-              GmshOutputVolumeCell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
+              gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
               if (vc->Position() == CORE::GEO::CUT::Point::outside)
               {
                 if (cond_manager_->HasMeshCoupling())
-                  GmshOutputBoundaryCell(*discret_, gmshfilecontent_bound, vc, wizard);
+                  gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
               }
             }
             else
@@ -759,7 +759,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
 }
 
 /// Gmsh output function for volumecells
-void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
+void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
     DRT::Discretization& discret,              ///< background fluid discretization
     std::ofstream& vel_f,                      ///< output file stream for velocity
     std::ofstream& press_f,                    ///< output file stream for pressure
@@ -1147,7 +1147,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 }
 
 /// Gmsh output function for boundarycells
-void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
+void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
     DRT::Discretization& discret,                     ///< background fluid discretization
     std::ofstream& bound_f,                           ///< output file stream for boundary mesh
     CORE::GEO::CUT::VolumeCell* vc,                   ///< volumecell
@@ -1189,7 +1189,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
       CORE::GEO::CUT::BoundaryCell* bc = *i;
 
       // Issue with boundary cell outputs for marked background sides
-      if (bc->GetFacet()->OnMarkedBackgroundSide()) continue;
+      if (bc->GetFacet()->on_marked_background_side()) continue;
 
       switch (bc->Shape())
       {
@@ -1285,7 +1285,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
   }
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
+void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
     bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos)
 {
   if (!gmsh_discret_out_) return;
@@ -1312,7 +1312,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
 
   // append other discretizations involved (cutter surface discretization, coupling discretization,
   // etc.)
-  cond_manager_->GmshOutputDiscretization(gmshfilecontent);
+  cond_manager_->gmsh_output_discretization(gmshfilecontent);
 
   gmshfilecontent.close();
 }

@@ -49,7 +49,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param index   (int)  : Integer to consider either displacements or director displacmenets
    */
   template <CORE::FE::CellType distype>
-  void SpatialConfiguration(CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
+  void spatial_configuration(CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
       const CORE::LINALG::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x_refe,
       const std::vector<double>& disp, const int index)
   {
@@ -194,7 +194,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param defgrd_enh [in/out]: enhanced (consistent) deformation gradient
    */
   template <unsigned dim>
-  void CalcConsistentDefgrd(const CORE::LINALG::Matrix<dim, dim>& defgrd_disp,
+  void calc_consistent_defgrd(const CORE::LINALG::Matrix<dim, dim>& defgrd_disp,
       const CORE::LINALG::Matrix<dim*(dim + 1) / 2, 1>& glstrain_enh,
       CORE::LINALG::Matrix<dim, dim>& defgrd_enh)
   {
@@ -1515,7 +1515,7 @@ namespace DRT::ELEMENTS::SHELL
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
   template <CORE::FE::CellType distype>
-  void AddInternalForceVector(const CORE::LINALG::SerialDenseMatrix& Bop,
+  void add_internal_force_vector(const CORE::LINALG::SerialDenseMatrix& Bop,
       const CORE::LINALG::SerialDenseVector& stress_enh, const double integration_fac,
       CORE::LINALG::SerialDenseVector& force_vector)
   {

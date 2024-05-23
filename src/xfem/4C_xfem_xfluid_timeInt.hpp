@@ -97,7 +97,7 @@ namespace XFEM
 
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction
-    void TransferDofsToNewMap(
+    void transfer_dofs_to_new_map(
         const std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -108,7 +108,7 @@ namespace XFEM
 
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for given vector of node gids
-    void TransferDofsToNewMap(
+    void transfer_dofs_to_new_map(
         const std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -124,7 +124,7 @@ namespace XFEM
 
     /// get for each type of reconstruction method the node ids with corresponding dof its for that
     /// this method has to be applied on this proc
-    std::map<int, std::set<int>>& Get_NodeToDofMap_For_Reconstr(
+    std::map<int, std::set<int>>& get_node_to_dof_map_for_reconstr(
         INPAR::XFEM::XFluidTimeInt reconstr);
 
     /// get permutation map for ghost dofs
@@ -136,7 +136,7 @@ namespace XFEM
    private:
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for a given node gid
-    void TransferNodalDofsToNewMap(
+    void transfer_nodal_dofs_to_new_map(
         const std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -147,13 +147,13 @@ namespace XFEM
     );
 
     /// returns matching std::string for each reconstruction method
-    std::string MapMethodEnumToString(const enum INPAR::XFEM::XFluidTimeInt term);
+    std::string map_method_enum_to_string(const enum INPAR::XFEM::XFluidTimeInt term);
 
     /// all surrounding elements non-intersected?
-    bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard);
+    bool non_intersected_elements(DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     /// find all ghost dofsets around this node and its std-dofset
-    void FindSurroundingGhostDofsets(
+    void find_surrounding_ghost_dofsets(
         std::map<int, std::set<int>>&
             ghostDofsets,       /// surrounding ghost dofsets to be filled, map of ghost nodes and
                                 /// correponding ghost nds index w.r.t given std nodal dofset
@@ -206,26 +206,27 @@ namespace XFEM
     );
 
     /// special check if the node slides along the cut surface
-    bool SpecialCheck_SlidingOnSurface(bool& changed_side,
+    bool special_check_sliding_on_surface(bool& changed_side,
         const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
         const CORE::GEO::CUT::Node* n_new   /// node w.r.t to new wizard
     );
 
     /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if
     /// check was successful
-    bool SpecialCheck_InterfaceTips(bool& changed_side,  /// did the node change the side ?
-        std::vector<int>& identified_sides,              /// side Id of identified side
-        const CORE::GEO::CUT::Node* n_old,               /// node w.r.t to old wizard
-        const CORE::GEO::CUT::Node* n_new                /// node w.r.t to new wizard
+    bool special_check_interface_tips(bool& changed_side,  /// did the node change the side ?
+        std::vector<int>& identified_sides,                /// side Id of identified side
+        const CORE::GEO::CUT::Node* n_old,                 /// node w.r.t to old wizard
+        const CORE::GEO::CUT::Node* n_new                  /// node w.r.t to new wizard
     );
 
     /// special check for level-set based interface tips, note: currently empty, can be filled if
     /// necessary
-    bool SpecialCheck_InterfaceTips_Levelset(bool& changed_side  /// did the node change the side ?
+    bool special_check_interface_tips_levelset(
+        bool& changed_side  /// did the node change the side ?
     );
 
     /// special check for mesh based interface tips
-    bool SpecialCheck_InterfaceTips_SpaceTime(
+    bool special_check_interface_tips_space_time(
         bool& changed_side,  /// did the node change the side ?
         DRT::Element* side, const int coup_sid,
         const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates

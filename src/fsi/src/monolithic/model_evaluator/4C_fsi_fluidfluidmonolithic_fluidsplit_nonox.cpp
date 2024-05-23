@@ -139,7 +139,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
   FSI::MonolithicNoNOX::SetupSystem();
 
   // Create a combined map for Structure/Fluid/ALE-DOFs all in one
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   // Tell fluid field to split the fluid system matrix
   // (indicate the fluid split)
@@ -180,7 +180,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
   if (firstcall)
   {
     // Store fluid interface velocity:
-    Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+    Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->extract_interface_veln();
 
     /*----------------------------------------------------------------------*/
     // Time integration parameters
@@ -413,8 +413,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
  ----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 {
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
+  const CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get single field block matrices
@@ -704,7 +704,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::ExtractFieldVectors(
 
   // Conversion ALE displacement to fluid field:
   Teuchos::RCP<Epetra_Vector> fcx = AleToFluidInterface(acx);
-  FluidField()->DisplacementToVelocity(fcx);
+  FluidField()->displacement_to_velocity(fcx);
 
 
   // The previously computed fluid interface values have to be inserted into the fluid field vector
@@ -721,13 +721,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::ReadRestart(int step)
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(
-        new Epetra_Vector(*(FluidField()->XFluidFluidMapExtractor()->FluidMap()), true));
+        new Epetra_Vector(*(FluidField()->x_fluid_fluid_map_extractor()->FluidMap()), true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(
         FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Epetra_Vector> lambdafull =
-        FluidField()->XFluidFluidMapExtractor()->InsertFluidVector(lambdaemb);
+        FluidField()->x_fluid_fluid_map_extractor()->InsertFluidVector(lambdaemb);
     lambda_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -755,7 +755,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Output()
 
     // 2. extract the embedded fluid part
     Teuchos::RCP<Epetra_Vector> lambdaemb =
-        FluidField()->XFluidFluidMapExtractor()->ExtractFluidVector(lambdafull);
+        FluidField()->x_fluid_fluid_map_extractor()->ExtractFluidVector(lambdafull);
 
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -766,16 +766,16 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Output()
   }
   AleField()->Output();
 
-  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->GetConstraintManager()->PrintMonitorValues();
+    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
+    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplitNoNOX::CreateCombinedDofRowMap()
+void FSI::FluidFluidMonolithicFluidSplitNoNOX::create_combined_dof_row_map()
 {
   // Create a combined map for Structure/Fluid/ALE-DOFs all in one
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
@@ -806,8 +806,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Newton()
   Extract predictor increments
   ----------------------------------------------------------------------*/
   // Increment of structural interface displacement --> structural predictor!!
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
+  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->extract_interface_dispnp()));
+  ddgpred_->Update(-1.0, *StructureField()->extract_interface_dispn(), 1.0);
 
   /*----------------------------------------------------------------------*/
   // Initialize the increment vectors, they are updated in Evaluate(...)->ExtractFieldVectors(...)
@@ -836,13 +836,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Newton()
 }
 
 /*----------------------------------------------------------------------
- * BuildConvergenceNorms:
+ * build_convergence_norms:
  *     - Calculate the residual and incremental norms required for
  *        the convergence test in Newton-loop
  *     - Implemented:
  *         The (Euclidian) L2-Norm
  ----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplitNoNOX::BuildConvergenceNorms()
+void FSI::FluidFluidMonolithicFluidSplitNoNOX::build_convergence_norms()
 {
   /*----------------------------------------------------------------------
   Residual norms - L2 of:
@@ -946,10 +946,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::BuildConvergenceNorms()
 }
 
 /*----------------------------------------------------------------------
- * RecoverLagrangeMultiplier:
+ * recover_lagrange_multiplier:
  *     - Compute the Lagrange multiplier at the FSI-interface
  ----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplitNoNOX::RecoverLagrangeMultiplier()
+void FSI::FluidFluidMonolithicFluidSplitNoNOX::recover_lagrange_multiplier()
 {
   /*----------------------------------------------------------------------*/
   // Time integration parameter
@@ -1059,7 +1059,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::RecoverLagrangeMultiplier()
     // Merged fluid pressure DOF map
     fluidpresmaps.push_back(FluidField()->PressureRowMap());
     // Embedded fluid DOF map
-    fluidpresmaps.push_back(FluidField()->XFluidFluidMapExtractor()->FluidMap());
+    fluidpresmaps.push_back(FluidField()->x_fluid_fluid_map_extractor()->FluidMap());
 
     // Embedded fluid pressure map
     Teuchos::RCP<const Epetra_Map> innerfluidpresmap =
@@ -1068,14 +1068,14 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::RecoverLagrangeMultiplier()
     // To keep merged fluid velocity and pressure DOF apart
     Teuchos::RCP<CORE::LINALG::MapExtractor> innerfluidvelextractor =
         Teuchos::rcp(new CORE::LINALG::MapExtractor(
-            *FluidField()->XFluidFluidMapExtractor()->FluidMap(), innerfluidpresmap, false));
+            *FluidField()->x_fluid_fluid_map_extractor()->FluidMap(), innerfluidpresmap, false));
 
     // Get the ALE-displacements, convert to inner fluid DOF. Still mapped to the embedded fluid.
     Teuchos::RCP<Epetra_Vector> aux =
         AleToFluid(AleField()->Interface()->InsertOtherVector(ddialeinc_));
     // Add the pressure DOF as zeros
     aux = innerfluidvelextractor->InsertCondVector(aux);
-    aux = FluidField()->XFluidFluidMapExtractor()->InsertFluidVector(aux);
+    aux = FluidField()->x_fluid_fluid_map_extractor()->InsertFluidVector(aux);
     // Remove FSI DOF
     Teuchos::RCP<Epetra_Vector> tmp = FluidField()->Interface()->ExtractOtherVector(aux);
     fmgiprev_->Apply(*tmp, *fmgiddia);
@@ -1088,7 +1088,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::RecoverLagrangeMultiplier()
     if (fggprev_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(fggprev_->RangeMap(), true));
-      Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+      Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_interface_veln();
       fggprev_->Apply(*fveln, *tmp);
       tmpvec->Update(Dt() * fluidtimescale, *tmp, 1.0);
     }
@@ -1105,7 +1105,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::RecoverLagrangeMultiplier()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicFluidSplitNoNOX::HandleFluidDofMapChangeInNewton()
+void FSI::FluidFluidMonolithicFluidSplitNoNOX::handle_fluid_dof_map_change_in_newton()
 {
   if (Comm().MyPID() == 0) IO::cout << "New Map!" << IO::endl;
 
@@ -1119,7 +1119,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::HandleFluidDofMapChangeInNewton()
   Teuchos::RCP<const Epetra_Vector> ax_n;
   ax_n = Extractor().ExtractVector(x_sum_n, 2);
 
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   // Initialize the global system matrix!
   systemmatrix_ =
@@ -1147,7 +1147,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::HandleFluidDofMapChangeInNewton()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::FluidFluidMonolithicFluidSplitNoNOX::HasFluidDofMapChanged(
+bool FSI::FluidFluidMonolithicFluidSplitNoNOX::has_fluid_dof_map_changed(
     const Epetra_BlockMap& fluidincrementmap)
 {
   bool isoldmap = fluidincrementmap.SameAs(*FluidField()->Interface()->OtherMap());

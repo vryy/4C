@@ -88,7 +88,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
   name << filename_ << ".control";
   WriteHeader(name.str(), type_of_spatial_approx);
 
-  InsertRestartBackReference(restart_step, outputname);
+  insert_restart_back_reference(restart_step, outputname);
 }
 
 
@@ -171,7 +171,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
     WriteHeader(name.str(), type_of_spatial_approx);
 
-    InsertRestartBackReference(restart_step, restartname);
+    insert_restart_back_reference(restart_step, restartname);
   }
 }
 
@@ -310,7 +310,7 @@ void IO::OutputControl::WriteHeader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::InsertRestartBackReference(int restart, const std::string& outputname)
+void IO::OutputControl::insert_restart_back_reference(int restart, const std::string& outputname)
 {
   if (myrank_ != 0) return;
 

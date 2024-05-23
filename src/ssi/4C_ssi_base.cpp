@@ -49,7 +49,8 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           CORE::UTILS::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       is_manifold_meshtying_(CORE::UTILS::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
-      is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
+      is_s2i_kinetic_with_pseudo_contact_(
+          check_s2_i_kinetics_condition_for_pseudo_contact("structure")),
       macro_scale_(GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
                        CORE::Materials::m_scatra_multiscale) != -1 or
                    GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
@@ -57,12 +58,12 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       ssiinterfacecontact_(
           GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),
-      ssiinterfacemeshtying_(
-          GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
-          nullptr),
+      ssiinterfacemeshtying_(GLOBAL::Problem::Instance()
+                                 ->GetDis("structure")
+                                 ->GetCondition("ssi_interface_meshtying") != nullptr),
       temperature_funct_num_(
           GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
-      use_old_structure_(GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>(
+      use_old_structure_(GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>(
                              "INT_STRATEGY") == "Old")
 {
   // Keep this constructor empty!
@@ -95,7 +96,7 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
   CheckSSIFlags();
 
-  CheckSSIInterfaceConditions(struct_disname);
+  check_ssi_interface_conditions(struct_disname);
 
   // set isinit_ flag true
   SetIsInit(true);
@@ -138,7 +139,7 @@ void SSI::SSIBase::Setup()
 
     if (macro_scale_)
     {
-      ScaTraField()->CalcMeanMicroConcentration();
+      ScaTraField()->calc_mean_micro_concentration();
       ssicoupling_->SetScalarFieldMicro(
           *GLOBAL::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
     }
@@ -179,12 +180,12 @@ void SSI::SSIBase::Setup()
   else if (use_old_structure_)
     structure_->Setup();
 
-  if (IsS2IKineticsWithPseudoContact())
+  if (is_s2_i_kinetics_with_pseudo_contact())
   {
     auto dummy_stress_state =
         Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(2), true));
-    ssicoupling_->SetMechanicalStressState(*ScaTraField()->Discretization(), dummy_stress_state,
-        ScaTraField()->NdsTwoTensorQuantity());
+    ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(), dummy_stress_state,
+        ScaTraField()->nds_two_tensor_quantity());
   }
 
   // check maps from scalar transport and structure discretizations
@@ -194,14 +195,14 @@ void SSI::SSIBase::Setup()
     FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
-  ssicoupling_->AssignMaterialPointers(
+  ssicoupling_->assign_material_pointers(
       structure_->Discretization(), ScaTraField()->Discretization());
 
   // set up scatra-scatra interface coupling
-  if (SSIInterfaceMeshtying())
+  if (ssi_interface_meshtying())
   {
     ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
-        "SSIInterfaceMeshtying", structure_->Discretization(), true, true));
+        "ssi_interface_meshtying", structure_->Discretization(), true, true));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
@@ -270,7 +271,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
       }
 
       const auto output_scalar_type = CORE::UTILS::IntegralValue<INPAR::SCATRA::OutputScalarType>(
-          problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS");
+          problem->scalar_transport_dynamic_params(), "OUTPUTSCALARS");
       if (output_scalar_type == INPAR::SCATRA::outputscalars_condition or
           output_scalar_type == INPAR::SCATRA::outputscalars_entiredomain_condition)
       {
@@ -470,7 +471,7 @@ void SSI::SSIBase::ReadRestart(int restart)
 
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
-  ssicoupling_->AssignMaterialPointers(
+  ssicoupling_->assign_material_pointers(
       structure_->Discretization(), ScaTraField()->Discretization());
 }
 
@@ -481,9 +482,9 @@ void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->AddFieldTest(ScaTraBaseAlgorithm()->CreateScaTraFieldTest());
+  problem->AddFieldTest(ScaTraBaseAlgorithm()->create_sca_tra_field_test());
   if (IsScaTraManifold())
-    problem->AddFieldTest(ScaTraManifoldBaseAlgorithm()->CreateScaTraFieldTest());
+    problem->AddFieldTest(sca_tra_manifold_base_algorithm()->create_sca_tra_field_test());
   problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
   problem->TestAll(comm);
 }
@@ -501,7 +502,7 @@ void SSI::SSIBase::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp,
   SetVelocityFields(vel);
 
   if (set_mechanical_stress)
-    SetMechanicalStressState(modelevaluator_ssi_base_->GetMechanicalStressState());
+    set_mechanical_stress_state(modelevaluator_ssi_base_->get_mechanical_stress_state());
 }
 
 /*----------------------------------------------------------------------*/
@@ -517,7 +518,7 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // safety checks
   CheckIsInit();
@@ -528,7 +529,7 @@ void SSI::SSIBase::SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::EvaluateAndSetTemperatureField()
+void SSI::SSIBase::evaluate_and_set_temperature_field()
 {
   // temperature is non primary variable. Only set, if function for temperature is given
   if (temperature_funct_num_ != -1)
@@ -555,19 +556,19 @@ void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 
   ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
   if (IsScaTraManifold())
-    ssicoupling_->SetVelocityFields(ScaTraManifoldBaseAlgorithm(), zeros_structure_, vel);
+    ssicoupling_->SetVelocityFields(sca_tra_manifold_base_algorithm(), zeros_structure_, vel);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetMechanicalStressState(
+void SSI::SSIBase::set_mechanical_stress_state(
     Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const
 {
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetMechanicalStressState(*ScaTraField()->Discretization(), mechanical_stress_state,
-      ScaTraField()->NdsTwoTensorQuantity());
+  ssicoupling_->set_mechanical_stress_state(*ScaTraField()->Discretization(),
+      mechanical_stress_state, ScaTraField()->nds_two_tensor_quantity());
 }
 
 /*----------------------------------------------------------------------*/
@@ -579,7 +580,7 @@ void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
   CheckIsSetup();
 
   ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
-  if (IsScaTraManifold()) ssicoupling_->SetMeshDisp(ScaTraManifoldBaseAlgorithm(), disp);
+  if (IsScaTraManifold()) ssicoupling_->SetMeshDisp(sca_tra_manifold_base_algorithm(), disp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -588,17 +589,18 @@ void SSI::SSIBase::CheckSSIFlags() const
 {
   if (ScaTraField()->S2IKinetics())
   {
-    if (!(SSIInterfaceContact() or SSIInterfaceMeshtying()))
+    if (!(SSIInterfaceContact() or ssi_interface_meshtying()))
     {
       FOUR_C_THROW(
           "You defined an 'S2IKinetics' condition in the input-file. However, neither an "
-          "'SSIInterfaceContact' condition nor an 'SSIInterfaceMeshtying' condition defined. This "
+          "'SSIInterfaceContact' condition nor an 'ssi_interface_meshtying' condition defined. "
+          "This "
           "is not reasonable!");
     }
   }
 
   const bool is_nitsche_penalty_adaptive(CORE::UTILS::IntegralValue<int>(
-      GLOBAL::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
+      GLOBAL::Problem::Instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
 
   if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
     FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
@@ -606,7 +608,7 @@ void SSI::SSIBase::CheckSSIFlags() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetDtFromScaTraToStructure()
+void SSI::SSIBase::set_dt_from_sca_tra_to_structure()
 {
   StructureField()->SetDt(ScaTraField()->Dt());
   StructureField()->SetTimen(ScaTraField()->Time());
@@ -615,7 +617,7 @@ void SSI::SSIBase::SetDtFromScaTraToStructure()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetDtFromScaTraToManifold()
+void SSI::SSIBase::set_dt_from_sca_tra_to_manifold()
 {
   ScaTraManifold()->SetDt(ScaTraField()->Dt());
   ScaTraManifold()->SetTimeStep(ScaTraField()->Time(), ScaTraField()->Step());
@@ -623,15 +625,15 @@ void SSI::SSIBase::SetDtFromScaTraToManifold()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetDtFromScaTraToSSI()
+void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 {
   // set values for this SSI algorithm
   SetTimeStep(ScaTraField()->Time(), Step());
   SetDt(ScaTraField()->Dt());
 
   // set values for other fields
-  SetDtFromScaTraToStructure();
-  if (IsScaTraManifold()) SetDtFromScaTraToManifold();
+  set_dt_from_sca_tra_to_structure();
+  if (IsScaTraManifold()) set_dt_from_sca_tra_to_manifold();
 }
 
 /*----------------------------------------------------------------------*/
@@ -710,7 +712,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     // build structure based on new structural time integration
     if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
     {
-      struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(structparams);
+      struct_adapterbase_ptr_ = ADAPTER::build_structure_algorithm(structparams);
 
       // initialize structure base algorithm
       struct_adapterbase_ptr_->Init(
@@ -754,28 +756,28 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle));
 
-    ScaTraManifoldBaseAlgorithm()->Init();
+    sca_tra_manifold_base_algorithm()->Init();
   }
 
   // do checks if adaptive time stepping is activated
   if (CORE::UTILS::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
-    CheckAdaptiveTimeStepping(scatraparams, structparams);
+    check_adaptive_time_stepping(scatraparams, structparams);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SSI::SSIBase::DoCalculateInitialPotentialField() const
+bool SSI::SSIBase::do_calculate_initial_potential_field() const
 {
   const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
   const bool init_pot_calc =
       CORE::UTILS::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
-  return init_pot_calc and IsElchScaTraTimIntType();
+  return init_pot_calc and is_elch_sca_tra_tim_int_type();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SSI::SSIBase::IsElchScaTraTimIntType() const
+bool SSI::SSIBase::is_elch_sca_tra_tim_int_type() const
 {
   const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
   const auto scatra_type =
@@ -798,7 +800,7 @@ bool SSI::SSIBase::IsRestart() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::CheckAdaptiveTimeStepping(
+void SSI::SSIBase::check_adaptive_time_stepping(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
 {
   // safety check: adaptive time stepping in one of the sub problems
@@ -817,7 +819,7 @@ void SSI::SSIBase::CheckAdaptiveTimeStepping(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
+bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
     const std::string& struct_disname) const
 {
   bool is_s2i_kinetic_with_pseudo_contact = false;
@@ -868,14 +870,14 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname) const
+void SSI::SSIBase::check_ssi_interface_conditions(const std::string& struct_disname) const
 {
   // access the structural discretization
   auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
 
-  if (SSIInterfaceMeshtying())
+  if (ssi_interface_meshtying())
     SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
-        "SSIInterfaceMeshtying", structdis);
+        "ssi_interface_meshtying", structdis);
 
   // check scatra-structure-interaction contact condition
   if (SSIInterfaceContact())
@@ -892,7 +894,7 @@ void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname
 void SSI::SSIBase::SetupSystem()
 {
   if (ssiinterfacemeshtying_)
-    SSIStructureMeshTying()->CheckSlaveSideHasDirichletConditions(
+    ssi_structure_mesh_tying()->check_slave_side_has_dirichlet_conditions(
         StructureField()->GetDBCMapExtractor()->CondMap());
 }
 
@@ -901,10 +903,10 @@ void SSI::SSIBase::SetupSystem()
 void SSI::SSIBase::SetupModelEvaluator()
 {
   // register the model evaluator if s2i condition with pseudo contact is available
-  if (IsS2IKineticsWithPseudoContact())
+  if (is_s2_i_kinetics_with_pseudo_contact())
   {
     modelevaluator_ssi_base_ = Teuchos::rcp(new STR::MODELEVALUATOR::BaseSSI());
-    StructureBaseAlgorithm()->RegisterModelEvaluator(
+    structure_base_algorithm()->register_model_evaluator(
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
 }

@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::SoHex20::soh20_ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoHex20::soh20_element_center_refe_coords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

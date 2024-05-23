@@ -121,15 +121,15 @@ namespace CORE::GEO
       void SetFindPositions(bool positions) { options_.SetFindPositions(positions); }
 
       /// set the option if positions have to be determined or not
-      void SetNodalDofSetStrategy(INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy)
+      void set_nodal_dof_set_strategy(INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy)
       {
-        options_.SetNodalDofSetStrategy(nodal_dofset_strategy);
+        options_.set_nodal_dof_set_strategy(nodal_dofset_strategy);
       }
 
       /// Set the position for the boundary cell creation
-      void SetGenBoundaryCellPosition(INPAR::CUT::BoundaryCellPosition gen_bcell_position)
+      void set_gen_boundary_cell_position(INPAR::CUT::BoundaryCellPosition gen_bcell_position)
       {
-        options_.SetGenBoundaryCellPosition(gen_bcell_position);
+        options_.set_gen_boundary_cell_position(gen_bcell_position);
       }
 
       /// get the options
@@ -149,10 +149,10 @@ namespace CORE::GEO
         return;
       };
 
-      virtual void Cut_CollisionDetection(bool include_inner, bool screenoutput)
+      virtual void cut_collision_detection(bool include_inner, bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          IO::cout << "\t * 3/6 Cut_CollisionDetection ... not performed";
+          IO::cout << "\t * 3/6 cut_collision_detection ... not performed";
         return;
       };
 
@@ -163,10 +163,10 @@ namespace CORE::GEO
         return;
       };
 
-      virtual void Cut_MeshIntersection(bool screenoutput)
+      virtual void cut_mesh_intersection(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          IO::cout << "\t * 4/6 Cut_MeshIntersection (Mesh-Cut) ... not performed";
+          IO::cout << "\t * 4/6 cut_mesh_intersection (Mesh-Cut) ... not performed";
         return;
       };
 
@@ -185,13 +185,13 @@ namespace CORE::GEO
       void CreateNodalDofSet(bool include_inner, const DRT::Discretization& dis);
 
       /// fill parallel DofSetData with information that has to be communicated
-      void FillParallelDofSetData(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
+      void fill_parallel_dof_set_data(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
           const DRT::Discretization& dis, bool include_inner);
 
       /// create parallel DofSetData for a volumecell that has to be communicated
-      void CreateParallelDofSetDataVC(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
-          int eid, int set_index, bool inside, VolumeCell* cell,
-          std::map<int, int>& node_dofset_map);
+      void create_parallel_dof_set_data_vc(
+          std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, int eid, int set_index,
+          bool inside, VolumeCell* cell, std::map<int, int>& node_dofset_map);
 
       /// find cell sets around each node (especially for quadratic elements)
       void FindNodalCellSets(bool include_inner, std::set<int>& eids,
@@ -237,7 +237,8 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// write gmsh debug output for nodal cell sets
-      void DumpGmshNodalCellSet(std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
+      void dump_gmsh_nodal_cell_set(
+          std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
           const DRT::Discretization& dis);
 
       /// write gmsh debug output for CellSets
@@ -252,7 +253,7 @@ namespace CORE::GEO
       void DumpGmshVolumeCells(std::string name, bool include_inner);
 
       /// write gmsh output for volumecells
-      void DumpGmshIntegrationCells(std::string name);
+      void dump_gmsh_integration_cells(std::string name);
 
       /// write gmsh output for volumecells
       void DumpGmshVolumeCells(std::string name);

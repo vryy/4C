@@ -65,7 +65,7 @@ double SCATRA::ElchResultTest::ResultSpecial(const std::string quantity) const
   else if (quantity == "cellvoltage")
     result = ElchTimInt()->CellVoltage();
   else if (quantity == "temperature")
-    result = ElchTimInt()->GetCurrentTemperature();
+    result = ElchTimInt()->get_current_temperature();
   else
     result = ScaTraResultTest::ResultSpecial(quantity);
 

@@ -606,7 +606,7 @@ namespace CORE::GEO
       void CreateElementTets(Mesh& mesh, Element* element, const plain_volumecell_set& cells,
           const plain_side_set& cut_sides, int count, bool tetcellsonly = false);
 
-      void CreateVolumeCellTets();
+      void create_volume_cell_tets();
 
       /// Return the list of tets.
       const std::vector<std::vector<int>>& Tets() const { return tets_; }

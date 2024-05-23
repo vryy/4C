@@ -118,15 +118,15 @@ namespace FLD
         bool alefluid = false  ///< flag for alefluid
     );
 
-    static void SetupFluidDiscretization();
+    static void setup_fluid_discretization();
 
     /// initialization
     void Init() override { Init(true); }
     virtual void Init(bool createinitialstate);
 
-    void AddAdditionalScalarDofsetAndCoupling();
+    void add_additional_scalar_dofset_and_coupling();
 
-    void CheckInitializedDofSetCouplingMap();
+    void check_initialized_dof_set_coupling_map();
 
     /// print information about current time step to screen
     void PrintTimeStepInfo() override;
@@ -158,16 +158,16 @@ namespace FLD
     void LinearSolve();
 
     /// create vectors for KrylovSpaceProjection
-    void InitKrylovSpaceProjection() override;
-    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond) override;
-    void UpdateKrylovSpaceProjection() override;
-    void CheckMatrixNullspace() override;
+    void init_krylov_space_projection() override;
+    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond) override;
+    void update_krylov_space_projection() override;
+    void check_matrix_nullspace() override;
 
     /// return Teuchos::rcp to linear solver
     Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
-    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol() override;
+    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
 
     /// update velnp by increments
     virtual void UpdateByIncrements(Teuchos::RCP<const Epetra_Vector>
@@ -188,10 +188,10 @@ namespace FLD
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
-    void CutAndSetStateVectors();
+    void cut_and_set_state_vectors();
 
     /// is a restart of the monolithic Newton necessary caused by changing dofsets?
-    bool NewtonRestartMonolithic() { return newton_restart_monolithic_; }
+    bool newton_restart_monolithic() { return newton_restart_monolithic_; }
 
     /// ...
     Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; }
@@ -207,7 +207,7 @@ namespace FLD
     //    void ComputeInterfaceVelocities();
 
     /// set Dirichlet and Neumann boundary conditions
-    void SetDirichletNeumannBC() override;
+    void set_dirichlet_neumann_bc() override;
 
 
     //! @name access methods for composite algorithms
@@ -310,8 +310,8 @@ namespace FLD
     double TimIntParam() const override;
 
     /// turbulence statistics manager
-    Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override
-    {  // FOUR_C_THROW("not implemented");
+    Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override
+    {
       return Teuchos::null;
     }
 
@@ -339,7 +339,7 @@ namespace FLD
 
     virtual void CreateInitialState();
 
-    virtual void UpdateALEStateVectors(Teuchos::RCP<FLD::XFluidState> state = Teuchos::null);
+    virtual void update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state = Teuchos::null);
 
     void UpdateGridv() override;
 
@@ -389,22 +389,22 @@ namespace FLD
     );
 
     /// evaluate and assemble volume integral based terms
-    void AssembleMatAndRHS_VolTerms();
+    void assemble_mat_and_rhs_vol_terms();
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    void AssembleMatAndRHS_FaceTerms(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& sysmat,
+    void assemble_mat_and_rhs_face_terms(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& residual_col,
         const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
         bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
-    void AssembleMatAndRHS_GradientPenalty(
+    void assemble_mat_and_rhs_gradient_penalty(
         Teuchos::RCP<CORE::LINALG::MapExtractor> ghost_penaly_dbcmaps,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
         Teuchos::RCP<Epetra_Vector> vec);
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
-    void IntegrateShapeFunction(Teuchos::ParameterList& eleparams,  ///< element parameters
+    void integrate_shape_function(Teuchos::ParameterList& eleparams,  ///< element parameters
         DRT::Discretization& discret,    ///< background fluid discretization
         Teuchos::RCP<Epetra_Vector> vec  ///< vector into which we assemble
     );
@@ -419,9 +419,9 @@ namespace FLD
     /// Update velocity and pressure by increment
     virtual void UpdateByIncrement();
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
-    void SetOldPartOfRighthandside(const Teuchos::RCP<Epetra_Vector>& veln,
+    void set_old_part_of_righthandside(const Teuchos::RCP<Epetra_Vector>& veln,
         const Teuchos::RCP<Epetra_Vector>& velnm, const Teuchos::RCP<Epetra_Vector>& accn,
         const INPAR::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
         Teuchos::RCP<Epetra_Vector>& hist);
@@ -445,7 +445,7 @@ namespace FLD
          stationary/one-step-theta/BDF2/af-generalized-alpha time integration
          for incompressible and low-Mach-number flow
      */
-    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
+    void calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
@@ -457,10 +457,10 @@ namespace FLD
     //! @name XFEM time-integration specific function
 
     /// store state data from old time-step t^n
-    virtual void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
+    virtual void x_timint_store_old_state_data(const bool firstcall_in_timestep);
 
     /// is a restart of the global monolithic system necessary?
-    bool XTimint_CheckForMonolithicNewtonRestart(
+    bool x_timint_check_for_monolithic_newton_restart(
         const bool timint_ghost_penalty,    ///< dofs have to be reconstructed via ghost penalty
                                             ///< reconstruction techniques
         const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
@@ -473,23 +473,23 @@ namespace FLD
 
     /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
     /// from t^n to vectors w.r.t current dofset and interface position
-    virtual void XTimint_DoTimeStepTransfer(const bool screen_out);
+    virtual void x_timint_do_time_step_transfer(const bool screen_out);
 
     /// Transfer vectors at current time-step t^(n+1) w.r.t dofset and interface position
     /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
     ///
     /// return, if increment step transfer was successful!
-    virtual bool XTimint_DoIncrementStepTransfer(
+    virtual bool x_timint_do_increment_step_transfer(
         const bool screen_out, const bool firstcall_in_timestep);
 
     /// did the dofsets change?
-    bool XTimint_ChangedDofsets(Teuchos::RCP<DRT::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                          ///< first dofset
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                     ///< other dofset
+    bool x_timint_changed_dofsets(Teuchos::RCP<DRT::Discretization> dis,  ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                            ///< first dofset
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                       ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
-    void XTimint_TransferVectorsBetweenSteps(
+    void x_timint_transfer_vectors_between_steps(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  ///< row map based vectors w.r.t old interface position
@@ -501,7 +501,7 @@ namespace FLD
         bool screen_out  ///< output to screen
     );
 
-    void XTimint_CorrectiveTransferVectorsBetweenSteps(
+    void x_timint_corrective_transfer_vectors_between_steps(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         const INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach,  /// xfluid_timintapproch
         std::vector<Teuchos::RCP<const Epetra_Vector>>&
@@ -515,7 +515,7 @@ namespace FLD
 
     /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed
     /// on any processor
-    void XTimint_GetReconstructStatus(
+    void x_timint_get_reconstruct_status(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         bool& timint_ghost_penalty,   ///< do we have to perform ghost penalty reconstruction of
                                       ///< ghost values?
@@ -524,14 +524,14 @@ namespace FLD
     );
 
     /// create DBC and free map and return their common extractor
-    Teuchos::RCP<CORE::LINALG::MapExtractor> CreateDBCMapExtractor(
+    Teuchos::RCP<CORE::LINALG::MapExtractor> create_dbc_map_extractor(
         const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global dof ids
         const Epetra_Map* dofrowmap                       ///< dofrowmap
     );
 
     /// create new dbc maps for ghost penalty reconstruction and reconstruct value which are not
     /// fixed by DBCs
-    void XTimint_GhostPenalty(
+    void x_timint_ghost_penalty(
         std::vector<Teuchos::RCP<Epetra_Vector>>& rowVectors,  ///< vectors to be reconstructed
         const Epetra_Map* dofrowmap,                           ///< dofrowmap
         const Teuchos::RCP<const std::set<int>> dbcgids,       ///< dbc global ids
@@ -539,7 +539,7 @@ namespace FLD
     );
 
     /// reconstruct ghost values using ghost penalty approach
-    void XTimint_ReconstructGhostValues(
+    void x_timint_reconstruct_ghost_values(
         Teuchos::RCP<Epetra_Vector> vec,  ///< vector to be reconstructed
         Teuchos::RCP<CORE::LINALG::MapExtractor>
             ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty
@@ -548,8 +548,8 @@ namespace FLD
     );
 
     /// reconstruct standard values using semi-Lagrangean method
-    void XTimint_SemiLagrangean(std::vector<Teuchos::RCP<Epetra_Vector>>&
-                                    newRowStateVectors,  ///< vectors to be reconstructed
+    void x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Epetra_Vector>>&
+                                      newRowStateVectors,  ///< vectors to be reconstructed
         const Epetra_Map* newdofrowmap,  ///< dofrowmap at current interface position
         std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  ///< vectors from which we reconstruct values (same order of
@@ -564,7 +564,7 @@ namespace FLD
 
     /// projection of history from other discretization - returns true if projection was successful
     /// for all nodes
-    virtual bool XTimint_ProjectFromEmbeddedDiscretization(
+    virtual bool x_timint_project_from_embedded_discretization(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  ///< vectors to be reconstructed
@@ -586,7 +586,7 @@ namespace FLD
     void CheckXFluidParams() const;
 
     /// print stabilization params to screen
-    void PrintStabilizationDetails() const override;
+    void print_stabilization_details() const override;
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -596,7 +596,7 @@ namespace FLD
     and in the fluid boundary element
 
     */
-    void SetElementGeneralFluidXFEMParameter();
+    void set_element_general_fluid_xfem_parameter();
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -606,7 +606,7 @@ namespace FLD
     and in the fluid boundary element
 
     */
-    void SetElementTimeParameter() override;
+    void set_element_time_parameter() override;
 
     //! @name Set general parameter in parameter list class for fluid internal face elements
     /*!
@@ -615,16 +615,16 @@ namespace FLD
            Therefore, these parameter are accessible in the fluid intfaces element
 
     */
-    void SetFaceGeneralFluidXFEMParameter();
+    void set_face_general_fluid_xfem_parameter();
 
     /// initialize vectors and flags for turbulence approach
-    void SetGeneralTurbulenceParameters() override;
+    void set_general_turbulence_parameters() override;
 
     void ExplicitPredictor() override;
 
-    void PredictTangVelConsistAcc() override;
+    void predict_tang_vel_consist_acc() override;
 
-    void UpdateIterIncrementally(Teuchos::RCP<const Epetra_Vector> vel) override;
+    void update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
         Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
@@ -634,7 +634,7 @@ namespace FLD
       \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    void GenAlphaIntermediateValues() override;
+    void gen_alpha_intermediate_values() override;
 
     /*!
       \brief call elements to calculate system matrix/rhs and assemble
@@ -646,7 +646,7 @@ namespace FLD
       \brief update acceleration for generalized-alpha time integration
 
     */
-    void GenAlphaUpdateAcceleration() override;
+    void gen_alpha_update_acceleration() override;
 
     /// return type of enforcing interface conditions
     INPAR::XFEM::CouplingMethod CouplingMethod() const { return coupling_method_; }
@@ -662,7 +662,7 @@ namespace FLD
     //           is depending on the point position.
     //
     //    */
-    //    void GetVolumeCellMaterial(DRT::Element* actele,
+    //    void get_volume_cell_material(DRT::Element* actele,
     //                               Teuchos::RCP<CORE::MAT::Material> & mat,
     //                               const CORE::GEO::CUT::Point::PointPosition position =
     //                               CORE::GEO::CUT::Point::outside);

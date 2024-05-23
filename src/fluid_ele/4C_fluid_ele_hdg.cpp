@@ -62,7 +62,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGType::Create(const int id, con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGType::NodalBlockInformation(
+void DRT::ELEMENTS::FluidHDGType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = CORE::FE::getDimension(dwele->Shape()) + 1;
@@ -118,12 +118,12 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGType ::SetupElementDefinition(
+void DRT::ELEMENTS::FluidHDGType ::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   // Get the the fluid line definitions and amend them with data for HDG elements
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
-  FluidType::SetupElementDefinition(definitions_fluid);
+  FluidType::setup_element_definition(definitions_fluid);
 
   const std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 

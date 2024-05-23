@@ -58,10 +58,11 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   }
 
   // Create Prestress strategy
-  if (params->GetPrestressingMatId() > 0)
+  if (params->get_prestressing_mat_id() > 0)
   {
-    prestress_strategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params->GetPrestressingMatId())
-                              ->CreatePrestressStrategy();
+    prestress_strategy_ =
+        MIXTURE::PAR::PrestressStrategy::Factory(params->get_prestressing_mat_id())
+            ->create_prestress_strategy();
   }
 }
 
@@ -130,11 +131,11 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
-    if (params_->GetPrestressingMatId() > 0)
+    if (params_->get_prestressing_mat_id() > 0)
     {
       prestress_strategy_ =
-          MIXTURE::PAR::PrestressStrategy::Factory(params_->GetPrestressingMatId())
-              ->CreatePrestressStrategy();
+          MIXTURE::PAR::PrestressStrategy::Factory(params_->get_prestressing_mat_id())
+              ->create_prestress_strategy();
 
       prestress_strategy_->Unpack(position, data);
     }
@@ -154,13 +155,13 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::RegisterAnisotropyExtensions(
+void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
     MAT::Anisotropy& anisotropy)
 {
   // Setup summands
-  for (const auto& summand : potsum_) summand->RegisterAnisotropyExtensions(anisotropy);
+  for (const auto& summand : potsum_) summand->register_anisotropy_extensions(anisotropy);
 
-  anisotropy.RegisterAnisotropyExtension(cosy_anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(cosy_anisotropy_extension_);
 }
 
 // Reads the element from the input file
@@ -191,10 +192,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::Update(CORE::LINALG::Matrix<3, 3
   for (auto& summand : potsum_) summand->Update();
 
   // do nothing in the default case
-  if (params_->GetPrestressingMatId() > 0)
+  if (params_->get_prestressing_mat_id() > 0)
   {
-    prestress_strategy_->Update(cosy_anisotropy_extension_.GetCoordinateSystemProvider(gp), *this,
-        defgrd, prestretch_[gp], params, gp, eleGID);
+    prestress_strategy_->Update(cosy_anisotropy_extension_.get_coordinate_system_provider(gp),
+        *this, defgrd, prestretch_[gp], params, gp, eleGID);
   }
 }
 
@@ -202,7 +203,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::Setup(
     Teuchos::ParameterList& params, const int eleGID)
 {
   MixtureConstituent::Setup(params, eleGID);
-  if (params_->GetPrestressingMatId() > 0)
+  if (params_->get_prestressing_mat_id() > 0)
   {
     prestretch_.resize(NumGP());
 
@@ -214,15 +215,15 @@ void MIXTURE::MixtureConstituentElastHyperBase::PreEvaluate(
     MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // do nothing in the default case
-  if (params_->GetPrestressingMatId() > 0)
+  if (params_->get_prestressing_mat_id() > 0)
   {
     prestress_strategy_->EvaluatePrestress(mixtureRule,
-        cosy_anisotropy_extension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
-        gp, eleGID);
+        cosy_anisotropy_extension_.get_coordinate_system_provider(gp), *this, prestretch_[gp],
+        params, gp, eleGID);
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::RegisterOutputDataNames(
+void MIXTURE::MixtureConstituentElastHyperBase::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   if (prestress_strategy_ != nullptr)

@@ -77,7 +77,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     {
       // Read in of data
       ReadFiber(linedef, fibername, a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
+      params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 
     // error path
@@ -90,7 +90,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     FOUR_C_THROW("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
+void MAT::ELASTIC::CoupAnisoPow::add_stress_aniso_principal(const CORE::LINALG::Matrix<6, 1>& rcg,
     CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
@@ -186,6 +186,6 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
   a_0.Multiply(idefgrd, ca);
   a_.Update(1. / a_0.Norm2(), a_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
+  params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
 }
 FOUR_C_NAMESPACE_CLOSE

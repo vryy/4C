@@ -59,38 +59,44 @@ namespace BEAMINTERACTION
 
     inline enum INPAR::BEAMCONTACT::PenaltyLaw PenaltyLaw() const { return penalty_law_; }
 
-    inline double BeamToBeamPenaltyLawRegularizationG0() const
+    inline double beam_to_beam_penalty_law_regularization_g0() const
     {
       return btb_penalty_law_regularization_g0_;
     }
 
-    inline double BeamToBeamPenaltyLawRegularizationF0() const
+    inline double beam_to_beam_penalty_law_regularization_f0() const
     {
       return btb_penalty_law_regularization_f0_;
     }
 
-    inline double BeamToBeamPenaltyLawRegularizationC0() const
+    inline double beam_to_beam_penalty_law_regularization_c0() const
     {
       return btb_penalty_law_regularization_c0_;
     }
 
     inline double GapShift() const { return gap_shift_; }
 
-    inline double BeamToBeamPointPenaltyParam() const { return btb_point_penalty_param_; }
+    inline double beam_to_beam_point_penalty_param() const { return btb_point_penalty_param_; }
 
-    inline double BeamToBeamLinePenaltyParam() const { return btb_line_penalty_param_; }
+    inline double beam_to_beam_line_penalty_param() const { return btb_line_penalty_param_; }
 
-    inline double BeamToBeamPerpShiftingAngle1() const { return btb_perp_shifting_angle1_; }
+    inline double beam_to_beam_perp_shifting_angle1() const { return btb_perp_shifting_angle1_; }
 
-    inline double BeamToBeamPerpShiftingAngle2() const { return btb_perp_shifting_angle2_; }
+    inline double beam_to_beam_perp_shifting_angle2() const { return btb_perp_shifting_angle2_; }
 
-    inline double BeamToBeamParallelShiftingAngle1() const { return btb_parallel_shifting_angle1_; }
+    inline double beam_to_beam_parallel_shifting_angle1() const
+    {
+      return btb_parallel_shifting_angle1_;
+    }
 
-    inline double BeamToBeamParallelShiftingAngle2() const { return btb_parallel_shifting_angle2_; }
+    inline double beam_to_beam_parallel_shifting_angle2() const
+    {
+      return btb_parallel_shifting_angle2_;
+    }
 
     inline double SegmentationAngle() const { return segangle_; }
 
-    inline int NumIntegrationIntervals() const { return num_integration_intervals_; }
+    inline int num_integration_intervals() const { return num_integration_intervals_; }
 
     inline double BasicStiffGap() const { return btb_basicstiff_gap_; }
 

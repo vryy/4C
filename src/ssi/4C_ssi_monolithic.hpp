@@ -98,13 +98,13 @@ namespace SSI
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra manifold field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_sca_tra_manifold() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapStructure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix() const;
 
     //! Return matrix type of global system matrix
     CORE::LINALG::MatrixType MatrixType() const { return matrixtype_; };
@@ -139,16 +139,16 @@ namespace SSI
     class ConvCheckStrategyStd;
 
     //! apply the contact contributions to matrices and residuals of the sub problems
-    void ApplyContactToSubProblems();
+    void apply_contact_to_sub_problems();
 
     //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
     void ApplyDBCToSystem();
 
     //! apply mesh tying between manifold domains on matrices and residuals
-    void ApplyManifoldMeshtying();
+    void apply_manifold_meshtying();
 
     //! perform mesh tying on matrices and residuals as obtained from sub problems
-    void ApplyMeshtyingToSubProblems();
+    void apply_meshtying_to_sub_problems();
 
     //! assemble global system of equations
     void AssembleMatAndRHS();
@@ -157,43 +157,43 @@ namespace SSI
     void AssembleMatScaTra();
 
     //! assemble linearization of scatra on manifold residuals to system matrix
-    void AssembleMatScaTraManifold();
+    void assemble_mat_sca_tra_manifold();
 
     //! assemble linearization of structural residuals to system matrix
-    void AssembleMatStructure();
+    void assemble_mat_structure();
 
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
     //! calc initial potential field for monolithic SSI problem including scatra and scatra manifold
     //! fields
-    void CalcInitialPotentialField();
+    void calc_initial_potential_field();
 
     //! calc initial time derivative of transported scalars for monolithic SSI problem including
     //! scatra and scatra manifold fields
-    void CalcInitialTimeDerivative();
+    void calc_initial_time_derivative();
 
     //! call complete on the sub problem matrices
-    void CompleteSubproblemMatrices();
+    void complete_subproblem_matrices();
 
     //! distribute solution to all other fields
     //! \param restore_velocity   restore velocity when StructureField()->SetState() is called
-    void DistributeSolutionAllFields(bool restore_velocity = false);
+    void distribute_solution_all_fields(bool restore_velocity = false);
 
     //! evaluate all off-diagonal matrix contributions
-    void EvaluateOffDiagContributions();
+    void evaluate_off_diag_contributions();
 
     //! Evaluate ScaTra including copy to corresponding ssi matrix
     void EvaluateScaTra();
 
     //! Evaluate ScaTra on manifold incl. coupling with scatra
-    void EvaluateScaTraManifold();
+    void evaluate_sca_tra_manifold();
 
     //! get matrix and right-hand-side for all subproblems incl. coupling
     void EvaluateSubproblems();
 
     //! build and return vector of equilibration methods for each block of system matrix
-    std::vector<CORE::LINALG::EquilibrationMethod> GetBlockEquilibration();
+    std::vector<CORE::LINALG::EquilibrationMethod> get_block_equilibration();
 
     /*!
      * @note This is only necessary in the first iteration of the simulation, since only there the
@@ -202,7 +202,7 @@ namespace SSI
      * @return flag indicating if we need to uncomplete the matrices before adding the mesh tying
      * contributions.
      */
-    bool IsUncompleteOfMatricesNecessaryForMeshTying() const;
+    bool is_uncomplete_of_matrices_necessary_for_mesh_tying() const;
 
     void Output() override;
 
@@ -215,16 +215,16 @@ namespace SSI
     void PrepareOutput();
 
     //! print system matrix, rhs, and map of system matrix to file
-    void PrintSystemMatrixRHSToMatLabFormat();
+    void print_system_matrix_rhs_to_mat_lab_format();
 
     //! print time step size, time, and number of time step
     void PrintTimeStepInfo();
 
     //! set up a pointer to the contact strategy of the structural field and store it
-    void SetupContactStrategy();
+    void setup_contact_strategy();
 
     //! set scatra manifold solution on scatra field
-    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
+    void set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector> phi);
 
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
 

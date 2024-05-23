@@ -111,7 +111,7 @@ namespace XFEM
     //! destructor
     virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
-    void InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
+    void initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
@@ -187,14 +187,14 @@ namespace XFEM
     void RegisterSideProc(int sid);
 
     /// Get the CUT integration points for this contact element (id)
-    void GetCutSideIntegrationPoints(
+    void get_cut_side_integration_points(
         int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg);
 
     /// Finalize Map of interface element owners
-    void FillComplete_SeleMap();
+    void fill_complete_sele_map();
 
     /// Rowmap of contact elements based on the fluid element owner
-    Teuchos::RCP<Epetra_Map>& Get_ContactEleRowMap_FOwnerbased()
+    Teuchos::RCP<Epetra_Map>& get_contact_ele_row_map_f_ownerbased()
     {
       return contact_ele_rowmap_fluidownerbased_;
     }
@@ -202,23 +202,23 @@ namespace XFEM
     /// PrepareTimeStep
     void PrepareTimeStep();
 
-    /// PrepareIterationStep
-    void PrepareIterationStep();
+    /// prepare_iteration_step
+    void prepare_iteration_step();
 
     /// Register contact element for to use CUT integration points
-    void RegisterContactElementforHigherIntegration(int cid)
+    void register_contact_elementfor_higher_integration(int cid)
     {
       higher_contact_elements_.insert(cid);
     }
 
     /// Does this contact element use CUT integration points?
-    bool HigherIntegrationforContactElement(int cid)
+    bool higher_integrationfor_contact_element(int cid)
     {
       return (higher_contact_elements_comm_.find(cid) != higher_contact_elements_comm_.end());
     }
 
     /// Initialize Gmsh files
-    void Create_New_Gmsh_files();
+    void create_new_gmsh_files();
 
     /// Write Gmsh files
     void Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double val, int section);
@@ -227,15 +227,15 @@ namespace XFEM
     void Inc_GP(int state) { ++sum_gps_[state]; }
 
     //! get distance when transition between FPSI and PSCI is started
-    double Get_fpi_pcontact_exchange_dist();
+    double get_fpi_pcontact_exchange_dist();
 
     //! ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is starte
-    double Get_fpi_pcontact_fullfraction();
+    double get_fpi_pcontact_fullfraction();
 
    private:
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::Element* cele,
+    bool check_nitsche_contact_state(CONTACT::Element* cele,
         const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty
         double& gap                             // gap
@@ -269,17 +269,17 @@ namespace XFEM
         CORE::LINALG::Matrix<3, 1>& closest_x);
 
     /// Find the next physical interface side to x
-    CORE::GEO::CUT::Side* FindnextPhysicalSide(CORE::LINALG::Matrix<3, 1>& x,
+    CORE::GEO::CUT::Side* findnext_physical_side(CORE::LINALG::Matrix<3, 1>& x,
         CORE::GEO::CUT::Side* initSide, CORE::GEO::CUT::SideHandle*& sidehandle,
         CORE::LINALG::Matrix<2, 1>& newxsi, double& distance);
 
     /// Get list of potentiall next physical sides
-    void Update_physical_sides(CORE::GEO::CUT::Side* side,
+    void update_physical_sides(CORE::GEO::CUT::Side* side,
         std::set<CORE::GEO::CUT::Side*>& performed_sides,
         std::set<CORE::GEO::CUT::Side*>& physical_sides);
 
     /// Get neighboring sides
-    std::vector<CORE::GEO::CUT::Side*> GetNewNeighboringSides(
+    std::vector<CORE::GEO::CUT::Side*> get_new_neighboring_sides(
         CORE::GEO::CUT::Side* side, std::set<CORE::GEO::CUT::Side*>& performed_sides);
 
     /// Get next element

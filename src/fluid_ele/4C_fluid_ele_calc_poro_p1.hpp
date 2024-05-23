@@ -274,7 +274,7 @@ namespace DRT
         \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
         \param preforce       (o) element rhs vector to be filled
        * */
-      void EvaluatePressureEquation(Teuchos::ParameterList& params, const double& timefacfacpre,
+      void evaluate_pressure_equation(Teuchos::ParameterList& params, const double& timefacfacpre,
           const double& rhsfac, const double& dphi_dp, const double& dphi_dJ,
           const double& dphi_dJdp, const double& dphi_dpp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
@@ -317,7 +317,7 @@ namespace DRT
         \param gradJ          (i) spatial gradient of jacobian determinant
         \param grad_porosity  (o) spatial gradient of porosity
       */
-      void ComputePorosityGradient(const double& dphidp, const double& dphidJ,
+      void compute_porosity_gradient(const double& dphidp, const double& dphidJ,
           const CORE::LINALG::Matrix<nsd_, 1>& gradJ, const CORE::LINALG::Matrix<nsd_, 1>& gradp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
           CORE::LINALG::Matrix<nsd_, 1>& grad_porosity,
@@ -333,7 +333,7 @@ namespace DRT
         determinant \param gradJ          (i) spatial gradient of jacobian determinant \param
         dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
-      void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
+      void compute_linearization(const double& dphi_dp, const double& dphi_dpp,
           const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
           CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp) override;
 
@@ -353,7 +353,7 @@ namespace DRT
         determinant w.r.t. structure displacments \param dgradphi_dus   (o) derivate of spatial
         gradient of porosity w.r.t. structure displacments
        */
-      void ComputeLinearizationOD(const double& dphi_dJ, const double& dphi_dJJ,
+      void compute_linearization_od(const double& dphi_dJ, const double& dphi_dJJ,
           const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
           const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
           const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x,

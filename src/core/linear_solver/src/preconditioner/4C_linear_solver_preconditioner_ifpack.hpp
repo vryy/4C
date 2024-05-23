@@ -38,7 +38,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return prec_; }
 
     //! return name of sublist in parameter list which contains parameters for preconditioner
-    std::string getParameterListName() const override { return "IFPACK Parameters"; }
+    std::string get_parameter_list_name() const override { return "IFPACK Parameters"; }
 
    private:
     //! IFPACK parameter list

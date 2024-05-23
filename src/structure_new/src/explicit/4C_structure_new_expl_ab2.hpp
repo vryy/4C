@@ -46,11 +46,11 @@ namespace STR
 
       /*! \brief Add the viscous and mass contributions to the right hand side
        */
-      void AddViscoMassContributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Epetra_Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
 
       //! Update configuration after time step (derived)
       void UpdateStepState() override;
@@ -77,16 +77,19 @@ namespace STR
       [[nodiscard]] int MethodSteps() const override { return 2; }
 
       //! Give local order of accuracy of displacement part
-      [[nodiscard]] int MethodOrderOfAccuracyDis() const override { return 2; }
+      [[nodiscard]] int method_order_of_accuracy_dis() const override { return 2; }
 
       //! Give local order of accuracy of velocity part
-      [[nodiscard]] int MethodOrderOfAccuracyVel() const override { return 2; }
+      [[nodiscard]] int method_order_of_accuracy_vel() const override { return 2; }
 
       //! Return linear error coefficient of displacements
-      [[nodiscard]] double MethodLinErrCoeffDis() const override;
+      [[nodiscard]] double method_lin_err_coeff_dis() const override;
 
       //! Return linear error coefficient of velocities
-      [[nodiscard]] double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }
+      [[nodiscard]] double method_lin_err_coeff_vel() const override
+      {
+        return method_lin_err_coeff_dis();
+      }
 
       //@}
 

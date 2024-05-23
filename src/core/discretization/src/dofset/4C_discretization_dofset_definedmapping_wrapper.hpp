@@ -42,9 +42,9 @@ namespace CORE::Dofsets
   It is also used in solid-scatra interaction \ref SSI::SSI_Base::SSI_Base .
 
 
-  <h3>AssignDegreesOfFreedom</h3>
+  <h3>assign_degrees_of_freedom</h3>
 
-  The important work is done in \ref AssignDegreesOfFreedom . If you want to use
+  The important work is done in \ref assign_degrees_of_freedom . If you want to use
   or extend this class, please be aware of the documentation of this method. Also
   have in mind the needs of those models and methods in 4C this class was originally
   intended to support (see above).
@@ -54,7 +54,7 @@ namespace CORE::Dofsets
 
   After construction the newly created dofset has to be added to the target discretization.
   The target discretization then has to be filled. During \ref FillComplete() the method
-  \ref AssignDegreesOfFreedom is called.
+  \ref assign_degrees_of_freedom is called.
 
   One example for the proper use of this class:
 
@@ -146,7 +146,7 @@ namespace CORE::Dofsets
 
          The std::set 'couplingids' contains the ids from both, VOL and SURF conditions
          given above. This way, one unique struct dofset for all scatra nodes is created.    */
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables

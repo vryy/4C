@@ -39,7 +39,7 @@ namespace CORE::LINALG
       template argument is the expression to be checked, if it
       evaluates to true nothing happens. If it is false a compile
       error similiar to
-      "'Matrix_dimensions_cannot_be_zero' is not a member of
+      "'matrix_dimensions_cannot_be_zero' is not a member of
       'CORE::LINALG::DENSEERROR::Checker<false>'" is generated (with gcc). Obviously the test
       expression must be known at compile time.
 
@@ -50,13 +50,13 @@ namespace CORE::LINALG
     template <bool expr>
     struct Checker
     {
-      static inline void Matrix_dimensions_cannot_be_zero(){};
-      static inline void Cannot_call_1D_access_function_on_2D_matrix(){};
-      static inline void Cannot_compute_determinant_of_nonsquare_matrix(){};
-      static inline void Cannot_compute_inverse_of_nonsquare_matrix(){};
-      static inline void Transpose_argument_must_be_N_or_T(){};
-      static inline void Matrix_size_in_solver_must_be_square(){};
-      static inline void Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3(){};
+      static inline void matrix_dimensions_cannot_be_zero(){};
+      static inline void cannot_call_1_d_access_function_on_2_d_matrix(){};
+      static inline void cannot_compute_determinant_of_nonsquare_matrix(){};
+      static inline void cannot_compute_inverse_of_nonsquare_matrix(){};
+      static inline void transpose_argument_must_be_n_or_t(){};
+      static inline void matrix_size_in_solver_must_be_square(){};
+      static inline void use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3(){};
     };
 
     /// Compile time error definitions: missing functions raise errors
@@ -2197,7 +2197,7 @@ namespace CORE::LINALG
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
-      DENSEERROR::Checker<i == j>::Cannot_compute_inverse_of_nonsquare_matrix();
+      DENSEERROR::Checker<i == j>::cannot_compute_inverse_of_nonsquare_matrix();
 
       switch (i)
       {
@@ -2209,7 +2209,7 @@ namespace CORE::LINALG
           return invert3x3(out, in);
         default:
           DENSEERROR::Checker<(
-              i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
+              i < 4)>::use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3();
           return 0.0;
       }
     }
@@ -2274,7 +2274,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type invert(value_type* mat)
     {
-      DENSEERROR::Checker<i == j>::Cannot_compute_inverse_of_nonsquare_matrix();
+      DENSEERROR::Checker<i == j>::cannot_compute_inverse_of_nonsquare_matrix();
 
       switch (i)
       {
@@ -2286,7 +2286,7 @@ namespace CORE::LINALG
           return invert3x3(mat);
         default:
           DENSEERROR::Checker<(
-              i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
+              i < 4)>::use_fixed_size_serial_dense_solver_for_matrices_bigger_than_3x3();
           return 0.0;
       }
     }
@@ -2331,7 +2331,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const value_type* mat)
     {
-      DENSEERROR::Checker<i == j>::Cannot_compute_determinant_of_nonsquare_matrix();
+      DENSEERROR::Checker<i == j>::cannot_compute_determinant_of_nonsquare_matrix();
 
       switch (i)
       {
@@ -4426,7 +4426,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(bool setzero)
       : data_(nullptr), isview_(false), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and (cols != 0)>::matrix_dimensions_cannot_be_zero();
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
@@ -4438,7 +4438,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(value_type* d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       data_ = d;
@@ -4457,7 +4457,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(const value_type* d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       isreadonly_ = true;
@@ -4477,7 +4477,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(CORE::LINALG::SerialDenseMatrix::Base& d, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (d.values() == nullptr) return;
     if (d.numRows() != rows or d.numCols() != cols)
       FOUR_C_THROW("illegal matrix dimension (%d,%d)", d.numRows(), d.numCols());
@@ -4505,7 +4505,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(Matrix<rows, cols, value_type>& source, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       data_ = source.data_;
@@ -4524,7 +4524,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source)
       : data_(nullptr), isview_(false), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (allocatesmemory_)
       data_ = new value_type[rows * cols];
     else
@@ -4536,7 +4536,7 @@ namespace CORE::LINALG
   Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source, bool view)
       : data_(nullptr), isview_(view), isreadonly_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<(rows != 0) and cols != 0>::matrix_dimensions_cannot_be_zero();
     if (isview_)
     {
       isreadonly_ = true;
@@ -4605,7 +4605,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type Matrix<rows, cols, value_type>::Determinant() const
   {
-    DENSEERROR::Checker<rows == cols>::Cannot_compute_determinant_of_nonsquare_matrix();
+    DENSEERROR::Checker<rows == cols>::cannot_compute_determinant_of_nonsquare_matrix();
     return DENSEFUNCTIONS::determinant<value_type, rows, cols>(A());
   }
 
@@ -4613,7 +4613,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type Matrix<rows, cols, value_type>::Invert()
   {
-    DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
+    DENSEERROR::Checker<rows == cols>::cannot_compute_inverse_of_nonsquare_matrix();
     return DENSEFUNCTIONS::invert<value_type, rows, cols>(A());
   }
 
@@ -4621,7 +4621,7 @@ namespace CORE::LINALG
   inline value_type Matrix<rows, cols, value_type>::Invert(
       const Matrix<rows, cols, value_type>& other)
   {
-    DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
+    DENSEERROR::Checker<rows == cols>::cannot_compute_inverse_of_nonsquare_matrix();
     return DENSEFUNCTIONS::invert<value_type, rows, cols>(A(), other.values());
   }
 
@@ -4737,7 +4737,8 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r)
   {
-    DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
+    DENSEERROR::Checker<(cols == 1) or
+                        (rows == 1)>::cannot_call_1_d_access_function_on_2_d_matrix();
 #ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
@@ -4748,7 +4749,8 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   inline const value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r) const
   {
-    DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
+    DENSEERROR::Checker<(cols == 1) or
+                        (rows == 1)>::cannot_call_1_d_access_function_on_2_d_matrix();
 #ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
@@ -4819,7 +4821,7 @@ namespace CORE::LINALG
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int ComputeEquilibrateScaling();
+    int compute_equilibrate_scaling();
 
     /// Equilibrate matrix
     /*
@@ -4891,7 +4893,7 @@ namespace CORE::LINALG
       \param b
         new value for equilibrate_
      */
-    void FactorWithEquilibration(bool b);
+    void factor_with_equilibration(bool b);
 
     /// Set transpose
     /*!
@@ -4940,8 +4942,8 @@ namespace CORE::LINALG
         inverted_(false),
         solved_(false)
   {
-    DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
-    DENSEERROR::Checker<rows == cols>::Matrix_size_in_solver_must_be_square();
+    DENSEERROR::Checker<(rows != 0) and (cols != 0)>::matrix_dimensions_cannot_be_zero();
+    DENSEERROR::Checker<rows == cols>::matrix_size_in_solver_must_be_square();
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
@@ -4965,7 +4967,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::FactorWithEquilibration(bool b)
+  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::factor_with_equilibration(bool b)
   {
 #ifdef FOUR_C_DEBUG
     if (factored_ or inverted_)
@@ -5033,7 +5035,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::ComputeEquilibrateScaling()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::compute_equilibrate_scaling()
   {
     if (!r_.empty()) return 0;  // we already did that
     int errnum;
@@ -5051,7 +5053,7 @@ namespace CORE::LINALG
   int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::EquilibrateMatrix()
   {
     int errnum = 0;
-    if (r_.empty()) errnum = ComputeEquilibrateScaling();
+    if (r_.empty()) errnum = compute_equilibrate_scaling();
     if (errnum != 0) return errnum;
     double* ptr = matrix_->A();
     double s1;
@@ -5071,7 +5073,7 @@ namespace CORE::LINALG
   int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::EquilibrateRHS()
   {
     int errnum = 0;
-    if (r_.empty()) errnum = ComputeEquilibrateScaling();
+    if (r_.empty()) errnum = compute_equilibrate_scaling();
     if (errnum != 0) return errnum;
     std::vector<double>& r = transpose_ ? c_ : r_;
     double* ptr = vec_b_->A();

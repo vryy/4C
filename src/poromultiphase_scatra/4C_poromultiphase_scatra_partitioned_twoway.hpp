@@ -45,7 +45,7 @@ namespace POROMULTIPHASESCATRA
     void TimeStep() override { return Solve(); };
 
     /// print header
-    void PrintHeaderPartitioned();
+    void print_header_partitioned();
 
     /// print header
     void IterUpdateStates();

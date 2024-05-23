@@ -64,7 +64,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
 
     //! evaluate evaporation induced heat loss
-    void EvaluateEvaporationInducedHeatLoss() const;
+    void evaluate_evaporation_induced_heat_loss() const;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list

@@ -54,7 +54,7 @@ namespace MAT
        * \param gp Gauss point
        * \return const CORE::LINALG::Matrix<6, 1>&
        */
-      virtual const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const = 0;
+      virtual const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const = 0;
     };
 
     namespace PAR
@@ -126,7 +126,7 @@ namespace MAT
        * \param gp (in) : Gauss point
        * \param eleGID (in) : global element id
        */
-      void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+      void evaluate_first_derivatives_aniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
           const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /*!
@@ -139,7 +139,7 @@ namespace MAT
        * \param gp (in) : Gauss point
        * \param eleGID (in) : global element id
        */
-      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+      void evaluate_second_derivatives_aniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
           const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
 
@@ -200,7 +200,7 @@ namespace MAT
           int eleGID) const;                         ///< element GID
 
       /// Add anisotropic principal stresses
-      void AddStressAnisoPrincipal(
+      void add_stress_aniso_principal(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
@@ -263,7 +263,7 @@ namespace MAT
        * \return const CoupAnisoExpoBaseInterface& Interface that computes structural tensors and
        * scalar products
        */
-      virtual const CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface() const = 0;
+      virtual const CoupAnisoExpoBaseInterface& get_coup_aniso_expo_base_interface() const = 0;
 
      private:
       /// my material parameters

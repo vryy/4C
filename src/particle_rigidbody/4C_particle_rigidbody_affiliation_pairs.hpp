@@ -100,21 +100,24 @@ namespace PARTICLERIGIDBODY
      *
      * \return reference to affiliation pair data
      */
-    inline std::unordered_map<int, int>& GetRefToAffiliationPairData() { return affiliationdata_; };
+    inline std::unordered_map<int, int>& get_ref_to_affiliation_pair_data()
+    {
+      return affiliationdata_;
+    };
 
     /*!
      * \brief distribute affiliation pairs
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void DistributeAffiliationPairs();
+    void distribute_affiliation_pairs();
 
     /*!
      * \brief communicate affiliation pairs
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void CommunicateAffiliationPairs();
+    void communicate_affiliation_pairs();
 
    private:
     /*!
@@ -122,7 +125,8 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void CommunicateSpecificAffiliationPairs(const std::vector<std::vector<int>>& particletargets);
+    void communicate_specific_affiliation_pairs(
+        const std::vector<std::vector<int>>& particletargets);
 
     /*!
      * \brief pack all affiliation pairs
@@ -131,7 +135,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] buffer buffer containing affiliation data
      */
-    void PackAllAffiliationPairs(std::vector<char>& buffer) const;
+    void pack_all_affiliation_pairs(std::vector<char>& buffer) const;
 
     /*!
      * \brief unpack affiliation pairs
@@ -142,7 +146,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] buffer buffer containing affiliation data
      */
-    void UnpackAffiliationPairs(const std::vector<char>& buffer);
+    void unpack_affiliation_pairs(const std::vector<char>& buffer);
 
     /*!
      * \brief add affiliation pair to buffer
@@ -153,7 +157,8 @@ namespace PARTICLERIGIDBODY
      * \param[in]     globalid  global id of rigid particle
      * \param[in]     rigidbody rigid body
      */
-    void AddAffiliationPairToBuffer(std::vector<char>& buffer, int globalid, int rigidbody) const;
+    void add_affiliation_pair_to_buffer(
+        std::vector<char>& buffer, int globalid, int rigidbody) const;
 
     //! communicator
     const Epetra_Comm& comm_;

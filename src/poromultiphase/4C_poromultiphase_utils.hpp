@@ -40,7 +40,7 @@ namespace POROMULTIPHASE
         int& nds_vel, int& nds_solidpressure);
 
     //! exchange material pointers of both discretizations
-    void AssignMaterialPointers(
+    void assign_material_pointers(
         const std::string& struct_disname, const std::string& fluid_disname);
 
     /// create solution algorithm depending on input file

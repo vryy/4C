@@ -126,7 +126,7 @@ namespace BEAMINTERACTION
     double GetKineticEnergy() const override;
 
     //! scale linker element reference length
-    void ScaleLinkerReferenceLength(double scalefac) override
+    void scale_linker_reference_length(double scalefac) override
     {
       FOUR_C_THROW(" not yet implemented for beam3r element.");
     }
@@ -135,7 +135,7 @@ namespace BEAMINTERACTION
     void GetBindingSpotForce(
         int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override;
 
-    double GetCurrentLinkerLength() const override
+    double get_current_linker_length() const override
     {
       FOUR_C_THROW("not yet implemented");
       return 0.0;
@@ -180,7 +180,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
-    void FillStateVariablesForElementEvaluation(
+    void fill_state_variables_for_element_evaluation(
         CORE::LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
         std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode) const;
 

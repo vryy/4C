@@ -4222,7 +4222,7 @@ void test_hex8quad4selfcut71()
        i != other_cells.end(); ++i)
   {
     CORE::GEO::CUT::VolumeCell* vc = &**i;
-    vc->MomentFitGaussWeights(
+    vc->moment_fit_gauss_weights(
         vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
     momFitVol.push_back(vc->Volume());
   }
@@ -4231,7 +4231,7 @@ void test_hex8quad4selfcut71()
        i != other_cells.end(); ++i)
   {
     CORE::GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(
+    vc->direct_divergence_gauss_rule(
         vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
     dirDivVol.push_back(vc->Volume());
   }

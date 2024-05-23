@@ -123,7 +123,7 @@ namespace MORTAR
 
       // get node number and node pointers
       DRT::Node** mynodes = ele.Nodes();
-      if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
       // valid for 1- and 2-dimensional interfaces
@@ -138,7 +138,7 @@ namespace MORTAR
       for (int i = 0; i < nnode; ++i)
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-        if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+        if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
 
@@ -257,7 +257,7 @@ namespace MORTAR
     void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
         MORTAR::Element& ele, const int& valdim)
     {
-      if (!xi) FOUR_C_THROW("EvaluateShapeLagMult called with xi=nullptr");
+      if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult called with xi=nullptr");
 
       // dual LM shape functions or not
       bool dual = false;
@@ -266,7 +266,7 @@ namespace MORTAR
 
       // get node number and node pointers
       DRT::Node** mynodes = ele.Nodes();
-      if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
       // valid for 1- and 2-dimensional interfaces
@@ -390,7 +390,7 @@ namespace MORTAR
         // unknown case
         default:
         {
-          FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
+          FOUR_C_THROW("evaluate_shape_lag_mult called for unknown element type");
           break;
         }
       }
@@ -429,8 +429,8 @@ namespace MORTAR
     void EvaluateShape_LM_Lin(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
         MORTAR::Element& ele, const int& valdim)
     {
-      if (!xi) FOUR_C_THROW("EvaluateShapeLagMultLin called with xi=nullptr");
-      if (!ele.IsSlave()) FOUR_C_THROW("EvaluateShapeLagMultLin called for master element");
+      if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult_lin called with xi=nullptr");
+      if (!ele.IsSlave()) FOUR_C_THROW("evaluate_shape_lag_mult_lin called for master element");
 
       // check for feasible element types (line3,tri6, quad8 or quad9)
       if (ele.Shape() != CORE::FE::CellType::line3 && ele.Shape() != CORE::FE::CellType::tri6 &&
@@ -444,14 +444,14 @@ namespace MORTAR
 
       // get node number and node pointers
       DRT::Node** mynodes = ele.Nodes();
-      if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // check for boundary nodes
       bool bound = false;
       for (int i = 0; i < ele.NumNode(); ++i)
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-        if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+        if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
         bound += mymrtrnode->IsOnBound();
       }
 
@@ -516,7 +516,7 @@ namespace MORTAR
         // unknown case
         default:
         {
-          FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
+          FOUR_C_THROW("evaluate_shape_lag_mult called for unknown element type");
           break;
         }
       }

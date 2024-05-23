@@ -190,7 +190,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
     if (forcevec2 != nullptr)
     {
       if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
-               ->GetWeakDirichletFlag())
+               ->get_weak_dirichlet_flag())
 
       {
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)

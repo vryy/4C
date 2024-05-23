@@ -129,7 +129,7 @@ namespace GEOMETRYPAIR
      * values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the intersection.
      */
-    void IntersectLineWithSurface(const ElementData<line, scalar_type>& element_data_line,
+    void intersect_line_with_surface(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
         CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
@@ -142,7 +142,7 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void IntersectLineWithOther(const ElementData<line, scalar_type>& element_data_line,
+    void intersect_line_with_other(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start,

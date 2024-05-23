@@ -49,8 +49,8 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
     )
     : DRT::FaceElement(id, owner)
 {
-  SetParentMasterElement(parent_master, lsurface_master);
-  SetParentSlaveElement(parent_slave, lsurface_slave);
+  set_parent_master_element(parent_master, lsurface_master);
+  set_parent_slave_element(parent_slave, lsurface_slave);
   SetLocalTrafoMap(localtrafomap);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);

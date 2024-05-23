@@ -61,8 +61,8 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
     case MORTAR::eval_force_stiff:
     {
       // delete too old information
-      data_.UnbalanceElementFactors().clear();
-      data_.UnbalanceTimeFactors().clear();
+      data_.unbalance_element_factors().clear();
+      data_.unbalance_time_factors().clear();
 
       // (re)set the slave element evaluation times
       data_.GSeleEvalTimesPtr()->Scale(1.0, *sele_eval_times_);
@@ -70,14 +70,14 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
     }
     case MORTAR::eval_force:
       data_.GSeleEvalTimesPtr()->Update(1.0, *sele_eval_times_, 1.0);
-      strat_.SpreadGlobalSeleEvalTimesToInterfaces();
+      strat_.spread_global_sele_eval_times_to_interfaces();
       break;
     // in all other cases: return
     default:
       return;
   }
 
-  strat_.CheckParallelDistribution(global_timer_);
+  strat_.check_parallel_distribution(global_timer_);
 }
 
 /*----------------------------------------------------------------------------*

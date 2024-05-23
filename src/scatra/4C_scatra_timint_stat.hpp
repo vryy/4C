@@ -33,13 +33,13 @@ namespace SCATRA
     void Init() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() override { return; };
+    void compute_intermediate_values() override { return; };
 
     /// compute values at the interior of the elements (required for hdg)
-    void ComputeInteriorValues() override { return; };
+    void compute_interior_values() override { return; };
 
     ///  compute scalar time derivate parameters of the input voltage
-    void ComputeTimeDerivPot0(const bool init) override { return; };
+    void compute_time_deriv_pot0(const bool init) override { return; };
 
     void Setup() override;
 
@@ -70,7 +70,7 @@ namespace SCATRA
     };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
+    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
       FOUR_C_THROW("Not yet implemented!");
       return Teuchos::null;
@@ -85,39 +85,39 @@ namespace SCATRA
     TimIntStationary(const TimIntStationary& old);
 
     /// set time parameter for element evaluation
-    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
+    void set_element_time_parameter(bool forcedincrementalsolver = false) const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
+    void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) override;
 
     //! calculate consistent initial conditions in compliance with initial scalar field
     //! this is not necessary for stationary calculations
-    void CalcInitialTimeDerivative() override { return; };
+    void calc_initial_time_derivative() override { return; };
 
     /// Set the part of the righthandside belonging to the last timestep.
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (nothing to predict for stationary problems!)
     void ExplicitPredictor() const override { return; };
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual() override;
+    void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
     void AVM3Separation() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs() override
+    void dynamic_computation_of_cs() override
     {
       FOUR_C_THROW("no turbulence in stationary flows!");
       return;
     };
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv() override
+    void dynamic_computation_of_cv() override
     {
       FOUR_C_THROW("no turbulence in stationary flows!");
       return;

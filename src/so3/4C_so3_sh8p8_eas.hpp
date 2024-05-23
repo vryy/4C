@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::SoSh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMatrix*& oldfeas,
+void DRT::ELEMENTS::SoSh8p8::eas_update_incrementally(CORE::LINALG::SerialDenseMatrix*& oldfeas,
     CORE::LINALG::SerialDenseMatrix*& oldKaainv, CORE::LINALG::SerialDenseMatrix*& oldKad,
     CORE::LINALG::SerialDenseMatrix*& oldKap, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::SoSh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::SoSh8p8::EasMaterialiseShapeFcts(
+void DRT::ELEMENTS::SoSh8p8::eas_materialise_shape_fcts(
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
     const CORE::LINALG::SerialDenseMatrix& Mloc)
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::SoSh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::SoSh8p8::EasConstraintAndTangent(
+void DRT::ELEMENTS::SoSh8p8::eas_constraint_and_tangent(
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,

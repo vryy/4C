@@ -58,7 +58,7 @@ namespace DRT
 
      protected:
       //! set internal variables
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get the material parameters
       void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
@@ -103,13 +103,13 @@ namespace DRT
 
 
       //! Set advanced reaction terms and derivatives
-      virtual void SetAdvancedReactionTerms(const int k,          //!< index of current scalar
+      virtual void set_advanced_reaction_terms(const int k,       //!< index of current scalar
           const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
       );
 
       //! evaluate shape functions and their derivatives at element center
-      double EvalShapeFuncAndDerivsAtEleCenter() override;
+      double eval_shape_func_and_derivs_at_ele_center() override;
 
       //! array for shape function at element center
       CORE::LINALG::Matrix<nen_, 1> funct_elementcenter_;
@@ -178,10 +178,14 @@ namespace DRT
       }
 
       //! Return one line of the jacobian of the reaction vector
-      std::vector<double>& GetReaBodyForceDerivVector(const int k) { return reabodyforcederiv_[k]; }
+      std::vector<double>& get_rea_body_force_deriv_vector(const int k)
+      {
+        return reabodyforcederiv_[k];
+      }
 
       //! Add to the derivative of the body force due to reaction
-      void AddToReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
+      void add_to_rea_body_force_deriv_matrix(
+          const double reabodyforcederiv, const int k, const int j)
       {
         (reabodyforcederiv_[k])[j] += reabodyforcederiv;
         return;
@@ -195,15 +199,15 @@ namespace DRT
       double GetReaBodyForce(const int k) const { return reabodyforce_[k]; }
 
       //! Return the reaction coefficient
-      double GetReaBodyForceDerivMatrix(const int k, const int j) const
+      double get_rea_body_force_deriv_matrix(const int k, const int j) const
       {
         return (reabodyforcederiv_[k])[j];
       }
 
       //! Return the stabilization coefficient
-      double GetStabilizationCoeff(const int k, const double phinp_k) const override
+      double get_stabilization_coeff(const int k, const double phinp_k) const override
       {
-        double stabboeff = ScaTraEleReaManager::GetStabilizationCoeff(k, phinp_k);
+        double stabboeff = ScaTraEleReaManager::get_stabilization_coeff(k, phinp_k);
 
         if (phinp_k > 1.0e-10) stabboeff += fabs(reabodyforce_[k] / phinp_k);
 
@@ -211,7 +215,8 @@ namespace DRT
       }
 
       // initialize
-      void InitializeReaBodyForceDerivVectorAddVariables(const int numscal, const int newsize)
+      void initialize_rea_body_force_deriv_vector_add_variables(
+          const int numscal, const int newsize)
       {
         reabodyforcederivaddvariables_.resize(numscal, std::vector<double>(newsize, 0.0));
         numaddvariables_ = newsize;
@@ -219,7 +224,7 @@ namespace DRT
 
       //! Return one line of the jacobian of the reaction vector -- derivatives after additional
       //! variables
-      std::vector<double>& GetReaBodyForceDerivVectorAddVariables(const int k)
+      std::vector<double>& get_rea_body_force_deriv_vector_add_variables(const int k)
       {
         return reabodyforcederivaddvariables_[k];
       }

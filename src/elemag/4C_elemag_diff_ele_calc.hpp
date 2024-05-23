@@ -44,7 +44,7 @@ namespace DRT
       static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       /// Integrate shape functions (not implemented)
-      int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+      int integrate_shape_function(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1) override
       {
         FOUR_C_THROW("Not implemented");
@@ -55,7 +55,7 @@ namespace DRT
       virtual void ElementInit(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params);
 
       /// Interpolates an HDG solution to the element nodes for output.
-      virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::ElemagDiff* ele,
+      virtual int interpolate_solution_to_nodes(DRT::ELEMENTS::ElemagDiff* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
@@ -124,7 +124,7 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
-        void ComputeBoundaryIntegral(
+        void compute_boundary_integral(
             DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
@@ -133,7 +133,7 @@ namespace DRT
             INPAR::ELEMAG::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
-        void ComputeInteriorMatrices(double dt, double sigma, double mu, double epsilon);
+        void compute_interior_matrices(double dt, double sigma, double mu, double epsilon);
 
         /// Set up face matrices
         void ComputeFaceMatrices(const int face, double dt, int indexstart, int newindex,
@@ -158,7 +158,7 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
         /// Projection of scatra computed gradients into elements
-        int ProjectElectricFieldFromScatra(DRT::ELEMENTS::ElemagDiff* ele,
+        int project_electric_field_from_scatra(DRT::ELEMENTS::ElemagDiff* ele,
             Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat,
             CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -185,7 +185,7 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
-        int ProjectFieldTestTrace(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+        int project_field_test_trace(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
@@ -197,11 +197,11 @@ namespace DRT
             const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseVector& v) const;
 
         /// Function gradient evaluation routine
-        void ComputeFunctionGradient(int start_func, double t,
+        void compute_function_gradient(int start_func, double t,
             const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& v) const;
 
         /// Function time derivative evaluation routine
-        void ComputeFunctionTimeDerivative(int start_func, double t, double dt,
+        void compute_function_time_derivative(int start_func, double t, double dt,
             const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseVector& v) const;
 
         // convention: we sort the entries in the matrices the following way:
@@ -253,7 +253,7 @@ namespace DRT
       };  // stuct LocalSolver
 
       /// Updates interior variables and calculates residual.
-      void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList& params,
+      void update_interior_variables_and_compute_residual(Teuchos::ParameterList& params,
           DRT::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<CORE::MAT::Material>& mat,
           CORE::LINALG::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
@@ -265,7 +265,7 @@ namespace DRT
       void FillRestartVectors(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Reads internal field from global vectors to element vectors.
-      void ElementInitFromRestart(DRT::Element* ele, DRT::Discretization& discretization);
+      void element_init_from_restart(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
       double EstimateError(DRT::ELEMENTS::ElemagDiff& ele, CORE::LINALG::SerialDenseVector& p);

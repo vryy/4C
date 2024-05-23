@@ -63,7 +63,7 @@ namespace NOX
          *  In difference to a default attempt the correction parameter is not
          *  changed but instead used as it is. If the solver fails, the correction
          *  fails and the line search method takes care. */
-        bool computeCorrectionDirection(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+        bool compute_correction_direction(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             const ::NOX::Solver::Generic& solver, NOX::NLN::CorrectionType corr_type);
 
         /** \brief update the successive correction counter
@@ -72,24 +72,24 @@ namespace NOX
          *  necessary. This is equivalent to the case that the primal correction factor
          *  has been reduced. If this happens N-times in a row, we try to use the
          *  unmodified system matrix again. */
-        void updateSuccessiveReductionCounter();
+        void update_successive_reduction_counter();
 
         /// return true if the system shall be modified
         bool useUnmodifiedSystem() const;
 
         /// fill the default step test set
-        void fillDefaultStepTests(Teuchos::ParameterList& pmodnewton);
+        void fill_default_step_tests(Teuchos::ParameterList& pmodnewton);
 
         /// test the default step, i.e. the (modified) Newton direction of length 1.0
-        bool testDefaultStepQuality(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+        bool test_default_step_quality(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test = false);
 
         /// compute the modified Newton direction
-        bool computeModifiedNewton(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+        bool compute_modified_newton(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal = nullptr);
 
         /// solve the unmodified system
-        bool solveUnmodifiedSystem(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
+        bool solve_unmodified_system(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             const ::NOX::Solver::Generic& solver);
 
         /// solve the modified system
@@ -97,7 +97,7 @@ namespace NOX
             const ::NOX::Solver::Generic& solver);
 
         /// detect a stagnation, update the counter and inform the user if necessary
-        void setStagnationCounter(::NOX::Abstract::Vector& dir);
+        void set_stagnation_counter(::NOX::Abstract::Vector& dir);
 
         /// modify the system matrix
         bool modifySystem(::NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
@@ -105,17 +105,17 @@ namespace NOX
             ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr);
 
         /// return the primal diagonal correction
-        double getPrimalDiagCorrection(const bool first) const;
+        double get_primal_diag_correction(const bool first) const;
 
         /** return the very first primal diagonal correction, i.e. this is the first iterate asking
          *  for a modification */
-        double getFirstPrimalDiagCorrection() const;
+        double get_first_primal_diag_correction() const;
 
         /// return default primal diagonal correction
-        double getPrimalDiagCorrection() const;
+        double get_primal_diag_correction() const;
 
         /// store correction factor as soon as a successful modification could be achieved
-        void storeCorrectionFactor();
+        void store_correction_factor();
 
         /// get diagonal vector (currently unused)
         Teuchos::RCP<Epetra_Vector> getDiagonal(const ::NOX::Abstract::Group& grp) const;

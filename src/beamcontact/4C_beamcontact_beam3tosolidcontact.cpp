@@ -108,7 +108,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   std::vector<std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>> parsets;
 
   // Find contact interval borders
-  GetContactIntervalBorders(parsets);
+  get_contact_interval_borders(parsets);
 
   // -----------------------------------------------------------------
   // End: Find contact interval borders
@@ -152,7 +152,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 
     // Two parameter sets indicate the beginning (a) and the end (b) of the contact interval
     // TODO: Use stiffc1_FAD and stiffc2_FAD only if needed (#ifdef AUTOMATICDIFFBTS)
-    EvaluateContactInterval(pp, parsets[i], parsets[i + 1], fc1, fc2, stiffc1, stiffc2,
+    evaluate_contact_interval(pp, parsets[i], parsets[i + 1], fc1, fc2, stiffc1, stiffc2,
         doAssembleContactInterval, stiffc1_FAD, stiffc2_FAD);
 
     // If at least one contact interval has contact, set the doAssemble flag true
@@ -191,7 +191,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   // Finally assemble fc1, fc2 and stiffc1, stiffc2 for beam to solid contact pair
   if (doAssemble)
   {
-    AssembleFcAndStiffcContact(fc1, fc2, &fint, stiffc1, stiffc2, stiffmatrix);
+    assemble_fc_and_stiffc_contact(fc1, fc2, &fint, stiffc1, stiffc2, stiffmatrix);
   }
 
   // -----------------------------------------------------------------
@@ -208,7 +208,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
  | Evaluate contact interval                                            |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::EvaluateContactInterval(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evaluate_contact_interval(
     const double& pp, const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_a,
     const std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_b,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
@@ -282,7 +282,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   if (beamele1 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
   const double radius1 =
-      MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
+      MANIPULATERADIUS * beamele1->get_circular_cross_section_radius_for_interactions();
 
   // Get contact interval borders eta_a and eta_b
   TYPEBTS eta_a = parset_a.first(2);
@@ -333,16 +333,17 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 #endif
 
     // Update shape functions and their derivatives for beam and surface element
-    GetBeamShapeFunctions(N1, N1_eta, N1_etaeta, eta);
-    GetSurfShapeFunctions(N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
+    get_beam_shape_functions(N1, N1_eta, N1_etaeta, eta);
+    get_surf_shape_functions(
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
 
     // Update coordinates and derivatives for beam and surface element
-    ComputeBeamCoordsAndDerivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
-    ComputeSurfCoordsAndDerivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N2,
-        N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
+    compute_beam_coords_and_derivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
+    compute_surf_coords_and_derivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1,
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
 
     // Compute unit distance vector nD
-    ComputeDistanceNormal(r1, x2, rD, norm_rD, nD);
+    compute_distance_normal(r1, x2, rD, norm_rD, nD);
 
     // Add nD and eta to normalsets_ of the current time step
     std::pair<TYPEBTS, CORE::LINALG::Matrix<3, 1, TYPEBTS>> normalset;
@@ -352,13 +353,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 
 #if defined(GMSHDEBUG) || defined(GMSHFORCE) || defined(SAVEFORCE)
     // Compute some variables at contact interval border
-    ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
+    compute_surface_normal(x2_xi1, x2_xi2, a2, norm_a2, n2);
     gap = CORE::FADUTILS::ScalarProduct(n2, rD) - radius1;
     double fp = 0.0;
     if (gap < 0)
     {
       TYPEBTS dfp = 0.0;
-      EvaluatePenaltyForceLaw(pp, gap, fp, dfp);
+      evaluate_penalty_force_law(pp, gap, fp, dfp);
     }
 
     // Store variables at contact interval border in gmshDebugPoints_
@@ -413,7 +414,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 
       // Compute linearization of contact interval borders eta_a (if i == 0) or eta_b (if i == 1)
       // with FAD
-      FADCheckLinParameter(
+      fad_check_lin_parameter(
           fixed_par, rD, x2_xi1, x2_xi2, xi1_d_FAD, xi2_d_FAD, eta_d_FAD, xi1_d, xi2_d, eta_d);
 #endif
     }
@@ -506,19 +507,20 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 #endif
 
     // Update shape functions and their derivatives for beam and surface element
-    GetBeamShapeFunctions(N1, N1_eta, N1_etaeta, eta);
-    GetSurfShapeFunctions(N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
+    get_beam_shape_functions(N1, N1_eta, N1_etaeta, eta);
+    get_surf_shape_functions(
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
 
     // Update coordinates and derivatives for beam and surface element
-    ComputeBeamCoordsAndDerivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
-    ComputeSurfCoordsAndDerivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N2,
-        N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
+    compute_beam_coords_and_derivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
+    compute_surf_coords_and_derivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1,
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
 
     // Compute distance vector rD, its norm norm_rD and unit distance vector nD
-    ComputeDistanceNormal(r1, x2, rD, norm_rD, nD);
+    compute_distance_normal(r1, x2, rD, norm_rD, nD);
 
     // Compute tangent cross product a2, its norm norm_a2 and surface unit normal vector n2
-    ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
+    compute_surface_normal(x2_xi1, x2_xi2, a2, norm_a2, n2);
 
     // Compute sign of projection of distance vector rD on surface unit normal vector n2
     sgn =
@@ -545,7 +547,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
       if (gap < 0)
       {
         TYPEBTS dfp = 0.0;
-        EvaluatePenaltyForceLaw(pp, gap, fp, dfp);
+        evaluate_penalty_force_law(pp, gap, fp, dfp);
       }
       gmshDebugPoint gmshDebugPoint;
       gmshDebugPoint.r1 = r1;
@@ -571,13 +573,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
       // dfp = dfp / dgap
       TYPEBTS fp = 0.0;
       TYPEBTS dfp = 0.0;
-      EvaluatePenaltyForceLaw(pp, gap, fp, dfp);
+      evaluate_penalty_force_law(pp, gap, fp, dfp);
 
       // Evaluate contact forces at current Gauss point
       EvaluateFcContact(fp, fc1, fc2, eta_a, eta_b, w_gp, sgn, nD, n2, N1, N2, jacobi);
 
       // Evaluate contact stiffness at current Gauss point
-      EvaluateStiffcContact(fp, dfp, gap, stiffc1, stiffc2, sgn, eta_a, eta_b, eta_d, eta_a_d,
+      evaluate_stiffc_contact(fp, dfp, gap, stiffc1, stiffc2, sgn, eta_a, eta_b, eta_d, eta_a_d,
           eta_b_d, w_gp, rD, norm_rD, nD, a2, norm_a2, n2, r1_eta, x2_xi1, x2_xi2, x2_xi1xi1,
           x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N1, N1_eta, N2, N2_xi1, N2_xi2, jacobi, stiffc1_FAD,
           stiffc2_FAD);
@@ -611,8 +613,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
  | Evaluate penalty force law                                           |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::EvaluatePenaltyForceLaw(
-    const double& pp, const TYPEBTS& gap, TYPEBTS& fp, TYPEBTS& dfp)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
+    numnodalvalues>::evaluate_penalty_force_law(const double& pp, const TYPEBTS& gap, TYPEBTS& fp,
+    TYPEBTS& dfp)
 {
 #ifdef LINPENALTY
   // Linear penalty force law
@@ -793,7 +796,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
  | Evaluate contact stiffness                                           |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::EvaluateStiffcContact(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evaluate_stiffc_contact(
     const TYPEBTS& fp, const TYPEBTS& dfp, const TYPEBTS& gap,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
         3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
@@ -864,7 +867,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 
   // Compute directional derivatives of surface parameters xi1 and xi2 for fixed eta (par_fixed = 2)
   // with FAD
-  FADCheckLinParameter(2, rD, x2_xi1, x2_xi2, xi1_d_FAD, xi2_d_FAD, eta_d_FAD, xi1_d, xi2_d, eta_d);
+  fad_check_lin_parameter(
+      2, rD, x2_xi1, x2_xi2, xi1_d_FAD, xi2_d_FAD, eta_d_FAD, xi1_d, xi2_d, eta_d);
 
   // Print information for linearization of gap and distance vector
   std::cout << std::endl << "FAD-Check: Linearization of gap and distance vector" << std::endl;
@@ -874,7 +878,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   CORE::LINALG::Matrix<3, dim1 + dim2, TYPEBTS> rD_d_FAD(true);
 
   // Compute directional derivative of gap and distance vector rD with FAD
-  FADCheckLinGapAndDistanceVector(gap, rD, xi1_d, xi2_d, eta_d, gap_d_FAD, rD_d_FAD, gap_d, rD_d);
+  fad_check_lin_gap_and_distance_vector(
+      gap, rD, xi1_d, xi2_d, eta_d, gap_d_FAD, rD_d_FAD, gap_d, rD_d);
 
   // Print information for linearization of normal vector
   std::cout << std::endl << "FAD-Check: Linearization of normal vector" << std::endl;
@@ -1375,7 +1380,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
-    AssembleFcAndStiffcContact(
+    assemble_fc_and_stiffc_contact(
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> fc1,
         const CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS> fc2, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
@@ -1545,14 +1550,15 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
  | Get contact interval borders                                         |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetContactIntervalBorders(
-    std::vector<std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>>& parsets)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
+    get_contact_interval_borders(
+        std::vector<std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>>& parsets)
 {
   // Enable or disable console output
   const bool output = false;
   if (output)
   {
-    std::cout << "GetContactIntervalBorders output:" << std::endl;
+    std::cout << "get_contact_interval_borders output:" << std::endl;
   }
 
   // Initialize limit for parameter values (interval [-limit, limit])
@@ -1924,13 +1930,14 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
 #endif
 
     // Update shape functions and their derivatives for beam and surface element
-    GetBeamShapeFunctions(N1, N1_eta, N1_etaeta, eta);
-    GetSurfShapeFunctions(N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
+    get_beam_shape_functions(N1, N1_eta, N1_etaeta, eta);
+    get_surf_shape_functions(
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1, xi1, xi2);
 
     // Update coordinates and derivatives for beam and surface element
-    ComputeBeamCoordsAndDerivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
-    ComputeSurfCoordsAndDerivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1, N2,
-        N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
+    compute_beam_coords_and_derivs(r1, r1_eta, r1_etaeta, N1, N1_eta, N1_etaeta);
+    compute_surf_coords_and_derivs(x2, x2_xi1, x2_xi2, x2_xi1xi1, x2_xi2xi2, x2_xi1xi2, x2_xi2xi1,
+        N2, N2_xi1, N2_xi2, N2_xi1xi1, N2_xi2xi2, N2_xi1xi2, N2_xi2xi1);
 
     // Compute distance vector rD = r1 - x2
     for (int i = 0; i < 3; i++)
@@ -2005,7 +2012,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
 
     // Check linearization of orthogonality conditions with FAD
     CORE::LINALG::Matrix<2, 2, TYPEBTS> J_FAD(true);
-    FADCheckLinOrthogonalityCondition(fixed_par, rD, x2_xi1, x2_xi2, J_FAD, J);
+    fad_check_lin_orthogonality_condition(fixed_par, rD, x2_xi1, x2_xi2, J_FAD, J);
 #endif
 
     // Inverting 2x2-matrix J by hard coded formula, so that it is possible
@@ -2094,10 +2101,10 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
     double sgn = 1.0;
 
     // Compute distance vector rD, its norm norm_rD and unit distance vector nD
-    ComputeDistanceNormal(r1, x2, rD, norm_rD, nD);
+    compute_distance_normal(r1, x2, rD, norm_rD, nD);
 
     // Compute surface tangent cross product a2, its norm_a2 and surface unit normal vector n2
-    ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
+    compute_surface_normal(x2_xi1, x2_xi2, a2, norm_a2, n2);
 
     // Compute sign of projection of distance vector rD on surface unit normal vector n2
     sgn =
@@ -2158,7 +2165,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
  | Evaluate beam shape functions and derivatives                        |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBeamShapeFunctions(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_beam_shape_functions(
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta, const TYPEBTS& eta)
@@ -2201,7 +2208,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
 
   // Assemble the individual shape functions in matrices, such that: r = N * d, r_eta = N_eta * d,
   // r_etaeta = N_etaeta * d
-  AssembleBeamShapefunctions(N_i, N_i_eta, N_i_etaeta, N, N_eta, N_etaeta);
+  assemble_beam_shapefunctions(N_i, N_i_eta, N_i_etaeta, N, N_eta, N_etaeta);
 
   return;
 }
@@ -2214,7 +2221,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
  | Evaluate solid surface shape functions and derivatives               |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetSurfShapeFunctions(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_surf_shape_functions(
     CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
     CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
     CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
@@ -2243,7 +2250,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetSur
 
   // Assemble the individual shape functions in matrices, such that: r = N * d, r_xi = N_xi * d,
   // r_xi1xi1 = N_xi1xi1 * d, ...
-  AssembleSurfShapefunctions(
+  assemble_surf_shapefunctions(
       N_i, N_i_xi, N_i_xixi, N, N_xi1, N_xi2, N_xi1xi1, N_xi2xi2, N_xi1xi2, N_xi2xi1);
 
   return;
@@ -2258,8 +2265,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetSur
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::AssembleBeamShapefunctions(const CORE::LINALG::Matrix<1,
-                                                    numnodes * numnodalvalues, TYPEBTS>& N_i,
+    numnodalvalues>::assemble_beam_shapefunctions(const CORE::LINALG::Matrix<1,
+                                                      numnodes * numnodalvalues, TYPEBTS>& N_i,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_eta,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_etaeta,
     CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
@@ -2318,18 +2325,17 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Assemble solid surface shape functions                               |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::AssembleSurfShapefunctions(const CORE::LINALG::Matrix<1, numnodessol, TYPEBTS>&
-                                                    N_i,
-    const CORE::LINALG::Matrix<2, numnodessol, TYPEBTS>& N_i_xi,
-    const CORE::LINALG::Matrix<3, numnodessol, TYPEBTS>& N_i_xixi,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
-    CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
+    assemble_surf_shapefunctions(const CORE::LINALG::Matrix<1, numnodessol, TYPEBTS>& N_i,
+        const CORE::LINALG::Matrix<2, numnodessol, TYPEBTS>& N_i_xi,
+        const CORE::LINALG::Matrix<3, numnodessol, TYPEBTS>& N_i_xixi,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
+        CORE::LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1)
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
@@ -2389,7 +2395,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::ComputeBeamCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
+    numnodalvalues>::compute_beam_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_eta, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_etaeta,
     const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
     const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
@@ -2422,7 +2428,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::ComputeSurfCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
+    numnodalvalues>::compute_surf_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPEBTS>& r,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi1, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi2,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi1, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi2,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi1,
@@ -2468,7 +2474,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Compute distance vector                                              |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeDistanceNormal(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::compute_distance_normal(
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& r1, const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD, TYPEBTS& norm_rD,
     CORE::LINALG::Matrix<3, 1, TYPEBTS>& nD)
@@ -2509,7 +2515,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
  | Compute surface normal vector                                        |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ComputeSurfaceNormal(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::compute_surface_normal(
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& a2,
     TYPEBTS& norm_a2, CORE::LINALG::Matrix<3, 1, TYPEBTS>& n2)
@@ -2637,13 +2643,14 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Invert
  | Update all class variables at the end of time step                   |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::UpdateClassVariablesStep()
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
+    numnodalvalues>::update_class_variables_step()
 {
   // Update history variables
   const bool output = false;
   if (output)
   {
-    std::cout << "UpdateClassVariablesStep:" << std::endl;
+    std::cout << "update_class_variables_step:" << std::endl;
     for (int i = 0; i < (int)normalsets_.size(); i++)
     {
       std::cout << "normalset " << i << ":" << std::endl;
@@ -2718,8 +2725,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Update
  | Update nodal tangents for tangent smoothing (public)     meier 02/14 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::UpdateEleSmoothTangents(
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
+    update_ele_smooth_tangents(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   //  //Tangent smoothing is only possible for Reissner beam elements --> FOUR_C_THROW() otherwise
   //  if (numnodalvalues>1)
@@ -3019,7 +3026,7 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
  | FAD-Check for linearization of element parameters                    |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADCheckLinParameter(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_check_lin_parameter(
     const int& fixed_par, const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
@@ -3187,7 +3194,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADChe
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::FADCheckLinGapAndDistanceVector(const TYPEBTS& gap,
+    numnodalvalues>::fad_check_lin_gap_and_distance_vector(const TYPEBTS& gap,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
@@ -3378,7 +3385,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADChe
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
-    numnodalvalues>::FADCheckLinOrthogonalityCondition(const int& fixed_par,
+    numnodalvalues>::fad_check_lin_orthogonality_condition(const int& fixed_par,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& rD,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
     const CORE::LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, CORE::LINALG::Matrix<2, 2, TYPEBTS>& J_FAD,
@@ -3499,7 +3506,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FDChec
     std::vector<std::pair<CORE::LINALG::Matrix<3, 1, TYPEBTS>, int>> parsets;
 
     // Find contact interval borders
-    GetContactIntervalBorders(parsets);
+    get_contact_interval_borders(parsets);
 
     // -----------------------------------------------------------------
     // End: Find contact interval borders
@@ -3538,7 +3545,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FDChec
 
       // Two parameter sets indicate the beginning (a) and the end (b) of the contact interval
       // TODO: Use stiffc1_FAD and stiffc2_FAD only if needed (#ifdef AUTOMATICDIFFBTS)
-      EvaluateContactInterval(pp, parsets[i], parsets[i + 1], fc1_h, fc2_h, stiffc1_h, stiffc2_h,
+      evaluate_contact_interval(pp, parsets[i], parsets[i + 1], fc1_h, fc2_h, stiffc1_h, stiffc2_h,
           doAssembleContactInterval, stiffc1_FAD, stiffc2_FAD);
     }
 

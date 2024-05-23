@@ -87,7 +87,7 @@ void FS3I::FS3IBase::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::CheckInterfaceDirichletBC()
+void FS3I::FS3IBase::check_interface_dirichlet_bc()
 {
   Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField()->Discretization();
   Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField()->Discretization();
@@ -166,8 +166,8 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // const Teuchos::ParameterList& ioparams = problem->IOParams();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
-  const Teuchos::ParameterList& structdynparams = problem->StructuralDynamicParams();
-  const Teuchos::ParameterList& scatradynparams = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& structdynparams = problem->structural_dynamic_params();
+  const Teuchos::ParameterList& scatradynparams = problem->scalar_transport_dynamic_params();
   // const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
 
@@ -249,7 +249,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
     }
   }
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
   if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
@@ -412,14 +412,14 @@ void FS3I::FS3IBase::ScatraOutput()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->CheckAndWriteOutputAndRestart();
+    scatra->ScaTraField()->check_and_write_output_and_restart();
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::IncrementTimeAndStep()
+void FS3I::FS3IBase::increment_time_and_step()
 {
   step_ += 1;
   time_ += dt_;
@@ -439,10 +439,10 @@ void FS3I::FS3IBase::UpdateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::ScatraEvaluateSolveIterUpdate()
+void FS3I::FS3IBase::scatra_evaluate_solve_iter_update()
 {
-  EvaluateScatraFields();
-  SetupCoupledScatraSystem();
+  evaluate_scatra_fields();
+  setup_coupled_scatra_system();
   LinearSolveScatra();
   ScatraIterUpdate();
 
@@ -450,18 +450,18 @@ void FS3I::FS3IBase::ScatraEvaluateSolveIterUpdate()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->ComputeIntermediateValues();
+    scatra->ScaTraField()->compute_intermediate_values();
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::EvaluateScatraFields()
+void FS3I::FS3IBase::evaluate_scatra_fields()
 {
   // membrane concentration at the interface needed for simplified membrane equation of Kedem and
   // Katchalsky. NOTE: needs to be set here, since it depends on the scalar interface values on both
   // discretisations changing with each Newton iteration
-  SetMembraneConcentration();
+  set_membrane_concentration();
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
@@ -485,7 +485,7 @@ void FS3I::FS3IBase::EvaluateScatraFields()
       const Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap, false);
-      CORE::LINALG::ApplyDirichletToSystem(*coupforce, *zeros, *dbcmap);
+      CORE::LINALG::apply_dirichlet_to_system(*coupforce, *zeros, *dbcmap);
     }
   }
 }
@@ -493,26 +493,26 @@ void FS3I::FS3IBase::EvaluateScatraFields()
 /*----------------------------------------------------------------------*
  |  Set Membrane concentration in scatra fields              Thon 08/16 |
  *----------------------------------------------------------------------*/
-void FS3I::FS3IBase::SetMembraneConcentration() const
+void FS3I::FS3IBase::set_membrane_concentration() const
 {
   std::vector<Teuchos::RCP<Epetra_Vector>> MembraneConc;
-  ExtractMembraneConcentration(MembraneConc);
+  extract_membrane_concentration(MembraneConc);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetMembraneConcentration(MembraneConc[i]);
+    scatra->ScaTraField()->set_membrane_concentration(MembraneConc[i]);
   }
 }
 
 /*----------------------------------------------------------------------*
  |  Extract membrane concentration                           thon 08/16 |
  *----------------------------------------------------------------------*/
-void FS3I::FS3IBase::ExtractMembraneConcentration(
+void FS3I::FS3IBase::extract_membrane_concentration(
     std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const
 {
   // ############ Fluid Field ###############
-  Teuchos::RCP<Epetra_Vector> MembraneConcentration1 = CalcMembraneConcentration();
+  Teuchos::RCP<Epetra_Vector> MembraneConcentration1 = calc_membrane_concentration();
   MembraneConcentration.push_back(MembraneConcentration1);
 
   // ############ Poro Field ###############
@@ -532,7 +532,7 @@ void FS3I::FS3IBase::ExtractMembraneConcentration(
 /*----------------------------------------------------------------------*
  |  Calculate membrane concentration                         thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::CalcMembraneConcentration() const
+Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::calc_membrane_concentration() const
 {
   // Get concentration phi2 in scatrafield2
   // Hint: in the following we talk of phi1 and phi2, but they mean the same concentration just on
@@ -583,23 +583,23 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::CalcMembraneConcentration() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::SetupCoupledScatraSystem()
+void FS3I::FS3IBase::setup_coupled_scatra_system()
 {
   // set up scatra rhs
-  SetupCoupledScatraRHS();
+  setup_coupled_scatra_rhs();
 
   // set up scatra system matrix
-  SetupCoupledScatraMatrix();
+  setup_coupled_scatra_matrix();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::SetupCoupledScatraRHS()
+void FS3I::FS3IBase::setup_coupled_scatra_rhs()
 {
   Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Residual();
   Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Residual();
-  SetupCoupledScatraVector(scatrarhs_, scatra1, scatra2);
+  setup_coupled_scatra_vector(scatrarhs_, scatra1, scatra2);
 
   // additional contributions in case of finite interface permeability
   if (!infperm_)
@@ -628,7 +628,7 @@ void FS3I::FS3IBase::SetupCoupledScatraRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
+void FS3I::FS3IBase::setup_coupled_scatra_vector(Teuchos::RCP<Epetra_Vector> globalvec,
     Teuchos::RCP<const Epetra_Vector>& vec1, Teuchos::RCP<const Epetra_Vector>& vec2)
 {
   if (infperm_)
@@ -655,7 +655,7 @@ void FS3I::FS3IBase::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> global
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::SetupCoupledScatraMatrix()
+void FS3I::FS3IBase::setup_coupled_scatra_matrix()
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField()->SystemMatrix();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField()->SystemMatrix();
@@ -768,7 +768,7 @@ void FS3I::FS3IBase::ScatraIterUpdate()
   // fields and extract respective vectors
   Teuchos::RCP<const Epetra_Vector> inc1;
   Teuchos::RCP<const Epetra_Vector> inc2;
-  ExtractScatraFieldVectors(scatraincrement_, inc1, inc2);
+  extract_scatra_field_vectors(scatraincrement_, inc1, inc2);
 
   // update both fluid- and structure-based solution vectors
   scatravec_[0]->ScaTraField()->UpdateIter(inc1);
@@ -777,7 +777,7 @@ void FS3I::FS3IBase::ScatraIterUpdate()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+void FS3I::FS3IBase::extract_scatra_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
     Teuchos::RCP<const Epetra_Vector>& vec1, Teuchos::RCP<const Epetra_Vector>& vec2)
 {
   if (infperm_)

@@ -208,7 +208,7 @@ namespace CORE::Conditions
     SSICouplingSolidToScatra,
     SSICouplingScatraToSolid,
     SSIInterfaceContact,
-    SSIInterfaceMeshtying,
+    ssi_interface_meshtying,
     SSIMeshtying3DomainIntersection,
     SSISurfaceManifold,
     SSISurfaceManifoldKinetics,
@@ -253,7 +253,7 @@ namespace CORE::Conditions
   \brief Type of geometry this conditions lives on
 
   \warning The order is crucial for and must not be changed!!!
-           (used in BoundaryConditionsGeometry())
+           (used in boundary_conditions_geometry())
   */
   enum GeometryType
   {

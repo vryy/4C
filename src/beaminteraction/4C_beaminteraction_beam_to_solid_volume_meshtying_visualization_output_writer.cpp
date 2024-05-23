@@ -73,28 +73,28 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
           "beam-to-solid-volume", visualization_output_params, visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
-  const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
+  const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
   // with ranks that do not contribute to a certain writer.
   {
-    if (output_params_ptr_->GetNodalForceOutputFlag())
+    if (output_params_ptr_->get_nodal_force_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btsvc-nodal-forces");
-      auto& visualization_data = visualization_writer->GetVisualizationData();
+          output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btsvc-nodal-forces");
+      auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("force_beam", 3);
       visualization_data.RegisterPointData<double>("force_solid", 3);
       if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_node_id", 1);
     }
 
-    if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
+    if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->AddVisualizationWriter("mortar", "btsvc-mortar");
-      auto& visualization_data = visualization_writer->GetVisualizationData();
+          output_writer_base_ptr_->add_visualization_writer("mortar", "btsvc-mortar");
+      auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
@@ -104,12 +104,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
       }
     }
 
-    if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
+    if (output_params_ptr_->get_mortar_lambda_continuous_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->AddVisualizationWriter(
+          output_writer_base_ptr_->add_visualization_writer(
               "mortar-continuous", "btsvc-mortar-continuous");
-      auto& visualization_data = visualization_writer->GetVisualizationData();
+      auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
@@ -121,12 +121,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
       }
     }
 
-    if (output_params_ptr_->GetIntegrationPointsOutputFlag())
+    if (output_params_ptr_->get_integration_points_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->AddVisualizationWriter(
+          output_writer_base_ptr_->add_visualization_writer(
               "integration-points", "btsvc-integration-points");
-      auto& visualization_data = visualization_writer->GetVisualizationData();
+      auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("force", 3);
       if (write_unique_ids)
@@ -136,11 +136,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
       }
     }
 
-    if (output_params_ptr_->GetSegmentationOutputFlag())
+    if (output_params_ptr_->get_segmentation_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btsvc-segmentation");
-      auto& visualization_data = visualization_writer->GetVisualizationData();
+          output_writer_base_ptr_->add_visualization_writer("segmentation", "btsvc-segmentation");
+      auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.RegisterPointData<double>("displacement", 3);
       if (write_unique_ids)
       {
@@ -166,23 +166,23 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Write
   // next step.
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
-  WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
+  write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
 }
 
 /**
  *
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
-    WriteOutputRuntimeIteration(
+    write_output_runtime_iteration(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
   CheckInitSetup();
 
-  if (output_params_ptr_->GetOutputEveryIteration())
+  if (output_params_ptr_->get_output_every_iteration())
   {
     auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
         beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
-    WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
+    write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
   }
 }
 
@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
  *
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
-    WriteOutputBeamToSolidVolumeMeshTying(
+    write_output_beam_to_solid_volume_mesh_tying(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const
 {
@@ -203,12 +203,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
-      output_writer_base_ptr_->GetVisualizationWriter("btsvc-nodal-forces");
+      output_writer_base_ptr_->get_visualization_writer("btsvc-nodal-forces");
   if (visualization != Teuchos::null)
     AddBeamInteractionNodalForces(visualization, beam_contact->DiscretPtr(),
-        beam_contact->BeamInteractionDataState().GetDisNp(),
-        beam_contact->BeamInteractionDataState().GetForceNp(),
-        output_params_ptr_->GetWriteUniqueIDsFlag());
+        beam_contact->beam_interaction_data_state().GetDisNp(),
+        beam_contact->beam_interaction_data_state().GetForceNp(),
+        output_params_ptr_->get_write_unique_i_ds_flag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the
@@ -221,7 +221,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     if (not(direct_assembly_manager == Teuchos::null))
     {
       for (const auto& pair : direct_assembly_manager->GetContactPairs())
-        pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
+        pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
     }
 
     // Add pair specific output for indirect assembly managers.
@@ -247,7 +247,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
       // Add the pair specific output.
       for (const auto& pair : indirect_assembly_manager->GetMortarManager()->GetContactPairs())
-        pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
+        pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
 
       // Reset assembly manager specific values in the parameter list passed to the individual
       // pairs.

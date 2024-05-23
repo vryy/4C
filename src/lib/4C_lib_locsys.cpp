@@ -173,7 +173,7 @@ void DRT::UTILS::LocsysManager::Update(
         if ((currlocsys->Type() == CORE::Conditions::SurfaceLocsys or
                 currlocsys->Type() == CORE::Conditions::LineLocsys) and
             (*useConsistentNodeNormal) == 1)
-          CalcRotationVectorForNormalSystem(i, time);
+          calc_rotation_vector_for_normal_system(i, time);
         else
         {
           // Check, if the updated node positions shall be used for evaluation of the functions
@@ -410,7 +410,7 @@ void DRT::UTILS::LocsysManager::Update(
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
   // manner
-  subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
+  subtrafo_ = trafo_->extract_dirichlet_rows(*locsysdofmap_);
 
   /*
   REMARK:
@@ -566,7 +566,8 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
  |  Calculate rotation vector for (mass-consistent) normal              |
  |  system for a given locsys condition                       hahn 07/14|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysCond, double time)
+void DRT::UTILS::LocsysManager::calc_rotation_vector_for_normal_system(
+    int numLocsysCond, double time)
 {
   // Take care for "negative times", where no information about dispnp_ is available
   if (time < 0.0)
@@ -633,7 +634,8 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
     if (length < 1e-12)
     {
       FOUR_C_THROW(
-          "Locsys: CalcRotationVectorForNormalSystem: Node normal length is zero, what shouldn't "
+          "Locsys: calc_rotation_vector_for_normal_system: Node normal length is zero, what "
+          "shouldn't "
           "happen! Check, if your BC nodeset really contains surface elements!");
     }
 

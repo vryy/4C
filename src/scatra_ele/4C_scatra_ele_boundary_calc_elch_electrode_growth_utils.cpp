@@ -45,7 +45,7 @@ void DRT::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, const 
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
     double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
 {
-  const double kr = scatraeleparamsboundary->ChargeTransferConstant();
+  const double kr = scatraeleparamsboundary->charge_transfer_constant();
   const double alphaa = scatraeleparamsboundary->AlphaA();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
@@ -233,9 +233,9 @@ double DRT::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const doub
                                   : i0 * regfac * (expterm1 - expterm2) - i;
 
       // convergence check
-      if (std::abs(residual) < scatraparameterstd->IntLayerGrowthConvTol())
+      if (std::abs(residual) < scatraparameterstd->int_layer_growth_conv_tol())
         break;
-      else if (iternum == scatraparameterstd->IntLayerGrowthIteMax())
+      else if (iternum == scatraparameterstd->int_layer_growth_ite_max())
         FOUR_C_THROW(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
 
@@ -280,7 +280,7 @@ double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const doub
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
-    const double regularizationparameter = scatraeleparamsboundary->RegularizationParameter();
+    const double regularizationparameter = scatraeleparamsboundary->regularization_parameter();
     if (regularizationparameter < 0.0)
       FOUR_C_THROW("Regularization parameter for lithium stripping must not be negative!");
 
@@ -355,7 +355,7 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
-    const double regularizationparameter = scatraeleparamsboundary->RegularizationParameter();
+    const double regularizationparameter = scatraeleparamsboundary->regularization_parameter();
 
     // evaluate dependent on the regularization type
     switch (regularizationtype)

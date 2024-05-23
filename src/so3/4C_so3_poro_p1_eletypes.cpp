@@ -33,7 +33,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PoroP1Type::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
@@ -49,20 +49,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::SoHex8PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8PoroP1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8poro;
-  SoHex8PoroType::SetupElementDefinition(definitions_hex8poro);
+  SoHex8PoroType::setup_element_definition(definitions_hex8poro);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8poro["SOLIDH8PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 }
 
-void DRT::ELEMENTS::SoHex8PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8PoroP1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
@@ -110,7 +110,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PoroP1Type::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
@@ -126,15 +126,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::SoTet4PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4PoroP1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
-  SoTet4PoroType::SetupElementDefinition(definitions_tet4);
+  SoTet4PoroType::setup_element_definition(definitions_tet4);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = defs_tet4["TET4"];
 }
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::SoTet4PoroP1Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-void DRT::ELEMENTS::SoTet4PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoTet4PoroP1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;

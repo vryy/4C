@@ -65,10 +65,10 @@ void ehl_dyn()
 
   // 2.- Parameter reading
   Teuchos::ParameterList& ehlparams =
-      const_cast<Teuchos::ParameterList&>(problem->ElastoHydroDynamicParams());
+      const_cast<Teuchos::ParameterList&>(problem->elasto_hydro_dynamic_params());
   // access lubrication params list
   Teuchos::ParameterList& lubricationdyn =
-      const_cast<Teuchos::ParameterList&>(problem->LubricationDynamicParams());
+      const_cast<Teuchos::ParameterList&>(problem->lubrication_dynamic_params());
   // do we want to use Modified Reynolds Equation?
   bool modifiedreynolds =
       (CORE::UTILS::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
@@ -87,7 +87,7 @@ void ehl_dyn()
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   Teuchos::ParameterList& sdyn =
-      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->StructuralDynamicParams());
+      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->structural_dynamic_params());
 
 
   //  //Modification of time parameter list

@@ -38,7 +38,7 @@ namespace DRT
             fldparaxfem_(fldparaxfem),
             c_umum_(C_umum.values(), true),
             rh_c_um_(rhC_um.values(), true),
-            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
             eval_coupling_(false)
       {
       }
@@ -59,7 +59,7 @@ namespace DRT
             fldparaxfem_(fldparaxfem),
             c_umum_(C_umum.values(), true),
             rh_c_um_(rhC_um.values(), true),
-            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
             eval_coupling_(false)
       {
       }
@@ -88,7 +88,7 @@ namespace DRT
             c_usus_(C_usus.values(), true),
             rh_c_um_(rhC_um.values(), true),
             rh_c_us_(rhC_us.values(), true),
-            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
             eval_coupling_(true)
       {
       }
@@ -184,7 +184,7 @@ namespace DRT
             if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
                 fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
             {
-              NIT_Stab_Inflow_AveragedTerm(funct_m, velint_m, normal, density_m, timefacfac);
+              nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac);
             }
             break;
           }
@@ -205,7 +205,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCoupling(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_evaluate_coupling(
           const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
                        ///< determines the interface traction)
@@ -236,7 +236,7 @@ namespace DRT
               configmap  ///< Interface Terms configuration map
       )
       {
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_evaluateCoupling");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::nit_evaluate_coupling");
 
         //--------------------------------------------
 
@@ -365,7 +365,7 @@ namespace DRT
             configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
         {
           // Normal Terms!
-          NIT_Stab_Penalty_Projected(funct_m, proj_normal_, velint_diff_proj_normal_, timefacfac,
+          nit_stab_penalty_projected(funct_m, proj_normal_, velint_diff_proj_normal_, timefacfac,
               configmap.at(INPAR::XFEM::F_Pen_n_Row), configmap.at(INPAR::XFEM::X_Pen_n_Row),
               configmap.at(INPAR::XFEM::F_Pen_n_Col), configmap.at(INPAR::XFEM::X_Pen_n_Col));
         }
@@ -374,7 +374,7 @@ namespace DRT
             configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
         {
           // Tangential Terms!
-          NIT_Stab_Penalty_Projected(funct_m, proj_tangential_, velint_diff_proj_tangential_,
+          nit_stab_penalty_projected(funct_m, proj_tangential_, velint_diff_proj_tangential_,
               timefacfac, configmap.at(INPAR::XFEM::F_Pen_t_Row),
               configmap.at(INPAR::XFEM::X_Pen_t_Row), configmap.at(INPAR::XFEM::F_Pen_t_Col),
               configmap.at(INPAR::XFEM::X_Pen_t_Col));
@@ -394,7 +394,7 @@ namespace DRT
                 !configmap.at(INPAR::XFEM::F_Pen_Row_linF3).first)
               FOUR_C_THROW("Linearization for Penalty Term not set for all Components!");
 
-            NIT_Stab_Penalty_lin(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
+            nit_stab_penalty_lin(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
                 configmap.at(INPAR::XFEM::F_Pen_Row_linF1),
                 configmap.at(INPAR::XFEM::F_Pen_Row_linF2),
                 configmap.at(INPAR::XFEM::F_Pen_Row_linF3));
@@ -407,7 +407,7 @@ namespace DRT
         if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
             fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
         {
-          NIT_Stab_Inflow_AveragedTerm(funct_m, velint_m, normal, density_m, timefacfac);
+          nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac);
         }
         //-------------------------------------------- Nitsche-Stab penalty added
         //-----------------------------------------------------------------
@@ -435,7 +435,7 @@ namespace DRT
         // pressure consistency term
         if (configmap.at(INPAR::XFEM::F_Con_Col).first)
         {
-          NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
+          nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
               configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row),
               configmap.at(INPAR::XFEM::F_Con_Col));
         }
@@ -444,7 +444,7 @@ namespace DRT
                 .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
                          // cases)
         {
-          NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
+          nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
               configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
               configmap.at(INPAR::XFEM::F_Con_n_Col));
         }
@@ -455,11 +455,11 @@ namespace DRT
         {
 #ifndef ENFORCE_URQUIZA_GNBC
           // Comment: Here vderxy_m_normal_transposed_viscm_timefacfac_km_ is used!
-          NIT_visc_Consistency_MasterTerms(derxy_m, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
+          nit_visc_consistency_master_terms(derxy_m, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
               configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::F_Con_Col));
 
 #else  // Todo: @Magnus, what to do with this?
-          NIT_visc_Consistency_MasterTerms_Projected(derxy_m, funct_m, proj_normal_, km_viscm_fac,
+          nit_visc_consistency_master_terms_projected(derxy_m, funct_m, proj_normal_, km_viscm_fac,
               1.0,   // not to chang anything in ENFORCE_URQUIZA_GNBC case
               1.0,   // not to chang anything in ENFORCE_URQUIZA_GNBC case
               1.0);  // not to chang anything in ENFORCE_URQUIZA_GNBC case
@@ -468,14 +468,14 @@ namespace DRT
 
         if (configmap.at(INPAR::XFEM::F_Con_n_Col).first)
         {
-          NIT_visc_Consistency_MasterTerms_Projected(derxy_m, funct_m, proj_normal_, km_viscm_fac,
+          nit_visc_consistency_master_terms_projected(derxy_m, funct_m, proj_normal_, km_viscm_fac,
               configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
               configmap.at(INPAR::XFEM::F_Con_n_Col));
         }
 
         if (configmap.at(INPAR::XFEM::F_Con_t_Col).first)
         {
-          NIT_visc_Consistency_MasterTerms_Projected(derxy_m, funct_m, proj_tangential_,
+          nit_visc_consistency_master_terms_projected(derxy_m, funct_m, proj_tangential_,
               km_viscm_fac, configmap.at(INPAR::XFEM::F_Con_t_Row),
               configmap.at(INPAR::XFEM::X_Con_t_Row), configmap.at(INPAR::XFEM::F_Con_t_Col));
         }
@@ -486,7 +486,7 @@ namespace DRT
         {
           //-----------------------------------------------------------------
           // +++ qnuP option added! +++
-          NIT_p_AdjointConsistency_MasterTerms(funct_m, normal_pres_timefacfac_,
+          nit_p_adjoint_consistency_master_terms(funct_m, normal_pres_timefacfac_,
               velint_diff_pres_timefacfac_, configmap.at(INPAR::XFEM::F_Adj_Row),
               configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col));
         }
@@ -497,7 +497,7 @@ namespace DRT
         {
           //-----------------------------------------------------------------
           // +++ qnuP option added! +++
-          NIT_p_AdjointConsistency_MasterTerms(funct_m, normal_pres_timefacfac_,
+          nit_p_adjoint_consistency_master_terms(funct_m, normal_pres_timefacfac_,
               velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::F_Adj_n_Row),
               configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col));
         }
@@ -508,7 +508,7 @@ namespace DRT
 
         if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
         {
-          Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(funct_m,  ///< funct * timefacfac
+          do_nit_visc_adjoint_and_neumann_master_terms_projected(funct_m,  ///< funct * timefacfac
               derxy_m,                   ///< spatial derivatives of coupling master shape functions
               vderxy_m,                  ///< coupling master spatial velocity derivatives
               proj_normal_,              ///< projection_matrix
@@ -524,7 +524,7 @@ namespace DRT
         // Tangential Terms!
         if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first)
         {
-          Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(funct_m,  ///< funct * timefacfac
+          do_nit_visc_adjoint_and_neumann_master_terms_projected(funct_m,  ///< funct * timefacfac
               derxy_m,           ///< spatial derivatives of coupling master shape functions
               vderxy_m,          ///< coupling master spatial velocity derivatives
               proj_tangential_,  ///< projection_matrix
@@ -537,7 +537,7 @@ namespace DRT
 
         if (configmap.at(INPAR::XFEM::F_Adj_Row).first)
         {
-          NIT_visc_AdjointConsistency_MasterTerms(funct_m,  ///< funct * timefacfac
+          nit_visc_adjoint_consistency_master_terms(funct_m,  ///< funct * timefacfac
               derxy_m,       ///< spatial derivatives of coupling master shape functions
               normal,        ///< normal-vector
               km_viscm_fac,  ///< scaling factor
@@ -576,7 +576,7 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::XF_Con_Col).first)
           {
-            NIT_p_Consistency_SlaveTerms(pres_s, funct_m, normal_pres_timefacfac_,
+            nit_p_consistency_slave_terms(pres_s, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row),
                 configmap.at(INPAR::XFEM::XF_Con_Col));
           }
@@ -585,7 +585,7 @@ namespace DRT
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
                            // cases)
           {
-            NIT_p_Consistency_SlaveTerms(pres_s, funct_m, normal_pres_timefacfac_,
+            nit_p_consistency_slave_terms(pres_s, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
                 configmap.at(INPAR::XFEM::XF_Con_n_Col));
           }
@@ -595,7 +595,7 @@ namespace DRT
           // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
           if (configmap.at(INPAR::XFEM::XF_Adj_Row).first)
           {
-            NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
+            nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
                 velint_diff_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_Row),
                 configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col));
           }
@@ -603,7 +603,7 @@ namespace DRT
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
                            // cases)
           {
-            NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
+            nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
                 velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_n_Row),
                 configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col));
           }
@@ -617,7 +617,7 @@ namespace DRT
 
           // Spatial velocity gradient for slave side
           CORE::LINALG::Matrix<nsd_, nsd_> vderxy_s;
-          this->GetInterfaceVelGradnp(vderxy_s);
+          this->get_interface_vel_gradnp(vderxy_s);
 
           // 2 * mu_s * kappa_s * timefac * fac
           const double ks_viscs_fac = 2.0 * visceff_s * timefacfac;
@@ -632,7 +632,7 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::XF_Con_Col).first)
           {
-            NIT_visc_Consistency_SlaveTerms(derxy_s, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
+            nit_visc_consistency_slave_terms(derxy_s, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
                 configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::XF_Con_Col));
           }
           if (configmap.at(INPAR::XFEM::XF_Con_n_Col).first ||
@@ -648,7 +648,7 @@ namespace DRT
           // TODO: Needs added Projection. (If deemed necessary!)
           if (configmap.at(INPAR::XFEM::XF_Adj_Row).first)
           {
-            NIT_visc_AdjointConsistency_SlaveTerms(funct_m, derxy_s_viscs_timefacfac_ks, normal,
+            nit_visc_adjoint_consistency_slave_terms(funct_m, derxy_s_viscs_timefacfac_ks, normal,
                 configmap.at(INPAR::XFEM::XF_Adj_Row), configmap.at(INPAR::XFEM::F_Adj_Col),
                 configmap.at(INPAR::XFEM::X_Adj_Col));
           }
@@ -670,7 +670,7 @@ namespace DRT
             funct_m_timefacfac_ks_.Update(
                 configmap.at(INPAR::XFEM::F_TJ_Rhs).second * timefacfac, funct_m, 0.0);
 
-            NIT_Traction_Consistency_Term(
+            nit_traction_consistency_term(
                 funct_m_timefacfac_ks_, funct_s_timefacfac_km_, itraction_jump);
           }
 
@@ -685,7 +685,7 @@ namespace DRT
             CORE::LINALG::Matrix<nsd_, nen_> derxy_m_timefacfac_ks(derxy_m);
             derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::F_LB_Rhs).second * timefacfac);
 
-            NIT_Projected_Traction_Consistency_Term(
+            nit_projected_traction_consistency_term(
                 derxy_m_timefacfac_ks, derxy_s_timefacfac_km, LB_proj_matrix);
           }
           //-------------------------------------------- Traction-Jump added (XTPF)
@@ -712,43 +712,43 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::XS_Con_Col).first)
           {
-            NIT_solid_Consistency_SlaveTerms(funct_m, timefacfac,
+            nit_solid_consistency_slave_terms(funct_m, timefacfac,
                 configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row),
                 configmap.at(INPAR::XFEM::XS_Con_Col));
           }
 
           if (configmap.at(INPAR::XFEM::XS_Con_n_Col).first)
           {
-            NIT_solid_Consistency_SlaveTerms_Projected(funct_m, proj_normal_, timefacfac,
+            nit_solid_consistency_slave_terms_projected(funct_m, proj_normal_, timefacfac,
                 configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
                 configmap.at(INPAR::XFEM::XS_Con_n_Col));
           }
 
           if (configmap.at(INPAR::XFEM::XS_Con_t_Col).first)
           {
-            NIT_solid_Consistency_SlaveTerms_Projected(funct_m, proj_tangential_, timefacfac,
+            nit_solid_consistency_slave_terms_projected(funct_m, proj_tangential_, timefacfac,
                 configmap.at(INPAR::XFEM::F_Con_t_Row), configmap.at(INPAR::XFEM::X_Con_t_Row),
                 configmap.at(INPAR::XFEM::XS_Con_t_Col));
           }
 
           if (configmap.at(INPAR::XFEM::XS_Adj_Row).first)
           {
-            NIT_solid_AdjointConsistency_SlaveTerms(funct_m, timefacfac, velint_diff_,
+            nit_solid_adjoint_consistency_slave_terms(funct_m, timefacfac, velint_diff_,
                 dtraction_vel_, configmap.at(INPAR::XFEM::XS_Adj_Row),
                 configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col));
           }
 
           if (configmap.at(INPAR::XFEM::XS_Adj_n_Row).first)
           {
-            NIT_solid_AdjointConsistency_SlaveTerms_Projected(funct_m, timefacfac, proj_normal_,
+            nit_solid_adjoint_consistency_slave_terms_projected(funct_m, timefacfac, proj_normal_,
                 velint_diff_proj_normal_, dtraction_vel_, configmap.at(INPAR::XFEM::XS_Adj_n_Row),
                 configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col));
           }
 
           if (configmap.at(INPAR::XFEM::XS_Adj_t_Row).first)
           {
-            NIT_solid_AdjointConsistency_SlaveTerms_Projected(funct_m, timefacfac, proj_tangential_,
-                velint_diff_proj_tangential_, dtraction_vel_,
+            nit_solid_adjoint_consistency_slave_terms_projected(funct_m, timefacfac,
+                proj_tangential_, velint_diff_proj_tangential_, dtraction_vel_,
                 configmap.at(INPAR::XFEM::XS_Adj_t_Row), configmap.at(INPAR::XFEM::F_Adj_t_Col),
                 configmap.at(INPAR::XFEM::X_Adj_t_Col));
           }
@@ -761,7 +761,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_solid_Consistency_SlaveTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_solid_consistency_slave_terms(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
           const double& timefacfac,                      ///< theta*dt*fac
           const std::pair<bool, double>& m_row,          ///< scaling for master row
@@ -830,15 +830,15 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype,
-          slave_numdof>::NIT_solid_Consistency_SlaveTerms_Projected(const CORE::LINALG::Matrix<nen_,
-                                                                        1>& funct_m,  ///< funct_m
-          const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
-          const double& timefacfac,                             ///< theta*dt*fac
-          const std::pair<bool, double>& m_row,                 ///< scaling for master row
-          const std::pair<bool, double>& s_row,                 ///< scaling for slave row
-          const std::pair<bool, double>& s_col,                 ///< scaling for slave col
-          bool only_rhs)
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::
+          nit_solid_consistency_slave_terms_projected(const CORE::LINALG::Matrix<nen_,
+                                                          1>& funct_m,  ///< funct_m
+              const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,      ///< projection matrix
+              const double& timefacfac,                                 ///< theta*dt*fac
+              const std::pair<bool, double>& m_row,                     ///< scaling for master row
+              const std::pair<bool, double>& s_row,                     ///< scaling for slave row
+              const std::pair<bool, double>& s_col,                     ///< scaling for slave col
+              bool only_rhs)
       {
         static CORE::LINALG::Matrix<nsd_, 1> proj_traction;
         proj_traction.MultiplyTN(proj_matrix, traction_);
@@ -916,9 +916,9 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype,
-          slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms(const CORE::LINALG::Matrix<nen_,
-                                                                     1>& funct_m,  ///< funct_m
-          const double& timefacfac,                                                ///< theta*dt*fac
+          slave_numdof>::nit_solid_adjoint_consistency_slave_terms(const CORE::LINALG::Matrix<nen_,
+                                                                       1>& funct_m,  ///< funct_m
+          const double& timefacfac,                          ///< theta*dt*fac
           const CORE::LINALG::Matrix<nsd_, 1>& velint_diff,  ///< (velint_m - velint_s)
           const CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>&
               dtraction_vel,                     ///< derivative of solid traction w.r.t. velocities
@@ -984,7 +984,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+          nit_solid_adjoint_consistency_slave_terms_projected(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
               const double& timefacfac,                               ///< theta*dt*fac
               const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,    ///< projection matrix
@@ -1011,7 +1011,7 @@ namespace DRT
         }
 
         // Call Std Version with the projected quantities!
-        NIT_solid_AdjointConsistency_SlaveTerms(funct_m, timefacfac, proj_velint_diff,
+        nit_solid_adjoint_consistency_slave_terms(funct_m, timefacfac, proj_velint_diff,
             proj_dtraction_vel, s_row, m_col, s_col, only_rhs);
 
         return;
@@ -1021,7 +1021,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCouplingOldState(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_evaluate_coupling_old_state(
           const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
                        ///< determines the interface traction)
@@ -1171,7 +1171,7 @@ namespace DRT
         funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
 
         // penalty term
-        if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+        if (fldparaxfem_.interface_terms_previous_state() == INPAR::XFEM::PreviousState_full)
         {
           if (configmap.at(INPAR::XFEM::F_Pen_Row).first ||
               configmap.at(INPAR::XFEM::X_Pen_Row).first)
@@ -1185,7 +1185,7 @@ namespace DRT
           if (fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
               fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
           {
-            NIT_Stab_Inflow_AveragedTerm(funct_m, velint_m, normal, density_m, timefacfac, true);
+            nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac, true);
           }
         }
 
@@ -1215,7 +1215,7 @@ namespace DRT
           // pressure consistency term
           if (configmap.at(INPAR::XFEM::F_Con_Col).first)
           {
-            NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
+            nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row),
                 configmap.at(INPAR::XFEM::F_Con_Col), true);
           }
@@ -1224,7 +1224,7 @@ namespace DRT
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
                            // cases)
           {
-            NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
+            nit_p_consistency_master_terms(pres_m, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
                 configmap.at(INPAR::XFEM::F_Con_n_Col), true);
           }
@@ -1238,7 +1238,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>
               dummy;  // as for the evaluation of the rhs this parameter is not used!
           // Comment: Here vderxy_m_normal_transposed_viscm_timefacfac_km_ is used!
-          NIT_visc_Consistency_MasterTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
+          nit_visc_consistency_master_terms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
               configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::F_Con_Col), true);
 #else
           FOUR_C_THROW(
@@ -1251,7 +1251,7 @@ namespace DRT
         if (configmap.at(INPAR::XFEM::F_Con_t_Col).first)
           FOUR_C_THROW("F_Con_t_Col will come soon");
 
-        if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+        if (fldparaxfem_.interface_terms_previous_state() == INPAR::XFEM::PreviousState_full)
         {
           if (not isImplPressure)
           {
@@ -1261,7 +1261,7 @@ namespace DRT
             {
               //-----------------------------------------------------------------
               // +++ qnuP option added! +++
-              NIT_p_AdjointConsistency_MasterTerms(funct_m, normal_pres_timefacfac_,
+              nit_p_adjoint_consistency_master_terms(funct_m, normal_pres_timefacfac_,
                   velint_diff_pres_timefacfac_, configmap.at(INPAR::XFEM::F_Adj_Row),
                   configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col), true);
             }
@@ -1272,7 +1272,7 @@ namespace DRT
             {
               //-----------------------------------------------------------------
               // +++ qnuP option added! +++
-              NIT_p_AdjointConsistency_MasterTerms(funct_m, normal_pres_timefacfac_,
+              nit_p_adjoint_consistency_master_terms(funct_m, normal_pres_timefacfac_,
                   velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::F_Adj_n_Row),
                   configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col),
                   true);
@@ -1293,7 +1293,7 @@ namespace DRT
           {
             const CORE::LINALG::Matrix<nsd_, nen_>
                 dummy;  // as for the evaluation of the rhs this parameter is not used!
-            NIT_visc_AdjointConsistency_MasterTerms(funct_m,  ///< funct * timefacfac
+            nit_visc_adjoint_consistency_master_terms(funct_m,  ///< funct * timefacfac
                 dummy,         ///< spatial derivatives of coupling master shape functions
                 normal,        ///< normal-vector
                 km_viscm_fac,  ///< scaling factor
@@ -1325,7 +1325,7 @@ namespace DRT
 
               if (configmap.at(INPAR::XFEM::XF_Con_Col).first)
               {
-                NIT_p_Consistency_SlaveTerms(presn_s, funct_m, normal_pres_timefacfac_,
+                nit_p_consistency_slave_terms(presn_s, funct_m, normal_pres_timefacfac_,
                     configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row),
                     configmap.at(INPAR::XFEM::XF_Con_Col), true);
               }
@@ -1334,7 +1334,7 @@ namespace DRT
                       .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
                                // our cases)
               {
-                NIT_p_Consistency_SlaveTerms(presn_s, funct_m, normal_pres_timefacfac_,
+                nit_p_consistency_slave_terms(presn_s, funct_m, normal_pres_timefacfac_,
                     configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
                     configmap.at(INPAR::XFEM::XF_Con_n_Col), true);
               }
@@ -1346,7 +1346,7 @@ namespace DRT
 
           // Spatial velocity gradient for slave side
           CORE::LINALG::Matrix<nsd_, nsd_> vderxyn_s;
-          this->GetInterfaceVelGradn(vderxyn_s);
+          this->get_interface_vel_gradn(vderxyn_s);
 
           // 2 * mu_s * kappa_s * timefac * fac
           double ks_viscs_fac = 2.0 * visceff_s * timefacfac;
@@ -1360,7 +1360,7 @@ namespace DRT
           {
             const CORE::LINALG::Matrix<nsd_, slave_nen_>
                 dummy;  // as for the evaluation of the rhs this parameter is not used!
-            NIT_visc_Consistency_SlaveTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
+            nit_visc_consistency_slave_terms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
                 configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::XF_Con_Col), true);
           }
           if (configmap.at(INPAR::XFEM::XF_Con_n_Col).first ||
@@ -1368,7 +1368,7 @@ namespace DRT
             FOUR_C_THROW("Want to implement projected slave consistency?");
 
           // consistency terms evaluated
-          if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
+          if (fldparaxfem_.interface_terms_previous_state() == INPAR::XFEM::PreviousState_full)
           {
             if (not isImplPressure)
             {
@@ -1377,7 +1377,7 @@ namespace DRT
               // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
               if (configmap.at(INPAR::XFEM::XF_Adj_Row).first)
               {
-                NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
+                nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
                     velint_diff_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_Row),
                     configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col),
                     true);
@@ -1386,7 +1386,7 @@ namespace DRT
                       .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
                                // our cases)
               {
-                NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
+                nit_p_adjoint_consistency_slave_terms(normal_pres_timefacfac_,
                     velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_n_Row),
                     configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col),
                     true);
@@ -1405,7 +1405,7 @@ namespace DRT
             // TODO: Needs added Projection. (If deemed necessary!)
             if (configmap.at(INPAR::XFEM::XF_Adj_Row).first)
             {
-              NIT_visc_AdjointConsistency_SlaveTerms(funct_m, derxy_s_viscs_timefacfac_ks, normal,
+              nit_visc_adjoint_consistency_slave_terms(funct_m, derxy_s_viscs_timefacfac_ks, normal,
                   configmap.at(INPAR::XFEM::XF_Adj_Row), configmap.at(INPAR::XFEM::F_Adj_Col),
                   configmap.at(INPAR::XFEM::X_Adj_Col), true);
             }
@@ -1428,7 +1428,7 @@ namespace DRT
           funct_m_timefacfac_ks_.Update(
               configmap.at(INPAR::XFEM::X_TJ_Rhs).second * timefacfac, funct_m, 0.0);
 
-          NIT_Traction_Consistency_Term(
+          nit_traction_consistency_term(
               funct_m_timefacfac_ks_, funct_s_timefacfac_km_, itraction_jump);
         }
 
@@ -1445,7 +1445,7 @@ namespace DRT
           //    CORE::LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
           //    derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::X_LB_Rhs).second*timefacfac);
           //
-          //    NIT_Projected_Traction_Consistency_Term(
+          //    nit_projected_traction_consistency_term(
           //    derxy_m_timefacfac_ks,
           //    derxy_s_timefacfac_km,
           //    LB_proj_matrix);
@@ -1458,7 +1458,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Traction_Consistency_Term(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_traction_consistency_term(
           const CORE::LINALG::Matrix<nen_, 1>&
               funct_m_timefacfac_ks,  ///< funct * timefacfac *kappa_s
           const CORE::LINALG::Matrix<slave_nen_, 1>&
@@ -1508,7 +1508,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_Projected_Traction_Consistency_Term(
+          nit_projected_traction_consistency_term(
               const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_timefacfac_ks,  ///< master shape function derivatives * timefacfac *
                                           ///< kappa_s
@@ -1578,7 +1578,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_MasterTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_p_consistency_master_terms(
           const double& pres_m,                                    ///< master pressure
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
           const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
@@ -1587,7 +1587,7 @@ namespace DRT
           const std::pair<bool, double>& m_col,                    ///< scaling for master col
           bool only_rhs)
       {
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_p_Consistency_MasterTerms");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::nit_p_consistency_master_terms");
 
 
         /*                   \       /          i      \
@@ -1676,7 +1676,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_SlaveTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_p_consistency_slave_terms(
           const double& pres_s,                                    ///< slave pressure
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
           const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
@@ -1749,7 +1749,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
-      NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_MasterTerms(
+      NitscheCoupling<distype, slave_distype, slave_numdof>::nit_p_adjoint_consistency_master_terms(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
           const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
           const double&
@@ -1759,7 +1759,7 @@ namespace DRT
           const std::pair<bool, double>& s_col,  ///< scaling for slave col
           bool only_rhs)
       {
-        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_p_AdjointConsistency_MasterTerms");
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::nit_p_adjoint_consistency_master_terms");
 
         // 1) No-split no qunP option:
         /*                   \     /              i   \
@@ -1860,7 +1860,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
-      NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_SlaveTerms(
+      NitscheCoupling<distype, slave_distype, slave_numdof>::nit_p_adjoint_consistency_slave_terms(
           const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
           const double& velint_diff_normal_timefacfac,  ///< (velint_m - velint_s) * n * timefacfac
           const std::pair<bool, double>& s_row,         ///< scaling for slave row
@@ -1946,7 +1946,7 @@ namespace DRT
 
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_MasterTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_visc_consistency_master_terms(
           const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,     ///< funct_m
           const std::pair<bool, double>& m_row,             ///< scaling for master row
@@ -2041,7 +2041,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_visc_Consistency_MasterTerms_Projected(
+          nit_visc_consistency_master_terms_projected(
               const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,      ///< master deriv
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,         ///< funct_m
               const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
@@ -2160,7 +2160,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_SlaveTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_visc_consistency_slave_terms(
           const CORE::LINALG::Matrix<nsd_, slave_nen_>&
               derxy_s,                                   ///< slave shape function derivatives
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
@@ -2255,7 +2255,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_visc_AdjointConsistency_MasterTerms(
+          nit_visc_adjoint_consistency_master_terms(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
               const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m,  ///< spatial derivatives of coupling master shape functions
@@ -2360,7 +2360,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_visc_AdjointConsistency_MasterTerms_Projected(
+          nit_visc_adjoint_consistency_master_terms_projected(
               const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac
                                                 ///< * 2 * mu_m * kappa_m
@@ -2486,17 +2486,19 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void
-      NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_AdjointConsistency_SlaveTerms(
-          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
-          const CORE::LINALG::Matrix<nsd_, slave_nen_>&
-              derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac * 2
-                                            ///< * mu_m * kappa_m
-          const CORE::LINALG::Matrix<nsd_, 1>& normal,
-          const std::pair<bool, double>& s_row,  ///< scaling for slave row
-          const std::pair<bool, double>& m_col,  ///< scaling for master col
-          const std::pair<bool, double>& s_col,  ///< scaling for slave col
-          bool only_rhs)
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::
+          nit_visc_adjoint_consistency_slave_terms(
+              const CORE::LINALG::Matrix<nen_, 1>&
+                  funct_m,  ///< embedded element funct *mu*timefacfac
+              const CORE::LINALG::Matrix<nsd_, slave_nen_>&
+                  derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac
+                                                ///< * 2
+                                                ///< * mu_m * kappa_m
+              const CORE::LINALG::Matrix<nsd_, 1>& normal,
+              const std::pair<bool, double>& s_row,  ///< scaling for slave row
+              const std::pair<bool, double>& m_col,  ///< scaling for master col
+              const std::pair<bool, double>& s_col,  ///< scaling for slave col
+              bool only_rhs)
       {
         /*                                \       /                             i   \
       - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
@@ -2598,7 +2600,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
+          nit_visc_neumann_adjoint_consistency_master_terms_projected(
               const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac
                                                 ///< * 2 * mu_m * kappa_m
@@ -2868,7 +2870,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_lin(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_stab_penalty_lin(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
           const double& timefacfac,                      ///< time integration factor
           const std::pair<bool, double>& m_row,          ///< scaling for master row
@@ -2915,7 +2917,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_Projected(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_stab_penalty_projected(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,               ///< funct
           const CORE::LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
           const CORE::LINALG::Matrix<nsd_, 1>&
@@ -3086,7 +3088,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Inflow_AveragedTerm(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::nit_stab_inflow_averaged_term(
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< funct
           const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< master velocity
           const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^m
@@ -3169,7 +3171,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          NIT_Create_Standard_Projection_Matrices(
+          nit_create_standard_projection_matrices(
               const CORE::LINALG::Matrix<nsd_, 1>& normal  ///< normal vector n^b
           )
       {
@@ -3196,7 +3198,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
-          Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
+          do_nit_visc_adjoint_and_neumann_master_terms_projected(
               const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
               const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m,  ///< spatial derivatives of coupling master shape functions
@@ -3236,7 +3238,7 @@ namespace DRT
         //                          = alpha * mu_m * viscfac_km * c(IX)
         normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_, half_normal_);
 
-        NIT_visc_AdjointConsistency_MasterTerms_Projected(
+        nit_visc_adjoint_consistency_master_terms_projected(
             derxy_m_viscm_timefacfac_, funct_m, normal, m_row, m_col, s_col);
 
 #ifndef ENFORCE_URQUIZA_GNBC
@@ -3245,7 +3247,7 @@ namespace DRT
 
         if (mstr_col.first)
         {
-          NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
+          nit_visc_neumann_adjoint_consistency_master_terms_projected(
               derxy_m_viscm_timefacfac_, derxy_m, vderxy_m, funct_m, normal, m_row, mstr_col);
         }
         //-----------------------------------------------------------------

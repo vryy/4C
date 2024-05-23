@@ -102,12 +102,12 @@ namespace CORE::LINALG
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const;
 
     //! multiplies Epetra_MultiVector times CORE::LINALG::SerialDenseMatrix
-    Teuchos::RCP<Epetra_MultiVector> MultiplyMultiVecterDenseMatrix(
+    Teuchos::RCP<Epetra_MultiVector> multiply_multi_vecter_dense_matrix(
         const Teuchos::RCP<Epetra_MultiVector>& mv,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& dm) const;
 
     //! outer product of two Epetra_MultiVectors
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MultiplyMultiVecterMultiVector(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> multiply_multi_vecter_multi_vector(
         const Teuchos::RCP<Epetra_MultiVector>& mv1,  //! first MultiVector
         const Teuchos::RCP<Epetra_MultiVector>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated

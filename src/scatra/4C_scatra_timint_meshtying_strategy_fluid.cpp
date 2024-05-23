@@ -43,11 +43,11 @@ const Epetra_Map& SCATRA::MeshtyingStrategyFluid::DofRowMap() const
 void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying()
 {
   // need to complete system matrix due to subsequent matrix-matrix multiplications
-  scatratimint_->SystemMatrixOperator()->Complete();
+  scatratimint_->system_matrix_operator()->Complete();
 
   // evaluate fluid-fluid meshtying
-  meshtying_->PrepareMeshtyingSystem(
-      scatratimint_->SystemMatrixOperator(), scatratimint_->Residual(), scatratimint_->Phinp());
+  meshtying_->prepare_meshtying_system(
+      scatratimint_->system_matrix_operator(), scatratimint_->Residual(), scatratimint_->Phinp());
 
   return;
 }  // SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying
@@ -56,12 +56,12 @@ void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying()
 /*----------------------------------------------------------------------*
  | include Dirichlet conditions into condensation            fang 12/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
+void SCATRA::MeshtyingStrategyFluid::include_dirichlet_in_condensation() const
 {
-  meshtying_->IncludeDirichletInCondensation(scatratimint_->Phinp(), scatratimint_->Phin());
+  meshtying_->include_dirichlet_in_condensation(scatratimint_->Phinp(), scatratimint_->Phin());
 
   return;
-}  // SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation()
+}  // SCATRA::MeshtyingStrategyFluid::include_dirichlet_in_condensation()
 
 
 /*----------------------------------------------------------------------*
@@ -86,7 +86,7 @@ void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
 void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+  init_conv_check_strategy();
 
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
@@ -148,12 +148,12 @@ const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyFluid::init_conv_check_strategy()
 {
   convcheckstrategy_ = Teuchos::rcp(
       new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-}  // SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyFluid::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

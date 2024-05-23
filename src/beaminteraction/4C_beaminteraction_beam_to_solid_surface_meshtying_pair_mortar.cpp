@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
+        this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -171,7 +171,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   // positions / displacements to get the actual constraint terms for this pair.
   CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
   CORE::LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
-  switch (this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType())
+  switch (this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
@@ -186,7 +186,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       beam_coupling_dof -= this->ele1posref_.element_position_;
       surface_coupling_dof =
           CORE::FADUTILS::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
-      surface_coupling_dof -= this->face_element_->GetFaceReferenceElementData().element_position_;
+      surface_coupling_dof -=
+          this->face_element_->get_face_reference_element_data().element_position_;
       break;
     }
     default:

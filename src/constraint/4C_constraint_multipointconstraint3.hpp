@@ -94,7 +94,7 @@ namespace CONSTRAINTS
                    ///< assembly of element contributions
 
     //! Initialize constraint discretization and assemble the results to the refbasevector
-    void InitializeConstraint(
+    void initialize_constraint(
         Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
@@ -103,7 +103,7 @@ namespace CONSTRAINTS
     );
 
     //! creating a new discretization based on conditions containing constraint elements
-    std::map<int, Teuchos::RCP<DRT::Discretization>> CreateDiscretizationFromCondition(
+    std::map<int, Teuchos::RCP<DRT::Discretization>> create_discretization_from_condition(
         Teuchos::RCP<DRT::Discretization> actdisc,
         std::vector<CORE::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis

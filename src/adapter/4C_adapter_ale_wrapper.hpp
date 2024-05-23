@@ -83,9 +83,9 @@ namespace ADAPTER
     }
 
     /// writing access to discretization
-    Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() override
+    Teuchos::RCP<DRT::Discretization> write_access_discretization() override
     {
-      return ale_->WriteAccessDiscretization();
+      return ale_->write_access_discretization();
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions

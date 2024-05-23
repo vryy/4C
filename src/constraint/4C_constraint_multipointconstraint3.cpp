@@ -46,8 +46,8 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> disc
         absconstraint_[condID] = false;
     }
 
-    constraintdis_ =
-        CreateDiscretizationFromCondition(actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", maxID);
+    constraintdis_ = create_discretization_from_condition(
+        actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", maxID);
 
     std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
@@ -140,7 +140,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(
           default:
             FOUR_C_THROW("Constraint is not an multi point constraint!");
         }
-        InitializeConstraint(constraintdis_.find(condID)->second, params, systemvector);
+        initialize_constraint(constraintdis_.find(condID)->second, params, systemvector);
       }
       activecons_.find(condID)->second = true;
       if (actdisc_->Comm().MyPID() == 0)
@@ -191,7 +191,7 @@ void CONSTRAINTS::MPConstraint3::Evaluate(Teuchos::ParameterList& params,
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
-CONSTRAINTS::MPConstraint3::CreateDiscretizationFromCondition(
+CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
     Teuchos::RCP<DRT::Discretization> actdisc,
     std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
@@ -346,7 +346,7 @@ void CONSTRAINTS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // see what we have for input
   bool assemblemat1 = systemmatrix1 != Teuchos::null;
@@ -474,11 +474,11 @@ void CONSTRAINTS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -543,6 +543,6 @@ void CONSTRAINTS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discreti
     sprintf(factorname, "LoadCurveFactor %d", condID);
     params.set(factorname, curvefac);
   }
-}  // end of InitializeConstraint
+}  // end of initialize_constraint
 
 FOUR_C_NAMESPACE_CLOSE

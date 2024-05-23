@@ -23,10 +23,10 @@ void ADAPTER::FieldWrapper::PrepareTimeStep()
 }
 
 
-void ADAPTER::FieldWrapper::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void ADAPTER::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (nox_correction_) GetIterinc(disiterinc);
-  field_->UpdateStateIncrementally(disiterinc);
+  field_->update_state_incrementally(disiterinc);
 }
 
 /*-----------------------------------------------------------------------/

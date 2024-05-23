@@ -46,7 +46,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh18PlastType::Create(const std::vector<
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
     return ele;
@@ -76,15 +76,15 @@ int DRT::ELEMENTS::SoSh18PlastType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh18PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh18PlastType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_sh18;
-  SoSh18Type::SetupElementDefinition(definitions_sh18);
+  SoSh18Type::setup_element_definition(definitions_sh18);
 
   std::map<std::string, INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX18"] = defs_sh18["HEX18"];
 }
@@ -103,7 +103,7 @@ DRT::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -409,7 +409,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
       CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
       defgrd_disp.MultiplyNT(defgrd_loc, SoSh18::invJ_[gp]);
       if (eas_ || dsg_shear_ || dsg_membrane_ || dsg_ctl_)
-        SoSh18::CalcConsistentDefgrd(defgrd_disp, glstrain, defgrd);
+        SoSh18::calc_consistent_defgrd(defgrd_disp, glstrain, defgrd);
     }
 
     // plastic flow increment

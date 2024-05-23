@@ -87,7 +87,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
     d_tangential_fac_ = 2.0 * std::sqrt(k_normal);
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContactForce(
+void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::tangential_contact_force(
     double* gap_tangential, bool& stick_tangential, const double* normal,
     const double* v_rel_tangential, const double& m_eff, const double& mu_tangential,
     const double& normalcontactforce, double* tangentialcontactforce) const
@@ -142,7 +142,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContac
   }
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialPotentialEnergy(
+void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::tangential_potential_energy(
     const double* gap_tangential, double& tangentialpotentialenergy) const
 {
   tangentialpotentialenergy = 0.5 * k_tangential_ * UTILS::VecDot(gap_tangential, gap_tangential);

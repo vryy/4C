@@ -324,11 +324,12 @@ MAT::MuscleGiantesio::MuscleGiantesio(MAT::PAR::MuscleGiantesio* params)
   omegaa_old_ = -1.0;
 
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy_.register_anisotropy_extension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.register_needed_tensors(
+      MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::MuscleGiantesio::Pack(CORE::COMM::PackBuffer& data) const
@@ -391,8 +392,8 @@ void MAT::MuscleGiantesio::Unpack(const std::vector<char>& data)
 void MAT::MuscleGiantesio::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 }
 
 void MAT::MuscleGiantesio::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
@@ -473,7 +474,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   if (IsActive(currentTime))
   {
-    omegaaAndDerivs = EvaluateActivationLevelAndDerivatives(lambdaM, dotLambdaM, currentTime);
+    omegaaAndDerivs = evaluate_activation_level_and_derivatives(lambdaM, dotLambdaM, currentTime);
     omegaa_old_ = omegaaAndDerivs.val_funct;  // update omegaaOld
   }
   else
@@ -501,10 +502,11 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> Fa = ActDefGrad(omegaaAndDerivs.val_funct, M);
 
   // first derivative of Fa w.r.t. omegaa
-  CORE::LINALG::Matrix<3, 3> dFadomegaa = DActDefGrad_DActLevel(omegaaAndDerivs.val_funct, M);
+  CORE::LINALG::Matrix<3, 3> dFadomegaa = d_act_def_grad_d_act_level(omegaaAndDerivs.val_funct, M);
 
   // second derivative of Fa w.r.t. omegaa
-  CORE::LINALG::Matrix<3, 3> ddFaddomegaa = DDActDefGrad_DDActLevel(omegaaAndDerivs.val_funct, M);
+  CORE::LINALG::Matrix<3, 3> ddFaddomegaa =
+      dd_act_def_grad_dd_act_level(omegaaAndDerivs.val_funct, M);
 
   // determinant of Fa
   double detFa = Fa.Determinant();
@@ -514,7 +516,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> invFa = InvActDefGrad(Fa);
 
   // first derivative of Fa^{-1} w.r.t. omegaa
-  CORE::LINALG::Matrix<3, 3> dinvFadomegaa = DInvActDefGrad_DActLevel(Fa, dFadomegaa);
+  CORE::LINALG::Matrix<3, 3> dinvFadomegaa = d_inv_act_def_grad_d_act_level(Fa, dFadomegaa);
 
   // first derivative of Fa^{-1} w.r.t. C
   // dinvFadC_ijkl = dinvFadomegaa_ij domegaadC_kl
@@ -610,13 +612,14 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, cmatvolv, 1.0);
 }
 
-CORE::UTILS::ValuesFunctAndFunctDerivs MAT::MuscleGiantesio::EvaluateActivationLevelAndDerivatives(
+CORE::UTILS::ValuesFunctAndFunctDerivs
+MAT::MuscleGiantesio::evaluate_activation_level_and_derivatives(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // setup function
   std::function<double(double)> FunctionSolveActivationLevelEquation =
       [this, &dotLambdaM, &currentTime](double lambda_i)
-  { return this->SolveActivationLevelEquation(lambda_i, dotLambdaM, currentTime); };
+  { return this->solve_activation_level_equation(lambda_i, dotLambdaM, currentTime); };
 
   // step size for finite differences (error will be of O(h^2))
   // rule of thumb: h = x0*sqrt(ulp); but omegaa is only precise to 1e-12
@@ -631,16 +634,16 @@ CORE::UTILS::ValuesFunctAndFunctDerivs MAT::MuscleGiantesio::EvaluateActivationL
   return omegaaAndDerivs;
 }
 
-double MAT::MuscleGiantesio::SolveActivationLevelEquation(
+double MAT::MuscleGiantesio::solve_activation_level_equation(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // compute right hand side of equation
-  double rhs = EvaluateRhsActivationLevelEquation(lambdaM, dotLambdaM, currentTime);
+  double rhs = evaluate_rhs_activation_level_equation(lambdaM, dotLambdaM, currentTime);
 
   // setup the activation level equation as f(omegaa) = lhs-rhs
   // and its derivative as df/domegaa(omegaa) = dlhs/domegaa
   auto actLevelEquationAndDeriv = [this, &lambdaM, &rhs](double omegaa_init)
-  { return this->EvaluateActivationLevelEquationAndDeriv(omegaa_init, lambdaM, rhs); };
+  { return this->evaluate_activation_level_equation_and_deriv(omegaa_init, lambdaM, rhs); };
 
   // determine starting guess for newton solver
   double omegaa_init;
@@ -673,7 +676,7 @@ double MAT::MuscleGiantesio::SolveActivationLevelEquation(
   return omegaa;
 }
 
-std::tuple<double, double> MAT::MuscleGiantesio::EvaluateActivationLevelEquationAndDeriv(
+std::tuple<double, double> MAT::MuscleGiantesio::evaluate_activation_level_equation_and_deriv(
     double omegaa, const double& lambdaM, const double& rhs)
 {
   // get active microstructural parameters from params_
@@ -703,7 +706,7 @@ std::tuple<double, double> MAT::MuscleGiantesio::EvaluateActivationLevelEquation
   return {lhs - rhs, derivlhs};
 }
 
-double MAT::MuscleGiantesio::EvaluateRhsActivationLevelEquation(
+double MAT::MuscleGiantesio::evaluate_rhs_activation_level_equation(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // get active microstructural parameters from params_
@@ -713,7 +716,7 @@ double MAT::MuscleGiantesio::EvaluateRhsActivationLevelEquation(
   const double omega0 = params_->omega0_;
 
   // compute active nominaal stress and its integral w.r.t. lambdaM
-  double intPa = EvaluateActiveNominalStressIntegral(lambdaM, dotLambdaM, currentTime);
+  double intPa = evaluate_active_nominal_stress_integral(lambdaM, dotLambdaM, currentTime);
 
   // passive part of invariants Ip and Jp w.r.t. lambdaM
   const double Ip = (omega0 / std::pow(lambdaM, 3) - omega0 + 1.5) * std::pow(lambdaM, 2) / 1.5;
@@ -726,7 +729,7 @@ double MAT::MuscleGiantesio::EvaluateRhsActivationLevelEquation(
   return rhs;
 }
 
-double MAT::MuscleGiantesio::EvaluateActiveNominalStressIntegral(
+double MAT::MuscleGiantesio::evaluate_active_nominal_stress_integral(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // get active microstructural parameters from params_
@@ -778,7 +781,7 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::ActDefGrad(
   return Fa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DActDefGrad_DActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::d_act_def_grad_d_act_level(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // first derivative of Fa w.r.t. omegaa
@@ -795,7 +798,7 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DActDefGrad_DActLevel(
   return dFadomegaa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DDActDefGrad_DDActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::dd_act_def_grad_dd_act_level(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // second derivative of Fa w.r.t. omegaa
@@ -820,7 +823,7 @@ CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::InvActDefGrad(const CORE::LINAL
   return invFa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DInvActDefGrad_DActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::d_inv_act_def_grad_d_act_level(
     const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa)
 {
   CORE::LINALG::Matrix<3, 3> invFa = InvActDefGrad(Fa);

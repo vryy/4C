@@ -193,7 +193,7 @@ namespace MAT
      * \param[out] Pa Active nominal stress
      * \param[out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      */
-    void EvaluateActiveNominalStress(Teuchos::ParameterList& params, const int eleGID,
+    void evaluate_active_nominal_stress(Teuchos::ParameterList& params, const int eleGID,
         const double lambdaM, double& intPa, double& Pa, double& derivPa);
 
     /*!
@@ -209,7 +209,7 @@ namespace MAT
      * \param[out] derivDerivOmegaa Second derivative of the activation level w.r.t. the fiber
      * stretch
      */
-    void EvaluateActivationLevel(const double lambdaM, const double intPa, const double Pa,
+    void evaluate_activation_level(const double lambdaM, const double intPa, const double Pa,
         const double derivPa, double& omegaa, double& derivOmegaa, double& derivDerivOmegaa);
 
     /// Combo material parameters

@@ -28,7 +28,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  dis_ = discreator->CreateMatchingDiscretizationFromCondition(
+  dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   dis_->FillComplete(true, true, true);
@@ -145,7 +145,7 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
   fluid_writer_ =
       Teuchos::rcp(new SimpleDebugWriter(algorithm_.FluidField()->Discretization(), "fluid"));
   ale_writer_ = Teuchos::rcp(
-      new SimpleDebugWriter(algorithm_.AleField()->WriteAccessDiscretization(), "ale"));
+      new SimpleDebugWriter(algorithm_.AleField()->write_access_discretization(), "ale"));
 }
 
 

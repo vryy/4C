@@ -72,7 +72,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void GetJunctionVolumeMix(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void get_junction_volume_mix(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
@@ -81,7 +81,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void SolveScatraBifurcations(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void solve_scatra_bifurcations(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
@@ -102,7 +102,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void EvalNodalEssentialValues(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void eval_nodal_essential_values(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
           CORE::LINALG::SerialDenseVector& nodal_volume,
           CORE::LINALG::SerialDenseVector& nodal_flow, std::vector<int>& lm,
@@ -210,7 +210,7 @@ namespace DRT
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
       */
-      void GetJunctionVolumeMix(RedAirway* ele, Teuchos::ParameterList& params,
+      void get_junction_volume_mix(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization,
           CORE::LINALG::SerialDenseVector& junctionVolumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
@@ -226,7 +226,7 @@ namespace DRT
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
       */
-      void SolveScatraBifurcations(RedAirway* ele, Teuchos::ParameterList& params,
+      void solve_scatra_bifurcations(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
@@ -253,7 +253,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 
-      void EvalNodalEssentialValues(RedAirway* ele, Teuchos::ParameterList& params,
+      void eval_nodal_essential_values(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
           CORE::LINALG::SerialDenseVector& nodal_volume,
           CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,

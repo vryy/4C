@@ -55,7 +55,7 @@ void scatra_dyn(int restart)
   }
 
   // access the problem-specific parameter list
-  const auto& scatradyn = GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+  const auto& scatradyn = GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
 
   // access the fluid discretization
   auto fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
@@ -69,7 +69,7 @@ void scatra_dyn(int restart)
 
   // determine coupling type
   const auto fieldcoupling = CORE::UTILS::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
+      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
@@ -123,7 +123,7 @@ void scatra_dyn(int restart)
           GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -225,7 +225,7 @@ void scatra_dyn(int restart)
         // add proxy of fluid transport degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        algo->ScaTraField()->set_number_of_dof_set_velocity(1);
       }
 
       // we create  the aux dofsets before Init(...)
@@ -257,9 +257,9 @@ void scatra_dyn(int restart)
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        algo->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        algo->ScaTraField()->set_number_of_dof_set_velocity(1);
 
-        // call AssignDegreesOfFreedom also for auxiliary dofsets
+        // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
         // 1. fluid dofs
         // 2. scatra dofs

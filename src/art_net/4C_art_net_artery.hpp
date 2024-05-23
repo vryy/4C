@@ -50,7 +50,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
         numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -64,7 +64,7 @@ namespace DRT
         return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -350,7 +350,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 

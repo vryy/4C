@@ -64,7 +64,8 @@ namespace MAT
    * \param strategy Reference to the structural tensor strategy
    */
   template <typename T, unsigned int numfib>
-  void ComputeStructuralTensors(std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers,
+  void compute_structural_tensors(
+      std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers,
       std::vector<std::array<T, numfib>>& structural_tensor,
       const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
 

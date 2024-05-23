@@ -1160,13 +1160,14 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_DirectDiveregence(
-    DRT::Element& Aele, DRT::Element& Bele, CORE::GEO::CUT::VolumeCell& vc,
-    Teuchos::RCP<CORE::FE::GaussPoints> intpoints, bool switched_conf,
-    CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-    CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-    Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-    int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS,
+    distypeM>::integrate_cells3_d_direct_diveregence(DRT::Element& Aele, DRT::Element& Bele,
+    CORE::GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::FE::GaussPoints> intpoints,
+    bool switched_conf, CORE::LINALG::SparseMatrix& dmatrix_A,
+    CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
+    CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
+    int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1308,7 +1309,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_ADis(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_a_dis(
     DRT::Element& Aele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_A,
     CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
@@ -1433,7 +1434,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased3D_BDis(
+void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_b_dis(
     DRT::Element& Bele, std::vector<int>& foundeles, CORE::LINALG::SparseMatrix& dmatrix_B,
     CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)

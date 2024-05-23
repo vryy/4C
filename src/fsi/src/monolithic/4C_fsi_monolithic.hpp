@@ -111,13 +111,13 @@ namespace FSI
     void ReadRestart(int step) override;
 
     //! create time integrator for structure field
-    virtual void CreateStructureTimeIntegrator(
+    virtual void create_structure_time_integrator(
         const Teuchos::ParameterList& timeparams,    ///< time integration parameters
         Teuchos::RCP<DRT::Discretization> structdis  ///< discretization of structure field
     );
 
     //! create time integrators for fluid and ale field
-    virtual void CreateFluidAndALETimeIntegrator(
+    virtual void create_fluid_and_ale_time_integrator(
         const Teuchos::ParameterList& timeparams,    ///< time integration parameters
         Teuchos::RCP<DRT::Discretization> fluiddis,  ///< discretization of fluid field
         Teuchos::RCP<DRT::Discretization> aledis     ///< discretization of ALE field
@@ -165,10 +165,10 @@ namespace FSI
     virtual void PrepareTimeStepFSI();
 
     //! Prepare preconditioner for new time step
-    virtual void PrepareTimeStepPreconditioner() = 0;
+    virtual void prepare_time_step_preconditioner() = 0;
 
     //! Prepare time steps for the sub problems, i.e. fluid, structure, ale
-    virtual void PrepareTimeStepFields();
+    virtual void prepare_time_step_fields();
 
     /// underlying structure of the FSI problem
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
@@ -208,15 +208,15 @@ namespace FSI
 
     //! @name Coupling objects
 
-    CORE::ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
-    CORE::ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
+    CORE::ADAPTER::Coupling& structure_fluid_coupling() { return *coupsf_; }
+    CORE::ADAPTER::Coupling& structure_ale_coupling() { return *coupsa_; }
     CORE::ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
-    CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
+    CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
 
-    const CORE::ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
-    const CORE::ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
+    const CORE::ADAPTER::Coupling& structure_fluid_coupling() const { return *coupsf_; }
+    const CORE::ADAPTER::Coupling& structure_ale_coupling() const { return *coupsa_; }
     const CORE::ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
-    const CORE::ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
+    const CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
 
     //@}
 
@@ -386,10 +386,10 @@ namespace FSI
      *  the partitioner for the fluid or/and structure field.
      *
      *  This implementation only works for matching grids at the interface
-     *  but produces better results than RedistributeDomainDecomposition.
+     *  but produces better results than redistribute_domain_decomposition.
      */
-    virtual void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
-        const Epetra_Comm& comm                                            ///< communicator
+    virtual void redistribute_monolithic_graph(const FSI_COUPLING coupling,  ///< coupling algorithm
+        const Epetra_Comm& comm                                              ///< communicator
         ) = 0;
 
     /*! \brief Redistribute domain decomposition
@@ -399,7 +399,7 @@ namespace FSI
      *  distribution to find a matching node-to-node mapping. Then, we call
      *  the partitioner for the fluid or/and structure field.
      */
-    virtual void RedistributeDomainDecomposition(
+    virtual void redistribute_domain_decomposition(
         const INPAR::FSI::Redistribute domain,  ///< type of redistribution algorithm
         const FSI_COUPLING coupling,            ///< coupling algorithm
         const double inputWeight1,              ///< weight for graph
@@ -411,7 +411,7 @@ namespace FSI
 
    protected:
     //! Prepare preconditioner for new time step
-    void PrepareTimeStepPreconditioner() override = 0;
+    void prepare_time_step_preconditioner() override = 0;
 
     //! @name Apply current field state to system
 
@@ -528,7 +528,7 @@ namespace FSI
     Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
 
     /// setup list with default parameters
-    void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+    void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
@@ -575,7 +575,7 @@ namespace FSI
     {
       return dtflinner_;
     }  ///< \f$\Delta t\f$ based on inner fluid DOFs
-    double GetAdaNonLinSolverDt() const
+    double get_ada_non_lin_solver_dt() const
     {
       return dtnonlinsolver_;
     }  ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
@@ -650,7 +650,7 @@ namespace FSI
     //@{
 
     //! Write data into interface energy file
-    virtual void WriteInterfaceEnergyFile(
+    virtual void write_interface_energy_file(
         const double energystep,  ///< interface energy of current time step
         const double energysum    ///< summation of all interface energy increments
     );
@@ -666,7 +666,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    virtual void CreateCombinedDofRowMap() = 0;
+    virtual void create_combined_dof_row_map() = 0;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -675,7 +675,7 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    virtual void SetupDBCMapExtractor() = 0;
+    virtual void setup_dbc_map_extractor() = 0;
 
     //! @name Setup of RHS vector
 
@@ -703,7 +703,7 @@ namespace FSI
      *  for rhs in next time step in order to guarantee temporal consistent
      *  exchange of coupling traction
      */
-    virtual void RecoverLagrangeMultiplier() { return; };
+    virtual void recover_lagrange_multiplier() { return; };
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
@@ -715,7 +715,7 @@ namespace FSI
      * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
      * interpolation factors a and b.
      */
-    virtual void CalculateInterfaceEnergyIncrement() { return; };
+    virtual void calculate_interface_energy_increment() { return; };
 
     //! @name Time loops
     //@{
@@ -786,16 +786,16 @@ namespace FSI
     void DetermineAdaReason(const double dt);
 
     //! Prepare a time step for adaptive time stepping which might be repeated
-    virtual void PrepareAdaptiveTimeStep();
+    virtual void prepare_adaptive_time_step();
 
     //! Print header for repetition of time step within time adaptivity
-    virtual void PrintHeaderRepeatedStep() const;
+    virtual void print_header_repeated_step() const;
 
     //! Write to .adaptivity-file
     virtual void WriteAdaFile() const;
 
     //! Print information on time step adaptivity stuff
-    virtual void PrintAdaptivitySummary() const;
+    virtual void print_adaptivity_summary() const;
 
     //! Initialize time adaptivity related stuff
     void InitTimIntAda(const Teuchos::ParameterList& fsidyn);
@@ -829,7 +829,7 @@ namespace FSI
      *  and recompute the new time step size, if necessary. Finally, we make sure
      *  that the new time step size also satisfies upper and lower bounds.
      */
-    double CalculateTimeStepSize(
+    double calculate_time_step_size(
         const double errnorm,  ///< length-scaled L2-norm of local discretization error
         const double errtol,   ///< user given error tolerance
         const double estorder  ///< order of accuracy of time integration scheme
@@ -1065,10 +1065,10 @@ namespace FSI
      *  the partitioner for the fluid or/and structure field.
      *
      *  This implementation only works for matching grids at the interface
-     *  but produces better results than RedistributeDomainDecomposition.
+     *  but produces better results than redistribute_domain_decomposition.
      */
-    void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
-        const Epetra_Comm& comm                                    ///< communicator
+    void redistribute_monolithic_graph(const FSI_COUPLING coupling,  ///< coupling algorithm
+        const Epetra_Comm& comm                                      ///< communicator
         ) override;
 
     /*! \brief Redistribute domain decomposition
@@ -1078,7 +1078,7 @@ namespace FSI
      *  distribution to find a matching node-to-node mapping. Then, we call
      *  the partitioner for the fluid or/and structure field.
      */
-    void RedistributeDomainDecomposition(
+    void redistribute_domain_decomposition(
         const INPAR::FSI::Redistribute domain,  ///< redistribute structure or fluid
         const FSI_COUPLING coupling,            ///< coupling algorithm
         const double inputWeight1,              ///< weight for graph
@@ -1096,7 +1096,7 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    virtual void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
@@ -1108,7 +1108,7 @@ namespace FSI
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    virtual void CreateInterfaceMapping(Teuchos::RCP<DRT::Discretization> structuredis,
+    virtual void create_interface_mapping(Teuchos::RCP<DRT::Discretization> structuredis,
         Teuchos::RCP<DRT::Discretization> fluiddis, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,
@@ -1126,7 +1126,7 @@ namespace FSI
      * in \c deletedEdges and \c insertedEdges, repectively.
      *
      */
-    virtual void BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+    virtual void build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
         std::map<int, std::vector<int>>& deletedEdges,
         std::map<int, std::vector<int>>& insertedEdges,
         std::map<int, std::vector<int>>& fluidToStructureMap,
@@ -1182,11 +1182,11 @@ namespace FSI
      *
      * After the redistribution of \c monolithicGrpah the single field nodal connectivity
      * graphs \c fluidGraphRedist and \c structureGraphRedist have to be restored. Edges
-     * deleted or inserted in the previous method BuildMonolithicGraph are inserted or
+     * deleted or inserted in the previous method build_monolithic_graph are inserted or
      * deleted now, respectively.
      *
      */
-    virtual void RestoreRedistStructFluidGraph(std::map<int, std::vector<int>>& edgesToRemove,
+    virtual void restore_redist_struct_fluid_graph(std::map<int, std::vector<int>>& edgesToRemove,
         std::map<int, std::vector<int>>& edgesToInsert,
         Teuchos::RCP<Epetra_CrsGraph> monolithicGraph, Teuchos::RCP<Epetra_Map> rowmap,
         Teuchos::RCP<Epetra_Map> colmap, Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
@@ -1227,7 +1227,7 @@ namespace FSI
      * Output: re - pointer to array with global id of node related to gdofid
      *              and owner id of node
      */
-    virtual void FindNodeRelatedToDof(
+    virtual void find_node_related_to_dof(
         std::map<int, DRT::Node*>* nodes,                  ///< map of nodes with their global ids
         int gdofid,                                        ///<  global id of dof
         Teuchos::RCP<DRT::Discretization> discretization,  ///< discretization
@@ -1246,7 +1246,7 @@ namespace FSI
      *  cases where the setup of the preconditioner is very expensive, though
      *  results in a very good preconditioner, that can be reused very often.
      */
-    void PrepareTimeStepPreconditioner() override;
+    void prepare_time_step_preconditioner() override;
 
     /// create the composed system matrix
     void CreateSystemMatrix(

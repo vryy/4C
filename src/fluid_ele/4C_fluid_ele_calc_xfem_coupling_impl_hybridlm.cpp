@@ -25,7 +25,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHCS_buildCouplingMatrices(
+      void HybridLMCoupling<distype, slave_distype, slave_numdof>::mhcs_build_coupling_matrices(
           const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
           const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
@@ -77,14 +77,14 @@ namespace DRT
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
-        MH_Traction_Consistency_Term(funct_s_timefacfac_km, itraction_jump);
+        mh_traction_consistency_term(funct_s_timefacfac_km, itraction_jump);
       }
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHVS_buildCouplingMatrices(
+      void HybridLMCoupling<distype, slave_distype, slave_numdof>::mhvs_build_coupling_matrices(
           const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
           const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
@@ -208,7 +208,7 @@ namespace DRT
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
-        MH_Traction_Consistency_Term(funct_s_timefacfac_km, itraction_jump);
+        mh_traction_consistency_term(funct_s_timefacfac_km, itraction_jump);
 
 
         return;
@@ -219,7 +219,7 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void HybridLMCoupling<distype, slave_distype, slave_numdof>::MH_Traction_Consistency_Term(
+      void HybridLMCoupling<distype, slave_distype, slave_numdof>::mh_traction_consistency_term(
           const CORE::LINALG::Matrix<slave_nen_, 1>&
               funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
           const CORE::LINALG::Matrix<nsd_, 1>&
@@ -258,18 +258,18 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void
-      HybridLMCoupling<distype, slave_distype, slave_numdof>::HybridLM_buildFinalCouplingMatrices(
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>&
-              BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
-              numstressdof_>&
-              BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
-              master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
-              rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
-      )
+      void HybridLMCoupling<distype, slave_distype, slave_numdof>::
+          hybrid_lm_build_final_coupling_matrices(
+              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+                  numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
+              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
+                  numstressdof_>&
+                  BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
+              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+                  master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
+              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+                  rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
+          )
       {
         // final coupling matrices in block form
         CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, slave_nen_>, master_numdof_, nsd_>

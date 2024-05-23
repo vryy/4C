@@ -49,7 +49,7 @@ namespace XFEM
     */
     template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
-    void EvaluateCouplingConditions(V1& ivel,     ///< prescribed velocity at interface
+    void evaluate_coupling_conditions(V1& ivel,   ///< prescribed velocity at interface
         V2& itraction,                            ///< prescribed traction at interface
         X1& x,                                    ///< coordinates of gauss point
         const CORE::Conditions::Condition* cond,  ///< condition prescribed to this surface
@@ -64,7 +64,7 @@ namespace XFEM
         double& visc_s    ///< slave sided dynamic viscosity
     )
     {
-      SetupProjectionMatrix(proj_matrix, normal);
+      setup_projection_matrix(proj_matrix, normal);
 
       // help variable
       int robin_id_dirch;
@@ -75,7 +75,7 @@ namespace XFEM
         robin_id_dirch = cond->parameters().Get<int>("robin_id_dirch");
         // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
         if (!std::signbit(static_cast<double>(robin_id_dirch)))
-          EvaluateDirichletFunction(
+          evaluate_dirichlet_function(
               ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
           // Safety checks
@@ -93,7 +93,7 @@ namespace XFEM
       if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
-        // sliplenght twice (also done in UpdateConfigurationMap_GP ... as soon as this gets
+        // sliplenght twice (also done in update_configuration_map_gp ... as soon as this gets
         // relevant we should merge this functions)
 
         // evaluate interface traction (given by Neumann condition)
@@ -105,7 +105,7 @@ namespace XFEM
 
         if (sliplength != 0.0)
         {
-          EvaluateNeumannFunction(
+          evaluate_neumann_function(
               itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_);
 
           double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -149,16 +149,16 @@ namespace XFEM
 
     // template <CORE::FE::CellType DISTYPE>//,class M1, class M2>
     //! Updates configurationmap for specific Gausspoint
-    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                              //< master sided dynamic viscosity
-        double& visc_s,                              //< slave sided dynamic viscosity
-        double& density_m,                           //< master sided density
-        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
-        double& full_stab,                           //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,     //< Condition
-        DRT::Element* ele,                           //< Element
-        DRT::Element* bele,                          //< Boundary Element
+    void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                //< master sided dynamic viscosity
+        double& visc_s,                                //< slave sided dynamic viscosity
+        double& density_m,                             //< master sided density
+        double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
+        double& full_stab,                             //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,       //< Condition
+        DRT::Element* ele,                             //< Element
+        DRT::Element* bele,                            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -226,7 +226,7 @@ namespace XFEM
       }
     };
 
-    void SetConditionSpecificParameters() override;
+    void set_condition_specific_parameters() override;
   };
 
 }  // namespace XFEM

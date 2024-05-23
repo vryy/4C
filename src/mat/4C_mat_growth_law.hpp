@@ -190,8 +190,8 @@ namespace MAT
    *
    *  The specific rhs-functionality \f$f_{rhs}\f$ must be provided by
    *  specializiations of this class. Therefore the pure virtual interface-functions
-   *  EvaluateGrowthFuntion(...), EvaluateGrowthFunctionDerivTheta(...) and
-   *  EvaluateGrowthFunctionDerivC(...) are provided.
+   *  EvaluateGrowthFuntion(...), evaluate_growth_function_deriv_theta(...) and
+   *  evaluate_growth_function_deriv_c(...) are provided.
    *
    *  \author kehl
    *  \date 6/2015
@@ -275,10 +275,10 @@ namespace MAT
      * theta - the current growth factor theta
      *
      */
-    virtual void EvaluateGrowthFunction(
+    virtual void evaluate_growth_function(
         double& growthfunc, const double growthtrig, const double theta) = 0;
 
-    virtual void EvaluateGrowthTrigger(double& growthtrig,
+    virtual void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) = 0;
@@ -296,7 +296,7 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig,
+    virtual void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
         double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
@@ -316,7 +316,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    virtual void EvaluateGrowthFunctionDerivC(
+    virtual void evaluate_growth_function_deriv_c(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
@@ -345,7 +345,7 @@ namespace MAT
     }
 
     //! add parameter to parameter list
-    void AddParamsToParameterList(Teuchos::ParameterList& params, const double& theta)
+    void add_params_to_parameter_list(Teuchos::ParameterList& params, const double& theta)
     {
       FOUR_C_THROW(
           "You should not get here, "
@@ -524,10 +524,10 @@ namespace MAT
      * theta - the current growth factor theta
      *
      */
-    void EvaluateGrowthFunction(
+    void evaluate_growth_function(
         double& growthfunc, const double growthtrig, const double theta) override;
 
-    void EvaluateGrowthTrigger(double& growthtrig,
+    void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
@@ -545,8 +545,8 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
         const CORE::LINALG::Matrix<3, 3>& F_g,
@@ -566,7 +566,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
         double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -668,10 +668,10 @@ namespace MAT
      * theta - the current growth factor theta
      *
      */
-    void EvaluateGrowthFunction(
+    void evaluate_growth_function(
         double& growthfunc, const double growthtrig, const double theta) override;
 
-    void EvaluateGrowthTrigger(double& growthtrig,
+    void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
@@ -689,8 +689,8 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
         const CORE::LINALG::Matrix<3, 3>& F_g,
@@ -710,7 +710,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
         double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -785,7 +785,7 @@ namespace MAT
     //@{
 
 
-    void EvaluateGrowthTrigger(double& growthtrig,
+    void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
@@ -803,8 +803,8 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
         const CORE::LINALG::Matrix<3, 3>& F_g,
@@ -824,7 +824,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
         double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -887,7 +887,7 @@ namespace MAT
     //@{
 
 
-    void EvaluateGrowthTrigger(double& growthtrig,
+    void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
@@ -905,8 +905,8 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
         const CORE::LINALG::Matrix<3, 3>& F_g,
@@ -926,7 +926,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
         double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
@@ -1024,10 +1024,10 @@ namespace MAT
      * theta - the current growth factor theta
      *
      */
-    void EvaluateGrowthFunction(
+    void evaluate_growth_function(
         double& growthfunc, const double growthtrig, const double theta) override;
 
-    void EvaluateGrowthTrigger(double& growthtrig,
+    void evaluate_growth_trigger(double& growthtrig,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
@@ -1045,8 +1045,8 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      *
      */
-    void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+    void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
         const CORE::LINALG::Matrix<3, 3>& F_g,
@@ -1066,7 +1066,7 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
         double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,

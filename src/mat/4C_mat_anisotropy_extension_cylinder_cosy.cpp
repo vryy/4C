@@ -35,13 +35,13 @@ void MAT::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
   cosy_location_ = static_cast<CosyLocation>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::OnGlobalDataInitialized()
+void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()
 {
-  if (GetAnisotropy()->HasGPCylinderCoordinateSystem())
+  if (GetAnisotropy()->has_gp_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::GPCosy;
   }
-  else if (GetAnisotropy()->HasElementCylinderCoordinateSystem())
+  else if (GetAnisotropy()->has_element_cylinder_coordinate_system())
   {
     cosy_location_ = CosyLocation::ElementCosy;
   }
@@ -51,18 +51,18 @@ void MAT::CylinderCoordinateSystemAnisotropyExtension::OnGlobalDataInitialized()
   }
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::OnGlobalElementDataInitialized()
+void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized()
 {
   // do nothing
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::OnGlobalGPDataInitialized()
+void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized()
 {
   // do nothing
 }
 
 const MAT::CylinderCoordinateSystemProvider&
-MAT::CylinderCoordinateSystemAnisotropyExtension::GetCylinderCoordinateSystem(int gp) const
+MAT::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system(int gp) const
 {
   if (cosy_location_ == CosyLocation::None)
   {
@@ -71,19 +71,20 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCylinderCoordinateSystem(in
 
   if (cosy_location_ == CosyLocation::ElementCosy)
   {
-    return GetAnisotropy()->GetElementCylinderCoordinateSystem();
+    return GetAnisotropy()->get_element_cylinder_coordinate_system();
   }
 
-  return GetAnisotropy()->GetGPCylinderCoordinateSystem(gp);
+  return GetAnisotropy()->get_gp_cylinder_coordinate_system(gp);
 }
 
 Teuchos::RCP<MAT::CoordinateSystemProvider>
-MAT::CylinderCoordinateSystemAnisotropyExtension::GetCoordinateSystemProvider(int gp) const
+MAT::CylinderCoordinateSystemAnisotropyExtension::get_coordinate_system_provider(int gp) const
 {
   auto cosy = Teuchos::rcp(new CoordinateSystemHolder());
 
   if (cosy_location_ != CosyLocation::None)
-    cosy->SetCylinderCoordinateSystemProvider(Teuchos::rcpFromRef(GetCylinderCoordinateSystem(gp)));
+    cosy->set_cylinder_coordinate_system_provider(
+        Teuchos::rcpFromRef(get_cylinder_coordinate_system(gp)));
 
   return cosy;
 }

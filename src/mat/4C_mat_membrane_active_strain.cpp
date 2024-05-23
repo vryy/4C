@@ -352,7 +352,7 @@ void MAT::MembraneActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3
   stress(2) = 0.5 * (S_tot(1, 0) + S_tot(0, 1));
 
   // pullback of the linearization
-  Pullback4thTensorVoigt(defgrd_active_inv_loc_red, cmatpassive_loc, cmat);
+  pullback4th_tensor_voigt(defgrd_active_inv_loc_red, cmatpassive_loc, cmat);
 
   return;
 }  // MAT::MembraneActiveStrain::Evaluate
@@ -446,7 +446,7 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
       fibervecs_.push_back(dir);
     }
 
-    SetupNormalDirection();
+    setup_normal_direction();
   }
   else
   {
@@ -497,7 +497,7 @@ void MAT::MembraneActiveStrain::ReadDir(
   return;
 }  // MAT::MembraneActiveStrain::ReadDir
 
-void MAT::MembraneActiveStrain::SetupNormalDirection()
+void MAT::MembraneActiveStrain::setup_normal_direction()
 {
   if (fibervecs_.size() != 2)
   {
@@ -517,12 +517,12 @@ void MAT::MembraneActiveStrain::SetupNormalDirection()
   normaldir.Scale(1 / norm);
 
   fibervecs_.push_back(normaldir);
-}  // MAT::MembraneActiveStrain::SetupNormalDirection
+}  // MAT::MembraneActiveStrain::setup_normal_direction
 
 /*---------------------------------------------------------------------*
  | Pullback of the tangent from intermediate to reference configuration|
  *---------------------------------------------------------------------*/
-void MAT::MembraneActiveStrain::Pullback4thTensorVoigt(
+void MAT::MembraneActiveStrain::pullback4th_tensor_voigt(
     const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
     const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
     CORE::LINALG::Matrix<3, 3>& cmat_reference)
@@ -561,7 +561,7 @@ void MAT::MembraneActiveStrain::Pullback4thTensorVoigt(
     }
   }
 
-}  // MAT::MembraneActiveStrain::Pullback4thTensorVoigt
+}  // MAT::MembraneActiveStrain::pullback4th_tensor_voigt
 
 /*---------------------------------------------------------------------*
  | transform voigt to tensor notation                                  |

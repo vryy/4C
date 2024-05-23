@@ -68,9 +68,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
-  EvaluateAndAssemblePositionalCoupling(
+  evaluate_and_assemble_positional_coupling(
       discret, force_vector, stiffness_matrix, displacement_vector);
-  EvaluateAndAssembleRotationalCoupling(
+  evaluate_and_assemble_rotational_coupling(
       discret, force_vector, stiffness_matrix, displacement_vector);
 }
 
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
  *
  */
 template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePositionalCoupling(
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_positional_coupling(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -169,7 +169,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
  *
  */
 template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRotationalCoupling(
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_rotational_coupling(
     const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -208,7 +208,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     CORE::LINALG::Matrix<4, 1, double> quaternion_double;
     CORE::LINALG::Matrix<3, 1, double> psi_double;
     CORE::LINALG::Matrix<3, 1, scalar_type_rot> psi;
-    triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+    triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
         quaternion_double, position_in_parameterspace_[i_beam]);
     CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, psi_double);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -216,7 +216,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
           6, i_beam * rot_dim_ + i_dim, psi_double(i_dim));
     CORE::LARGEROTATIONS::angletoquaternion(psi, quaternion[i_beam]);
 
-    ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+    ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
         quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
 
     // Transformation matrix.
@@ -227,7 +227,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde_full;
     CORE::FE::shape_function_1D(
         L_i[i_beam], position_in_parameterspace_[i_beam], CORE::FE::CellType::line3);
-    triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+    triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
         I_tilde, position_in_parameterspace_[i_beam]);
     for (unsigned int i_node = 0; i_node < 3; i_node++)
       for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
@@ -316,8 +316,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Print(std::ostream& out
  *
  */
 template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::PrintSummaryOneLinePerActiveSegmentPair(
-    std::ostream& out) const
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<
+    beam>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   CheckInitSetup();
 

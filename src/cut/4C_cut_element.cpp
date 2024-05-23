@@ -339,7 +339,7 @@ void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
 bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints(ele)");
+      "CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- FindCutPoints(ele)");
 
   // edges of element side cuts through cut side
   bool cut = ele_side.FindCutPoints(mesh, this, cut_side);
@@ -355,7 +355,7 @@ bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cu
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutLines");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- FindCutLines");
 
   return ele_side.FindCutLines(mesh, this, cut_side);
 }
@@ -886,7 +886,7 @@ void CORE::GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool tetcellsonly)
+void CORE::GEO::CUT::Element::create_integration_cells(Mesh& mesh, int count, bool tetcellsonly)
 {
   /* Is volume cell active? ( i.e. in recursive call, has this vc already
    * been removed in FixBrokenTets() ) */
@@ -904,7 +904,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   if (not tetcellsonly)
   {
     // try to create one single simple shaped integration cell if possible
-    if (CreateSimpleShapedIntegrationCells(mesh)) return;
+    if (create_simple_shaped_integration_cells(mesh)) return;
     // return if this was possible
   }
 
@@ -918,7 +918,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
       if (IntegrationCellCreator::CreateCells(
               mesh, this, cells_))  // Does not help for cuts with a "tri"
       {
-        CalculateVolumeOfCellsTessellation();
+        calculate_volume_of_cells_tessellation();
         return;  // return if this was possible
       }
     }
@@ -935,7 +935,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   {
     Facet* f = *i;
     if (f->OnBoundaryCellSide() and f->HasHoles()) FOUR_C_THROW("no holes in cut facet possible");
-    f->GetAllPoints(mesh, cut_points, f->BelongsToLevelSetSide() and f->OnBoundaryCellSide());
+    f->GetAllPoints(mesh, cut_points, f->belongs_to_level_set_side() and f->OnBoundaryCellSide());
   }
 
   std::vector<Point*> points;
@@ -950,7 +950,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   TetMesh tetmesh(points, facets_, false);
   tetmesh.CreateElementTets(mesh, this, cells_, cut_faces_, count, tetcellsonly);
 
-  CalculateVolumeOfCellsTessellation();
+  calculate_volume_of_cells_tessellation();
 }
 
 /* Can a simple shaped integration cells be formed for this element?
@@ -958,9 +958,9 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
  */
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
+bool CORE::GEO::CUT::Element::create_simple_shaped_integration_cells(Mesh& mesh)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Element::create_simple_shaped_integration_cells" );
 
 
   if (cells_.size() == 1)  // in case there is only one volumecell, check if a simple shaped
@@ -969,7 +969,7 @@ bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
     VolumeCell* vc = *cells_.begin();
     if (IntegrationCellCreator::CreateCell(mesh, Shape(), vc))
     {
-      CalculateVolumeOfCellsTessellation();
+      calculate_volume_of_cells_tessellation();
 
       //      // check if the unique integration cell equals the whole (sub-)element
       //      plain_integrationcell_set intcells;
@@ -1002,7 +1002,7 @@ bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::RemoveEmptyVolumeCells()
+void CORE::GEO::CUT::Element::remove_empty_volume_cells()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();)
   {
@@ -1055,7 +1055,7 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
  * Find local coodinates of given point w.r. to the parent Quad element
  *                                                      sudhakar 11/13
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
+void CORE::GEO::CUT::Element::local_coordinates_quad(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   if (not is_shadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
@@ -1113,7 +1113,7 @@ void CORE::GEO::CUT::Element::DebugDump()
     std::cout << "\n";
   }
 
-  GmshFailureElementDump();
+  gmsh_failure_element_dump();
 
   {
     // Write Elemement Cut Test!!!
@@ -1128,7 +1128,7 @@ void CORE::GEO::CUT::Element::DebugDump()
  * When cut library is broken, write complete cut        sudhakar 06/14
  * configuration in to gmsh output file
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::GmshFailureElementDump()
+void CORE::GEO::CUT::Element::gmsh_failure_element_dump()
 {
   std::stringstream str;
   str << ".cut_element" << Id() << "_CUTFAIL.pos";
@@ -1188,7 +1188,7 @@ void CORE::GEO::CUT::Element::DumpFacets()
 /*----------------------------------------------------------------------*
  * Calculate volume of all volumecells when Tessellation is used
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
+void CORE::GEO::CUT::Element::calculate_volume_of_cells_tessellation()
 {
   const plain_volumecell_set& volcells = VolumeCells();
   for (plain_volumecell_set::const_iterator i = volcells.begin(); i != volcells.end(); i++)
@@ -1211,12 +1211,12 @@ void CORE::GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
  * Integrate pre-defined functions over each volumecell created from this
  * element when using Tessellation
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::integrateSpecificFunctionsTessellation()
+void CORE::GEO::CUT::Element::integrate_specific_functions_tessellation()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
     VolumeCell* cell1 = *i;
-    cell1->integrateSpecificFunctionsTessellation();
+    cell1->integrate_specific_functions_tessellation();
   }
 }
 
@@ -1225,13 +1225,13 @@ void CORE::GEO::CUT::Element::integrateSpecificFunctionsTessellation()
  * fitting for each volumecells. Unless specified moment fitting is performed
  * only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::MomentFitGaussWeights(
+void CORE::GEO::CUT::Element::moment_fit_gauss_weights(
     Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
   // try to create one single simple shaped integration cell if possible
-  if (CreateSimpleShapedIntegrationCells(mesh)) return;
+  if (create_simple_shaped_integration_cells(mesh)) return;
   // return if this was possible
 
   // When the cut side touches the element the shape of the element is retained
@@ -1257,7 +1257,7 @@ void CORE::GEO::CUT::Element::MomentFitGaussWeights(
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
     VolumeCell* cell1 = *i;
-    cell1->MomentFitGaussWeights(this, mesh, include_inner, Bcellgausstype);
+    cell1->moment_fit_gauss_weights(this, mesh, include_inner, Bcellgausstype);
   }
 }
 
@@ -1266,13 +1266,13 @@ void CORE::GEO::CUT::Element::MomentFitGaussWeights(
  * facets and applying divergence theorem. Unless specified moment fitting is
  * performed only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::DirectDivergenceGaussRule(
+void CORE::GEO::CUT::Element::direct_divergence_gauss_rule(
     Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
   // try to create one single simple shaped integration cell if possible
-  if (CreateSimpleShapedIntegrationCells(mesh)) return;
+  if (create_simple_shaped_integration_cells(mesh)) return;
   // return if this was possible
 
   eleinttype_ = INPAR::CUT::EleIntType_DirectDivergence;
@@ -1280,7 +1280,7 @@ void CORE::GEO::CUT::Element::DirectDivergenceGaussRule(
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
     VolumeCell* cell1 = *i;
-    cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
+    cell1->direct_divergence_gauss_rule(this, mesh, include_inner, Bcellgausstype);
   }
 }
 
@@ -1292,7 +1292,7 @@ bool CORE::GEO::CUT::Element::HasLevelSetSide()
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
   {
     Facet* facet = *j;
-    if (facet->BelongsToLevelSetSide())
+    if (facet->belongs_to_level_set_side())
     {
       return true;
     }
@@ -1312,31 +1312,31 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
   {
     case CORE::FE::CellType::line2:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::line2>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::line2>(eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::tri3:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::quad4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::tet4:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::hex8:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::pyramid5:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::pyramid5>(eid, sides, nodes, active, probdim));
+      e = Teuchos::rcp<Element>(create_concrete_element<CORE::FE::CellType::pyramid5>(
+          eid, sides, nodes, active, probdim));
       break;
     case CORE::FE::CellType::wedge6:
       e = Teuchos::rcp<Element>(
-          CreateConcreteElement<CORE::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
+          create_concrete_element<CORE::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:
     {

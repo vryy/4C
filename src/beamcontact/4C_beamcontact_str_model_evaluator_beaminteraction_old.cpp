@@ -214,7 +214,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::DetermineStressStrain()
+void STR::MODELEVALUATOR::BeamInteractionOld::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -230,7 +230,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::DetermineOptionalQuantity()
+void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -250,7 +250,8 @@ void STR::MODELEVALUATOR::BeamInteractionOld::ResetStepState() { return; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::get_block_dof_row_map_ptr()
+    const
 {
   CheckInitSetup();
   return GState().DofRowMap();
@@ -258,8 +259,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::GetBlock
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteractionOld::GetCurrentSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::BeamInteractionOld::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -268,7 +269,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteractionOld::GetCu
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::BeamInteractionOld::GetLastTimeStepSolutionPtr() const
+STR::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;

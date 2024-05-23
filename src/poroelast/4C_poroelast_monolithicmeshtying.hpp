@@ -47,15 +47,15 @@ namespace POROELAST
     void Update() override;
 
     //! Recover Lagrange Multiplier after Newton step
-    void RecoverLagrangeMultiplierAfterNewtonStep(
+    void recover_lagrange_multiplier_after_newton_step(
         Teuchos::RCP<const Epetra_Vector> iterinc) override;
 
     //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
-    void BuildConvergenceNorms() override;
+    void build_convergence_norms() override;
 
     //! extractor to split fluid RHS vector for convergence check
     //! should be named fluidvelocityactiverowdofmap_
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> FluidVelActiveDofExtractor() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fluid_vel_active_dof_extractor() const
     {
       return fvelactiverowdofmap_;
     }
@@ -70,10 +70,10 @@ namespace POROELAST
     bool SetupSolver() override;
 
     //! contains header to PrintNewtonIter with meshtying solver tolerance
-    void PrintNewtonIterHeaderStream(std::ostringstream& oss) override;
+    void print_newton_iter_header_stream(std::ostringstream& oss) override;
 
     //! contains text to PrintNewtonIter with meshtying residuals
-    void PrintNewtonIterTextStream(std::ostringstream& oss) override;
+    void print_newton_iter_text_stream(std::ostringstream& oss) override;
 
    private:
     //! nonlinear mortar adapter used to evaluate meshtying

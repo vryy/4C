@@ -45,10 +45,10 @@ namespace DRT
       );
 
       //! extract quantities for element evaluation
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                          //!< parameter list
-          DRT::Discretization& discretization,                     //!< discretization
-          DRT::Element::LocationArray& la                          //!< location array
+      virtual void extract_element_and_node_values(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                              //!< parameter list
+          DRT::Discretization& discretization,                         //!< discretization
+          DRT::Element::LocationArray& la                              //!< location array
       );
 
       //! provide element matrix with linearizations of Soret effect term in discrete scatra
@@ -115,7 +115,7 @@ namespace DRT
       );
 
       //! compute gradient of test function times gradient of shape function
-      void GetLaplacianWeakForm(double& result,          //!< result variable
+      void get_laplacian_weak_form(double& result,       //!< result variable
           const int& vi,                                 //!< index of test function
           const int& ui,                                 //!< index of shape function
           const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
@@ -129,7 +129,7 @@ namespace DRT
       };
 
       //! compute gradient of test function times given gradient
-      void GetLaplacianWeakFormRHS(double& result,        //!< result variable
+      void get_laplacian_weak_form_rhs(double& result,    //!< result variable
           const int& vi,                                  //!< index of test function
           const CORE::LINALG::Matrix<nsd_, 1>& gradient,  //!< given gradient
           const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
@@ -187,7 +187,7 @@ namespace DRT
       ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true){};
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesSTIThermo(
+      void set_internal_variables_sti_thermo(
           const CORE::LINALG::Matrix<NEN, 1>& funct,    //!< shape functions
           const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
           const CORE::LINALG::Matrix<NEN, 1>&

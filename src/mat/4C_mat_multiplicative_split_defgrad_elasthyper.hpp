@@ -98,7 +98,7 @@ namespace MAT
      * @param[in]  defgrad  Deformation gradient
      * @param[out] iFinM    inverse inelastic deformation gradient
      */
-    void EvaluateInverseInelasticDefGrad(
+    void evaluate_inverse_inelastic_def_grad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM);
 
     /// Returns all inelastic factors as a vector
@@ -186,7 +186,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
-    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
         CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
@@ -196,7 +196,7 @@ namespace MAT
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
         CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
 
-    void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd, double concentration,
+    void evaluate_linearization_od(const CORE::LINALG::Matrix<3, 3>& defgrd, double concentration,
         CORE::LINALG::Matrix<9, 1>* d_F_dx) override;
 
     void Setup(int numgp, INPUT::LineDefinition* linedef) override;
@@ -230,7 +230,7 @@ namespace MAT
      *                     deformation gradient
      * @param[out] cmatadd Additional elasticity tensor \f$ cmat_{add} \f$
      */
-    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_additional_cmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFin,
         CORE::LINALG::Matrix<6, 6>& cmatadd);
 
@@ -329,7 +329,7 @@ namespace MAT
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
      * @param[out] cmatiso  part of the elasticity tensor as shown above
      */
-    void EvaluateStressCmatIso(const CORE::LINALG::Matrix<6, 1>& iCV,
+    void evaluate_stress_cmat_iso(const CORE::LINALG::Matrix<6, 1>& iCV,
         const CORE::LINALG::Matrix<6, 1>& iCinV, const CORE::LINALG::Matrix<6, 1>& iCinCiCinV,
         const CORE::LINALG::Matrix<3, 1>& gamma, const CORE::LINALG::Matrix<8, 1>& delta,
         double detFin, CORE::LINALG::Matrix<6, 1>& stress,
@@ -357,7 +357,7 @@ namespace MAT
      *                           \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
      * @param[out] prinv         Principal invariants of the elastic right Cauchy-Green tensor
      */
-    void EvaluateKinQuantElast(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    void evaluate_kin_quant_elast(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<3, 3>& iFinM, CORE::LINALG::Matrix<6, 1>& iCinV,
         CORE::LINALG::Matrix<6, 1>& iCinCiCinV, CORE::LINALG::Matrix<6, 1>& iCV,
         CORE::LINALG::Matrix<3, 3>& iCinCM, CORE::LINALG::Matrix<3, 3>& iFinCeM,
@@ -373,7 +373,7 @@ namespace MAT
      * @param[out] dPI    First derivative w.r.t. principle invariants
      * @param[out] ddPII  Second derivative w.r.t. principle invariants
      */
-    void EvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
+    void evaluate_invariant_derivatives(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
         CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII) const;
 
     /*!

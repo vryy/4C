@@ -85,7 +85,7 @@ void FS3I::BiofilmFSI::Init()
   {
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>());
-    alecreator->CreateMatchingDiscretization(structdis, structaledis, 11);
+    alecreator->create_matching_discretization(structdis, structaledis, 11);
     structaledis->FillComplete();
   }
   if (comm_.MyPID() == 0)
@@ -109,12 +109,12 @@ void FS3I::BiofilmFSI::Init()
   //---------------------------------------------------------------------
 
   const Teuchos::ParameterList& biofilmcontrol =
-      GLOBAL::Problem::Instance()->BIOFILMControlParams();
+      GLOBAL::Problem::Instance()->biofilm_control_params();
 
   // make sure that initial time derivative of concentration is not calculated
   // automatically (i.e. field-wise)
   const Teuchos::ParameterList& scatradyn =
-      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
   if (CORE::UTILS::IntegralValue<int>(scatradyn, "SKIPINITDER") == false)
     FOUR_C_THROW(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
@@ -186,7 +186,7 @@ void FS3I::BiofilmFSI::Setup()
 
   // set up ale-fluid couplings
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField()->Discretization()),
+  icoupfa_->setup_condition_coupling(*(fsi_->FluidField()->Discretization()),
       (fsi_->FluidField()->Interface()->FSICondMap()), *(fsi_->AleField()->Discretization()),
       (fsi_->AleField()->Interface()->FSICondMap()), condname, ndim);
   // the fluid-ale coupling always matches
@@ -198,7 +198,7 @@ void FS3I::BiofilmFSI::Setup()
 
   // set up structale-structure couplings
   icoupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoupsa_->SetupConditionCoupling(*(fsi_->StructureField()->Discretization()),
+  icoupsa_->setup_condition_coupling(*(fsi_->StructureField()->Discretization()),
       fsi_->StructureField()->Interface()->FSICondMap(), *structaledis,
       ale_->Interface()->FSICondMap(), condname, ndim);
   // the structure-structale coupling always matches
@@ -211,13 +211,13 @@ void FS3I::BiofilmFSI::Setup()
   /// do we need this? What's for???
   fsi_->FluidField()->SetMeshMap(coupfa_->MasterDofMap());
 
-  idispn_ = fsi_->FluidField()->ExtractInterfaceVeln();
-  idispnp_ = fsi_->FluidField()->ExtractInterfaceVeln();
-  iveln_ = fsi_->FluidField()->ExtractInterfaceVeln();
+  idispn_ = fsi_->FluidField()->extract_interface_veln();
+  idispnp_ = fsi_->FluidField()->extract_interface_veln();
+  iveln_ = fsi_->FluidField()->extract_interface_veln();
 
-  struidispn_ = fsi_->StructureField()->ExtractInterfaceDispn();
-  struidispnp_ = fsi_->StructureField()->ExtractInterfaceDispn();
-  struiveln_ = fsi_->StructureField()->ExtractInterfaceDispn();
+  struidispn_ = fsi_->StructureField()->extract_interface_dispn();
+  struidispnp_ = fsi_->StructureField()->extract_interface_dispn();
+  struiveln_ = fsi_->StructureField()->extract_interface_dispn();
 
   struct_growth_disp_ = AleToStructField(ale_->WriteAccessDispnp());
   fluid_growth_disp_ = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
@@ -261,7 +261,7 @@ void FS3I::BiofilmFSI::Timeloop()
 
 
   const Teuchos::ParameterList& biofilmcontrol =
-      GLOBAL::Problem::Instance()->BIOFILMControlParams();
+      GLOBAL::Problem::Instance()->biofilm_control_params();
   const int biofilmgrowth = CORE::UTILS::IntegralValue<int>(biofilmcontrol, "BIOFILMGROWTH");
   const int outputgmsh_ = CORE::UTILS::IntegralValue<int>(biofilmcontrol, "OUTPUT_GMSH");
 
@@ -309,7 +309,7 @@ void FS3I::BiofilmFSI::Timeloop()
       }
 
       // compute interface displacement and velocity
-      ComputeInterfaceVectors(idispnp_, iveln_, struidispnp_, struiveln_);
+      compute_interface_vectors(idispnp_, iveln_, struidispnp_, struiveln_);
 
       // do all the settings and solve the fluid on a deforming mesh
       FluidAleSolve();
@@ -366,7 +366,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // (in this case for the time being it takes in account also the initial transient state!),
   // or only on the last values coming from the fsi-scatra simulation
   const Teuchos::ParameterList& biofilmcontrol =
-      GLOBAL::Problem::Instance()->BIOFILMControlParams();
+      GLOBAL::Problem::Instance()->biofilm_control_params();
   const int avgrowth = CORE::UTILS::IntegralValue<int>(biofilmcontrol, "AVGROWTH");
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Epetra_Vector> normtempinflux_ =
@@ -411,9 +411,9 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     while (stopnonliniter == false)
     {
-      ScatraEvaluateSolveIterUpdate();
+      scatra_evaluate_solve_iter_update();
       itnum++;
-      if (ScatraConvergenceCheck(itnum)) break;
+      if (scatra_convergence_check(itnum)) break;
     }
 
     // calculation of the flux at the interface based on normal influx values before time shift of
@@ -654,7 +654,7 @@ void FS3I::BiofilmFSI::SetFSISolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp,
+void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idispnp,
     Teuchos::RCP<Epetra_Vector> iveln, Teuchos::RCP<Epetra_Vector> struidispnp,
     Teuchos::RCP<Epetra_Vector> struiveln)
 {
@@ -745,12 +745,12 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::FluidAleSolve()
 {
-  Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField()->WriteAccessDiscretization();
+  Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField()->write_access_discretization();
 
   // if we have values at the fluid interface we need to apply them
   if (idispnp_ != Teuchos::null)
   {
-    fsi_->AleField()->ApplyInterfaceDisplacements(FluidToAle(idispnp_));
+    fsi_->AleField()->apply_interface_displacements(FluidToAle(idispnp_));
   }
 
   fsi_->AleField()->CreateSystemMatrix(Teuchos::null);
@@ -793,12 +793,12 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::StructAleSolve()
 {
-  Teuchos::RCP<DRT::Discretization> structaledis = ale_->WriteAccessDiscretization();
+  Teuchos::RCP<DRT::Discretization> structaledis = ale_->write_access_discretization();
 
   // if we have values at the structure interface we need to apply them
   if (struidispnp_ != Teuchos::null)
   {
-    ale_->ApplyInterfaceDisplacements(StructToAle(struidispnp_));
+    ale_->apply_interface_displacements(StructToAle(struidispnp_));
   }
 
   ale_->CreateSystemMatrix(Teuchos::null);
@@ -921,7 +921,7 @@ void FS3I::BiofilmFSI::VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradi
 void FS3I::BiofilmFSI::StructGmshOutput()
 {
   const Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
-  const Teuchos::RCP<DRT::Discretization> structaledis = ale_->WriteAccessDiscretization();
+  const Teuchos::RCP<DRT::Discretization> structaledis = ale_->write_access_discretization();
   Teuchos::RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->Discretization();
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct",
@@ -969,7 +969,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
 {
   const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField()->Discretization();
   const Teuchos::RCP<DRT::Discretization> fluidaledis =
-      fsi_->AleField()->WriteAccessDiscretization();
+      fsi_->AleField()->write_access_discretization();
   Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
 
   const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",

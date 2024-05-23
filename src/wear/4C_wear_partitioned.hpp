@@ -135,7 +135,7 @@ namespace WEAR
     void PrepareTimeStep() override;
 
     // redistribute material interfaces according to current interfaces
-    void RedistributeMatInterfaces();
+    void redistribute_mat_interfaces();
 
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<Epetra_Vector> vec) const;
@@ -162,7 +162,7 @@ namespace WEAR
     void WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     /// wear in sp conf. with mortar map
-    void WearSpatialMasterMap(
+    void wear_spatial_master_map(
         Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m);
 
     /// wear in sp conf.

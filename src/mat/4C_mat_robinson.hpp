@@ -213,8 +213,8 @@ namespace MAT
     );
 
     //! \brief calculate visco-plastic strain rate governed by the evolution law
-    void CalcBEViscousStrainRate(const double dt,  //!< (i) time step size
-        double tempnp,                             //!< (i) current temperature
+    void calc_be_viscous_strain_rate(const double dt,  //!< (i) time step size
+        double tempnp,                                 //!< (i) current temperature
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             strain_p,  //!< (i) viscous strain \f$\varepsilon^v_n\f$ at t_n
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
@@ -238,8 +238,8 @@ namespace MAT
 
     //! \brief residual of BE-discretised back stress according to the flow rule
     //!        at Gauss point
-    void CalcBEBackStressFlow(const double dt,  //!< (i) time step size
-        const double tempnp,                    //!< (i) current temperature at t_{n+1}
+    void calc_be_back_stress_flow(const double dt,  //!< (i) time step size
+        const double tempnp,                        //!< (i) current temperature at t_{n+1}
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             strain_p,  //!< (i) viscous strain \f$\varepsilon_{n}\f$ at t_n^i
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
@@ -313,7 +313,7 @@ namespace MAT
       Lin sig = kee_red^i . iinc eps + sig_red^i
 
     */
-    void CalculateCondensedSystem(
+    void calculate_condensed_system(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< (6x1) (io) stress vector \f$\sigma\f$
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat,  //!< cmat == kee (6x6) (io) material stiffness matrix, constitutive tensor
@@ -350,12 +350,12 @@ namespace MAT
     //! Their iterative increments are expressed in terms of the iterative increment
     //! of the total strain.
     //! Here the reduction matrices (kvarvam,kvakvae) stored at previous call of
-    //! CalculateCondensedSystem() care used.
+    //! calculate_condensed_system() care used.
     //!
     //! strainplcurr_ = strainpllast_ + Delta strain_p (o)
     //! backstresscurr_ = backstresslast_ + Delta backstress (o)
-    void IterativeUpdateOfInternalVariables(const int numgp,    //!< total number of Gauss points
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> straininc  //!< (i) increment of total strain
+    void iterative_update_of_internal_variables(const int numgp,  //!< total number of Gauss points
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> straininc    //!< (i) increment of total strain
     );
 
     //! return density
@@ -374,14 +374,15 @@ namespace MAT
     //@{
 
     //! calculate temperature dependent material parameter and return value
-    double GetMatParameterAtTempnp(
+    double get_mat_parameter_at_tempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     //!< (i) current temperature
     );
 
     //! calculate temperature dependent material parameter
-    double GetMatParameterAtTempnp(const double paramconst,  //!< (i) given parameter is a constant
-        const double& tempnp                                 //!< (i) current temperature
+    double get_mat_parameter_at_tempnp(
+        const double paramconst,  //!< (i) given parameter is a constant
+        const double& tempnp      //!< (i) current temperature
     );
 
     //! Initial temperature \f$ \theta_0 \f$

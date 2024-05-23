@@ -150,7 +150,7 @@ namespace MAT
     double MuRolling() const { return params_->frictionRoll_; }
 
     //! return adhesion surface energy
-    double AdhesionSurfaceEnergy() const { return params_->adhesionSurfaceEnergy_; }
+    double adhesion_surface_energy() const { return params_->adhesionSurfaceEnergy_; }
 
     //@}
 

@@ -42,14 +42,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDH8PLAST"; }
     };  // class So_hex8PlastType
 
 
@@ -72,14 +72,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex18PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH18PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDH18PLAST"; }
     };  // class So_hex18PlastType
 
 
@@ -102,14 +102,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex27PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH27PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDH27PLAST"; }
     };  // class So_hex27PlastType
 
 
@@ -132,14 +132,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDT4PLAST"; }
     };  // class So_tet4PlastType
 
 
@@ -162,14 +162,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoNurbs27PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SONURBS27PLAST"; }
+      std::string get_element_type_string() const { return "SONURBS27PLAST"; }
     };  // class So_nurbs27PlastType
 
 

@@ -123,7 +123,7 @@ namespace NOX
          *  \param xold   : read-only access to the state vector
          *  \param grp    : read only access to the group object
          */
-        virtual void runPreApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+        virtual void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp);
 
@@ -135,7 +135,7 @@ namespace NOX
          *  \param xold   : read-only access to the old state vector
          *  \param grp    : read only access to the group object
          */
-        virtual void runPostApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+        virtual void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp);
 
@@ -202,7 +202,7 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeX(const NOX::NLN::Gr
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPreApplyJacobianInverse(
+inline void NOX::NLN::GROUP::PrePostOperator::run_pre_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
@@ -210,11 +210,11 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPreApplyJacobianInverse(
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreApplyJacobianInverse(rhs, result, xold, grp);
+      it->second->run_pre_apply_jacobian_inverse(rhs, result, xold, grp);
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
+inline void NOX::NLN::GROUP::PrePostOperator::run_post_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
 {
@@ -222,7 +222,7 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostApplyJacobianInverse(rhs, result, xold, grp);
+      it->second->run_post_apply_jacobian_inverse(rhs, result, xold, grp);
   }
 }
 

@@ -27,10 +27,10 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet
 }
 
 template <int probdim>
-bool CORE::GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
+bool CORE::GEO::CUT::LevelSetSide<probdim>::find_cut_points_dispatch(
     Mesh& mesh, Element* element, Side& side, Edge& e)
 {
-  return e.FindCutPointsLevelSet(mesh, element, side, *this);
+  return e.find_cut_points_level_set(mesh, element, side, *this);
 }
 
 /*----------------------------------------------------------------------------*
@@ -52,7 +52,7 @@ void CORE::GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
+bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   // More than two cut points show a touch.
@@ -60,7 +60,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
   // (1) If all nodes are caught and nothing else, the cut surface has hit this
   //     surface exactly. No need to cut anything. However, the surface might be
   //     required for integration.
-  if (CORE::GEO::CUT::Side::FindTouchingCutLines(mesh, element, side, cut)) return true;
+  if (CORE::GEO::CUT::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
 
   switch (side.Shape())
   {

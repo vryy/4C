@@ -50,14 +50,14 @@ namespace CORE::GEO::CUT::KERNEL
   class CutKernelStatistics
   {
    public:
-    static CutKernelStatistics& getCutKernelStatistics()
+    static CutKernelStatistics& get_cut_kernel_statistics()
     {
       static CutKernelStatistics intersection_counter_;
       return intersection_counter_;
     }
-    void DoubleIntersectionCounter() { double_int_++; };
-    void DoubleDistanceCounter() { double_dist_++; };
-    void ClnIntersectionCounter() { cln_int_++; };
+    void double_intersection_counter() { double_int_++; };
+    void double_distance_counter() { double_dist_++; };
+    void cln_intersection_counter() { cln_int_++; };
     void ClnDistanceCounter() { cln_dist_++; };
     ~CutKernelStatistics()
     {
@@ -1254,7 +1254,7 @@ namespace CORE::GEO::CUT::KERNEL
     static bool all_position_done_once_;
     // specifies whether to run on the custor allocator now
 
-    void UpdateMemoryAllocations(const std::unordered_map<size_t, int>& allocations)
+    void update_memory_allocations(const std::unordered_map<size_t, int>& allocations)
     {
       for (auto const& [size, times] : allocations)
       {
@@ -1276,7 +1276,7 @@ namespace CORE::GEO::CUT::KERNEL
       static int int_count = 0;
       return int_count;
     }
-    static int& GetIntersectionCount()
+    static int& get_intersection_count()
     {
       static int int_count = 0;
       return int_count;
@@ -1287,23 +1287,23 @@ namespace CORE::GEO::CUT::KERNEL
       static int counter = 0;
       return counter;
     }
-    static int IncreasePositionCounter() { return (++PositionCounter()); }
+    static int increase_position_counter() { return (++PositionCounter()); }
 
     static int& DistanceCounter()
     {
       static int counter = 0;
       return counter;
     }
-    static int IncreaseDistanceCounter() { return (++DistanceCounter()); }
+    static int increase_distance_counter() { return (++DistanceCounter()); }
 
     static int& IntersectionCounter()
     {
       static int counter = 0;
       return counter;
     }
-    static int IncreaseIntersectionCounter() { return (++IntersectionCounter()); }
+    static int increase_intersection_counter() { return (++IntersectionCounter()); }
 
-    static void ReportIntersectionAllocated()
+    static void report_intersection_allocated()
     {
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN INTERSECTION" << std::endl;
@@ -1321,7 +1321,7 @@ namespace CORE::GEO::CUT::KERNEL
       std::cout << "Totally maximum required allocationd " << total << " bytes" << std::endl;
     }
 
-    static void ReportPositionAllocated()
+    static void report_position_allocated()
     {
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN THE POSITION" << std::endl;
@@ -1339,7 +1339,7 @@ namespace CORE::GEO::CUT::KERNEL
       std::cout << "Totally maximum required allocationd " << total << " bytes" << std::endl;
     }
 
-    static void ReportDistanceAllocated()
+    static void report_distance_allocated()
     {
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION IN THE DISTANCE" << std::endl;
@@ -1357,7 +1357,7 @@ namespace CORE::GEO::CUT::KERNEL
       std::cout << "Totally maximum required allocationd " << total << " bytes" << std::endl;
     }
 
-    static void ReportTotalAllocated()
+    static void report_total_allocated()
     {
       size_t total = 0;
       std::cout << "REPORTING MAXIMUM MEMORY ALLOCATION" << std::endl;
@@ -1429,10 +1429,10 @@ namespace CORE::GEO::CUT::KERNEL
           (!custom_allocator_run_))
       {
         CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
-        ReportIntersectionAllocated();
-        ReportPositionAllocated();
-        ReportDistanceAllocated();
-        ReportTotalAllocated();
+        report_intersection_allocated();
+        report_position_allocated();
+        report_distance_allocated();
+        report_total_allocated();
         CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
         custom_allocator_run_ = true;
       }
@@ -1446,7 +1446,7 @@ namespace CORE::GEO::CUT::KERNEL
         // set current constainer for most frequenty byte size allocation for this iteration
         if (custom_allocator_run_)
 #endif
-          CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+          CORE::GEO::CUT::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 
@@ -1456,7 +1456,7 @@ namespace CORE::GEO::CUT::KERNEL
         {
           if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
           {
-            UpdateMemoryAllocations(
+            update_memory_allocations(
                 CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
             CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
           }
@@ -2501,10 +2501,10 @@ namespace CORE::GEO::CUT::KERNEL
       {
 #if DEBUG_MEMORY_ALLOCATION
         CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
-        ReportIntersectionAllocated();
-        ReportPositionAllocated();
-        ReportDistanceAllocated();
-        ReportTotalAllocated();
+        report_intersection_allocated();
+        report_position_allocated();
+        report_distance_allocated();
+        report_total_allocated();
         // start setting up the memory container
         CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
 #else
@@ -2523,7 +2523,7 @@ namespace CORE::GEO::CUT::KERNEL
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+          CORE::GEO::CUT::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
@@ -2532,7 +2532,7 @@ namespace CORE::GEO::CUT::KERNEL
         {
           if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
           {
-            UpdateMemoryAllocations(
+            update_memory_allocations(
                 CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
             CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
           }
@@ -2611,7 +2611,7 @@ namespace CORE::GEO::CUT::KERNEL
 #endif
       }
 
-      GetTopologyInformation();
+      get_topology_information();
       // NOTE: Might be not needed later
       FixCornerCase();
       // converting all the values back
@@ -2733,7 +2733,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     // Transform tolerances into local coordinate system and get and
     // get location of the point on the surface  as well as touched edges
-    void GetTopologyInformation()
+    void get_topology_information()
     {
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> scaled_tolerance_side_touched_edges;
       this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
@@ -2972,7 +2972,7 @@ namespace CORE::GEO::CUT::KERNEL
             exit(EXIT_FAILURE);
         }
       }
-      bool got_topology_info = GetTopologyInformation();
+      bool got_topology_info = get_topology_information();
 #ifdef CUT_CLN_CALC
       if (computeCln or !got_topology_info)
       {
@@ -2986,7 +2986,7 @@ namespace CORE::GEO::CUT::KERNEL
 
         if (major_fail or result_fail)
         {
-          // CutKernelStatistics::getCutKernelStatistics().ClnDistanceCounter();
+          // CutKernelStatistics::get_cut_kernel_statistics().ClnDistanceCounter();
 
 #endif
           {
@@ -3018,7 +3018,7 @@ namespace CORE::GEO::CUT::KERNEL
         }
         else
         {
-          // CutKernelStatistics::getCutKernelStatistics().DoubleDistanceCounter();
+          // CutKernelStatistics::get_cut_kernel_statistics().double_distance_counter();
         }
 #endif
       }
@@ -3068,7 +3068,7 @@ namespace CORE::GEO::CUT::KERNEL
     // edge of the splitted triangle, and tolerance 0.0 for the normal edges, used
     // to avoid possibility of middle point of the quad4 split ot be missed because of
     // numerical errors
-    PointOnSurfaceLoc GetSideLocationTriangleSplit()
+    PointOnSurfaceLoc get_side_location_triangle_split()
     {
       if (sideType != CORE::FE::CellType::tri3)
         FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
@@ -3095,7 +3095,7 @@ namespace CORE::GEO::CUT::KERNEL
     //  Converts tolerance in the local coordinates and computes topological information, such
     //  as touched_edges and  location on the surface. In the case we cannot produce a valid
     //  conversion from global to local tolerance return false
-    bool GetTopologyInformation()
+    bool get_topology_information()
     {
       CORE::LINALG::Matrix<probDim, 1> xsi = this->LocalCoordinates();
       // set up required tolerances
@@ -3395,7 +3395,7 @@ namespace CORE::GEO::CUT::KERNEL
       return std::make_pair(true, cond);
     }
 
-    bool GetLocalToleranceEdge(const floatType& global_tolerance,
+    bool get_local_tolerance_edge(const floatType& global_tolerance,
         CORE::LINALG::Matrix<dimEdge, 1, floatType>& scaled_tolerance)
     {
       CORE::LINALG::Matrix<probDim, 1, floatType> real_tolerance;
@@ -3433,7 +3433,7 @@ namespace CORE::GEO::CUT::KERNEL
       return true;
     }
 
-    bool GetLocalToleranceSide(const floatType& global_tolerance,
+    bool get_local_tolerance_side(const floatType& global_tolerance,
         CORE::LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
     {
       // extract part of the side from the Jacobian
@@ -3931,10 +3931,10 @@ namespace CORE::GEO::CUT::KERNEL
       {
 #if DEBUG_MEMORY_ALLOCATION
         CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
-        ReportIntersectionAllocated();
-        ReportPositionAllocated();
-        ReportDistanceAllocated();
-        ReportTotalAllocated();
+        report_intersection_allocated();
+        report_position_allocated();
+        report_distance_allocated();
+        report_total_allocated();
         CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
 #else
         CORE::GEO::CUT::MemorySingleton::getInstance().SwitchState();
@@ -3953,7 +3953,7 @@ namespace CORE::GEO::CUT::KERNEL
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+          CORE::GEO::CUT::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
@@ -3962,7 +3962,7 @@ namespace CORE::GEO::CUT::KERNEL
         {
           if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
           {
-            UpdateMemoryAllocations(
+            update_memory_allocations(
                 CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
             CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
           }
@@ -4030,7 +4030,7 @@ namespace CORE::GEO::CUT::KERNEL
 #endif
       }
 
-      GetTopologyInformation();
+      get_topology_information();
       // NOTE: Might be not needed later
       FixCornerCase();
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -4041,7 +4041,7 @@ namespace CORE::GEO::CUT::KERNEL
       if (first_run_)
       {
         const int num_inter = 3;
-        if ((++GetIntersectionCount()) == num_inter)
+        if ((++get_intersection_count()) == num_inter)
         {
           all_intersections_done_once_ = true;
           std::cout << "All possible template intersection are done!" << std::endl;
@@ -4090,7 +4090,7 @@ namespace CORE::GEO::CUT::KERNEL
    private:
     //  Converts tolerance in the local coordinates and computes topological information, such
     //  as touched_edges and  location on the surface
-    void GetTopologyInformation()
+    void get_topology_information()
     {
       // tolerance of getting nearby edges
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> scaled_tolerance_side_touched_edges;
@@ -4098,9 +4098,9 @@ namespace CORE::GEO::CUT::KERNEL
       CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> scaled_tolerance_side;
       CORE::LINALG::Matrix<dimEdge, 1, CORE::CLN::ClnWrapper> scaled_tolerance_edge;
       // compute location
-      this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side);
-      this->GetLocalToleranceSide(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
-      this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge);
+      this->get_local_tolerance_side(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side);
+      this->get_local_tolerance_side(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
+      this->get_local_tolerance_edge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge);
       // compute inside-outside relation
       if (WithinLimits<sideType>(clnxsi_, scaled_tolerance_side))
         side_location_ = PointOnSurfaceLoc(true, true);
@@ -4351,7 +4351,7 @@ namespace CORE::GEO::CUT::KERNEL
       bool conv;
       this->Setup(xyze_side, xyze_edge);
       conv = this->Solve();
-      bool got_topology_info = GetTopologyInformation();
+      bool got_topology_info = get_topology_information();
 
 #ifdef CUT_CLN_CALC
       if (computeCln or (!got_topology_info))
@@ -4362,7 +4362,7 @@ namespace CORE::GEO::CUT::KERNEL
 
         if (major_fail or result_fail)
         {
-//             CutKernelStatistics::getCutKernelStatistics().ClnIntersectionCounter();
+//             CutKernelStatistics::get_cut_kernel_statistics().cln_intersection_counter();
 #endif
           {
             ComputeIntersectionAdaptivePrecision<
@@ -4393,7 +4393,7 @@ namespace CORE::GEO::CUT::KERNEL
         }
         else
         {
-          //             CutKernelStatistics::getCutKernelStatistics().DoubleIntersectionCounter();
+          //             CutKernelStatistics::get_cut_kernel_statistics().double_intersection_counter();
         }
 #endif
       }
@@ -4441,7 +4441,7 @@ namespace CORE::GEO::CUT::KERNEL
     // edge of the splitted triangle, and tolerance 0.0 for the normal edges.
     // Used to avoid possibility of middle point of the quad4 split ot be missed because of
     // numerical errors
-    PointOnSurfaceLoc GetSideLocationTriangleSplit()
+    PointOnSurfaceLoc get_side_location_triangle_split()
     {
       if (sideType != CORE::FE::CellType::tri3)
         FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
@@ -4450,7 +4450,7 @@ namespace CORE::GEO::CUT::KERNEL
       double distance_tolerance = TOPOLOGICAL_TOLERANCE;
       // get tolerance with 1e-14 around the triangle, but in local coordinates
       CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
-      this->GetLocalToleranceSide(distance_tolerance, scaled_tolerance);
+      this->get_local_tolerance_side(distance_tolerance, scaled_tolerance);
       // Diagonal one, corresponds to the middle one for both triangles, tolerance there should
       // be 1e-14
       CORE::LINALG::Matrix<3, 1> real_tolerance;
@@ -4476,7 +4476,7 @@ namespace CORE::GEO::CUT::KERNEL
    private:
     // Get local tolerance and based on it get location of the point on the surface
     // as well as touched edges
-    bool GetTopologyInformation()
+    bool get_topology_information()
     {
       CORE::LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::LocalCoordinates();
       // tolerance of getting nearby edges
@@ -4485,9 +4485,9 @@ namespace CORE::GEO::CUT::KERNEL
       CORE::LINALG::Matrix<dimEdge, 1> scaled_tolerance_edge;
       CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance_side;
       // compute location finally
-      if ((not this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge)) or
-          (not this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side)) or
-          (not this->GetLocalToleranceSide(
+      if ((not this->get_local_tolerance_edge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge)) or
+          (not this->get_local_tolerance_side(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side)) or
+          (not this->get_local_tolerance_side(
               SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges)))
       {
         return false;

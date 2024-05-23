@@ -99,14 +99,14 @@ namespace STR
       }
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsRuntimeOutput> GetRuntimeOutputParams() const
+      Teuchos::RCP<const ParamsRuntimeOutput> get_runtime_output_params() const
       {
         CheckInitSetup();
         return params_runtime_vtk_output_;
       };
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsRuntimeVtpOutput> GetRuntimeVtpOutputParams() const
+      Teuchos::RCP<const ParamsRuntimeVtpOutput> get_runtime_vtp_output_params() const
       {
         CheckInitSetup();
         return params_runtime_vtp_output_;
@@ -120,40 +120,40 @@ namespace STR
       };
 
       /// \brief return TRUE if the results shall be written for this load/time \c step
-      bool WriteResultsForThisStep(const int step) const;
+      bool write_results_for_this_step(const int step) const;
 
-      [[nodiscard]] bool IsWriteResultsEnabled() const;
+      [[nodiscard]] bool is_write_results_enabled() const;
 
       /// \brief return TRUE if runtime vtk results shall be written for this load/time \c step
-      bool WriteRuntimeVtkResultsForThisStep(const int step) const;
+      bool write_runtime_vtk_results_for_this_step(const int step) const;
 
-      [[nodiscard]] bool IsRuntimeOutputEnabled() const;
+      [[nodiscard]] bool is_runtime_output_enabled() const;
 
       /// \brief return TRUE if runtime vtp results shall be written for this load/time \c step
-      bool WriteRuntimeVtpResultsForThisStep(const int step) const;
+      bool write_runtime_vtp_results_for_this_step(const int step) const;
 
       /// \brief return TRUE if the restart state shall be written for this load/time step
-      bool ShouldWriteRestartForStep(int step) const;
+      bool should_write_restart_for_step(int step) const;
 
       /// \brief return TRUE if reaction forces shall be written for this load/time step
-      bool ShouldWriteReactionForcesForThisStep(int step) const;
+      bool should_write_reaction_forces_for_this_step(int step) const;
 
       /// \brief return TRUE if stress and strain data shall be written for this load/time step
-      bool ShouldWriteStressStrainForThisStep(int step) const;
+      bool should_write_stress_strain_for_this_step(int step) const;
 
       /// \brief return TRUE if energy data shall be written for this load/time step
-      bool ShouldWriteEnergyForThisStep(int step) const;
+      bool should_write_energy_for_this_step(int step) const;
 
       /// \brief return the number of the load/time step for which the results have been written
-      int GetLastWrittenResults() const;
+      int get_last_written_results() const;
 
       /// \brief sets the last written load/time step for which the results have been written
-      void SetLastWrittenResults(int step);
+      void set_last_written_results(int step);
 
       /// @name Get printing and output parameters/files
       ///@{
       /// get the output file for energy
-      std::ostream& GetEnergyOutputStream()
+      std::ostream& get_energy_output_stream()
       {
         CheckInitSetup();
 
@@ -177,7 +177,7 @@ namespace STR
       };
 
       /// Shall we print intermediate iterations during solution?
-      const bool& IsPrintIntermediateIterations() const
+      const bool& is_print_intermediate_iterations() const
       {
         CheckInitSetup();
         return printiter_;
@@ -212,14 +212,14 @@ namespace STR
       };
 
       /// Shall we write the current element volume?
-      bool IsWriteCurrentEleVolume() const
+      bool is_write_current_ele_volume() const
       {
         CheckInitSetup();
         return writecurrentelevolume_;
       }
 
       /// Shall we write the jacobian to MATLAB?
-      bool IsWriteJacobianToMatlab() const
+      bool is_write_jacobian_to_matlab() const
       {
         CheckInitSetup();
         return writejac2matlab_;
@@ -240,42 +240,42 @@ namespace STR
       };
 
       /// Print infos to standard out every n step
-      const int& GetPrint2ScreenEveryNStep() const
+      const int& get_print2_screen_every_n_step() const
       {
         CheckInitSetup();
         return printscreen_;
       };
 
       /// Get the output counter for OutputEveryIter
-      const int& GetOEI_OutputCounter() const
+      const int& get_oei_output_counter() const
       {
         CheckInitSetup();
         return outputcounter_;
       };
 
       /// returns the offset added to the current step to shift the steps to be written
-      int GetWriteTimestepOffset() const
+      int get_write_timestep_offset() const
       {
         CheckInitSetup();
         return writetimestepoffset_;
       }
 
       /// write restart every given step. if 0, restart is not written
-      const int& GetWriteRestartEveryNStep() const
+      const int& get_write_restart_every_n_step() const
       {
         CheckInitSetup();
         return writerestartevery_;
       };
 
       /// write state/stress/strain every given step
-      const int& GetWriteResultsEveryNStep() const
+      const int& get_write_results_every_n_step() const
       {
         CheckInitSetup();
         return writeresultsevery_;
       };
 
       /// write system energy every given step
-      const int& GetWriteEnergyEveryNStep() const
+      const int& get_write_energy_every_n_step() const
       {
         CheckInitSetup();
         return writeenergyevery_;
@@ -289,7 +289,7 @@ namespace STR
       }
 
       /// get output type of coupling stress
-      const INPAR::STR::StressType& GetCouplingStressOutputType() const
+      const INPAR::STR::StressType& get_coupling_stress_output_type() const
       {
         CheckInitSetup();
         return writecouplstress_;
@@ -303,14 +303,14 @@ namespace STR
       }
 
       /// get plastic strain output type
-      const INPAR::STR::StrainType& GetPlasticStrainOutputType() const
+      const INPAR::STR::StrainType& get_plastic_strain_output_type() const
       {
         CheckInitSetup();
         return writeplstrain_;
       };
 
       /// get optional quantity output type
-      const INPAR::STR::OptQuantityType& GetOptQuantityOutputType() const
+      const INPAR::STR::OptQuantityType& get_opt_quantity_output_type() const
       {
         CheckInitSetup();
         return writeoptquantity_;
@@ -325,11 +325,11 @@ namespace STR
       }
 
       /// Initialize and setup the every iteration output writer
-      void InitSetupEveryIterationWriter(
+      void init_setup_every_iteration_writer(
           IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox);
 
       /// initialize the output of system energy
-      void SetupEnergyOutputFile();
+      void setup_energy_output_file();
 
      protected:
       /// @name variables for internal use only
@@ -469,7 +469,7 @@ namespace NOX
             void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
             /// called before the step is reduced in a line search routine
-            void runPreModifyStepLength(const ::NOX::Solver::Generic& solver,
+            void run_pre_modify_step_length(const ::NOX::Solver::Generic& solver,
                 const ::NOX::LineSearch::Generic& linesearch) override;
 
            private:

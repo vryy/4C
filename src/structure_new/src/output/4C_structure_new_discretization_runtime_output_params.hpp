@@ -47,7 +47,7 @@ namespace DRT
 
 
       /// whether to write displacements
-      bool OutputDisplacementState() const
+      bool output_displacement_state() const
       {
         CheckInitSetup();
         return output_displacement_state_;
@@ -75,7 +75,7 @@ namespace DRT
       };
 
       /// whether to write the ghosting information of elements
-      bool OutputElementGhosting() const
+      bool output_element_ghosting() const
       {
         CheckInitSetup();
         return output_element_ghosting_;
@@ -96,7 +96,7 @@ namespace DRT
       };
 
       /// Return output type of Gauss point data
-      INPAR::STR::GaussPointDataOutputType GaussPointDataOutput() const
+      INPAR::STR::GaussPointDataOutputType gauss_point_data_output() const
       {
         CheckInitSetup();
         return gauss_point_data_output_type_;

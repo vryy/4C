@@ -87,7 +87,7 @@ FSI::LungMonolithic::LungMonolithic(
   NumConstrID_ = FluidLungVolConIDs.size();
 
   ConstrDofSet_ = Teuchos::rcp(new CONSTRAINTS::ConstraintDofSet());
-  ConstrDofSet_->AssignDegreesOfFreedom(FluidField()->Discretization(), NumConstrID_, 0);
+  ConstrDofSet_->assign_degrees_of_freedom(FluidField()->Discretization(), NumConstrID_, 0);
 
   // The "OffsetID" is used during the evaluation of constraints on
   // the element level. For assembly of the constraint parts, the gid
@@ -200,7 +200,7 @@ void FSI::LungMonolithic::GeneralSetup()
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  SetDefaultParameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, NOXParameterList());
 
   // ToDo: Set more detailed convergence tolerances like in standard FSI
   // additionally set tolerance for volume constraint
@@ -212,27 +212,27 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // right now we use matching meshes at the interface
 
-  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
+  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
   CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+  coupsf.setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+  coupsa.setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
-  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+  icoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -262,21 +262,21 @@ void FSI::LungMonolithic::GeneralSetup()
   //-----------------------------------------------------------------------------
 
   // coupling of structure and ale dofs at airway outflow
-  coupsaout_->SetupConstrainedConditionCoupling(*StructureField()->Discretization(),
+  coupsaout_->setup_constrained_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->LungASICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupsaout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
-  coupfsout_->SetupConstrainedConditionCoupling(*FluidField()->Discretization(),
+  coupfsout_->setup_constrained_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->LungASICondMap(), *StructureField()->Discretization(),
       StructureField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfsout_->MasterDofMap()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
-  coupfaout_->SetupConstrainedConditionCoupling(*FluidField()->Discretization(),
+  coupfaout_->setup_constrained_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->LungASICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfaout_->MasterDofMap()->NumGlobalElements() == 0)

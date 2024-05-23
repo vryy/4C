@@ -148,14 +148,14 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   notsetup_ = true;
 
   coupling_solid_fluid_mortar_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   ale_inner_interf_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fluid_mesh_inner_inner_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
-  CreateLagrangeMultiplierDofRowMap();
+  create_lagrange_multiplier_dof_row_map();
   SetLagMult();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -194,7 +194,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
-    SetDefaultParameters(fsidyn, NOXParameterList());
+    set_default_parameters(fsidyn, NOXParameterList());
 
     // we use non-matching meshes at the interface
     // mortar with: structure = master, fluid = slave
@@ -202,7 +202,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     // get coupling objects
-    CORE::ADAPTER::Coupling& interface_coup_fluid_ale = InterfaceFluidAleCoupling();
+    CORE::ADAPTER::Coupling& interface_coup_fluid_ale = interface_fluid_ale_coupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -212,11 +212,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     std::vector<int> coupleddof(ndim, 1);
 
     coupling_solid_fluid_mortar_->Setup(StructureField()->Discretization(),
-        FluidField()->Discretization(), AleField()->WriteAccessDiscretization(), coupleddof,
+        FluidField()->Discretization(), AleField()->write_access_discretization(), coupleddof,
         "FSICoupling", comm_, true);
 
     // fluid to ale at the interface
-    interface_coup_fluid_ale.SetupConditionCoupling(*FluidField()->Discretization(),
+    interface_coup_fluid_ale.setup_condition_coupling(*FluidField()->Discretization(),
         FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
         AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -231,7 +231,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 
     FluidField()->SetMeshMap(coup_fluid_ale.MasterDofMap());
 
-    CreateCombinedDofRowMap();
+    create_combined_dof_row_map();
 
     /*------------------------------------------------------------------------*/
     // Switch fluid to interface split block matrix
@@ -244,7 +244,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
-    SetupDBCMapExtractor();
+    setup_dbc_map_extractor();
     // -------------------------------------------------------------------------#
 
     // enable debugging
@@ -277,7 +277,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateLagrangeMultiplierDofRowMap()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::create_lagrange_multiplier_dof_row_map()
 {
   const int num_glob_elem_fluid_interface =
       FluidField()->Interface()->FSICondMap()->NumGlobalElements();
@@ -289,7 +289,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateLagrangeMultiplierDofRowM
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateCombinedDofRowMap()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
@@ -503,7 +503,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicFluidSplitSaddlePoin
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupDBCMapExtractor()
+void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_dbc_map_extractor()
 {
   /* Dirichlet maps for structure and fluid do not intersect with interface map.
    * ALE Dirichlet map might intersect with interface map, but ALE interface
@@ -677,7 +677,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupRHSLambda(Epetra_Vector& f
 void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupRHSFirstiter(Epetra_Vector& f)
 {
   // old interface velocity of fluid field
-  const Teuchos::RCP<const Epetra_Vector> fluid_veln = FluidField()->ExtractInterfaceVeln();
+  const Teuchos::RCP<const Epetra_Vector> fluid_veln = FluidField()->extract_interface_veln();
 
   // get the mortar structure to fluid coupling matrix M
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortar_m =
@@ -868,7 +868,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystemMatrix(
   Teuchos::RCP<CORE::LINALG::SparseMatrix> aux_ale_inner_interf =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(ale_inner_inner.RowMap(), 81, false));
   (*ale_inner_interf_transform_)(aleblock->FullRowMap(), aleblock->FullColMap(), ale_inner_interf,
-      1., CORE::ADAPTER::CouplingSlaveConverter(InterfaceFluidAleCoupling()),
+      1., CORE::ADAPTER::CouplingSlaveConverter(interface_fluid_ale_coupling()),
       *aux_ale_inner_interf);
 
   aux_ale_inner_interf->Scale(1. / fluid_timescale);
@@ -1154,7 +1154,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 
   // transfer the current ale mesh positions to the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  FluidField()->apply_mesh_displacement(fluiddisp);
 
   {
     Teuchos::Time tf("fluid", true);
@@ -1222,7 +1222,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::ExtractFieldVectors(
 
   // convert fluid interface velocities into ALE interface displacements
   Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSICondVector(fx);
-  FluidField()->VelocityToDisplacement(fcx);
+  FluidField()->velocity_to_displacement(fcx);
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
@@ -1257,10 +1257,10 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Output()
 
   AleField()->Output();
 
-  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
-    if (comm_.MyPID() == 0) StructureField()->GetConstraintManager()->PrintMonitorValues();
+    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
+    if (comm_.MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -1363,7 +1363,7 @@ bool FSI::MortarMonolithicFluidSplitSaddlePoint::SetAccepted() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateNodeOwnerRelationship(
+void FSI::MortarMonolithicFluidSplitSaddlePoint::create_node_owner_relationship(
     std::map<int, int>* nodeOwner, std::map<int, std::list<int>>* inverseNodeOwner,
     std::map<int, DRT::Node*>* fluidnodesPtr, std::map<int, DRT::Node*>* structuregnodesPtr,
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,

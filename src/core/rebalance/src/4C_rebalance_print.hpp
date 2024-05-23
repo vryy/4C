@@ -24,7 +24,7 @@ namespace CORE::REBALANCE::UTILS
 {
   /*! \brief Prints details on the distribution/partitioning of the distribution
    */
-  void PrintParallelDistribution(const DRT::Discretization& dis);
+  void print_parallel_distribution(const DRT::Discretization& dis);
 
 }  // namespace CORE::REBALANCE::UTILS
 

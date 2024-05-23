@@ -401,8 +401,8 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           std::ofstream file("t_failed.pos");
           CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge);
           file.close();
-          DumpConnectivityInfo();
-          (*it)->DumpConnectivityInfo();
+          dump_connectivity_info();
+          (*it)->dump_connectivity_info();
           FOUR_C_THROW(str.str());
         }
       }
@@ -553,7 +553,7 @@ void CORE::GEO::CUT::Point::Position(Point::PointPosition pos)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Point::HasAssociatedBoundaryCellFacet()
+bool CORE::GEO::CUT::Point::has_associated_boundary_cell_facet()
 {
   for (plain_facet_set::const_iterator ifacet = facets_.begin(); ifacet != facets_.end(); ++ifacet)
   {
@@ -661,7 +661,7 @@ bool CORE::GEO::CUT::Point::IsCut(Side* s1, Side* s2)
   return false;
 }
 
-void CORE::GEO::CUT::Point::DumpConnectivityInfo()
+void CORE::GEO::CUT::Point::dump_connectivity_info()
 {
   std::stringstream p;
   p << "Point" << Id() << "ConnectivityDump.pos";
@@ -824,7 +824,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
 }
 
 /// Remove info about this point from all the cut_sides and cut_edges
-void CORE::GEO::CUT::Point::RemoveConnectivityInfo()
+void CORE::GEO::CUT::Point::remove_connectivity_info()
 {
   for (plain_side_set::iterator it = cut_sides_.begin(); it != cut_sides_.end(); ++it)
     (*it)->RemovePoint(this);
@@ -849,7 +849,7 @@ void CORE::GEO::CUT::Point::Replace(Point* p)
   {
     s->RemovePoint(this);
     s->AddPoint(p);
-    std::set<std::set<Point*>>& parallel_cut_surfaces = s->GetParallelCutSurfaces();
+    std::set<std::set<Point*>>& parallel_cut_surfaces = s->get_parallel_cut_surfaces();
     std::set<std::set<Point*>> new_surfaces;
     std::transform(parallel_cut_surfaces.begin(), parallel_cut_surfaces.end(),
         std::inserter(new_surfaces, new_surfaces.begin()),
@@ -939,7 +939,7 @@ void CORE::GEO::CUT::Point::RemoveEdge(Edge* edge)
   cut_edges_.erase(edge);
 }
 
-void CORE::GEO::CUT::Point::ErasedContainingCutPairs(Side* side)
+void CORE::GEO::CUT::Point::erased_containing_cut_pairs(Side* side)
 {
   for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
   {
@@ -955,7 +955,7 @@ void CORE::GEO::CUT::Point::ErasedContainingCutPairs(Side* side)
   }
 }
 
-void CORE::GEO::CUT::Point::ErasedContainingCutPairs(Edge* edge)
+void CORE::GEO::CUT::Point::erased_containing_cut_pairs(Edge* edge)
 {
   for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
   {

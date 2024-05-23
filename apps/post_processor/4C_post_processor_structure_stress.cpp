@@ -126,7 +126,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
               ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
-    filter_.GetWriter().WriteNodalResultStep(
+    filter_.GetWriter().write_nodal_result_step(
         *files[0], Teuchos::rcpFromRef(nodal_stress), resultfilepos, groupname, name[0], 6);
   }
 
@@ -162,7 +162,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
           CORE::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
         });
 
-    filter_.GetWriter().WriteElementResultStep(
+    filter_.GetWriter().write_element_result_step(
         *files[0], Teuchos::rcpFromRef(elestress), resultfilepos, groupname, name[0], 6, 0);
   }
 
@@ -205,7 +205,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
                 (*(elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
         });
 
-    filter_.GetWriter().WriteElementResultStep(
+    filter_.GetWriter().write_element_result_step(
         *files[0], Teuchos::rcpFromRef(elerotation), resultfilepos, groupname, name[0], 9, 0);
   }
 
@@ -250,7 +250,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
       FOUR_C_THROW("vector containing nodal thickness not available");
     }
 
-    filter_.GetWriter().WriteNodalResultStep(
+    filter_.GetWriter().write_nodal_result_step(
         *files[0], nodal_thickness, resultfilepos, groupname, name[0], 1);
   }
 
@@ -480,10 +480,10 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     }
 
     for (int i = 0; i < 3; ++i)
-      filter_.GetWriter().WriteNodalResultStep(
+      filter_.GetWriter().write_nodal_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1);
     for (int i = 3; i < 6; ++i)
-      filter_.GetWriter().WriteNodalResultStep(
+      filter_.GetWriter().write_nodal_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3);
   }
 
@@ -594,10 +594,10 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     }
 
     for (int i = 0; i < 3; ++i)
-      filter_.GetWriter().WriteElementResultStep(
+      filter_.GetWriter().write_element_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1, 0);
     for (int i = 3; i < 6; ++i)
-      filter_.GetWriter().WriteElementResultStep(
+      filter_.GetWriter().write_element_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3, 0);
   }
 

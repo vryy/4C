@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CORE::REBALANCE::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
+void CORE::REBALANCE::UTILS::print_parallel_distribution(const DRT::Discretization& dis)
 {
   const int numproc = dis.Comm().NumProc();
   const int myrank = dis.Comm().MyPID();

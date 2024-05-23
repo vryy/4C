@@ -46,12 +46,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+      void nodal_block_information(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -167,12 +168,12 @@ namespace DRT
       /*!
        \brief Returns the degree of the element
        */
-      int UsesCompletePolynomialSpace() const { return completepol_; }
+      int uses_complete_polynomial_space() const { return completepol_; }
 
       /*!
        \brief Returns the degree of the element for the interior DG space
        */
-      int NumDofPerElementAuxiliary() const
+      int num_dof_per_element_auxiliary() const
       {
         const int nsd_ = CORE::FE::getDimension(distype_);
         return (nsd_ * (nsd_ + 1) + 1) * CORE::FE::getBasisSize(distype_, degree_, completepol_) +

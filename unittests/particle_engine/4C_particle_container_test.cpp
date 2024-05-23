@@ -102,23 +102,23 @@ namespace
     }
   }
 
-  TEST_F(ParticleContainerTest, IncreaseContainerSize)
+  TEST_F(ParticleContainerTest, increase_container_size)
   {
-    container_->IncreaseContainerSize();
+    container_->increase_container_size();
     EXPECT_EQ(container_->ParticlesStored(), 3);
     EXPECT_EQ(container_->ContainerSize(), 14);
   }
 
-  TEST_F(ParticleContainerTest, DecreaseContainerSize)
+  TEST_F(ParticleContainerTest, decrease_container_size)
   {
-    container_->DecreaseContainerSize();
+    container_->decrease_container_size();
     EXPECT_EQ(container_->ParticlesStored(), 3);
     EXPECT_EQ(container_->ContainerSize(), 3);
   }
 
-  TEST_F(ParticleContainerTest, CheckAndDecreaseContainerSize)
+  TEST_F(ParticleContainerTest, check_and_decrease_container_size)
   {
-    container_->CheckAndDecreaseContainerSize();
+    container_->check_and_decrease_container_size();
     EXPECT_EQ(container_->ParticlesStored(), 3);
     EXPECT_EQ(container_->ContainerSize(), 3);
   }

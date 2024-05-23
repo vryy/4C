@@ -71,13 +71,13 @@ namespace BEAMINTERACTION
       void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      bool PreUpdateStepElement(bool beam_redist) override;
+      bool pre_update_step_element(bool beam_redist) override;
 
       //! derived
       void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      void PostUpdateStepElement() override;
+      void post_update_step_element() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
@@ -86,7 +86,7 @@ namespace BEAMINTERACTION
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
       //! derived
       void ResetStepState() override;
@@ -109,17 +109,18 @@ namespace BEAMINTERACTION
       void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void InitSubmodelDependencies(
+      void init_submodel_dependencies(
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
+      void add_bins_with_relevant_content_for_ia_discret_col_map(
+          std::set<int>& colbins) const override;
 
       //! derived
-      void GetHalfInteractionDistance(double& half_interaction_distance) override;
+      void get_half_interaction_distance(double& half_interaction_distance) override;
 
       //! @}
 
@@ -127,10 +128,10 @@ namespace BEAMINTERACTION
       //!@name routines that are not derived and handle beam potential-based interactions
       //! @{
       /// print
-      void PrintAllBeamPotentialElementPairs(std::ostream& out) const;
+      void print_all_beam_potential_element_pairs(std::ostream& out) const;
 
       /// print
-      void PrintActiveBeamPotentialSet(std::ostream& out) const;
+      void print_active_beam_potential_set(std::ostream& out) const;
 
       //! @}
 
@@ -147,7 +148,7 @@ namespace BEAMINTERACTION
         return *beam_potential_params_ptr_;
       }
 
-      inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> BeamPotentialParamsPtr() const
+      inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr() const
       {
         CheckInit();
         return beam_potential_params_ptr_;
@@ -156,17 +157,17 @@ namespace BEAMINTERACTION
       //!@name routines that are not derived and handle beam potential-based interactions
       //! @{
       /// get neighbouring eles in discret
-      void FindAndStoreNeighboringElements();
+      void find_and_store_neighboring_elements();
 
       /// exclude certain neighbors from interaction evaluation
-      void SelectElesToBeConsideredForPotentialEvaluation(
+      void select_eles_to_be_considered_for_potential_evaluation(
           DRT::Element* currele, std::set<DRT::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
-      void CreateBeamPotentialElementPairs();
+      void create_beam_potential_element_pairs();
 
-      void GetBeamPotentialConditionsAppliedToThisElementPair(
+      void get_beam_potential_conditions_applied_to_this_element_pair(
           BEAMINTERACTION::BeamPotentialPair const& elementpair,
           std::vector<CORE::Conditions::Condition*>& conditions_element1,
           std::vector<CORE::Conditions::Condition*>& conditions_element2) const;
@@ -176,22 +177,22 @@ namespace BEAMINTERACTION
       /** \brief print this beam potential-based element pair to screen
        *
        *  \author grill */
-      void PrintConsoleWelcomeMessage(std::ostream& out) const;
+      void print_console_welcome_message(std::ostream& out) const;
 
       //!@name routines that handle visualization output for potential-based interactions
       //! @{
 
       //! init output for potential-based interactions in VTP format
-      void InitOutputRuntimeBeamPotential();
+      void init_output_runtime_beam_potential();
 
       //! writes VTP output for potential-based interactions at the end of a time step
-      void WriteTimeStepOutputRuntimeBeamPotential() const;
+      void write_time_step_output_runtime_beam_potential() const;
 
       //! writes VTP output for potential-based interactions at the end of a nonlinear iteration
-      void WriteIterationOutputRuntimeBeamPotential(int iteration_number) const;
+      void write_iteration_output_runtime_beam_potential(int iteration_number) const;
 
       //! writes VTP output for potential-based interactions
-      void WriteOutputRuntimeBeamPotential(int timestep_number, double time) const;
+      void write_output_runtime_beam_potential(int timestep_number, double time) const;
 
       //! @}
 

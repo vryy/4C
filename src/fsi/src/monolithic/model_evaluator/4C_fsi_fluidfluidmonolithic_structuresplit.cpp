@@ -41,7 +41,7 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
-  if (FluidField()->MonolithicXffsiApproach() == INPAR::XFEM::XFFSI_Full_Newton)
+  if (FluidField()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
     FOUR_C_THROW("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 }
 
@@ -55,7 +55,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
     if (Comm().MyPID() == 0) IO::cout << "Relaxing Ale" << IO::endl;
 
     AleField()->Solve();
-    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->Dispnp()));
+    FluidField()->apply_mesh_displacement(AleToFluid(AleField()->Dispnp()));
   }
 
   // update fields
@@ -79,14 +79,14 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   // we have to refresh the block system matrix,
   // rebuild the merged DOF map & update map extractor for combined
   // Dirichlet maps
-  FSI::MonolithicStructureSplit::CreateCombinedDofRowMap();
-  SetupDBCMapExtractor();
+  FSI::MonolithicStructureSplit::create_combined_dof_row_map();
+  setup_dbc_map_extractor();
   FSI::MonolithicStructureSplit::CreateSystemMatrix();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
+void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
 {
   // merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;

@@ -57,7 +57,7 @@ void loma_dyn(int restart)
   const Teuchos::ParameterList& lomacontrol = problem->LOMAControlParams();
 
   // access parameter list for scatra
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access parameter list for fluid
   const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
@@ -94,7 +94,7 @@ void loma_dyn(int restart)
               GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
 
       // now we can call Init() on base algo
       scatraonly->Init();
@@ -118,7 +118,7 @@ void loma_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform result test if required
-      problem->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+      problem->AddFieldTest(scatraonly->create_sca_tra_field_test());
       problem->TestAll(comm);
 
       break;
@@ -170,7 +170,7 @@ void loma_dyn(int restart)
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      loma->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      loma->ScaTraField()->set_number_of_dof_set_velocity(1);
 
       loma->Init();
 
@@ -197,7 +197,7 @@ void loma_dyn(int restart)
 
       // perform result test if required
       problem->AddFieldTest(loma->FluidField()->CreateFieldTest());
-      problem->AddFieldTest(loma->CreateScaTraFieldTest());
+      problem->AddFieldTest(loma->create_sca_tra_field_test());
       problem->TestAll(comm);
 
       break;

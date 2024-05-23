@@ -31,11 +31,11 @@ void ELCH::Algorithm::PrepareTimeLoop()
   // provide information about initial field (do not do for restarts!)
   if (Step() == 0)
   {
-    ScaTraField()->OutputProblemSpecific();
-    ScaTraField()->OutputTotalAndMeanScalars();
+    ScaTraField()->output_problem_specific();
+    ScaTraField()->output_total_and_mean_scalars();
 
     // compute error for problems with analytical solution (initial field!)
-    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->evaluate_error_compared_to_analytical_sol();
   }
 }
 

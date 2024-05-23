@@ -30,7 +30,7 @@ void MAT::ELASTIC::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero she
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
+void MAT::ELASTIC::CoupVarga::add_coefficients_stretches_principal(
     CORE::LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
     CORE::LINALG::Matrix<6, 1>&
         delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]

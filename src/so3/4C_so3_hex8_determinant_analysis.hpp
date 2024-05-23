@@ -70,7 +70,7 @@ namespace DRT
        *  coefficients.
        *
        *  \author hiermeier \date 09/18 */
-      static void buildMapLagrange20ToBezier27();
+      static void build_map_lagrange20_to_bezier27();
 
       /** \brief Build the full map from the 2nd order Lagrange coefficients
        *  to the 2nd-order Bezier coefficients
@@ -81,7 +81,7 @@ namespace DRT
        *  identical to the matrix T in reference [1].
        *
        *  \author hiermeier \date 09/18 */
-      static void buildMapLagrangeToBezier();
+      static void build_map_lagrange_to_bezier();
 
       /** \brief Build the map from 27 Bezier coefficients to 27 Lagrange
        *  coefficients (both for 2nd order polynomials)
@@ -90,7 +90,7 @@ namespace DRT
        *  2nd order Bezier basis functions at the different points is necessary.
        *
        *  \author hiermeier \date 09/18 */
-      static void buildMapBezierToLagrange(CORE::LINALG::Matrix<27, 27>& map_b2l);
+      static void build_map_bezier_to_lagrange(CORE::LINALG::Matrix<27, 27>& map_b2l);
 
       /** \brief Alternative call which allows an additional shift and scale of
        *  the parametric coordinates
@@ -104,7 +104,7 @@ namespace DRT
        *                  respectively.
        *
        *  \author hiermeier \date 09/18 */
-      static void buildMapBezierToLagrange(
+      static void build_map_bezier_to_lagrange(
           CORE::LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift);
 
       /** \brief Build Sub-map matrix from Bezier to Lagrange coefficients
@@ -116,7 +116,7 @@ namespace DRT
        *  \param sub_map_b2l  resulting sub-map matrix
        *
        *  \author hiermeier \date 09/18 */
-      void buildSubMapBezierToLagrange(
+      void build_sub_map_bezier_to_lagrange(
           const double* left, const double* right, CORE::LINALG::Matrix<27, 27>& sub_map_b2l) const;
 
       /** \brief Compute the Bezier coefficients of the sub-domain
@@ -126,7 +126,7 @@ namespace DRT
        *  \param sub_bcoeffs  Bezier coefficients of the current sub-domain
        *
        *  \author hiermeier \date 09/18 */
-      void getBezierCoeffsOfSubdomain(const CORE::LINALG::Matrix<27, 1>& bcoeffs,
+      void get_bezier_coeffs_of_subdomain(const CORE::LINALG::Matrix<27, 1>& bcoeffs,
           BezierCube& subcube, CORE::LINALG::Matrix<27, 1>& sub_bcoeffs) const;
 
 
@@ -166,7 +166,7 @@ namespace DRT
        *                  of the parent (sub-)cube
        *
        *  \author hiermeier \date 09/18 */
-      bool recursiveSubdivision(const CORE::LINALG::Matrix<27, 1>& bcoeffs, const double* left,
+      bool recursive_subdivision(const CORE::LINALG::Matrix<27, 1>& bcoeffs, const double* left,
           const double* right, unsigned& rcount) const;
 
 
@@ -183,7 +183,7 @@ namespace DRT
        *                       HEX8 corners
        *
        *  \author hiermeier \date 09/18 */
-      void compute20Tet4Volumes(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+      void compute20_tet4_volumes(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const;
 
       /** \brief Compute scaled TET4 volume at the corners of the HEX8
@@ -203,7 +203,7 @@ namespace DRT
        *  \return new offset value (increased by the four computed TET4 volumes)
        *
        *  \author hiermeier \date 09/18 */
-      unsigned computeTet4VolAtCorners(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+      unsigned compute_tet4_vol_at_corners(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
           const std::function<unsigned(unsigned i)>& f_index0,
           const std::function<unsigned(unsigned i)>& f_index1,
@@ -231,7 +231,7 @@ namespace DRT
        *  \return new offset value (increased by the four computed TET4 volumes)
        *
        *  \author hiermeier \date 09/18 */
-      unsigned computeTet4VolAtEdges(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+      unsigned compute_tet4_vol_at_edges(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
           const std::function<unsigned(unsigned i)>& f_index0,
           const std::function<unsigned(unsigned i)>& f_index1,

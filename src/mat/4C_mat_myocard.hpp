@@ -159,9 +159,9 @@ namespace MAT
     void Setup(const CORE::LINALG::Matrix<2, 1>& fiber1);
     void Setup(INPUT::LineDefinition* linedef);
 
-    void SetupDiffusionTensor(const std::vector<double>& fiber1);
-    void SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1);
-    void SetupDiffusionTensor(const CORE::LINALG::Matrix<2, 1>& fiber1);
+    void setup_diffusion_tensor(const std::vector<double>& fiber1);
+    void setup_diffusion_tensor(const CORE::LINALG::Matrix<3, 1>& fiber1);
+    void setup_diffusion_tensor(const CORE::LINALG::Matrix<2, 1>& fiber1);
 
     /// diffusivity
     void Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3) const
@@ -185,9 +185,9 @@ namespace MAT
     void Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3, int gp) const;
     void Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3, int gp) const;
 
-    bool DiffusionAtEleCenter() const { return diff_at_ele_center_; };
+    bool diffusion_at_ele_center() const { return diff_at_ele_center_; };
 
-    void ResetDiffusionTensor()
+    void reset_diffusion_tensor()
     {
       difftensor_.clear();
       return;
@@ -216,7 +216,7 @@ namespace MAT
     double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
     ///  returns number of internal state variables of the material
-    int GetNumberOfInternalStateVariables() const;
+    int get_number_of_internal_state_variables() const;
 
     ///  returns current internal state of the material
     double GetInternalState(const int k) const override;
@@ -231,7 +231,7 @@ namespace MAT
     void SetInternalState(const int k, const double val, int gp);
 
     ///  return number of ionic currents
-    int GetNumberOfIonicCurrents() const;
+    int get_number_of_ionic_currents() const;
 
     ///  return ionic currents
     double GetIonicCurrents(const int k) const;
@@ -243,7 +243,7 @@ namespace MAT
     void Initialize();
 
     /// resize internal state variables
-    void ResizeInternalStateVariables();
+    void resize_internal_state_variables();
 
     /// time update for this material
     void Update(const double phi, const double dt);

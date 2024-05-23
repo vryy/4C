@@ -76,7 +76,7 @@ void SCATRA::TimIntLomaGenAlpha::Setup()
 /*----------------------------------------------------------------------*
  | predict thermodynamic pressure and time derivative          vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::PredictThermPressure()
+void SCATRA::TimIntLomaGenAlpha::predict_therm_pressure()
 {
   // same-thermodynamic-pressure predictor (not required to be performed,
   // since we just updated the thermodynamic pressure, and thus,
@@ -98,7 +98,7 @@ void SCATRA::TimIntLomaGenAlpha::PredictThermPressure()
 /*----------------------------------------------------------------------*
  | compute values of therm. pressure at interm. time steps     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ComputeThermPressureIntermediateValues()
+void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_intermediate_values()
 {
   // thermodynamic pressure at n+alpha_F and n+alpha_M for low-Mach-number case
   // -> required for evaluation of equation of state
@@ -121,7 +121,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressureIntermediateValues()
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
+void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
 {
   // compute temperature at n+alpha_F
   phiaf_->Update(alphaF_, *phinp_, (1.0 - alphaF_), *phin_, 0.0);
@@ -131,7 +131,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams);
+  add_flux_approx_to_parameter_list(eleparams);
 
   // set scalar values needed by elements
   discret_->ClearState();
@@ -140,7 +140,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   // set action for elements
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
@@ -214,10 +214,10 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   }
 
   // compute time derivative of thermodynamic pressure at time step n+1
-  ComputeThermPressureTimeDerivative();
+  compute_therm_pressure_time_derivative();
 
   // compute values at intermediate time steps
-  ComputeThermPressureIntermediateValues();
+  compute_therm_pressure_intermediate_values();
 
   return;
 }
@@ -226,7 +226,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
 /*----------------------------------------------------------------------*
  | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ComputeThermPressureTimeDerivative()
+void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_time_derivative()
 {
   // time derivative of thermodynamic pressure:
   // tpdt(n+1) = (tp(n+1)-tp(n)) / (gamma*dt) + (1-(1/gamma))*tpdt(n)
@@ -327,14 +327,14 @@ void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::In
 /*----------------------------------------------------------------------*
  | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCs()
+void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cs()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(
+    DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
   }
 
@@ -345,12 +345,12 @@ void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCs()
 /*----------------------------------------------------------------------*
  | dynamic Vreman model                                krank  09/13     |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCv()
+void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(
+    Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
   }
 
@@ -361,7 +361,7 @@ void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCv()
 /*-------------------------------------------------------------------------------------*
  | add thermodynamic pressure to parameter list for element evaluation rasthofer 12/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::AddThermPressToParameterList(
+void SCATRA::TimIntLomaGenAlpha::add_therm_press_to_parameter_list(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {

@@ -50,16 +50,16 @@ namespace
       // set corresponding determinant of inelastic deformation gradient
       detFin_ = 1.016159878774565;
 
-      SetRefValuesEvaluateKinQuantElast();
+      set_ref_values_evaluate_kin_quant_elast();
 
-      SetRefValuesEvaluateInvariantsDerivative();
+      set_ref_values_evaluate_invariants_derivative();
 
-      SetRefValuesEvaluatedSdiFin();
+      set_ref_values_evaluated_sdi_fin();
 
       // this method is tested in unit_elasthyper_service.H
       MAT::CalculateGammaDelta(gamma_ref_, delta_ref_, prinv_ref_, dPIe_ref_, ddPIIe_ref_);
 
-      SetUpMultiplicativeSplitObjectWithRequirements();
+      set_up_multiplicative_split_object_with_requirements();
     }
 
     void TearDown() override
@@ -73,7 +73,7 @@ namespace
     // note: requirement of the generation of an object of the multiplicative split material is that
     // the global problem is equipped with the corresponding elastic and inelastic material. This is
     // set up within this method.
-    void SetUpMultiplicativeSplitObjectWithRequirements()
+    void set_up_multiplicative_split_object_with_requirements()
     {
       // do problem instance specific stuff
       const int problemid(0);
@@ -134,7 +134,7 @@ namespace
           parameters_multiplicative_split_defgrad_.get()));
     }
 
-    void SetRefValuesEvaluateKinQuantElast()
+    void set_ref_values_evaluate_kin_quant_elast()
     {
       iCinV_ref_(0) = 0.976244;
       iCinV_ref_(1) = 0.99405;
@@ -212,7 +212,7 @@ namespace
       prinv_ref_(2) = 2.839432625034153;
     }
 
-    void SetRefValuesEvaluateInvariantsDerivative()
+    void set_ref_values_evaluate_invariants_derivative()
     {
       dPIe_ref_.Clear();
       dPIe_ref_(0) = 28.846153846153847;
@@ -222,7 +222,7 @@ namespace
       ddPIIe_ref_(2) = 2.862458189907485;
     }
 
-    void SetConcentrationToInelasticMaterial(const double concentration) const
+    void set_concentration_to_inelastic_material(const double concentration) const
     {
       Teuchos::ParameterList params;
 
@@ -235,7 +235,7 @@ namespace
       multiplicative_split_defgrad_->PreEvaluate(params, 0);
     }
 
-    void SetRefValuesEvaluatedSdiFin()
+    void set_ref_values_evaluated_sdi_fin()
     {
       dSdiFin_ref_(0, 0) = 114.1660435509188;
       dSdiFin_ref_(0, 1) = -1.661105324599284;
@@ -324,7 +324,7 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateAdditionalCmat)
   {
     const double concentration(44327.362);
-    SetConcentrationToInelasticMaterial(concentration);
+    set_concentration_to_inelastic_material(concentration);
 
     // actual call that is tested
     CORE::LINALG::Matrix<6, 6> cMatAdd(true);
@@ -367,7 +367,7 @@ namespace
     cMatAdd_ref(5, 4) = -0.002993573976479339;
     cMatAdd_ref(5, 5) = -0.004589594171729136;
 
-    multiplicative_split_defgrad_->EvaluateAdditionalCmat(&FM_, iCV_ref_, dSdiFin_ref_, cMatAdd);
+    multiplicative_split_defgrad_->evaluate_additional_cmat(&FM_, iCV_ref_, dSdiFin_ref_, cMatAdd);
 
     FOUR_C_EXPECT_NEAR(cMatAdd, cMatAdd_ref, 1.0e-10);
   }
@@ -376,7 +376,7 @@ namespace
   {
     // we need to first set this dummy concentration. otherwise the call below results in a segfault
     const double dummy_conc(-1.0);
-    SetConcentrationToInelasticMaterial(dummy_conc);
+    set_concentration_to_inelastic_material(dummy_conc);
 
     // input variables
     CORE::LINALG::Matrix<3, 1> n, dir;
@@ -393,7 +393,7 @@ namespace
     CORE::LINALG::Matrix<3, 1> d_cauchyndir_dn(true), d_cauchyndir_ddir(true);
     CORE::LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
 
-    multiplicative_split_defgrad_->EvaluateCauchyNDirAndDerivatives(FM_, n, dir, cauchy_n_dir,
+    multiplicative_split_defgrad_->evaluate_cauchy_n_dir_and_derivatives(FM_, n, dir, cauchy_n_dir,
         &d_cauchyndir_dn, &d_cauchyndir_ddir, &d_cauchyndir_dF, nullptr, nullptr, nullptr, 0, 0,
         &concentration, nullptr, nullptr, nullptr);
 
@@ -441,7 +441,7 @@ namespace
     const int eleGID(0);
     CORE::LINALG::Matrix<3, 1> dPIe(true);
     CORE::LINALG::Matrix<6, 1> ddPIIe(true);
-    multiplicative_split_defgrad_->EvaluateInvariantDerivatives(
+    multiplicative_split_defgrad_->evaluate_invariant_derivatives(
         prinv_ref_, gp, eleGID, dPIe, ddPIIe);
 
     FOUR_C_EXPECT_NEAR(dPIe, dPIe_ref_, 1.0e-10);
@@ -461,7 +461,7 @@ namespace
     CORE::LINALG::Matrix<9, 1> CiFiniCe9x1(true);
     CORE::LINALG::Matrix<3, 1> prinv(true);
 
-    multiplicative_split_defgrad_->EvaluateKinQuantElast(&FM_, iFinM_, iCinV, iCinCiCinV, iCV,
+    multiplicative_split_defgrad_->evaluate_kin_quant_elast(&FM_, iFinM_, iCinV, iCinCiCinV, iCV,
         iCinCM, iFinCeM, CiFin9x1, CiFinCe9x1, CiFiniCe9x1, prinv);
 
     FOUR_C_EXPECT_NEAR(iCinV, iCinV_ref_, 1.0e-10);
@@ -479,12 +479,12 @@ namespace
   {
     // we need to first set this dummy concentration. otherwise the call below results in a segfault
     const double dummy_conc(-1.0);
-    SetConcentrationToInelasticMaterial(dummy_conc);
+    set_concentration_to_inelastic_material(dummy_conc);
 
     // actual material call
     const double concentration(1.0);
     CORE::LINALG::Matrix<9, 1> DFDx(true);
-    multiplicative_split_defgrad_->EvaluateLinearizationOD(FM_, concentration, &DFDx);
+    multiplicative_split_defgrad_->evaluate_linearization_od(FM_, concentration, &DFDx);
 
     // define the reference solution
     CORE::LINALG::Matrix<9, 1> DFDx_ref;
@@ -504,7 +504,7 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateOdStiffMat)
   {
     const double concentration(44327.362);
-    SetConcentrationToInelasticMaterial(concentration);
+    set_concentration_to_inelastic_material(concentration);
 
     // do the actual call that is tested
     auto source(MAT::PAR::InelasticSource::concentration);
@@ -577,7 +577,7 @@ namespace
     cMatIso_ref(5, 4) = -0.394102458936374;
     cMatIso_ref(5, 5) = 13.451712479073098;
 
-    multiplicative_split_defgrad_->EvaluateStressCmatIso(
+    multiplicative_split_defgrad_->evaluate_stress_cmat_iso(
         iCV_ref_, iCinV_ref_, iCinCiCinV_ref_, gamma_ref_, delta_ref_, detFin_, S, cMatIso);
 
     FOUR_C_EXPECT_NEAR(S, S_ref, 1.0e-10);

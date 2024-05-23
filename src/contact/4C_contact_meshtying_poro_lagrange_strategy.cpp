@@ -52,7 +52,7 @@ void CONTACT::PoroMtLagrangeStrategy::InitializePoroMt(
 /*----------------------------------------------------------------------*
  | Poro Meshtying method regarding coupling terms      h.Willmann   2015|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
+void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag)
 {
   // system type
@@ -173,7 +173,7 @@ void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
 /*----------------------------------------------------------------------*
  | Poro Recovery method for structural displacement LM  h.Willmann  2015|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroMtLagrangeStrategy::RecoverCouplingMatrixPartofLMP(
+void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
     Teuchos::RCP<Epetra_Vector> veli)
 {
   Teuchos::RCP<Epetra_Vector> zfluid = Teuchos::rcp(new Epetra_Vector(z_->Map(), true));

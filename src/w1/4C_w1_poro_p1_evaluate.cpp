@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::ComputePorosityAndLinearization(
+void DRT::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
     const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity,
@@ -36,7 +36,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::ComputePorosityAndLinearization(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::ComputePorosityAndLinearizationOD(
+void DRT::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization_od(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
     const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
@@ -58,7 +58,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  this->SetParamsInterfacePtr(params);
+  this->set_params_interface_ptr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
 
   if (this->IsParamsInterface())
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  this->SetParamsInterfacePtr(params);
+  this->set_params_interface_ptr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
 
   if (this->IsParamsInterface())
@@ -247,7 +247,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
 
         CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
         CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
-        Base::ExtractValuesFromGlobalVector(
+        Base::extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
         CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
@@ -268,18 +268,18 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
         CORE::LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
 
         if (discretization.HasState(0, "velocity"))
-          Base::ExtractValuesFromGlobalVector(
+          Base::extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
         if (discretization.HasState(1, "fluidvel"))
         {
           // extract local values of the global vectors
-          Base::ExtractValuesFromGlobalVector(
+          Base::extract_values_from_global_vector(
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
         }
 
         // calculate tangent stiffness matrix
-        NonlinearStiffnessPoroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf, matptr,
+        nonlinear_stiffness_poroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf, matptr,
             matptr2, &elevec1, params);
       }
     }
@@ -312,17 +312,17 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
 
         CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
         CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
-        Base::ExtractValuesFromGlobalVector(
+        Base::extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
         if (discretization.HasState(0, "velocity"))
-          Base::ExtractValuesFromGlobalVector(
+          Base::extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
         if (discretization.HasState(1, "fluidvel"))
         {
           // extract local values of the global vectors
-          Base::ExtractValuesFromGlobalVector(
+          Base::extract_values_from_global_vector(
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
         }
 
@@ -346,7 +346,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
 
       CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
       CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
-      Base::ExtractValuesFromGlobalVector(
+      Base::extract_values_from_global_vector(
           discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
       CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
@@ -360,13 +360,13 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
       if (discretization.HasState(1, "fluidvel"))
       {
         // extract local values of the global vectors
-        Base::ExtractValuesFromGlobalVector(
+        Base::extract_values_from_global_vector(
             discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-        Base::ExtractValuesFromGlobalVector(
+        Base::extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
-        NonlinearStiffnessPoroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf, nullptr,
+        nonlinear_stiffness_poroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf, nullptr,
             nullptr, &elevec1, params);
       }
     }
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::InitElement()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::NonlinearStiffnessPoroelast(std::vector<int>& lm,
+void DRT::ELEMENTS::Wall1PoroP1<distype>::nonlinear_stiffness_poroelast(std::vector<int>& lm,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
     CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
@@ -523,7 +523,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
   for (int gp = 0; gp < Base::numgpt_; ++gp)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::ComputeShapeFunctionsAndDerivatives(gp, shapefct, deriv, N_XYZ);
+    Base::compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // compute deformation gradient
     Base::ComputeDefGradient(defgrd, N_XYZ, xcurr);
@@ -543,7 +543,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
     static CORE::LINALG::Matrix<1, Base::numdof_> dvolchange_dus;
 
     // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
-    Base::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+    Base::compute_jacobian_determinant_volume_change_and_linearizations(
         J, volchange, dJ_dus, dvolchange_dus, defgrd, defgrd_inv, N_XYZ, nodaldisp);
 
     //----------------------------------------------------
@@ -595,7 +595,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
     // dC^-1/dus * Grad p
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> dCinv_dus(true);
 
-    Base::ComputeAuxiliaryValues(
+    Base::compute_auxiliary_values(
         N_XYZ, defgrd_inv, C_inv, Gradp, dFinvTdus, Finvgradp, dFinvdus_gradp, dCinv_dus);
 
     //--------------------------------------------------------------------
@@ -604,14 +604,14 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
     CORE::LINALG::Matrix<1, Base::numdof_> dphi_dus;
     double porosity = 0.0;
 
-    ComputePorosityAndLinearization(
+    compute_porosity_and_linearization(
         params, press, volchange, gp, shapefct, porosity_dof, dvolchange_dus, porosity, dphi_dus);
 
     double dW_dphi = 0.0;
     double dW_dJ = 0.0;
     double dW_dp = 0.0;
     double W = 0.0;
-    Base::struct_mat_->ConstitutiveDerivatives(params, press, volchange, porosity,
+    Base::struct_mat_->constitutive_derivatives(params, press, volchange, porosity,
         &dW_dp,  // dW_dp not needed
         &dW_dphi, &dW_dJ, nullptr, &W);
 
@@ -620,18 +620,18 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1(Teuchos::ParameterLis
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
     if (Base::fluid_mat_->Type() == MAT::PAR::darcy_brinkman)
     {
-      Base::FillMatrixAndVectorsBrinkman(gp, J, porosity, fvelder, defgrd_inv, bop, C_inv, dphi_dus,
-          dJ_dus, dCinv_dus, dFinvTdus, sub_stiff, sub_force, fstress);
+      Base::fill_matrix_and_vectors_brinkman(gp, J, porosity, fvelder, defgrd_inv, bop, C_inv,
+          dphi_dus, dJ_dus, dCinv_dus, dFinvTdus, sub_stiff, sub_force, fstress);
     }
 
-    Base::FillMatrixAndVectors(gp, shapefct, N_XYZ, J, press, porosity, velint, fvelint, fvelder,
+    Base::fill_matrix_and_vectors(gp, shapefct, N_XYZ, J, press, porosity, velint, fvelint, fvelder,
         defgrd_inv, bop, C_inv, Finvgradp, dphi_dus, dJ_dus, dCinv_dus, dFinvdus_gradp, dFinvTdus,
         erea_v, sub_stiff, sub_force, fstress);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
     double detJ_w = Base::detJ_[gp] * Base::intpoints_.Weight(gp);  // gpweights[gp];
 
-    const double reacoeff = Base::fluid_mat_->ComputeReactionCoeff();
+    const double reacoeff = Base::fluid_mat_->compute_reaction_coeff();
     {
       for (int k = 0; k < Base::numnod_; k++)
       {
@@ -782,7 +782,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
   for (int gp = 0; gp < Base::numgpt_; ++gp)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::ComputeShapeFunctionsAndDerivatives(gp, shapefct, deriv, N_XYZ);
+    Base::compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
     // evaluate second derivatives of shape functions at integration point
     // ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
@@ -799,7 +799,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
     double volchange = 0.0;
 
     // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
-    Base::ComputeJacobianDeterminantVolumeChange(J, volchange, defgrd, N_XYZ, nodaldisp);
+    Base::compute_jacobian_determinant_volume_change(J, volchange, defgrd, N_XYZ, nodaldisp);
 
     // non-linear B-operator
     CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
@@ -838,22 +838,22 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::GaussPointLoopP1OD(Teuchos::ParameterL
     double dphi_dp = 0.0;
     double porosity = 0.0;
 
-    ComputePorosityAndLinearizationOD(
+    compute_porosity_and_linearization_od(
         params, press, volchange, gp, shapefct, porosity_dof, porosity, dphi_dp);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
 
-    Base::FillMatrixAndVectorsOD(gp, shapefct, N_XYZ, J, porosity, dphi_dp, velint, fvelint,
+    Base::fill_matrix_and_vectors_od(gp, shapefct, N_XYZ, J, porosity, dphi_dp, velint, fvelint,
         defgrd_inv, Gradp, bop, C_inv, sub_stiff);
 
     if (Base::fluid_mat_->Type() == MAT::PAR::darcy_brinkman)
     {
-      Base::FillMatrixAndVectorsBrinkmanOD(
+      Base::fill_matrix_and_vectors_brinkman_od(
           gp, shapefct, N_XYZ, J, porosity, dphi_dp, fvelder, defgrd_inv, bop, C_inv, sub_stiff);
     }  // darcy-brinkman
 
     double dW_dp = 0.0;
-    Base::struct_mat_->ConstitutiveDerivatives(params, press, J, porosity, &dW_dp,
+    Base::struct_mat_->constitutive_derivatives(params, press, J, porosity, &dW_dp,
         nullptr,  // not needed
         nullptr,  // not needed
         nullptr,  // not needed
@@ -884,7 +884,8 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList&
 {
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> disp(true);
   CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
-  Base::ExtractValuesFromGlobalVector(discretization, 0, lm, &disp, &myporosity, "displacement");
+  Base::extract_values_from_global_vector(
+      discretization, 0, lm, &disp, &myporosity, "displacement");
 
   // find out whether we will use a time curve
   const double time = params.get("total time", -1.0);
@@ -925,10 +926,10 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList&
   for (int gp = 0; gp < Base::numgpt_; ++gp)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::ComputeShapeFunctionsAndDerivatives(gp, shapefcts, deriv, N_XYZ);
+    Base::compute_shape_functions_and_derivatives(gp, shapefcts, deriv, N_XYZ);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    Base::ComputeJacobianDeterminant(gp, xcurr, deriv);
+    Base::compute_jacobian_determinant(gp, xcurr, deriv);
 
     /*------------------------------------ integration factor  -------*/
     double fac = Base::detJ_[gp] * Base::intpoints_.Weight(gp);

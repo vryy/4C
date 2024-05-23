@@ -192,7 +192,7 @@ namespace ADAPTER
     \brief transform back to initial parallel distribution
 
     */
-    virtual void MatrixRowColTransform();
+    virtual void matrix_row_col_transform();
 
     /// check setup call
     const bool& IsSetup() const { return issetup_; };

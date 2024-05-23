@@ -57,8 +57,8 @@ namespace
       rotrefe[7] = -0.14845112617443665;
       rotrefe[8] = -0.628849061811312;
 
-      testele_->SetCenterlineHermite(true);
-      testele_->SetUpReferenceGeometry<3, 2, 2>(xrefe_full, rotrefe);
+      testele_->set_centerline_hermite(true);
+      testele_->set_up_reference_geometry<3, 2, 2>(xrefe_full, rotrefe);
     }
 
    protected:

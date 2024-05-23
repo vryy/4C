@@ -126,7 +126,7 @@ void CORE::Dofsets::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
@@ -160,7 +160,7 @@ int CORE::Dofsets::DofSet::AssignDegreesOfFreedom(
   // try to understand what you do.
 
   // Get highest GID used so far and add one
-  int count = GetFirstGIDNumberToBeUsed(dis);
+  int count = get_first_gid_number_to_be_used(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const DRT::DiscretizationHDG> facedis =
@@ -223,9 +223,9 @@ int CORE::Dofsets::DofSet::AssignDegreesOfFreedom(
       numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
-    int minnodegid = GetMinimalNodeGIDIfRelevant(dis);
+    int minnodegid = get_minimal_node_gid_if_relevant(dis);
     maxnodenumdf = numdfrownodes.MaxValue();
-    GetReservedMaxNumDofperNode(maxnodenumdf);  // XFEM::XFEMDofSet set to const number!
+    get_reserved_max_num_dofper_node(maxnodenumdf);  // XFEM::XFEMDofSet set to const number!
 
     for (int i = 0; i < numrownodes; ++i)
     {
@@ -630,7 +630,7 @@ int CORE::Dofsets::DofSet::MinAllGID() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::GetFirstGIDNumberToBeUsed(const DRT::Discretization& dis) const
+int CORE::Dofsets::DofSet::get_first_gid_number_to_be_used(const DRT::Discretization& dis) const
 {
   return MaxGIDinList(dis.Comm()) + 1;
 }
@@ -638,7 +638,7 @@ int CORE::Dofsets::DofSet::GetFirstGIDNumberToBeUsed(const DRT::Discretization& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::GetMinimalNodeGIDIfRelevant(const DRT::Discretization& dis) const
+int CORE::Dofsets::DofSet::get_minimal_node_gid_if_relevant(const DRT::Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }

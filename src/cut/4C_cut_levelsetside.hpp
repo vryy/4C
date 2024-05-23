@@ -80,14 +80,14 @@ namespace CORE::GEO
 
       //   virtual bool DoTriangulation() { return true; }
 
-      bool FindAmbiguousCutLines(
+      bool find_ambiguous_cut_lines(
           Mesh& mesh, Element* element, Side& side, const PointSet& cut) override;
 
       // a levelset-side returns true
       bool IsLevelSetSide() override { return true; };
 
 
-      bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e) override;
+      bool find_cut_points_dispatch(Mesh& mesh, Element* element, Side& side, Edge& e) override;
 
      protected:
       /*! \brief is this side closer to the start-point as the other side? */
@@ -147,7 +147,7 @@ namespace CORE::GEO
 
       /*! \brief get local coordinates (rst) with respect to the element shape
        * for all the corner points */
-      void LocalCornerCoordinates(double* rst_corners) override
+      void local_corner_coordinates(double* rst_corners) override
       {
         FOUR_C_THROW("no local coordinates of corner points on level set cut side");
       }

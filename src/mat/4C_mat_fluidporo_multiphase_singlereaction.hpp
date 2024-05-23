@@ -114,7 +114,7 @@ namespace MAT
 
       //! templated internal EvaluateFunction implementation
       template <int dim>
-      void EvaluateFunctionInternal(std::vector<double>& reacval,
+      void evaluate_function_internal(std::vector<double>& reacval,
           std::vector<std::vector<double>>& reacderivspressure,
           std::vector<std::vector<double>>& reacderivssaturation,
           std::vector<double>& reacderivsporosity,

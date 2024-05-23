@@ -55,13 +55,13 @@ namespace GEOMETRYPAIR
      * \brief Get the number of search points for segmentation search.
      * @return number of search points.
      */
-    inline unsigned int GetNumberOfSearchPoints() const { return n_search_points_; }
+    inline unsigned int get_number_of_search_points() const { return n_search_points_; }
 
     /**
      * \brief Get the flaf on what to do if not all Gauss points of a segment project valid.
      */
     inline INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
-    GetNotAllGaussPointsProjectValidAction() const
+    get_not_all_gauss_points_project_valid_action() const
     {
       return not_all_gauss_points_project_valid_action_;
     }
@@ -85,14 +85,14 @@ namespace GEOMETRYPAIR
      * \brief Get the number of Gauss points.
      * @return Gauss rule
      */
-    inline int GetNumberOfGaussPoints() const { return GetGaussPoints().nquad; };
+    inline int get_number_of_gauss_points() const { return GetGaussPoints().nquad; };
 
     /**
      * \brief Returns the number of integration points along the circumference of the line cross
      * section.
      * @return number of integration points in circumferencial direction.
      */
-    inline unsigned int GetNumberOfIntegrationPointsCircumference() const
+    inline unsigned int get_number_of_integration_points_circumference() const
     {
       return integration_points_circumference_;
     }
@@ -101,7 +101,7 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the gauss point projection tracker.
      * @return Projection tracker.
      */
-    inline std::map<int, std::vector<bool>>& GetGaussPointProjectionTracker()
+    inline std::map<int, std::vector<bool>>& get_gauss_point_projection_tracker()
     {
       return gauss_point_projection_tracker_;
     };

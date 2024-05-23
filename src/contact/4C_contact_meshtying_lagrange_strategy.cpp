@@ -84,8 +84,8 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invd_->ReplaceDiagonalValues(*diag);
-  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+  err = invd_->replace_diagonal_values(*diag);
+  if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -334,8 +334,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
   diag->Update(-1., *tmp, 1.);
 
   // re-insert inverted diagonal into invd
-  err = invd_->ReplaceDiagonalValues(*diag);
-  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+  err = invd_->replace_diagonal_values(*diag);
+  if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -406,7 +406,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
 
@@ -423,7 +423,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
       // split and transform to redistributed maps
       CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
           gndofrowmap_, ksmsm, ksmn, knsm, knn);
-      ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+      ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
       ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
       knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
     }
@@ -687,7 +687,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
 
@@ -737,7 +737,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(
+void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
@@ -792,7 +792,7 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(
     // apply Dirichlet conditions to (0,1) block
     Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
     Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-    CORE::LINALG::ApplyDirichletToSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+    CORE::LINALG::apply_dirichlet_to_system(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
     constrmt->ApplyDirichlet(*dirichtoggle, false);
 
     // row map (equals domain map) extractor
@@ -822,7 +822,7 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(
     // apply Dirichlet B.C. to mergedrhs and mergedsol
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     CORE::LINALG::Export(*dirichtoggle, *dirichtoggleexp);
-    CORE::LINALG::ApplyDirichletToSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
+    CORE::LINALG::apply_dirichlet_to_system(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     // make solver SIMPLER-ready
     // solver.Params().set<bool>("MESHTYING", true); // flag makes sure that SIMPLER sets correct
@@ -843,7 +843,7 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::UpdateDisplacementsAndLMincrements(
+void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   //**********************************************************************
@@ -925,7 +925,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
       systrafo->Multiply(false, *disi, *disi);
@@ -974,7 +974,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
       systrafo->Multiply(false, *disi, *disi);
@@ -982,7 +982,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   }
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
 
   return;
 }
@@ -1056,7 +1056,8 @@ bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_
     systrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
     Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
     systrafo_->Add(*eye, false, 1.0, 1.0);
-    if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+    if (ParRedist())
+      trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
     systrafo_->Add(*trafo_, false, 1.0, 1.0);
     systrafo_->Complete();
   }
@@ -1133,7 +1134,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
+void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   INPAR::CONTACT::SystemType systype =
@@ -1167,7 +1168,7 @@ void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::RunPostApplyJacobianInverse(Epetra_Vector& result)
+void CONTACT::MtLagrangeStrategy::run_post_apply_jacobian_inverse(Epetra_Vector& result)
 {
   INPAR::CONTACT::SystemType systype =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
@@ -1202,7 +1203,7 @@ void CONTACT::MtLagrangeStrategy::RunPostComputeX(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const
+void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
   INPAR::CONTACT::SystemType systype =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");

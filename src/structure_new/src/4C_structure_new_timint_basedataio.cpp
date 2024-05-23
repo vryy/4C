@@ -163,7 +163,7 @@ void STR::TIMINT::BaseDataIO::CheckInitSetup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
+void STR::TIMINT::BaseDataIO::init_setup_every_iteration_writer(
     IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
   if (not outputeveryiter_) return;
@@ -193,7 +193,7 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
+void STR::TIMINT::BaseDataIO::setup_energy_output_file()
 {
   if (energyfile_.is_null())
   {
@@ -206,78 +206,79 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::write_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
-  return IsWriteResultsEnabled() and
-         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteResultsEveryNStep());
+  return is_write_results_enabled() and
+         DetermineWriteOutput(step, get_write_timestep_offset(), get_write_results_every_n_step());
 }
 
-bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
+bool STR::TIMINT::BaseDataIO::is_write_results_enabled() const
 {
-  return GetWriteResultsEveryNStep() > 0;
+  return get_write_results_every_n_step() > 0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::write_runtime_vtk_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
-  return (IsRuntimeOutputEnabled() &&
-          DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
-              GetRuntimeOutputParams()->OutputIntervalInSteps()));
+  return (is_runtime_output_enabled() &&
+          DetermineWriteOutput(step, get_runtime_output_params()->OutputStepOffset(),
+              get_runtime_output_params()->output_interval_in_steps()));
 }
 
-bool STR::TIMINT::BaseDataIO::IsRuntimeOutputEnabled() const
+bool STR::TIMINT::BaseDataIO::is_runtime_output_enabled() const
 {
-  return GetRuntimeOutputParams() != Teuchos::null;
+  return get_runtime_output_params() != Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
-  return (GetRuntimeVtpOutputParams() != Teuchos::null &&
-          DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
-              GetRuntimeOutputParams()->OutputIntervalInSteps()));
+  return (get_runtime_vtp_output_params() != Teuchos::null &&
+          DetermineWriteOutput(step, get_runtime_output_params()->OutputStepOffset(),
+              get_runtime_output_params()->output_interval_in_steps()));
 }
 
 
-bool STR::TIMINT::BaseDataIO::ShouldWriteRestartForStep(const int step) const
+bool STR::TIMINT::BaseDataIO::should_write_restart_for_step(const int step) const
 {
-  return GetWriteRestartEveryNStep() &&
-         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteRestartEveryNStep()) &&
+  return get_write_restart_every_n_step() &&
+         DetermineWriteOutput(
+             step, get_write_timestep_offset(), get_write_restart_every_n_step()) &&
          step != 0;
 }
 
 
-bool STR::TIMINT::BaseDataIO::ShouldWriteReactionForcesForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
 {
-  return GetMonitorDBCParams()->OutputIntervalInSteps() > 0 &&
+  return GetMonitorDBCParams()->output_interval_in_steps() > 0 &&
          DetermineWriteOutput(
-             step, GetWriteTimestepOffset(), GetMonitorDBCParams()->OutputIntervalInSteps());
+             step, get_write_timestep_offset(), GetMonitorDBCParams()->output_interval_in_steps());
 }
 
 
-bool STR::TIMINT::BaseDataIO::ShouldWriteStressStrainForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
 {
-  return WriteResultsForThisStep(step) &&
+  return write_results_for_this_step(step) &&
          ((GetStressOutputType() != INPAR::STR::stress_none) ||
-             (GetCouplingStressOutputType() != INPAR::STR::stress_none) ||
+             (get_coupling_stress_output_type() != INPAR::STR::stress_none) ||
              (GetStrainOutputType() != INPAR::STR::strain_none) ||
-             (GetPlasticStrainOutputType() != INPAR::STR::strain_none));
+             (get_plastic_strain_output_type() != INPAR::STR::strain_none));
 }
 
-bool STR::TIMINT::BaseDataIO::ShouldWriteEnergyForThisStep(const int step) const
+bool STR::TIMINT::BaseDataIO::should_write_energy_for_this_step(const int step) const
 {
-  return GetWriteEnergyEveryNStep() > 0 &&
-         DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteEnergyEveryNStep());
+  return get_write_energy_every_n_step() > 0 &&
+         DetermineWriteOutput(step, get_write_timestep_offset(), get_write_energy_every_n_step());
 }
 
-int STR::TIMINT::BaseDataIO::GetLastWrittenResults() const { return lastwrittenresultsstep_; }
+int STR::TIMINT::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }
 
-void STR::TIMINT::BaseDataIO::SetLastWrittenResults(const int step)
+void STR::TIMINT::BaseDataIO::set_last_written_results(const int step)
 {
   lastwrittenresultsstep_ = step;
 }
@@ -310,13 +311,13 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreModifyStepLength(
+void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::run_pre_modify_step_length(
     const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
 {
   const int newton_iteration = solver.getNumIterations();
   const int ls_iteration =
       dynamic_cast<const NOX::NLN::LineSearch::Generic&>(linesearch).GetNumIterations();
-  every_iter_writer_.AddLineSearchIteration(newton_iteration, ls_iteration);
+  every_iter_writer_.add_line_search_iteration(newton_iteration, ls_iteration);
 }
 
 FOUR_C_NAMESPACE_CLOSE

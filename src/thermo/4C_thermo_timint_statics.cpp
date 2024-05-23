@@ -43,7 +43,7 @@ THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   //! internal force vector F_{int;n+1} at new time
   fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
+  apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
   fext_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! external force vector F_{n+1} at new time
@@ -51,7 +51,7 @@ THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
+  apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
 
   //! set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
@@ -65,7 +65,7 @@ THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
  | consistent predictor with constant temperatures           dano 08/09 |
  | and consistent temperature rates and temperatures                    |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::PredictConstTempConsistRate()
+void THR::TimIntStatics::predict_const_temp_consist_rate()
 {
   //! constant predictor : temperature in domain
   // T_n+1,p = T_n
@@ -76,14 +76,14 @@ void THR::TimIntStatics::PredictConstTempConsistRate()
 
   //! watch out
   return;
-}  // PredictConstTempConsistRate()
+}  // predict_const_temp_consist_rate()
 
 
 /*----------------------------------------------------------------------*
  | evaluate residual force and its tangent, ie derivative    dano 08/09 |
  | with respect to end-point temperatures \f$T_{n+1}\f$                 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::EvaluateRhsTangResidual()
+void THR::TimIntStatics::evaluate_rhs_tang_residual()
 {
   //! build new external forces
   fextn_->PutScalar(0.0);
@@ -95,7 +95,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   // conditions
   // Warning: do not use convection boundary condition with T_n and statics
   // --> always use T_n+1 for statics!
-  ApplyForceExternalConv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
+  apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
   ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
@@ -103,7 +103,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   fintn_->PutScalar(0.0);
 
   //! ordinary internal force and tangent
-  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
+  apply_force_tang_internal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
 
   //! build residual  Res = F_{int;n+1} - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
@@ -117,14 +117,14 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 
   //! hallelujah
   return;
-}  // EvaluateRhsTangResidual()
+}  // evaluate_rhs_tang_residual()
 
 
 /*----------------------------------------------------------------------*
  | calculate characteristic/reference norms for              dano 08/09 |
  | temperatures originally by lw                                        |
  *----------------------------------------------------------------------*/
-double THR::TimIntStatics::CalcRefNormTemperature()
+double THR::TimIntStatics::calc_ref_norm_temperature()
 {
   //! The reference norms are used to scale the calculated iterative
   //! temperature norm and/or the residual force norm. For this
@@ -137,7 +137,7 @@ double THR::TimIntStatics::CalcRefNormTemperature()
 
   //! rise your hat
   return charnormtemp;
-}  // CalcRefNormTemperature()
+}  // calc_ref_norm_temperature()
 
 
 /*----------------------------------------------------------------------*
@@ -172,7 +172,7 @@ double THR::TimIntStatics::CalcRefNormForce()
 /*----------------------------------------------------------------------*
  | incremental iteration update of state                     dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::UpdateIterIncrementally()
+void THR::TimIntStatics::update_iter_incrementally()
 {
   //! new end-point temperatures
   //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
@@ -180,13 +180,13 @@ void THR::TimIntStatics::UpdateIterIncrementally()
 
   //! bye
   return;
-}  // UpdateIterIncrementally()
+}  // update_iter_incrementally()
 
 
 /*----------------------------------------------------------------------*
  | iterative iteration update of state                       dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::UpdateIterIteratively()
+void THR::TimIntStatics::update_iter_iteratively()
 {
   //! new end-point temperatures
   //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
@@ -194,7 +194,7 @@ void THR::TimIntStatics::UpdateIterIteratively()
 
   //! bye
   return;
-}  // UpdateIterIteratively()
+}  // update_iter_iteratively()
 
 
 /*----------------------------------------------------------------------*
@@ -267,12 +267,12 @@ void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
 /*----------------------------------------------------------------------*
  | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceTangInternal(const double time,  //!< evaluation time
-    const double dt,                                                //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                         //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                        //!< residual temperatures
-    Teuchos::RCP<Epetra_Vector> fint,                               //!< internal force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                   //!< tangent matrix
+void THR::TimIntStatics::apply_force_tang_internal(const double time,  //!< evaluation time
+    const double dt,                                                   //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                            //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                           //!< residual temperatures
+    Teuchos::RCP<Epetra_Vector> fint,                                  //!< internal force
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                      //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -281,11 +281,11 @@ void THR::TimIntStatics::ApplyForceTangInternal(const double time,  //!< evaluat
   p.set<double>("timefac", 1.);
 
   //! call the base function
-  TimInt::ApplyForceTangInternal(p, time, dt, temp, tempi, fint, tang);
+  TimInt::apply_force_tang_internal(p, time, dt, temp, tempi, fint, tang);
   //! finish
   return;
 
-}  // ApplyForceTangInternal()
+}  // apply_force_tang_internal()
 
 
 /*----------------------------------------------------------------------*
@@ -307,17 +307,17 @@ void THR::TimIntStatics::ApplyForceInternal(const double time,  //!< evaluation 
   //! finish
   return;
 
-}  // ApplyForceTangInternal()
+}  // apply_force_tang_internal()
 
 
 /*----------------------------------------------------------------------*
  | evaluate the convective boundary condition                dano 01/11 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceExternalConv(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> tempn,                        //!< old temperature state T_n
-    const Teuchos::RCP<Epetra_Vector> temp,                         //!< temperature state T_n+1
-    Teuchos::RCP<Epetra_Vector> fext,                               //!< external force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                   //!< tangent matrix
+void THR::TimIntStatics::apply_force_external_conv(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> tempn,       //!< old temperature state T_n
+    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
+    Teuchos::RCP<Epetra_Vector> fext,              //!< external force
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // create the parameters for the discretization
@@ -325,11 +325,11 @@ void THR::TimIntStatics::ApplyForceExternalConv(const double time,  //!< evaluat
   // set parameters
   // ...
   // call the base function
-  TimInt::ApplyForceExternalConv(p, time, tempn, temp, fext, tang);
+  TimInt::apply_force_external_conv(p, time, tempn, temp, fext, tang);
   // finish
   return;
 
-}  // ApplyForceExternalConv()
+}  // apply_force_external_conv()
 
 
 /*----------------------------------------------------------------------*/

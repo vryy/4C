@@ -90,10 +90,10 @@ void ntainp_ccadiscret(
   }
 
   // all reading is done at this point!
-  if (lcomm->MyPID() == 0) problem->WriteInputParameters();
+  if (lcomm->MyPID() == 0) problem->write_input_parameters();
 
   // before we destroy the reader we want to know about unused sections
-  reader.PrintUnknownSections();
+  reader.print_unknown_sections();
 }  // end of ntainp_ccadiscret()
 
 

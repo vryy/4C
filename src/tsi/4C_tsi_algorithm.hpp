@@ -63,7 +63,7 @@ namespace TSI
   //! TSI algorithm base
   //!
   //!
-  //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
+  //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
   //!  ThermoBaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
@@ -120,7 +120,7 @@ namespace TSI
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
-    void OutputDeformationInThr(
+    void output_deformation_in_thr(
         Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<DRT::Discretization> structdis);
 
     //@}
@@ -128,19 +128,19 @@ namespace TSI
     //! @name Transfer methods
 
     //! apply temperature state on structure discretization
-    virtual void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+    virtual void apply_thermo_coupling_state(Teuchos::RCP<const Epetra_Vector> temp,
         Teuchos::RCP<const Epetra_Vector> temp_res = Teuchos::null);
 
     //! apply structural displacements and velocities on thermo discretization
-    virtual void ApplyStructCouplingState(
+    virtual void apply_struct_coupling_state(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
-    virtual void PrepareContactStrategy();
+    virtual void prepare_contact_strategy();
 
     //! Access to the dof coupling for matching grid TSI
-    CORE::ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }
+    CORE::ADAPTER::Coupling& structure_thermo_coupling() { return *coupST_; }
     //@}
 
     //! @name Access methods

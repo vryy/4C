@@ -115,7 +115,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrintHeaderPartitioned()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_partitioned()
 {
   if (Comm().MyPID() == 0)
   {
@@ -315,7 +315,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  PrintHeaderPartitioned();
+  print_header_partitioned();
 
   while (stopnonliniter == false)
   {
@@ -375,7 +375,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
   int itnum = 0;
   bool stopnonliniter = false;
 
-  PrintHeaderPartitioned();
+  print_header_partitioned();
 
   while (stopnonliniter == false)
   {
@@ -396,7 +396,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
     PoroField()->PerformRelaxation(PoroField()->FluidField()->Phinp(), itnum);
 
     // 4) set relaxed fluid solution on structure field
-    PoroField()->SetRelaxedFluidSolution();
+    PoroField()->set_relaxed_fluid_solution();
 
     // 5) solve structure
     PoroField()->StructureField()->Solve();

@@ -1251,7 +1251,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for normal/tangent deriv.         farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckNormalCPPDeriv()
+void CONTACT::Interface::fd_check_normal_cpp_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -1317,7 +1317,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     // compute element areas
     SetElementAreas();
 
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
 
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
@@ -1528,7 +1528,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     // compute element areas
     SetElementAreas();
 
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
 
     // now finally get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(i / dim);
@@ -2278,7 +2278,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
  | Finite difference check for obj.-variant splip           farah 08/13 |
  | derivatives -- TXI                                                   |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
+void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -2511,7 +2511,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
  | Finite difference check for obj.-variant splip           farah 08/13 |
  | derivatives -- TXI                                                        |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
+void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -4400,7 +4400,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     }
 
     // contact search algorithm
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
 
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -4602,7 +4602,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     }
 
     // contact search algorithm
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
 
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -4775,7 +4775,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   }
 
   // contact search algorithm
-  EvaluateSearchBinarytree();
+  evaluate_search_binarytree();
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -6189,7 +6189,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 /*----------------------------------------------------------------------*
  | Finite difference check of lagr. mult. derivatives        popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckPenaltyTracNor()
+void CONTACT::Interface::fd_check_penalty_trac_nor()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -6278,7 +6278,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleRegNormalForces(isincontact, activesetchange);
+    assemble_reg_normal_forces(isincontact, activesetchange);
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -6385,7 +6385,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     // Evaluate
     Evaluate();
     bool isincontact, activesetchange = false;
-    AssembleRegNormalForces(isincontact, activesetchange);
+    assemble_reg_normal_forces(isincontact, activesetchange);
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -6467,7 +6467,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
   // *******************************************************************
   Evaluate();
   bool isincontact, activesetchange = false;
-  AssembleRegNormalForces(isincontact, activesetchange);
+  assemble_reg_normal_forces(isincontact, activesetchange);
 
   return;
 }
@@ -6475,7 +6475,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
 /*----------------------------------------------------------------------*
  | Finite difference check of frictional penalty traction     mgit 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckPenaltyTracFric()
+void CONTACT::Interface::fd_check_penalty_trac_fric()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -7056,7 +7056,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::WriteNodalCoordinatesToFile(
+void CONTACT::Interface::write_nodal_coordinates_to_file(
     const int interfacel_id, const Epetra_Map& nodal_map, const std::string& full_path) const
 {
   // only processor zero writes header

@@ -56,7 +56,7 @@ namespace CORE::LINALG::VOIGT
      *  \param[in] vtensor      input tensor in Voigt <type> notation
      *  \param[in] vtensor_pow  result, i.e. input tensor to the given power
      */
-    static void PowerOfSymmetricTensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& strain,
+    static void power_of_symmetric_tensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& strain,
         CORE::LINALG::Matrix<6, 1>& strain_pow);
 
     /** \brief Compute the inverse tensor in perturbed Voigt notation
@@ -107,7 +107,7 @@ namespace CORE::LINALG::VOIGT
      *  \param[in]  vtensor      tensor in Voigt <type> notation
      *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
      */
-    static void MultiplyTensorVector(const CORE::LINALG::Matrix<6, 1>& strain,
+    static void multiply_tensor_vector(const CORE::LINALG::Matrix<6, 1>& strain,
         const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& vec_res);
 
     /** \brief Compute the symmetric outer product of two vectors
@@ -119,7 +119,7 @@ namespace CORE::LINALG::VOIGT
      *  \param[out] ab_ba  symmetric outer product of the two input vectors
      *                     in the Voigt <type> notation
      */
-    static void SymmetricOuterProduct(const CORE::LINALG::Matrix<3, 1>& vec_a,
+    static void symmetric_outer_product(const CORE::LINALG::Matrix<3, 1>& vec_a,
         const CORE::LINALG::Matrix<3, 1>& vec_b, CORE::LINALG::Matrix<6, 1>& ab_ba);
 
     /*!
@@ -174,7 +174,7 @@ namespace CORE::LINALG::VOIGT
      *
      *  \param[out] tensor  scale the off-diagonal values of this tensor
      */
-    static void ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain);
+    static void scale_off_diagonal_vals(CORE::LINALG::Matrix<6, 1>& strain);
 
     /** \brief unscale off diagonal values
      *
@@ -182,7 +182,7 @@ namespace CORE::LINALG::VOIGT
      *
      *  \param[out] tensor  unscale the off-diagonal values of this tensor
      */
-    static void UnscaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain);
+    static void unscale_off_diagonal_vals(CORE::LINALG::Matrix<6, 1>& strain);
 
 
     /** \brief unscale factors for the perturbed Voigt strain notation
@@ -270,7 +270,7 @@ namespace CORE::LINALG::VOIGT
      */
     static inline int Voigt6ToRow(unsigned int i)
     {
-      assertRangeVoigtIndex(i);
+      assert_range_voigt_index(i);
       static constexpr int VOIGT6ROW[6] = {0, 1, 2, 0, 1, 2};
       return VOIGT6ROW[i];
     };
@@ -278,7 +278,7 @@ namespace CORE::LINALG::VOIGT
     /// from 6-Voigt index to corresponding 2-tensor col index
     static inline int Voigt6ToCol(unsigned int i)
     {
-      assertRangeVoigtIndex(i);
+      assert_range_voigt_index(i);
       static constexpr int VOIGT6COL[6] = {0, 1, 2, 1, 2, 0};
       return VOIGT6COL[i];
     };
@@ -286,7 +286,7 @@ namespace CORE::LINALG::VOIGT
     /// from symmetric 2-tensor index pair to 6-Voigt index
     static inline int SymToVoigt6(unsigned int row, unsigned int col)
     {
-      assertRangeMatrixIndex(row, col);
+      assert_range_matrix_index(row, col);
       static constexpr int VOIGT3X3SYM[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
       return VOIGT3X3SYM[row][col];
     };
@@ -294,7 +294,7 @@ namespace CORE::LINALG::VOIGT
     /// from non-symmetric 2-tensor index pair to 9-Voigt index
     static inline int NonSymToVoigt9(unsigned int row, unsigned int col)
     {
-      assertRangeMatrixIndex(row, col);
+      assert_range_matrix_index(row, col);
       static constexpr int VOIGT3X3NONSYM[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
       return VOIGT3X3NONSYM[row][col];
     };
@@ -304,8 +304,8 @@ namespace CORE::LINALG::VOIGT
     static inline int Voigt6x6To4Tensor(
         unsigned int voigt_row, unsigned int voigt_col, unsigned int target_index)
     {
-      assertRangeVoigtIndex(voigt_row);
-      assertRangeVoigtIndex(voigt_col);
+      assert_range_voigt_index(voigt_row);
+      assert_range_voigt_index(voigt_col);
       FOUR_C_ASSERT(target_index < 4, "target index for fourth order tensor out of range");
       static constexpr int FOURTH[6][6][4] = {
           {{0, 0, 0, 0}, {0, 0, 1, 1}, {0, 0, 2, 2}, {0, 0, 0, 1}, {0, 0, 1, 2}, {0, 0, 0, 2}},
@@ -321,13 +321,13 @@ namespace CORE::LINALG::VOIGT
     IndexMappings() = delete;
 
    private:
-    static inline void assertRangeMatrixIndex(unsigned int row, unsigned int col)
+    static inline void assert_range_matrix_index(unsigned int row, unsigned int col)
     {
       FOUR_C_ASSERT(row < 3, "given row index out of range [0,2]");
       FOUR_C_ASSERT(col < 3, "given col index out of range [0,2]");
     }
 
-    static inline void assertRangeVoigtIndex(unsigned int index)
+    static inline void assert_range_voigt_index(unsigned int index)
     {
       FOUR_C_ASSERT(index < 6, "given index out of range [0,5]");
     }

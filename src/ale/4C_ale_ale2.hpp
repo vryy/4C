@@ -51,13 +51,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -365,7 +365,7 @@ namespace DRT
           int gp                                             ///< Integration point
       );
 
-      void MaterialResponse3dPlane(
+      void material_response3d_plane(
           CORE::LINALG::SerialDenseMatrix& stress,        ///< stress state (output)
           CORE::LINALG::SerialDenseMatrix& C,             ///< material tensor (output)
           const CORE::LINALG::SerialDenseVector& strain,  ///< strain state (input)
@@ -381,9 +381,9 @@ namespace DRT
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D
-      void GreenLagrangePlane3d(const CORE::LINALG::SerialDenseVector&
-                                    glplane,  ///< Green-Lagrange strains in 2D notation
-          CORE::LINALG::Matrix<6, 1>& gl3d);  ///< Green-Lagrange strains in 2D notation
+      void green_lagrange_plane3d(const CORE::LINALG::SerialDenseVector&
+                                      glplane,  ///< Green-Lagrange strains in 2D notation
+          CORE::LINALG::Matrix<6, 1>& gl3d);    ///< Green-Lagrange strains in 2D notation
 
       void edge_geometry(int i, int j, const CORE::LINALG::SerialDenseMatrix& xyze, double* length,
           double* sin_alpha, double* cos_alpha);
@@ -485,7 +485,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }

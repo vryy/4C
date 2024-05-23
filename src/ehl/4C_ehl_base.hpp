@@ -67,7 +67,7 @@ namespace EHL
     void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set lubrication solution on structure field
-    void SetLubricationSolution(Teuchos::RCP<const Epetra_Vector> pressure);
+    void set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> pressure);
 
     /// evaluate fluid forces on structure
     Teuchos::RCP<Epetra_Vector> EvaluateFluidForce(Teuchos::RCP<const Epetra_Vector> pressure);
@@ -137,7 +137,7 @@ namespace EHL
 
    private:
     /// setup discretizations and dofsets
-    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname,
+    void setup_discretizations(const Epetra_Comm& comm, const std::string struct_disname,
         const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
@@ -145,11 +145,11 @@ namespace EHL
 
     /// set average tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations
-    void SetAverageVelocityField();
+    void set_average_velocity_field();
 
     /// set relative tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations
-    void SetRelativeVelocityField();
+    void set_relative_velocity_field();
 
     /// set film height of the lubrication field
     void SetHeightField();
@@ -158,7 +158,7 @@ namespace EHL
     void SetHeightDot();
 
     /// Create DBC map for unprojectable nodes
-    void SetupUnprojectableDBC();
+    void setup_unprojectable_dbc();
   };
 }  // namespace EHL
 

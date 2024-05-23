@@ -66,23 +66,23 @@ namespace MAT
       virtual double GetShearRigidity3() const = 0;
 
 
-      virtual double GetTorsionalRigidity() const = 0;
+      virtual double get_torsional_rigidity() const = 0;
 
       virtual double GetBendingRigidity2() const = 0;
 
       virtual double GetBendingRigidity3() const = 0;
 
 
-      virtual double GetTranslationalMassInertia() const = 0;
+      virtual double get_translational_mass_inertia() const = 0;
 
-      virtual double GetPolarMassMomentOfInertia() const = 0;
+      virtual double get_polar_mass_moment_of_inertia() const = 0;
 
-      virtual double GetMassMomentOfInertia2() const = 0;
+      virtual double get_mass_moment_of_inertia2() const = 0;
 
-      virtual double GetMassMomentOfInertia3() const = 0;
+      virtual double get_mass_moment_of_inertia3() const = 0;
       //@}
 
-      virtual double GetInteractionRadius() const = 0;
+      virtual double get_interaction_radius() const = 0;
 
 
       virtual double GetYieldStressN() const { return -1.0; };
@@ -90,16 +90,16 @@ namespace MAT
       virtual double GetYieldStressM() const { return -1.0; };
 
 
-      virtual double GetHardeningAxialRigidity() const { return -1.0; };
+      virtual double get_hardening_axial_rigidity() const { return -1.0; };
 
-      virtual double GetHardeningShearRigidity2() const { return -1.0; };
+      virtual double get_hardening_shear_rigidity2() const { return -1.0; };
 
-      virtual double GetHardeningShearRigidity3() const { return -1.0; };
+      virtual double get_hardening_shear_rigidity3() const { return -1.0; };
 
 
-      virtual double GetHardeningMomentalRigidity() const { return -1.0; };
+      virtual double get_hardening_momental_rigidity() const { return -1.0; };
 
-      virtual bool GetTorsionPlasticity() const { return false; };
+      virtual bool get_torsion_plasticity() const { return false; };
 
       bool Uses_FAD() { return use_fad_; };
 
@@ -136,7 +136,7 @@ namespace MAT
       }
 
 
-      double GetTorsionalRigidity() const override
+      double get_torsional_rigidity() const override
       {
         return shear_modulus_ * area_moment_inertia_polar_;
       }
@@ -152,20 +152,29 @@ namespace MAT
       }
 
 
-      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
+      double get_translational_mass_inertia() const override
+      {
+        return density_ * cross_section_area_;
+      }
 
 
-      double GetPolarMassMomentOfInertia() const override
+      double get_polar_mass_moment_of_inertia() const override
       {
         return density_ * (area_moment_inertia_2_ + area_moment_inertia_3_);
       }
 
-      double GetMassMomentOfInertia2() const override { return density_ * area_moment_inertia_2_; }
+      double get_mass_moment_of_inertia2() const override
+      {
+        return density_ * area_moment_inertia_2_;
+      }
 
-      double GetMassMomentOfInertia3() const override { return density_ * area_moment_inertia_3_; }
+      double get_mass_moment_of_inertia3() const override
+      {
+        return density_ * area_moment_inertia_3_;
+      }
 
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(
@@ -178,11 +187,11 @@ namespace MAT
       //@}
      protected:
       double GetCrossSectionArea() const { return cross_section_area_; }
-      double GetShearCorrectionFactor() const { return shear_correction_factor_; }
+      double get_shear_correction_factor() const { return shear_correction_factor_; }
       double GetShearModulus() const { return shear_modulus_; }
       double GetMomentInertia2() const { return area_moment_inertia_2_; }
       double GetMomentInertia3() const { return area_moment_inertia_3_; }
-      double GetMomentInertiaPolar() const { return area_moment_inertia_polar_; }
+      double get_moment_inertia_polar() const { return area_moment_inertia_polar_; }
       double GetYoungsModulus() const { return youngs_modulus_; }
 
      private:
@@ -237,23 +246,26 @@ namespace MAT
       double GetShearRigidity3() const override { return shear_rigidity_3_; }
 
 
-      double GetTorsionalRigidity() const override { return torsional_rigidity_; }
+      double get_torsional_rigidity() const override { return torsional_rigidity_; }
 
       double GetBendingRigidity2() const override { return bending_rigidity_2_; }
 
       double GetBendingRigidity3() const override { return bending_rigidity_3_; }
 
 
-      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
+      double get_translational_mass_inertia() const override { return translational_mass_inertia_; }
 
 
-      double GetPolarMassMomentOfInertia() const override { return mass_moment_inertia_polar_; }
+      double get_polar_mass_moment_of_inertia() const override
+      {
+        return mass_moment_inertia_polar_;
+      }
 
-      double GetMassMomentOfInertia2() const override { return mass_moment_inertia_2_; }
+      double get_mass_moment_of_inertia2() const override { return mass_moment_inertia_2_; }
 
-      double GetMassMomentOfInertia3() const override { return mass_moment_inertia_3_; }
+      double get_mass_moment_of_inertia3() const override { return mass_moment_inertia_3_; }
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(
@@ -323,7 +335,7 @@ namespace MAT
       double GetShearRigidity3() const override { return 0.0; }
 
 
-      double GetTorsionalRigidity() const override
+      double get_torsional_rigidity() const override
       {
         return shear_modulus_ * area_moment_inertia_polar_;
       }
@@ -339,20 +351,29 @@ namespace MAT
       }
 
 
-      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
+      double get_translational_mass_inertia() const override
+      {
+        return density_ * cross_section_area_;
+      }
 
 
-      double GetPolarMassMomentOfInertia() const override
+      double get_polar_mass_moment_of_inertia() const override
       {
         return density_ * (area_moment_inertia_2_ + area_moment_inertia_3_);
       }
 
-      double GetMassMomentOfInertia2() const override { return density_ * area_moment_inertia_2_; }
+      double get_mass_moment_of_inertia2() const override
+      {
+        return density_ * area_moment_inertia_2_;
+      }
 
-      double GetMassMomentOfInertia3() const override { return density_ * area_moment_inertia_3_; }
+      double get_mass_moment_of_inertia3() const override
+      {
+        return density_ * area_moment_inertia_3_;
+      }
 
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(
@@ -415,23 +436,26 @@ namespace MAT
       double GetShearRigidity3() const override { return 0.0; }
 
 
-      double GetTorsionalRigidity() const override { return torsional_rigidity_; }
+      double get_torsional_rigidity() const override { return torsional_rigidity_; }
 
       double GetBendingRigidity2() const override { return bending_rigidity_2_; }
 
       double GetBendingRigidity3() const override { return bending_rigidity_3_; }
 
 
-      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
+      double get_translational_mass_inertia() const override { return translational_mass_inertia_; }
 
 
-      double GetPolarMassMomentOfInertia() const override { return mass_moment_inertia_polar_; }
+      double get_polar_mass_moment_of_inertia() const override
+      {
+        return mass_moment_inertia_polar_;
+      }
 
-      double GetMassMomentOfInertia2() const override { return mass_moment_inertia_2_; }
+      double get_mass_moment_of_inertia2() const override { return mass_moment_inertia_2_; }
 
-      double GetMassMomentOfInertia3() const override { return mass_moment_inertia_3_; }
+      double get_mass_moment_of_inertia3() const override { return mass_moment_inertia_3_; }
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(
@@ -499,24 +523,27 @@ namespace MAT
       double GetShearRigidity3() const override { return 0.0; }
 
 
-      double GetTorsionalRigidity() const override { return 0.0; }
+      double get_torsional_rigidity() const override { return 0.0; }
 
       double GetBendingRigidity2() const override { return youngs_modulus_ * area_moment_inertia_; }
 
       double GetBendingRigidity3() const override { return youngs_modulus_ * area_moment_inertia_; }
 
 
-      double GetTranslationalMassInertia() const override { return density_ * cross_section_area_; }
+      double get_translational_mass_inertia() const override
+      {
+        return density_ * cross_section_area_;
+      }
 
 
-      double GetPolarMassMomentOfInertia() const override { return 0.0; }
+      double get_polar_mass_moment_of_inertia() const override { return 0.0; }
 
-      double GetMassMomentOfInertia2() const override { return 0.0; }
+      double get_mass_moment_of_inertia2() const override { return 0.0; }
 
-      double GetMassMomentOfInertia3() const override { return 0.0; }
+      double get_mass_moment_of_inertia3() const override { return 0.0; }
 
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(
@@ -573,24 +600,24 @@ namespace MAT
       double GetShearRigidity3() const override { return 0.0; }
 
 
-      double GetTorsionalRigidity() const override { return 0.0; }
+      double get_torsional_rigidity() const override { return 0.0; }
 
       double GetBendingRigidity2() const override { return bending_rigidity_; }
 
       double GetBendingRigidity3() const override { return bending_rigidity_; }
 
 
-      double GetTranslationalMassInertia() const override { return translational_mass_inertia_; }
+      double get_translational_mass_inertia() const override { return translational_mass_inertia_; }
 
 
-      double GetPolarMassMomentOfInertia() const override { return 0.0; }
+      double get_polar_mass_moment_of_inertia() const override { return 0.0; }
 
-      double GetMassMomentOfInertia2() const override { return 0.0; }
+      double get_mass_moment_of_inertia2() const override { return 0.0; }
 
-      double GetMassMomentOfInertia3() const override { return 0.0; }
+      double get_mass_moment_of_inertia3() const override { return 0.0; }
 
 
-      double GetInteractionRadius() const override
+      double get_interaction_radius() const override
       {
         if (radius_interaction_ == -1.0)
           FOUR_C_THROW(

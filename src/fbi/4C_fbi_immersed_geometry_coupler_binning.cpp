@@ -57,7 +57,7 @@ void FBI::FBIBinningGeometryCoupler::PartitionGeometry(
 
   std::map<int, std::set<int>> bintorowelemap_fluid;
 
-  binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
+  binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
       discretizations[0], bintoelemap_, structure_displacement);
 
   binstrategy_->BinDiscret()->FillComplete(false, false, false);
@@ -72,7 +72,7 @@ void FBI::FBIBinningGeometryCoupler::PartitionGeometry(
     auto currbin = binstrategy_->BinDiscret()->lRowElement(i);
     int it = currbin->Id();
     {
-      binstrategy_->GetNeighborAndOwnBinIds(it, binvec);
+      binstrategy_->get_neighbor_and_own_bin_ids(it, binvec);
       colbins.insert(binvec.begin(), binvec.end());
       binvec.clear();
     }
@@ -80,10 +80,10 @@ void FBI::FBIBinningGeometryCoupler::PartitionGeometry(
 
 
   // extend ghosting of bin discretization
-  binstrategy_->ExtendGhostingOfBinningDiscretization(binrowmap_, colbins, true);
+  binstrategy_->extend_ghosting_of_binning_discretization(binrowmap_, colbins, true);
 
   // assign Elements to bins
-  binstrategy_->RemoveAllElesFromBins();
+  binstrategy_->remove_all_eles_from_bins();
   binstrategy_->AssignElesToBins(discretizations[0], bintoelemap_);
 }
 /*----------------------------------------------------------------------*/
@@ -91,12 +91,12 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
     Teuchos::RCP<DRT::Discretization>& structure_discretization,
     Teuchos::RCP<const Epetra_Vector> structure_column_displacement)
 {
-  binstrategy_->DistributeColElementsToBinsUsingEleAABB(
+  binstrategy_->distribute_col_elements_to_bins_using_ele_aabb(
       structure_discretization, bintoelemap_, structure_column_displacement);
 
 
   // assign Elements to bins
-  binstrategy_->RemoveAllElesFromBins();
+  binstrategy_->remove_all_eles_from_bins();
   binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_);
 }
 /*----------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Se
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
+void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretization& dis,
     Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {

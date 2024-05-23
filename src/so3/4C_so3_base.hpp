@@ -164,7 +164,7 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -239,7 +239,7 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<2, 1>& xi,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<2, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<2, 1>& n,
           const CORE::LINALG::Matrix<2, 1>& dir, double& cauchy_n_dir,
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -263,7 +263,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+      void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
       /** \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
@@ -309,7 +309,7 @@ namespace DRT
        *
        * @param params Container for additional information
        */
-      void EnsureMaterialPostSetup(Teuchos::ParameterList& params);
+      void ensure_material_post_setup(Teuchos::ParameterList& params);
 
       /*!
        * \brief This method calls the PostSetup routine of all materials.

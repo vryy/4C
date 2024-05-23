@@ -50,7 +50,7 @@ namespace FSI
 
    private:
     /// setup of extractor for merged Dirichlet maps
-    void SetupDBCMapExtractor() override;
+    void setup_dbc_map_extractor() override;
 
     /// access type-cast pointer to problem-specific fluid-wrapper
     const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return fluid_; }

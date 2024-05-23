@@ -186,10 +186,10 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   }
 
   // matrix transformation to initial parallel distribution
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   // check if slave dofs have dirichlet constraints
-  CheckSlaveDirichletOverlap(slavedis, comm);
+  check_slave_dirichlet_overlap(slavedis, comm);
 
   // bye
   return;
@@ -199,7 +199,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 /*----------------------------------------------------------------------*
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
+void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
     const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm)
 {
   // safety check
@@ -466,7 +466,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->MasterRowDofs()));
 
   // print parallel distribution
-  interface_->PrintParallelDistribution();
+  interface_->print_parallel_distribution();
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -480,7 +480,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
     interface_->FillComplete(true);
 
     // print parallel distribution again
-    interface_->PrintParallelDistribution();
+    interface_->print_parallel_distribution();
   }
   //**********************************************************************
 
@@ -1028,8 +1028,8 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = Dinv_->ReplaceDiagonalValues(*diag);
-  if (err != 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+  err = Dinv_->replace_diagonal_values(*diag);
+  if (err != 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // complete inverse D matrix
   Dinv_->Complete();
@@ -1055,7 +1055,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
   // set new displacement state in mortar interface
   interface_->SetState(MORTAR::state_new_displacement, *idisp);
   Evaluate();
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   return;
 }
@@ -1097,7 +1097,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
   interface_->SetState(MORTAR::state_new_displacement, *idisp_master_slave);
 
   Evaluate();
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   idispsl->ReplaceMap(stdmap);
 
@@ -1158,7 +1158,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
+void CORE::ADAPTER::CouplingMortar::matrix_row_col_transform()
 {
   // safety check
   CheckSetup();
@@ -1177,17 +1177,17 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = MORTAR::MatrixRowColTransform(D_, pslavedofrowmap_, pslavedofrowmap_);
-    M_ = MORTAR::MatrixRowColTransform(M_, pslavedofrowmap_, pmasterdofrowmap_);
-    Dinv_ = MORTAR::MatrixRowColTransform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
-    P_ = MORTAR::MatrixRowColTransform(P_, pslavedofrowmap_, pmasterdofrowmap_);
+    D_ = MORTAR::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
+    M_ = MORTAR::matrix_row_col_transform(M_, pslavedofrowmap_, pmasterdofrowmap_);
+    Dinv_ = MORTAR::matrix_row_col_transform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
+    P_ = MORTAR::matrix_row_col_transform(P_, pslavedofrowmap_, pmasterdofrowmap_);
   }
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
+void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
     Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Discretization> aledis,
     Teuchos::RCP<Epetra_Vector>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
@@ -1230,7 +1230,7 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
 
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
-  Dinv_->ReplaceDiagonalValues(*diag);
+  Dinv_->replace_diagonal_values(*diag);
   Dinv_->Complete(D_->RangeMap(), D_->DomainMap());
   P_ = MLMultiply(*Dinv_, *M_, false, false, true);
 
@@ -1246,7 +1246,7 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
     MeshRelocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 
   // only for parallel redistribution case
-  MatrixRowColTransform();
+  matrix_row_col_transform();
 
   return;
 }

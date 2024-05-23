@@ -192,7 +192,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   /***********************************************************
    * Check initial residuum and perform mesh init             *
    ***********************************************************/
-  // CheckInitialResiduum();
+  // check_initial_residuum();
   // mesh initialization procedure
   if (CORE::UTILS::IntegralValue<int>(Params(), "MESH_INIT")) MeshInit();
 
@@ -221,7 +221,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    * complete global matrices and create projection operator *
    ***********************************************************/
   Complete();
-  CreateProjectionOperator();
+  create_projection_operator();
 
   /**************************************************
    * Bye                                            *
@@ -704,7 +704,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
 /*----------------------------------------------------------------------*
  |  Consistent interpolation routine                         farah 06/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
+void CORE::VOLMORTAR::VolMortarCoupl::evaluate_consistent_interpolation()
 {
   /***********************************************************
    * Welcome                                                 *
@@ -742,7 +742,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     // get found elements from other discr.
     std::vector<int> found = Search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
 
-    AssembleConsistentInterpolation_P12(anode, found);
+    assemble_consistent_interpolation_p12(anode, found);
   }  // end node loop
 
   //================================================
@@ -755,7 +755,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     // get found elements from other discr.
     std::vector<int> found = Search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
 
-    AssembleConsistentInterpolation_P21(bnode, found);
+    assemble_consistent_interpolation_p21(bnode, found);
   }  // end node loop
 
   /***********************************************************
@@ -799,7 +799,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
     DRT::Element* Aele = dis1_->lColElement(j);
 
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
-    Integrate3DEleBased_P12(*Aele, found);
+    integrate3_d_ele_based_p12(*Aele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != dualquad_no_mod) CreateTrafoOperator(*Aele, dis1_, true, donebeforea);
@@ -824,7 +824,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
     DRT::Element* Bele = dis2_->lColElement(j);
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
-    Integrate3DEleBased_P21(*Bele, found);
+    integrate3_d_ele_based_p21(*Bele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != dualquad_no_mod) CreateTrafoOperator(*Bele, dis2_, false, donebeforeb);
@@ -922,11 +922,11 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT
   cells.resize(0);
 
   // build new polygons
-  DefineVerticesMaster(Bele, MasterVertices);
+  define_vertices_master(Bele, MasterVertices);
   DefineVerticesSlave(Aele, SlaveVertices);
 
   double tol = 1e-12;
-  PolygonClippingConvexHull(SlaveVertices, MasterVertices, ClippedPolygon, Aele, Bele, tol);
+  polygon_clipping_convex_hull(SlaveVertices, MasterVertices, ClippedPolygon, Aele, Bele, tol);
   int clipsize = (int)(ClippedPolygon.size());
 
   // proceed only if clipping polygon is at least a triangle
@@ -936,7 +936,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT
     polygoncounter_ += 1;
 
   // triangulation
-  bool success = DelaunayTriangulation(cells, ClippedPolygon, tol);
+  bool success = delaunay_triangulation(cells, ClippedPolygon, tol);
   if (!success)
   {
     bool backup = CenterTriangulation(cells, ClippedPolygon, tol);
@@ -1052,7 +1052,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
 /*----------------------------------------------------------------------*
  |  check initial residuum                                   farah 04/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
+void CORE::VOLMORTAR::VolMortarCoupl::check_initial_residuum()
 {
   // create vectors of initial primary variables
   Teuchos::RCP<Epetra_Vector> var_A = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(0), true);
@@ -1187,7 +1187,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       DRT::Element* Aele = dis1_->lColElement(j);
 
       std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
-      Integrate3DEleBased_ADis_MeshInit(*Aele, found, dofseta, dofsetb);
+      integrate3_d_ele_based_a_dis_mesh_init(*Aele, found, dofseta, dofsetb);
     }
 
     /**************************************************
@@ -1200,7 +1200,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       DRT::Element* Bele = dis2_->lColElement(j);
 
       std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
-      Integrate3DEleBased_BDis_MeshInit(*Bele, found, dofseta, dofsetb);
+      integrate3_d_ele_based_b_dis_mesh_init(*Bele, found, dofseta, dofsetb);
     }
 
     // complete...
@@ -1708,9 +1708,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
       // start integration
       if (switched_conf)
-        Integrate3DCell_DirectDivergence(*mele, *sele, switched_conf);
+        integrate3_d_cell_direct_divergence(*mele, *sele, switched_conf);
       else
-        Integrate3DCell_DirectDivergence(*sele, *mele, switched_conf);
+        integrate3_d_cell_direct_divergence(*sele, *mele, switched_conf);
 
       polygoncounter_ += volcell_.size();
     }
@@ -2637,7 +2637,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 04/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
+void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p12(
     DRT::Element& Aele, std::vector<int>& foundeles)
 {
   switch (Aele.Shape())
@@ -2745,7 +2745,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
 /*----------------------------------------------------------------------*
  |  Integrate3D element based for projector P21              farah 04/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
+void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_p21(
     DRT::Element& Bele, std::vector<int>& foundeles)
 {
   switch (Bele.Shape())
@@ -2852,7 +2852,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 03/15|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
+void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb)
 {
   switch (Aele.Shape())
@@ -2919,7 +2919,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 03/15|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
+void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta)
 {
   switch (Bele.Shape())
@@ -2985,7 +2985,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
+void CORE::VOLMORTAR::VolMortarCoupl::assemble_consistent_interpolation_p12(
     DRT::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
@@ -2998,7 +2998,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
+void CORE::VOLMORTAR::VolMortarCoupl::assemble_consistent_interpolation_p21(
     DRT::Node* node, std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
@@ -3011,7 +3011,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells for direct divergence approach         farah 04/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
+void CORE::VOLMORTAR::VolMortarCoupl::integrate3_d_cell_direct_divergence(
     DRT::Element& sele, DRT::Element& mele, bool switched_conf)
 {
   if ((int)(volcell_.size()) > 1)
@@ -3045,27 +3045,27 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::hex8>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::tet4>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           default:
@@ -3085,27 +3085,27 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::hex8>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::tet4>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::tet4, CORE::FE::CellType::pyramid5>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           default:
@@ -3125,27 +3125,27 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::hex8>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::tet4:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::tet4>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
             static VolMortarIntegrator<CORE::FE::CellType::pyramid5, CORE::FE::CellType::pyramid5>
                 integrator(Params());
-            integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc, intpoints, switched_conf,
-                *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first, dofset12_.second,
-                dofset21_.first, dofset21_.second);
+            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+                switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
+                dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
           default:
@@ -3651,7 +3651,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Complete()
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
+void CORE::VOLMORTAR::VolMortarCoupl::create_projection_operator()
 {
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
@@ -3673,7 +3673,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invd1->ReplaceDiagonalValues(*diag1);
+  err = invd1->replace_diagonal_values(*diag1);
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<CORE::LINALG::SparseMatrix> aux12 =
@@ -3698,7 +3698,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invd2->ReplaceDiagonalValues(*diag2);
+  err = invd2->replace_diagonal_values(*diag2);
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<CORE::LINALG::SparseMatrix> aux21 =
@@ -3752,7 +3752,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
+void CORE::VOLMORTAR::VolMortarCoupl::define_vertices_master(
     DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices)
 {
   // project slave nodes onto auxiliary plane
@@ -3782,9 +3782,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons (NEW version)                    popp 11/09|
  *----------------------------------------------------------------------*/
-bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
-    std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly, DRT::Element& sele,
-    DRT::Element& mele, double& tol)
+bool CORE::VOLMORTAR::VolMortarCoupl::polygon_clipping_convex_hull(
+    std::vector<MORTAR::Vertex>& poly1, std::vector<MORTAR::Vertex>& poly2,
+    std::vector<MORTAR::Vertex>& respoly, DRT::Element& sele, DRT::Element& mele, double& tol)
 {
   //**********************************************************************
   // STEP1: Input check
@@ -4672,7 +4672,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
-bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
+bool CORE::VOLMORTAR::VolMortarCoupl::delaunay_triangulation(
     std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells, std::vector<MORTAR::Vertex>& clip,
     double tol)
 {

@@ -97,7 +97,7 @@ Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::SoBase::SolidMaterial(int nummat) 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoBase::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::SoBase::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::SoBase::ErrorHandling(const double& det_curr, Teuchos::Param
 }
 
 // Check, whether the material post setup routine was
-void DRT::ELEMENTS::SoBase::EnsureMaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoBase::ensure_material_post_setup(Teuchos::ParameterList& params)
 {
   if (!material_post_setup_)
   {

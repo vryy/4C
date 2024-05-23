@@ -189,7 +189,7 @@ void StruResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& tes
   res.ExtractString("QUANTITY", quantity);
 
   // get result to be tested on all processors
-  const double result = GetSpecialResultForTesting(quantity);
+  const double result = get_special_result_for_testing(quantity);
 
   // compare values on one processor only, as they are the same everywhere
   if (strudisc_->Comm().MyPID() == 0)
@@ -202,7 +202,7 @@ void StruResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& tes
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
+double StruResultTest::get_special_result_for_testing(const std::string& quantity)
 {
   // initialize variable for result
   double result(0.);

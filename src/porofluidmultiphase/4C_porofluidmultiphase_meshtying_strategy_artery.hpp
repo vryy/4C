@@ -44,7 +44,7 @@ namespace POROFLUIDMULTIPHASE
     void Output() override;
 
     //! Initialize the linear solver
-    void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+    void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     //! solve linear system of equations
     void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
@@ -65,7 +65,7 @@ namespace POROFLUIDMULTIPHASE
     void Evaluate() override;
 
     //! extract increments and update mesh tying
-    Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+    Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(
         const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     // return arterial network time integrator
@@ -78,7 +78,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
 
     //! access to block system matrix of artery poro problem
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const override;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! get global (combined) increment of coupled problem
     Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
@@ -97,7 +97,7 @@ namespace POROFLUIDMULTIPHASE
     void ApplyMeshMovement() const override;
 
     //! return blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
+    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
    protected:
     //! artery time integration

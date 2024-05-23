@@ -215,11 +215,11 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                    cmat,  //!< elasto-plastic material tangent
-        double Dgamma,                     //!< plastic multiplier
-        double G,                          //!< shear modulus
-        double q,                          //!< relative effective stress
+    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                       cmat,  //!< elasto-plastic material tangent
+        double Dgamma,                        //!< plastic multiplier
+        double G,                             //!< shear modulus
+        double q,                             //!< relative effective stress
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> flowvector,  //!< flow vector
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,        //!< unit vector
         double heaviside,                                         //!< Heaviside function
@@ -228,23 +228,24 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic tensor in matrix notation for 3d
-    void SetupCmatElastoPlastic2(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+    void setup_cmat_elasto_plastic2(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         double Dgamma, double q, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
 
     //! computes continuum elastoplastic tensor in matrix notation for 3d
-    void SetupContinuumCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        double Dgamma, double q, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
+    void setup_continuum_cmat_elasto_plastic(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat, double Dgamma, double q,
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
 
-    //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
+    //! calculates the derivative of get_sigma_y_at_strainbarnp() w.r.t. astrain_{n+1}
     //! and returns the isotropic hardening modulus
-    double GetIsoHardAtStrainbarnp(
+    double get_iso_hard_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain
                                   //!< or if damage!=0: isotropic hardening internal variable
     );
 
     //! calculates current yield stress from (sigma_y-astrain)-samples which
     //! describe a piecewise constant function
-    double GetSigmaYAtStrainbarnp(
+    double get_sigma_y_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain, in case of dependent hardening
                                   //!< or if damage!=0: isotropic hardening internal variable
     );
@@ -265,7 +266,7 @@ namespace MAT
     }
 
     // return current scalar-valued accumulated strain
-    double AccumulatedStrainCurr(int gp  //!< current Gauss point
+    double accumulated_strain_curr(int gp  //!< current Gauss point
     ) const
     {
       return (strainbarplcurr_->at(gp));
@@ -334,8 +335,8 @@ namespace MAT
     );
 
     //! compute linearisation of internal dissipation for k_Td
-    void DissipationCouplCond(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                  cmat,                 // elasto-plastic tangent modulus (out)
+    void dissipation_coupl_cond(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                    cmat,               // elasto-plastic tangent modulus (out)
         int gp,                                         // current Gauss point
         double G,                                       // shear modulus
         double Hiso,                                    // isotropic hardening modulus
@@ -349,11 +350,11 @@ namespace MAT
 
     //! return mechanical dissipation term due to kinematic hardening
     //! \f$ D_{\rm mech,kin}\f$
-    double MechanicalKinematicDissipation(int gp) const { return dmech_->at(gp); }
+    double mechanical_kinematic_dissipation(int gp) const { return dmech_->at(gp); }
 
     //! return linearisation of mechanical dissipation w.r.t. displacements
     //! \f$ k_Td += \dfrac{\partial D_{\rm mech}}{\partial d_{n+1}}\f$
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> DissipationLinearisedForCouplCond(int gp) const
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dissipation_linearised_for_coupl_cond(int gp) const
     {
       return dmech_d_->at(gp);
     }

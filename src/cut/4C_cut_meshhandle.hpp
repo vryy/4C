@@ -94,7 +94,7 @@ namespace CORE::GEO
       void AddSubSide(CORE::GEO::CUT::Side* side);
 
       /// Mark this side as unphysical (Used by SelfCut)
-      void MarkSubSideasUnphysical(CORE::GEO::CUT::Side* side);
+      void mark_sub_sideas_unphysical(CORE::GEO::CUT::Side* side);
 
       /*========================================================================*/
       //! @name Get method for private variables

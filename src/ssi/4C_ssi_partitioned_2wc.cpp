@@ -136,7 +136,7 @@ void SSI::SSIPart2WC::Timeloop()
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (CORE::UTILS::IntegralValue<int>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
-      ScaTraField()->OutputNonlinSolverStats(IterationCount(), dtnonlinsolve, Step(), Comm());
+      ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
     UpdateAndOutput();
   }
@@ -155,11 +155,11 @@ void SSI::SSIPart2WC::DoStructStep()
   // Newton-Raphson iteration
   StructureField()->Solve();
 
-  if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+  if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
 
   //  set mesh displacement and velocity fields
-  return SetStructSolution(
-      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
+  return SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+      is_s2_i_kinetics_with_pseudo_contact());
 }
 
 /*----------------------------------------------------------------------*
@@ -181,10 +181,10 @@ void SSI::SSIPart2WC::DoScatraStep()
   SetScatraSolution(ScaTraField()->Phinp());
 
   // set micro scale value (projected to macro scale) to structure field
-  if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
+  if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
   // evaluate temperature from function and set to structural discretization
-  EvaluateAndSetTemperatureField();
+  evaluate_and_set_temperature_field();
 }
 
 /*----------------------------------------------------------------------*
@@ -192,11 +192,11 @@ void SSI::SSIPart2WC::DoScatraStep()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::PreOperator1()
 {
-  if (IterationCount() != 1 and UseOldStructureTimeInt())
+  if (IterationCount() != 1 and use_old_structure_time_int())
   {
     // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
     // we only get norm of the evaluation of the structure problem
-    StructureField()->PreparePartitionStep();
+    StructureField()->prepare_partition_step();
   }
 }
 
@@ -218,17 +218,17 @@ void SSI::SSIPart2WC::PrepareTimeLoop()
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(), false);
   ScaTraField()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to other fields
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
+  if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
 
   SetScatraSolution(ScaTraField()->Phinp());
-  if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
+  if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
   // NOTE: the predictor of the structure is called in here
   StructureField()->PrepareTimeStep();
@@ -246,10 +246,10 @@ void SSI::SSIPart2WC::UpdateAndOutput()
   StructureField()->Update();
   ScaTraField()->Update();
 
-  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
   StructureField()->Output();
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 }
 
 
@@ -284,7 +284,7 @@ void SSI::SSIPart2WC::OuterLoop()
   while (!stopnonliniter)
   {
     // increment iteration number
-    IncrementIterationCount();
+    increment_iteration_count();
 
     // update the states to the last solutions obtained
     IterUpdateStates();
@@ -492,7 +492,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
 
   while (!stopnonliniter)
   {
-    IncrementIterationCount();
+    increment_iteration_count();
 
     if (IterationCount() == 1)
     {
@@ -507,14 +507,14 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
     // begin nonlinear solver / outer iteration ***************************
 
     // set relaxed mesh displacements and velocity field
-    SetStructSolution(dispnp, velnp, IsS2IKineticsWithPseudoContact());
+    SetStructSolution(dispnp, velnp, is_s2_i_kinetics_with_pseudo_contact());
 
     // solve scalar transport equation
     DoScatraStep();
 
     // prepare a partitioned structure step
-    if (IterationCount() != 1 and UseOldStructureTimeInt())
-      StructureField()->PreparePartitionStep();
+    if (IterationCount() != 1 and use_old_structure_time_int())
+      StructureField()->prepare_partition_step();
 
     // solve structural system
     DoStructStep();
@@ -535,7 +535,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
 
     // since the velocity field has to fit to the relaxated displacements we also have to relaxate
     // them.
-    if (UseOldStructureTimeInt())
+    if (use_old_structure_time_int())
     {
       // since the velocity depends nonlinear on the displacements we can just approximate them via
       // finite differences here.
@@ -726,7 +726,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::OuterLoop()
 
   while (!stopnonliniter)
   {
-    IncrementIterationCount();
+    increment_iteration_count();
 
     if (IterationCount() == 1)
     {
@@ -744,11 +744,11 @@ void SSI::SSIPart2WCScatraToSolidRelax::OuterLoop()
     SetScatraSolution(phinp);
 
     // evaluate temperature from function and set to structural discretization
-    EvaluateAndSetTemperatureField();
+    evaluate_and_set_temperature_field();
 
     // prepare partitioned structure step
-    if (IterationCount() != 1 and UseOldStructureTimeInt())
-      StructureField()->PreparePartitionStep();
+    if (IterationCount() != 1 and use_old_structure_time_int())
+      StructureField()->prepare_partition_step();
 
     // solve structural system
     DoStructStep();

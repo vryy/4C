@@ -148,7 +148,7 @@ double NOX::FSI::GenericNormF::getTrueTolerance() const { return true_tolerance_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::getSpecifiedTolerance() const { return specified_tolerance_; }
+double NOX::FSI::GenericNormF::get_specified_tolerance() const { return specified_tolerance_; }
 
 
 /*----------------------------------------------------------------------*/

@@ -62,7 +62,7 @@ namespace DRT
       /*========================================================================*/
 
       //! extract element based or nodal values
-      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! evaluate material

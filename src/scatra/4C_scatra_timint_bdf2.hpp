@@ -33,17 +33,17 @@ namespace SCATRA
     void Setup() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() override{};
+    void compute_intermediate_values() override{};
 
     /// compute values at the interior of the elements (required for hdg)
-    void ComputeInteriorValues() override{};
+    void compute_interior_values() override{};
 
     ///  compute scalar time derivative
-    void ComputeTimeDerivative() override;
+    void compute_time_derivative() override;
 
     ///  compute scalar time derivate parameters of the input voltage to compute double layer
     ///  current densities
-    void ComputeTimeDerivPot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override{};
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
@@ -69,7 +69,7 @@ namespace SCATRA
     };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
+    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
       Teuchos::RCP<Teuchos::ParameterList> timeparams;
       timeparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -89,35 +89,35 @@ namespace SCATRA
 
    protected:
     /// set time parameter for element evaluation
-    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
+    void set_element_time_parameter(bool forcedincrementalsolver = false) const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
+    void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) override;
 
     //! calculate consistent initial conditions in compliance with initial scalar field
     //! this is not necessary for BDF2 time integration scheme
-    void CalcInitialTimeDerivative() override{};
+    void calc_initial_time_derivative() override{};
 
     /// Set the part of the righthandside belonging to the last timestep.
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
     void ExplicitPredictor() const override;
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual() override;
+    void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
     void AVM3Separation() override;
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs() override;
+    void dynamic_computation_of_cs() override;
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv() override;
+    void dynamic_computation_of_cv() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     void WriteRestart() const override;
 

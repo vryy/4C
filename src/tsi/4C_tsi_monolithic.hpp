@@ -66,7 +66,7 @@ namespace TSI
 
   //! monolithic TSI algorithm
   //!
-  //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
+  //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
   //!  ThermoBaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
@@ -144,7 +144,7 @@ namespace TSI
     );
 
     //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
-    void ApplyThrCouplMatrix_ConvBC(
+    void apply_thr_coupl_matrix_conv_bc(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
@@ -192,7 +192,7 @@ namespace TSI
 
     //! contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
@@ -222,7 +222,7 @@ namespace TSI
     void PrepareOutput() override;
     //@}
 
-    void PrepareContactStrategy() override;
+    void prepare_contact_strategy() override;
 
     //! convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
@@ -258,11 +258,11 @@ namespace TSI
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
-    void SetDefaultParameters();
+    void set_default_parameters();
 
     //! recover structural and thermal Lagrange multipliers
     // this takes into account the dependence on off diagonal blocks
-    void RecoverStructThermLM();
+    void recover_struct_therm_lm();
 
     //@}
 
@@ -283,7 +283,7 @@ namespace TSI
     //! calculate nodal values (displacements, temperatures, reaction forces) at
     //! specific nodes used for validation of implementation with literature
     //! here: validation of thermoplasticity with e.g. Simo and Miehe (1992)
-    void CalculateNeckingTSIResults();
+    void calculate_necking_tsi_results();
 
     //@}
 
@@ -295,13 +295,13 @@ namespace TSI
     enum INPAR::STR::DynamicType strmethodname_;
 
     //! apply structural displacements and velocities on thermo discretization
-    void ApplyStructCouplingState(
+    void apply_struct_coupling_state(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
 
    private:
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
     //! list need to be adapted accordingly
-    void FixTimeIntegrationParams();
+    void fix_time_integration_params();
 
     const Teuchos::ParameterList& tsidyn_;      //!< TSI dynamic parameter list
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list

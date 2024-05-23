@@ -133,7 +133,7 @@ namespace MAT
     );
 
     //! evaluate constitutive relation for viscosity and compute derivatives
-    double ComputeViscosityDeriv(const double press, const double visc);
+    double compute_viscosity_deriv(const double press, const double visc);
 
     /// density
     double Density() const override { return params_->density_; }

@@ -46,21 +46,21 @@ namespace PARTICLEINTERACTION
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 
     //! calculate effective radius
-    virtual void EffectiveRadiusParticle(
+    virtual void effective_radius_particle(
         const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const = 0;
 
     //! calculate relative rolling velocity
-    virtual void RelativeRollingVelocity(const double& r_eff, const double* normal,
+    virtual void relative_rolling_velocity(const double& r_eff, const double* normal,
         const double* angvel_i, const double* angvel_j, double* vel_rel_rolling) const = 0;
 
     //! calculate rolling contact moment
-    virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
+    virtual void rolling_contact_moment(double* gap_rolling, bool& stick_rolling,
         const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const = 0;
 
     //! evaluate rolling potential energy
-    virtual void RollingPotentialEnergy(
+    virtual void rolling_potential_energy(
         const double* gap_rolling, double& rollingpotentialenergy) const = 0;
 
    protected:
@@ -93,21 +93,21 @@ namespace PARTICLEINTERACTION
     void Setup(const double& k_normal) override;
 
     //! calculate effective radius
-    void EffectiveRadiusParticle(const double* radius_i, const double* radius_j, const double& gap,
-        double& r_eff) const override;
+    void effective_radius_particle(const double* radius_i, const double* radius_j,
+        const double& gap, double& r_eff) const override;
 
     //! calculate relative rolling velocity
-    void RelativeRollingVelocity(const double& r_eff, const double* normal, const double* angvel_i,
-        const double* angvel_j, double* v_rel_rolling) const override;
+    void relative_rolling_velocity(const double& r_eff, const double* normal,
+        const double* angvel_i, const double* angvel_j, double* v_rel_rolling) const override;
 
     //! calculate rolling contact moment
-    void RollingContactMoment(double* gap_rolling, bool& stick_rolling, const double* normal,
+    void rolling_contact_moment(double* gap_rolling, bool& stick_rolling, const double* normal,
         const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
 
     //! evaluate rolling potential energy
-    void RollingPotentialEnergy(
+    void rolling_potential_energy(
         const double* gap_rolling, double& rollingpotentialenergy) const override;
 
    private:
@@ -128,21 +128,21 @@ namespace PARTICLEINTERACTION
     void Setup(const double& k_normal) override;
 
     //! calculate effective radius
-    void EffectiveRadiusParticle(const double* radius_i, const double* radius_j, const double& gap,
-        double& r_eff) const override;
+    void effective_radius_particle(const double* radius_i, const double* radius_j,
+        const double& gap, double& r_eff) const override;
 
     //! calculate relative rolling velocity
-    void RelativeRollingVelocity(const double& r_eff, const double* normal, const double* angvel_i,
-        const double* angvel_j, double* v_rel_rolling) const override;
+    void relative_rolling_velocity(const double& r_eff, const double* normal,
+        const double* angvel_i, const double* angvel_j, double* v_rel_rolling) const override;
 
     //! calculate rolling contact moment
-    void RollingContactMoment(double* gap_rolling, bool& stick_rolling, const double* normal,
+    void rolling_contact_moment(double* gap_rolling, bool& stick_rolling, const double* normal,
         const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
 
     //! evaluate rolling potential energy
-    void RollingPotentialEnergy(
+    void rolling_potential_energy(
         const double* gap_rolling, double& rollingpotentialenergy) const override;
 
    private:

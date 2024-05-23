@@ -81,7 +81,7 @@ namespace ADAPTER
     void PrepareTimeStep() override;
 
     /// update state with given increment vector
-    void UpdateStateIncrementally(
+    void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
         ) override;
 

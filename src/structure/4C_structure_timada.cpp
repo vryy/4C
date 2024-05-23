@@ -158,13 +158,13 @@ int STR::TimAda::Integrate()
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
-      IntegrateStepAuxiliar();
+      integrate_step_auxiliar();
 
       // integrate system with marching TIS and
       sti_->IntegrateStep();
 
       // get local error vector on #locerrdisn_
-      EvaluateLocalErrorDis();
+      evaluate_local_error_dis();
 
       // check whether step passes
       Indicate(accepted, stpsiznew);
@@ -240,12 +240,12 @@ int STR::TimAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* Evaluate local error vector */
-void STR::TimAda::EvaluateLocalErrorDis()
+void STR::TimAda::evaluate_local_error_dis()
 {
   if (MethodAdaptDis() == ada_orderequal)
   {
-    const double coeffmarch = sti_->MethodLinErrCoeffDis();
-    const double coeffaux = MethodLinErrCoeffDis();
+    const double coeffmarch = sti_->method_lin_err_coeff_dis();
+    const double coeffaux = method_lin_err_coeff_dis();
     locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
     locerrdisn_->Scale(coeffmarch / (coeffaux - coeffmarch));
   }
@@ -257,7 +257,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
 
   // blank Dirichlet DOFs since they always carry the exact solution
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *locerrdisn_, *zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 
@@ -290,9 +290,9 @@ double STR::TimAda::CalculateDt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
-    errorder_ = sti_->MethodOrderOfAccuracyDis();
+    errorder_ = sti_->method_order_of_accuracy_dis();
   else
-    errorder_ = MethodOrderOfAccuracyDis();
+    errorder_ = method_order_of_accuracy_dis();
 
   // optimal size ration with respect to given tolerance
   double sizrat = 1.0;

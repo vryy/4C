@@ -180,7 +180,7 @@ namespace MAT
      * @param[in] detjacobian    determinant of the deformation gradient
      * @return the current lithiation
      */
-    static double ComputeIntercalationFraction(const double concentration, const double chi_max,
+    static double compute_intercalation_fraction(const double concentration, const double chi_max,
         const double c_max, const double detjacobian)
     {
       return (concentration * chi_max * detjacobian) / c_max;
@@ -195,7 +195,7 @@ namespace MAT
      * @param[in] detjacobian  determinant of the deformation gradient
      * @return the derivative of current lithiation w.r.t. concentration
      */
-    static double ComputeDIntercalationFractionDConcentration(
+    static double compute_d_intercalation_fraction_d_concentration(
         const double chi_max, const double c_max, const double detjacobian)
     {
       return chi_max * detjacobian / c_max;
@@ -211,7 +211,7 @@ namespace MAT
      * @param[in] c_max          saturation value of intercalated lithium concentration
      * @return  the derivative of the lithiation w.r.t. the determinant of the deformation gradient
      */
-    static double ComputeDIntercalationFractionDDetF(
+    static double compute_d_intercalation_fraction_d_det_f(
         const double concentration, const double chi_max, const double c_max)
     {
       return concentration * chi_max / c_max;
@@ -226,7 +226,7 @@ namespace MAT
      * @param[in] detF           determinant of Jacobian from deformation at Gauss point
      * @return derivative of open circuit potential w.r.t. concentration
      */
-    [[nodiscard]] double ComputeDOpenCircuitPotentialDConcentration(
+    [[nodiscard]] double compute_d_open_circuit_potential_d_concentration(
         double concentration, double faraday, double frt, double detF) const;
 
     /*!
@@ -240,7 +240,7 @@ namespace MAT
      * @return derivative of open circuit potential w.r.t. the determinant of the deformation
      * gradient
      */
-    [[nodiscard]] double ComputeDOpenCircuitPotentialDDetF(
+    [[nodiscard]] double compute_d_open_circuit_potential_d_det_f(
         double concentration, double faraday, double frt, double detF) const;
 
     /*!
@@ -252,7 +252,7 @@ namespace MAT
      * @param[in] frt       factor F/RT
      * @return derivative of the open circuit potential w.r.t. the intercalation fraction
      */
-    [[nodiscard]] double ComputeDOpenCircuitPotentialDIntercalationFraction(
+    [[nodiscard]] double compute_d_open_circuit_potential_d_intercalation_fraction(
         double X, double faraday, double frt) const;
 
     /*!
@@ -263,7 +263,7 @@ namespace MAT
      * @param[in] gasconstant    General gas constant
      * @return derivative of open circuit potential w.r.t. temperature
      */
-    [[nodiscard]] double ComputeDOpenCircuitPotentialDTemperature(
+    [[nodiscard]] double compute_d_open_circuit_potential_d_temperature(
         const double concentration, const double faraday, const double gasconstant) const;
 
     /*!
@@ -275,7 +275,7 @@ namespace MAT
      * @param[in] detF           determinant of jacobian at gauss point
      * @return open circuit potential
      */
-    [[nodiscard]] double ComputeOpenCircuitPotential(
+    [[nodiscard]] double compute_open_circuit_potential(
         double concentration, double faraday, double frt, double detF) const;
 
     /*!
@@ -287,7 +287,7 @@ namespace MAT
      * @param[in] detF           determinant of jacobian at gauss point
      * @return 2nd derivative of open circuit potential w.r.t. concentration
      */
-    [[nodiscard]] double ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
+    [[nodiscard]] double compute_d2_open_circuit_potential_d_concentration_d_concentration(
         double concentration, double faraday, double frt, double detF) const;
 
    protected:

@@ -118,7 +118,7 @@ void CORE::GEO::CutWizard::SetOptions(
 
   // set position option to the intersection class
   intersection_->SetFindPositions(positions);
-  intersection_->SetNodalDofSetStrategy(nodal_dofset_strategy);
+  intersection_->set_nodal_dof_set_strategy(nodal_dofset_strategy);
 
   // Initialize Cut Parameters based on dat file section CUT GENERAL
   intersection_->GetOptions().Init_by_Paramlist();
@@ -175,7 +175,7 @@ void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
 /*-------------------------------------------------------------*
  * Mark surfaces loaded into cut with background surfaces
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::SetMarkedConditionSides(
+void CORE::GEO::CutWizard::set_marked_condition_sides(
     // const int mc_idx,                                       //Not needed (for now?)
     Teuchos::RCP<DRT::Discretization> cutter_dis,
     // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,      //Not needed (for now?)
@@ -211,7 +211,8 @@ void CORE::GEO::CutWizard::SetMarkedConditionSides(
       for (CORE::GEO::CUT::plain_side_set::iterator it = cut_sides.begin(); it != cut_sides.end();
            ++it)
       {
-        (*it)->SetMarkedSideProperties(marked_sid, CORE::GEO::CUT::mark_and_create_boundarycells);
+        (*it)->set_marked_side_properties(
+            marked_sid, CORE::GEO::CUT::mark_and_create_boundarycells);
       }
     }
     else
@@ -297,14 +298,14 @@ void CORE::GEO::CutWizard::Prepare()
   AddCuttingSides();
 
   // 2. Add background elements dependent on bounding box created by the CutSides in 1.
-  AddBackgroundElements();
+  add_background_elements();
 
 
   // build the static search tree for the collision detection in the self cut
   intersection_->BuildSelfCutTree();
 
   // build the static search tree for the collision detection
-  intersection_->BuildStaticSearchTree();
+  intersection_->build_static_search_tree();
 
   const double t_mid = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput_)
@@ -446,7 +447,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
 /*-------------------------------------------------------------*
  * add elements from the background discretization
  *-------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddBackgroundElements()
+void CORE::GEO::CutWizard::add_background_elements()
 {
   // vector with nodal level-set values
   std::vector<double> myphinp;
@@ -461,7 +462,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
 
     CORE::LINALG::SerialDenseMatrix xyze;
 
-    GetPhysicalNodalCoordinates(element, xyze);
+    get_physical_nodal_coordinates(element, xyze);
 
     if (back_mesh_->IsLevelSet())
     {
@@ -479,7 +480,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
+void CORE::GEO::CutWizard::get_physical_nodal_coordinates(
     const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   std::vector<int> lm;
@@ -578,12 +579,12 @@ void CORE::GEO::CutWizard::Run_Cut(
         IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
     }
     //----------------------------------------------------------
-    // Cut Part I: Collision Detection (3/6 Cut_CollisionDetection)
+    // Cut Part I: Collision Detection (3/6 cut_collision_detection)
     {
       const double t_start = Teuchos::Time::wallTime();
 
       // cut the mesh
-      intersection_->Cut_CollisionDetection(include_inner, screenoutput_);
+      intersection_->cut_collision_detection(include_inner, screenoutput_);
 
       // just for time measurement
       comm_.Barrier();
@@ -610,7 +611,7 @@ void CORE::GEO::CutWizard::Run_Cut(
   }
 
   //----------------------------------------------------------
-  // Cut Part III & IV: Element Selection and DOF-Set Management (5/6 Cut_Positions_Dofsets)
+  // Cut Part III & IV: Element Selection and DOF-Set Management (5/6 cut_positions_dofsets)
   {
     const double t_start = Teuchos::Time::wallTime();
 
@@ -650,9 +651,9 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
   comm_.Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets (parallel)");
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
+  if (myrank_ == 0 and screenoutput_) IO::cout << "\t * 5/6 cut_positions_dofsets (parallel) ...";
 
   //  const double t_start = Teuchos::Time::wallTime();
 
@@ -683,7 +684,7 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
     {
       m.FindNodePositions();
 
-      if (communicate) cut_parallel->CommunicateNodePositions();
+      if (communicate) cut_parallel->communicate_node_positions();
     }
 
     //--------------------------------------------
@@ -704,7 +705,7 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
     // find number and connection of dofsets at nodes from cut volumes
     intersection_->CreateNodalDofSet(include_inner, back_mesh_->Get());
 
-    if (communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
+    if (communicate) cut_parallel->communicate_node_dof_set_numbers(include_inner);
   }
 }
 
@@ -745,7 +746,7 @@ void CORE::GEO::CutWizard::Output(bool include_inner)
 
   if (gmsh_output_)
   {
-    DumpGmshIntegrationCells();
+    dump_gmsh_integration_cells();
     DumpGmshVolumeCells(include_inner);
   }
 }
@@ -784,12 +785,12 @@ void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * Write the integrationcells and boundarycells in GMSH format throughout the domain              *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::DumpGmshIntegrationCells()
+void CORE::GEO::CutWizard::dump_gmsh_integration_cells()
 {
   std::string name = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_integrationcells." << myrank_ << ".pos";
-  intersection_->DumpGmshIntegrationCells(str.str());
+  intersection_->dump_gmsh_integration_cells(str.str());
 }
 
 
@@ -838,7 +839,7 @@ bool CORE::GEO::CutWizard::HasLSCuttingSide(int sid)
   return intersection_->HasLSCuttingSide(sid);
 }
 
-void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
+void CORE::GEO::CutWizard::update_boundary_cell_coords(Teuchos::RCP<DRT::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)
@@ -947,12 +948,12 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
   }
 }
 
-int CORE::GEO::CutWizard::Get_BC_Cubaturedegree() const
+int CORE::GEO::CutWizard::get_bc_cubaturedegree() const
 {
   if (is_set_options_)
     return intersection_->GetOptions().BC_Cubaturedegree();
   else
-    FOUR_C_THROW("Get_BC_Cubaturedegree: Options are not set!");
+    FOUR_C_THROW("get_bc_cubaturedegree: Options are not set!");
   return -1;  // dummy to make compiler happy :)
 }
 

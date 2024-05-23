@@ -37,7 +37,7 @@ void PARTICLEWALL::WallResultTest::Setup(
   particlewallinterface_ = particlewallinterface;
 
   // get wall discretization
-  walldiscretization_ = particlewallinterface_->GetWallDiscretization();
+  walldiscretization_ = particlewallinterface_->get_wall_discretization();
 }
 
 void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)

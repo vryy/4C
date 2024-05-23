@@ -81,7 +81,7 @@ void FLD::TimIntRedModels::Init()
     {
       IO::DiscretizationWriter output_redD(ART_timeInt_->Discretization(),
           GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->SpatialApproximationType());
+          GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
       discret_->SetState("velaf", zeros_);
       if (alefluid_)
@@ -100,7 +100,7 @@ void FLD::TimIntRedModels::Init()
     {
       IO::DiscretizationWriter output_redD(airway_imp_timeInt_->Discretization(),
           GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->SpatialApproximationType());
+          GLOBAL::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
       discret_->SetState("velaf", zeros_);
       if (alefluid_)
@@ -140,7 +140,7 @@ void FLD::TimIntRedModels::Init()
 /*----------------------------------------------------------------------*
  | evaluate special boundary conditions                        bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
+void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
 {
   if (alefluid_)
   {
@@ -166,7 +166,7 @@ void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 /*----------------------------------------------------------------------*
 | Update3DToReduced in AssembleMatAndRHS                       bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
+void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
 {
   discret_->ClearState();
 
@@ -185,7 +185,7 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
     {
       coupled3D_redDbc_art_->LoadState();
       coupled3D_redDbc_art_->FlowRateCalculation(time_, dta_);
-      coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+      coupled3D_redDbc_art_->apply_boundary_conditions(time_, dta_, theta_);
     }
     coupled3D_redDbc_art_->UpdateResidual(residual_);
   }
@@ -197,7 +197,7 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
     {
       coupled3D_redDbc_airways_->LoadState();
       coupled3D_redDbc_airways_->FlowRateCalculation(time_, dta_);
-      coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+      coupled3D_redDbc_airways_->apply_boundary_conditions(time_, dta_, theta_);
     }
     coupled3D_redDbc_airways_->UpdateResidual(residual_);
   }
@@ -213,13 +213,14 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
 }
 
 /*----------------------------------------------------------------------*
-| call Update3DToReducedMatAndRHS                              bk 11/13 |
+| call update3_d_to_reduced_mat_and_rhs                              bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntRedModels::set_custom_ele_params_assemble_mat_and_rhs(
+    Teuchos::ParameterList& eleparams)
 {
   // these are the only routines that have to be called in AssembleMatAndRHS
   // before Evaluate in the RedModels case
-  Update3DToReducedMatAndRHS();
+  update3_d_to_reduced_mat_and_rhs();
 }
 
 /*----------------------------------------------------------------------*
@@ -374,7 +375,7 @@ void FLD::TimIntRedModels::Output()
 /*----------------------------------------------------------------------*
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::InsertVolumetricSurfaceFlowCondVector(
+void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res)
 {
   // -------------------------------------------------------------------
@@ -410,23 +411,23 @@ void FLD::TimIntRedModels::AVM3Preparation()
   //    impedancebc_->UpdateResidual(residual_);
   //  }
 
-  AVM3AssembleMatAndRHS(eleparams);
+  av_m3_assemble_mat_and_rhs(eleparams);
 
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
-  AVM3GetScaleSeparationMatrix();
+  av_m3_get_scale_separation_matrix();
 }  // TimIntRedModels::AVM3Preparation
 
 /*----------------------------------------------------------------------*
- | RedModels - specific BC in LinearRelaxationSolve            bk 12/13|
+ | RedModels - specific BC in linear_relaxation_solve            bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::ApplyDirichletToSystem(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
+  CORE::LINALG::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
   sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
@@ -450,7 +451,7 @@ void FLD::TimIntRedModels::PrepareTimeStep()
   {
     coupled3D_redDbc_art_->SaveState();
     coupled3D_redDbc_art_->FlowRateCalculation(time_, dta_);
-    coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+    coupled3D_redDbc_art_->apply_boundary_conditions(time_, dta_, theta_);
   }
 
 
@@ -459,7 +460,7 @@ void FLD::TimIntRedModels::PrepareTimeStep()
   {
     coupled3D_redDbc_airways_->SaveState();
     coupled3D_redDbc_airways_->FlowRateCalculation(time_, dta_);
-    coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+    coupled3D_redDbc_airways_->apply_boundary_conditions(time_, dta_, theta_);
   }
 
   discret_->ClearState();
@@ -483,20 +484,21 @@ void FLD::TimIntRedModels::AssembleMatAndRHS()
 /*----------------------------------------------------------------------*
  | Apply Womersley bc to system                                 bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::ApplyDirichletToSystem()
+void FLD::TimIntRedModels::apply_dirichlet_to_system()
 {
-  FluidImplicitTimeInt::ApplyDirichletToSystem();
+  FluidImplicitTimeInt::apply_dirichlet_to_system();
 
   if (LocsysManager() != Teuchos::null)
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_),
-        *incvel_, *residual_, *locsysman_->Trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
+        *locsysman_->Trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
   }
   else
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
   }
 }

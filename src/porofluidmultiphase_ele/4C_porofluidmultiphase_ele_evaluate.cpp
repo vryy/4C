@@ -110,7 +110,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& di
   {
     case POROFLUIDMULTIPHASE::set_general_parameter:
     {
-      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())->SetGeneralParameters(p);
+      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
+          ->set_general_parameters(p);
 
       break;
     }
@@ -118,7 +119,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& di
     case POROFLUIDMULTIPHASE::set_timestep_parameter:
     {
       DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
-          ->SetTimeStepParameters(p);
+          ->set_time_step_parameters(p);
 
       break;
     }

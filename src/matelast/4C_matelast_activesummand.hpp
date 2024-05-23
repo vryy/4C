@@ -35,7 +35,7 @@ namespace MAT
        * \param stress 2nd PK-stress
        * \param eleGID global element id
        */
-      virtual void AddActiveStressCmatAniso(
+      virtual void add_active_stress_cmat_aniso(
           const CORE::LINALG::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
           CORE::LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
@@ -48,7 +48,7 @@ namespace MAT
        *
        * \return double First derivative of active fiber potential w.r.t. the active fiber stretch
        */
-      virtual double GetDerivativeAnisoActive() const = 0;
+      virtual double get_derivative_aniso_active() const = 0;
     };
   }  // namespace ELASTIC
 

@@ -46,11 +46,11 @@ namespace XFEM
       /// constructor
       XFEMDiscretizationBuilder(){/* should stay empty! */};
 
-      void SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
+      void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
           Teuchos::RCP<DRT::Discretization> dis, int numdof = 4) const;
 
       //! setup xfem discretization and embedded discretization
-      void SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
+      void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
           Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> embedded_dis,
           const std::string& embedded_cond_name, int numdof = 4) const;
 
@@ -101,14 +101,14 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 06/16 */
-      int SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
+      int setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
           Teuchos::RCP<DRT::Discretization> src_dis, Teuchos::RCP<DRT::Discretization> target_dis,
           const std::vector<CORE::Conditions::Condition*>& boundary_conds) const;
 
      private:
       //! split a discretization into two by removing conditioned nodes
       //! in source and adding to target
-      void SplitDiscretizationByCondition(
+      void split_discretization_by_condition(
           Teuchos::RCP<DRT::Discretization> sourcedis,  //< initially contains all
           Teuchos::RCP<DRT::Discretization> targetdis,  //< initially empty
           std::vector<CORE::Conditions::Condition*>&
@@ -137,7 +137,7 @@ namespace XFEM
        *
        *  \date 06/16
        *  \author hiermeier  */
-      void SplitDiscretizationByBoundaryCondition(
+      void split_discretization_by_boundary_condition(
           const Teuchos::RCP<DRT::Discretization>& sourcedis,
           const Teuchos::RCP<DRT::Discretization>& targetdis,
           const std::vector<CORE::Conditions::Condition*>& boundary_conds,

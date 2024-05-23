@@ -47,14 +47,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoSh18Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDSH18"; }
+      std::string get_element_type_string() const { return "SOLIDSH18"; }
     };
 
     /*!
@@ -236,14 +236,14 @@ namespace DRT
           const CORE::LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
 
       void SetupDSG();
-      void Integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
-      void Integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
-      void Integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s);
-      void Integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
-      void Integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
+      void integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
+      void integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
+      void integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
+      void integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s);
+      void integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
+      void integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
 
-      void CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+      void calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
           CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod);
 
       void CalculateBopLoc(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
@@ -271,7 +271,7 @@ namespace DRT
       //@}
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDSH18"; }
+      std::string get_element_type_string() const { return "SOLIDSH18"; }
     };  // class So_sh18
 
   }  // namespace ELEMENTS

@@ -129,7 +129,7 @@ namespace FSI
     //! @name Coupling methods
 
     //! setup all coupling objects
-    void SetupCouplingObjects();
+    void setup_coupling_objects();
 
     //@}
 
@@ -144,7 +144,7 @@ namespace FSI
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     //! this extractor considere poro as one field
-    const CORE::LINALG::MultiMapExtractor& Extractor_MergedPoro() const
+    const CORE::LINALG::MultiMapExtractor& extractor_merged_poro() const
     {
       return blockrowdofmap_mergedporo_;
     }
@@ -173,7 +173,7 @@ namespace FSI
 
     //! Create the combined DOF row map for the FSI problem; row maps of structure and xfluid to an
     //! global FSI DOF row map
-    void CreateCombinedDofRowMap();
+    void create_combined_dof_row_map();
 
     //! set full monolithic dof row map
     //! The block maps must be row maps by themselves and must not contain identical GIDs.
@@ -219,7 +219,7 @@ namespace FSI
     bool Evaluate();
 
     //! compute all norms used for convergence check
-    void BuildCovergenceNorms();
+    void build_covergence_norms();
 
     //! check convergence of Newton iteration
     bool Converged();
@@ -234,21 +234,21 @@ namespace FSI
 
     //! update the permutation map between using the recent permutations between the last two Newton
     //! iterations
-    void UpdatePermutationMap(
+    void update_permutation_map(
         std::map<int, int> permutation_map  /// permutation map between last two Newton iterations,
                                             /// call by copy, do not call by reference!
     );
 
     //! build the new permutation cycles used for permuting the fluid dofs forward and backward
-    void BuildFluidPermutation();
+    void build_fluid_permutation();
 
     //! forward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t old interface
     //! position forward to a vector (based on dofsets) w.r.t. new interface position
-    void PermuteFluidDOFSForward(Teuchos::RCP<Epetra_Vector>& fx);
+    void permute_fluid_dofs_forward(Teuchos::RCP<Epetra_Vector>& fx);
 
     //! backward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t new
     //! interface position backward to a vector (based on dofsets) w.r.t. old interface position
-    void PermuteFluidDOFSBackward(Teuchos::RCP<Epetra_Vector>& fx);
+    void permute_fluid_dofs_backward(Teuchos::RCP<Epetra_Vector>& fx);
 
     //@}
 
@@ -282,7 +282,7 @@ namespace FSI
     void PrintNewtonIter();
 
     //! contains header to PrintNewtonIter
-    void PrintNewtonIterHeader();
+    void print_newton_iter_header();
 
     //! contains text to PrintNewtonIter
     void PrintNewtonIterText();

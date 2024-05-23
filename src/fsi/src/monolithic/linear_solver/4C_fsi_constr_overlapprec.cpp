@@ -157,7 +157,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
         structuresolver_->Solve(StructInnerOp.EpetraMatrix(), sz, sx, true);
 
         // do Richardson iteration
-        LocalBlockRichardson(
+        local_block_richardson(
             structuresolver_, StructInnerOp, sx, sz, tmpsx, siterations_, somega_, err_, Comm());
 
         if (run > 0 or outerrun > 0)
@@ -198,7 +198,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
         alesolver_->Solve(AleInnerOp.EpetraMatrix(), az, ax, true);
 
         // do Richardson iteration
-        LocalBlockRichardson(
+        local_block_richardson(
             alesolver_, AleInnerOp, ax, az, tmpax, aiterations_, aomega_, err_, Comm());
 
         if (run > 0 or outerrun > 0)
@@ -232,7 +232,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
         fluidsolver_->Solve(FluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-        LocalBlockRichardson(
+        local_block_richardson(
             fluidsolver_, FluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
 
         if (run > 0 or outerrun > 0)
@@ -269,7 +269,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
           fluidsolver_->Solve(FluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-          LocalBlockRichardson(
+          local_block_richardson(
               fluidsolver_, FluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
           fy->Update(omega_, *fz, 1.0);
         }
@@ -293,7 +293,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
           alesolver_->Solve(AleInnerOp.EpetraMatrix(), az, ax, true);
 
-          LocalBlockRichardson(
+          local_block_richardson(
               alesolver_, AleInnerOp, ax, az, tmpax, aiterations_, aomega_, err_, Comm());
 
           ay->Update(omega_, *az, 1.0);
@@ -310,7 +310,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
           structuresolver_->Solve(StructInnerOp.EpetraMatrix(), sz, sx, true);
 
-          LocalBlockRichardson(
+          local_block_richardson(
               structuresolver_, StructInnerOp, sx, sz, tmpsx, siterations_, somega_, err_, Comm());
           sy->Update(omega_, *sz, 1.0);
         }

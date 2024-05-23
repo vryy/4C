@@ -149,13 +149,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     }
     case INPAR::ELCH::equpot_enc_pde_elim:
     {
-      CalcMatPotEquENCPDEElim(emat, k, timefacfac, VarManager()->FRT(), VarManager()->MigConv(),
-          VarManager()->Phinp(k));
+      calc_mat_pot_equ_encpde_elim(emat, k, timefacfac, VarManager()->FRT(),
+          VarManager()->MigConv(), VarManager()->Phinp(k));
       break;
     }
     case INPAR::ELCH::equpot_poisson:
     {
-      CalcMatPotEquPoisson(
+      calc_mat_pot_equ_poisson(
           emat, k, fac, myelch::elchparams_->Epsilon(), myelch::elchparams_->Faraday());
       break;
     }
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
   my::ComputeRhsInt(rhsint, 1., 1., VarManager()->Hist(k));
-  my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+  my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 4c) element rhs: stabilization of mass term
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration
@@ -240,13 +240,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     }
     case INPAR::ELCH::equpot_enc_pde_elim:
     {
-      CalcRhsPotEquENCPDEElim(erhs, k, rhsfac, VarManager()->MigConv(), VarManager()->Phinp(k),
+      calc_rhs_pot_equ_encpde_elim(erhs, k, rhsfac, VarManager()->MigConv(), VarManager()->Phinp(k),
           VarManager()->GradPhi(k));
       break;
     }
     case INPAR::ELCH::equpot_poisson:
     {
-      CalcRhsPotEquPoisson(erhs, k, fac, myelch::elchparams_->Epsilon(),
+      calc_rhs_pot_equ_poisson(erhs, k, fac, myelch::elchparams_->Epsilon(),
           myelch::elchparams_->Faraday(), VarManager()->Phinp(k), VarManager()->GradPot());
       break;
     }
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
  | calculate contributions to matrix and rhs (outside loop over all scalars)   fang 02/15 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_scalar_loop(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
     CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
     const double fac,                       //!< domain-integration factor
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     }
     case INPAR::ELCH::equpot_laplace:
     {
-      CalcMatPotEquLaplace(emat, fac);
+      calc_mat_pot_equ_laplace(emat, fac);
       break;
     }
     default:
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     }
     case INPAR::ELCH::equpot_laplace:
     {
-      CalcRhsPotEquLaplace(erhs, fac, VarManager()->GradPot());
+      calc_rhs_pot_equ_laplace(erhs, fac, VarManager()->GradPot());
       break;
     }
     default:
@@ -366,7 +366,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
   if (my::use2ndderiv_)
   {
     CORE::LINALG::Matrix<nen_, 1> laplace(true);
-    my::GetLaplacianStrongForm(laplace);
+    my::get_laplacian_strong_form(laplace);
 
     diffphi = myelch::DiffManager()->GetIsotropicDiff(k) * laplace.Dot(my::ephinp_[k]);
     reamigphi = -frt * myelch::DiffManager()->GetIsotropicDiff(k) *
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
   // Compute Laplacian N,xx  +  N,yy +  N,zz of all shape functions at current integration point if
   // needed
   CORE::LINALG::Matrix<nen_, 1> laplace(true);
-  if (my::use2ndderiv_) my::GetLaplacianStrongForm(laplace);
+  if (my::use2ndderiv_) my::get_laplacian_strong_form(laplace);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -444,7 +444,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
 
       // 2b) linearization of residual w.r.t. electric potential Phi
       double laplawf(0.);
-      my::GetLaplacianWeakFormRHS(laplawf, gradphi, ui);
+      my::get_laplacian_weak_form_rhs(laplawf, gradphi, ui);
       matvalpot -= timetaufac * conv_eff_vi * myelch::DiffManager()->GetIsotropicDiff(k) *
                    myelch::DiffManager()->GetValence(k) * frt * laplawf;
 
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
 
         // 2d) linearization of migration operator w.r.t. electric potential Phi
         double laplacewf(0.);
-        my::GetLaplacianWeakForm(laplacewf, ui, vi);
+        my::get_laplacian_weak_form(laplacewf, ui, vi);
         matvalpot -= timetaufac * residual * myelch::DiffManager()->GetIsotropicDiff(k) *
                      myelch::DiffManager()->GetValence(k) * frt * laplacewf;
       }
@@ -533,7 +533,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
 
       // b) derivative w.r.t. electric potential
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi, ui * my::numdofpernode_ + my::numscal_) +=
           frt * timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) *
           myelch::DiffManager()->GetValence(k) * conint * laplawf;
@@ -571,7 +571,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
       const int fui = ui * my::numdofpernode_ + k;
 
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
       // a) derivative w.r.t. concentration c_k
@@ -595,7 +595,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
  |  CalcMat: ENC in PDE form with NP equation for species m eliminated (private)  fang 05/14 |
  *-------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -623,7 +623,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
       double matvalpot = 0.;
 
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
       // a) derivative w.r.t. concentration c_k
@@ -659,7 +659,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
  |  CalcMat: Poisson equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor
@@ -682,7 +682,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
       {
         const int pui = ui * my::numdofpernode_ + my::numscal_;
         double laplawf(0.);
-        my::GetLaplacianWeakForm(laplawf, ui, vi);
+        my::get_laplacian_weak_form(laplawf, ui, vi);
 
         const double epsbyF = epsilon / faraday;
 
@@ -704,7 +704,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
  |  CalcMat: Laplace equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquLaplace(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
     CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const double fac                        //!< domain-integration factor
 )
@@ -718,7 +718,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquLaplace(
       const int pui = ui * my::numdofpernode_ + my::numscal_;
 
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       emat(pvi, pui) += my::scatraparatimint_->AlphaF() * fac * laplawf;
     }  // for ui
@@ -819,7 +819,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     double laplawf(0.);
-    my::GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
+    my::get_laplacian_weak_form_rhs(laplawf, gradphi, vi);
 
     // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
     // Inclusion of time integration factor results in a matrix with better condition number
@@ -838,7 +838,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
  |  CalcRhs: ENC in PDE form with NP equation for species m eliminated (private)  fang 05/14 |
  *-------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_elim(
     CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -852,7 +852,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
     const int pvi = vi * my::numdofpernode_ + my::numscal_;
 
     double laplawf(0.);
-    my::GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
+    my::get_laplacian_weak_form_rhs(laplawf, gradphi, vi);
 
     // use 2nd order pde derived from electroneutrality condition (k=0,...,m-1)
     // Inclusion of time integration factor results in a matrix with better condition number
@@ -878,7 +878,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
  |  CalcRhs: Poisson equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_poisson(
     CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
     const int k,                                  //!< index of current scalar
     const double fac,                             //!< domain-integration factor
@@ -897,7 +897,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
     if (k == 0)
     {
       double laplawf(0.);
-      my::GetLaplacianWeakFormRHS(laplawf, gradpot, vi);
+      my::get_laplacian_weak_form_rhs(laplawf, gradpot, vi);
 
       const double epsbyF = epsilon / faraday;
 
@@ -916,7 +916,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
  |  CalcRhs: Laplace equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
     CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
     const double fac,                             //!< domain-integration factor
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
@@ -927,7 +927,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
     const int pvi = vi * my::numdofpernode_ + my::numscal_;
 
     double laplawf(0.);
-    my::GetLaplacianWeakFormRHS(laplawf, gradpot, vi);
+    my::get_laplacian_weak_form_rhs(laplawf, gradpot, vi);
 
     erhs[pvi] -= fac * laplawf;
   }  // for vi
@@ -940,7 +940,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
  |  Correct sysmat for fluxes across DC                        fang 05/14 |
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs)
 {
@@ -1056,7 +1056,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
  | Calculate quantities used for stabilization (protected)       fang 06/14 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
     std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
     std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
@@ -1081,12 +1081,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
         my::CalcTau(tau[k], resdiffus,
-            my::reamanager_->GetStabilizationCoeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
+            my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
             VarManager()->ConVel(k), vol);
       else
         // calculate stabilization parameter tau for uncharged species
         my::CalcTau(tau[k], myelch::DiffManager()->GetIsotropicDiff(k),
-            my::reamanager_->GetStabilizationCoeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
+            my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
             VarManager()->ConVel(k), vol);
     }
   }
@@ -1121,7 +1121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
 
       // calculate stabilization parameter tau
       my::CalcTau(tau[k], myelch::DiffManager()->GetIsotropicDiff(k),
-          my::reamanager_->GetStabilizationCoeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
+          my::reamanager_->get_stabilization_coeff(k, my::scatravarmanager_->Phinp(k)), densnp[k],
           veleff, vol);
 
       switch (my::scatrapara_->TauDef())
@@ -1130,7 +1130,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
         case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
         {
           // Calculate derivative of tau w.r.t. electric potential
-          CalcTauDerPotTaylorHughesZarins(tauderpot[k], tau[k], densnp[k], VarManager()->FRT(),
+          calc_tau_der_pot_taylor_hughes_zarins(tauderpot[k], tau[k], densnp[k],
+              VarManager()->FRT(),
               myelch::DiffManager()->GetIsotropicDiff(k) * myelch::DiffManager()->GetValence(k),
               veleff);
           break;
@@ -1144,7 +1145,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
   }
 
   return;
-}  // ScaTraEleCalcElch<distype>::PrepareStabilization
+}  // ScaTraEleCalcElch<distype>::prepare_stabilization
 
 
 /*-----------------------------------------------------------------------------------------------------------------------*
@@ -1152,7 +1153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
  (protected)   fang 06/14 |
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcTauDerPotTaylorHughesZarins(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hughes_zarins(
     CORE::LINALG::Matrix<nen_, 1>&
         tauderpot,        //!< derivatives of stabilization parameter w.r.t. electric potential
     double& tau,          //!< stabilization parameter

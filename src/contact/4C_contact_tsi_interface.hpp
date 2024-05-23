@@ -80,7 +80,7 @@ namespace CONTACT
            the info where it comes from, we stick to that name
 
     */
-    virtual void AssembleDualMassLumped(
+    virtual void assemble_dual_mass_lumped(
         CORE::LINALG::SparseMatrix& dualMassGlobal,    /// dual mass matrix
         CORE::LINALG::SparseMatrix& linDualMassGlobal  // derivative of dual mass matrix wrt
                                                        // displacements multiplied with thermo-LM
@@ -122,7 +122,7 @@ namespace CONTACT
       lin_lm_{jk} = nj_{k} * (D_jk T_k - M_jl T_l)
                                  (mind the minus sign!)
       */
-    virtual void AssembleLinLMnDM_Temp(
+    virtual void assemble_lin_l_mn_dm_temp(
         const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm);
 
     /*!

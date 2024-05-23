@@ -110,10 +110,10 @@ namespace FLD
           const Teuchos::RCP<DRT::Discretization>& slavediscret_rhs);
 
       //! zero coupling matrices and rhs vectors
-      void ZeroCouplingMatricesAndRhs();
+      void zero_coupling_matrices_and_rhs();
 
       //! complete coupling matrices and rhs vectors
-      void CompleteCouplingMatricesAndRhs(
+      void complete_coupling_matrices_and_rhs(
           const Epetra_Map& xfluiddofrowmap, const Epetra_Map& slavedofrowmap);
 
       //! destroy the coupling objects and it's content
@@ -149,19 +149,19 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>& xfluiddiscret, const double& time);
 
     /// zero system matrix and related rhs vectors
-    virtual void ZeroSystemMatrixAndRhs();
+    virtual void zero_system_matrix_and_rhs();
 
     /// zero all coupling matrices and rhs vectors for all coupling objects
-    virtual void ZeroCouplingMatricesAndRhs();
+    virtual void zero_coupling_matrices_and_rhs();
 
     /// Complete coupling matrices and rhs vectors
-    virtual void CompleteCouplingMatricesAndRhs();
+    virtual void complete_coupling_matrices_and_rhs();
 
     /// destroy the stored objects
     virtual bool Destroy();
 
     /// update the coordinates of the cut boundary cells
-    void UpdateBoundaryCellCoords();
+    void update_boundary_cell_coords();
 
 
     //! @name Accessors
@@ -279,10 +279,10 @@ namespace FLD
     void InitSystemMatrix();
 
     /// initialize coupling matrices and rhs vectors for all coupling objects
-    void InitCouplingMatricesAndRhs();
+    void init_coupling_matrices_and_rhs();
 
     /// Complete coupling matrices and rhs vectors
-    void CompleteCouplingMatricesAndRhs(const Teuchos::RCP<const Epetra_Map>& fluiddofrowmap);
+    void complete_coupling_matrices_and_rhs(const Teuchos::RCP<const Epetra_Map>& fluiddofrowmap);
 
 
    public:

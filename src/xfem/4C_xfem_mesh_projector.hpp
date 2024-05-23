@@ -48,10 +48,10 @@ namespace XFEM
         Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
 
     //! set current displacements of source discretization
-    void SetSourcePositionVector(Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
+    void set_source_position_vector(Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
 
     //! set state vectors - mandatory for interpolation
-    void SetSourceStateVectors(std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs)
+    void set_source_state_vectors(std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs)
     {
       source_statevecs_ = source_statevecs;
     }
@@ -64,7 +64,7 @@ namespace XFEM
         Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
 
     //! projection routine for projection for all nodes of the target discretization
-    void ProjectInFullTargetDiscretization(
+    void project_in_full_target_discretization(
         std::vector<Teuchos::RCP<Epetra_Vector>> target_statevecs,
         Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
 
@@ -80,14 +80,14 @@ namespace XFEM
     void SetupSearchTree();
 
     //! for every node search for a covering element from the source discretization
-    void FindCoveringElementsAndInterpolateValues(
+    void find_covering_elements_and_interpolate_values(
         std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
         std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
     template <CORE::FE::CellType distype>
-    bool CheckPositionAndProject(const DRT::Element* src_ele,
+    bool check_position_and_project(const DRT::Element* src_ele,
         const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 
     //! communicate nodes demanding reconstruction in a Round-Robin pattern

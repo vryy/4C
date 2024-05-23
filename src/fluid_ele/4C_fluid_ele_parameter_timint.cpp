@@ -64,7 +64,8 @@ DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
 //----------------------------------------------------------------------*/
 // set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
+    Teuchos::ParameterList& params)
 {
   // second check: timealgo
   // work around to use SetTimeParameter in GenAlpha (Neumann BC)
@@ -234,7 +235,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
 //----------------------------------------------------------------------*/
 // print fluid time parameter to screen                 rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
+void DRT::ELEMENTS::FluidEleParameterTimInt::print_fluid_time_parameter()
 {
   std::cout << std::endl
             << "|-----------------------------------------------------------" << std::endl;

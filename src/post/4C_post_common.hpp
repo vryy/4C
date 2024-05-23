@@ -138,7 +138,7 @@ class PostProblem
   GLOBAL::ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  CORE::FE::ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
+  CORE::FE::ShapeFunctionType spatial_approximation_type() { return spatial_approx_; }
 
   //! returns stress type
   std::string stresstype() { return stresstype_; }

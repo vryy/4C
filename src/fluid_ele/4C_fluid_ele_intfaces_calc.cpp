@@ -98,7 +98,7 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
+void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
     DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
     Teuchos::RCP<CORE::MAT::Material>& material,  ///< material for face stabilization
     std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
@@ -110,17 +110,17 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: AssembleInternalFacesUsingNeighborData");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: assemble_internal_faces_using_neighbor_data");
 
   // decide which terms have to be assembled for the current face and decide the assembly pattern,
   // return if no assembly required
-  bool stab_required = fldpara_intface_->SetFaceSpecificFluidXFEMParameter(face_type, params);
+  bool stab_required = fldpara_intface_->set_face_specific_fluid_xfem_parameter(face_type, params);
 
   // do not assemble if no stabilization terms activated for this face
   if (!stab_required) return;
 
   if (!discretization.Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!discretization.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!discretization.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   const bool assemblemat = systemmatrix != Teuchos::null;
   const bool assemblevec = systemvector != Teuchos::null;
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   //---------------------- check for PBCS ------------------
   Teuchos::RCP<std::map<int, int>> pbcconnectivity =
-      discretization.GetPBCSlaveToMasterNodeConnectivity();
+      discretization.get_pbc_slave_to_master_node_connectivity();
 
   //----------------------- create patchlm -----------------
 
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   //---------------------------------------------------------------------
   // call the element specific evaluate method
 
-  int err = EvaluateInternalFaces(intface, material, params, discretization, lm_patch,
+  int err = evaluate_internal_faces(intface, material, params, discretization, lm_patch,
       lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch, lm_slaveNodeToPatch,
       elemat_blocks, elevec_blocks);
   if (err) FOUR_C_THROW("error while evaluating elements");
@@ -344,7 +344,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
  |  Evaluate internal faces (public)                        schott 01/12|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
+int DRT::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
     DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
     Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
     Teuchos::ParameterList& params,               ///< parameter list
@@ -366,8 +366,8 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
   {
     case FLD::EOS_and_GhostPenalty_stabilization:
     {
-      return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->EvaluateEdgeBasedStabilization(intface,
-          material, *fldparatimint_, *fldpara_intface_, params, discretization, patchlm,
+      return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->evaluate_edge_based_stabilization(
+          intface, material, *fldparatimint_, *fldpara_intface_, params, discretization, patchlm,
           lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch,
           lm_slaveNodeToPatch, elemat_blocks, elevec_blocks);
       break;

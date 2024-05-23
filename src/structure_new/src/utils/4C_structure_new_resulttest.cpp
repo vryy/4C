@@ -320,41 +320,41 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       // test nodal stresses
       if (position.rfind("stress", 0) == 0)
       {
-        if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
+        if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
         {
           FOUR_C_THROW(
               "It looks like you don't write stresses. You have to specify the stress type in "
               "IO->STRUCT_STRESS");
         }
         result = GetNodalStressStrainComponent(
-            "stress", position, node, *data_->GetStressDataNodePostprocessed());
+            "stress", position, node, *data_->get_stress_data_node_postprocessed());
         unknownpos = false;
       }
 
       // test nodal strain
       if (position.rfind("strain", 0) == 0)
       {
-        if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
+        if (data_->get_stress_data_node_postprocessed() == Teuchos::null)
         {
           FOUR_C_THROW(
               "It looks like you don't write strains. You have to specify the strain type in "
               "IO->STRUCT_STRAIN");
         }
         result = GetNodalStressStrainComponent(
-            "strain", position, node, *data_->GetStrainDataNodePostprocessed());
+            "strain", position, node, *data_->get_strain_data_node_postprocessed());
         unknownpos = false;
       }
 
       // test for any postprocessed gauss point data
-      if (data_->GetGaussPointDataOutputManagerPtr() != Teuchos::null)
+      if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
       {
         std::optional<QuantityNameAndComponent> name_and_component =
             GetGaussPointDataNameAndComponent(
-                position, data_->GetGaussPointDataOutputManagerPtr()->GetQuantities());
+                position, data_->get_gauss_point_data_output_manager_ptr()->GetQuantities());
         if (name_and_component.has_value())
         {
           result = GetGaussPointDataValue(*name_and_component, node,
-              data_->GetGaussPointDataOutputManagerPtr()->GetNodalData());
+              data_->get_gauss_point_data_output_manager_ptr()->GetNodalData());
           unknownpos = false;
         }
       }
@@ -440,15 +440,15 @@ std::optional<double> STR::ResultTest::GetSpecialResult(
 {
   if (quantity.find("num_iter_step_") != quantity.npos)
   {
-    return GetNlnIterationNumber(quantity, special_status);
+    return get_nln_iteration_number(quantity, special_status);
   }
   else if (quantity.find("lin_iter_step_") != quantity.npos)
   {
-    return GetLastLinIterationNumber(quantity, special_status);
+    return get_last_lin_iteration_number(quantity, special_status);
   }
   else if (quantity.find("nodes_proc") != quantity.npos)
   {
-    return GetNodesPerProcNumber(quantity, special_status);
+    return get_nodes_per_proc_number(quantity, special_status);
   }
   else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
            quantity == "total_energy" or quantity == "beam_contact_penalty_potential" or
@@ -471,7 +471,7 @@ std::optional<double> STR::ResultTest::GetSpecialResult(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::GetLastLinIterationNumber(
+std::optional<int> STR::ResultTest::get_last_lin_iteration_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -484,7 +484,7 @@ std::optional<int> STR::ResultTest::GetLastLinIterationNumber(
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
-    result = gstate_->GetLastLinIterationNumber(stepn);
+    result = gstate_->get_last_lin_iteration_number(stepn);
   }
 
   return result;
@@ -492,7 +492,7 @@ std::optional<int> STR::ResultTest::GetLastLinIterationNumber(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::GetNlnIterationNumber(
+std::optional<int> STR::ResultTest::get_nln_iteration_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -505,7 +505,7 @@ std::optional<int> STR::ResultTest::GetNlnIterationNumber(
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
-    result = gstate_->GetNlnIterationNumber(stepn);
+    result = gstate_->get_nln_iteration_number(stepn);
   }
 
   return result;
@@ -513,7 +513,7 @@ std::optional<int> STR::ResultTest::GetNlnIterationNumber(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::GetNodesPerProcNumber(
+std::optional<int> STR::ResultTest::get_nodes_per_proc_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -523,7 +523,7 @@ std::optional<int> STR::ResultTest::GetNodesPerProcNumber(
 
   // extract processor ID
   if (proc_num >= strudisc_->Comm().NumProc())
-    FOUR_C_THROW("STR::ResultTest::GetNodesPerProcNumber: Invalid processor ID!");
+    FOUR_C_THROW("STR::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
 
   if (strudisc_->Comm().MyPID() == proc_num)
   {

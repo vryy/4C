@@ -89,7 +89,7 @@ namespace PARTICLEWALL
      * \param[in] step output step
      * \param[in] time output time
      */
-    void WriteWallDiscretizationRuntimeOutput(const int step, const double time) const;
+    void write_wall_discretization_runtime_output(const int step, const double time) const;
 
    private:
     //! wall discretization

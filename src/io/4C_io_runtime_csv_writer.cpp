@@ -33,14 +33,14 @@ namespace IO
         const std::string& dataname, unsigned int numcomponents, int precision) = 0;
 
     //! reset current time and time step number
-    virtual void ResetTimeAndTimeStep(double time, unsigned int timestep) = 0;
+    virtual void reset_time_and_time_step(double time, unsigned int timestep) = 0;
 
     //! append data vector
     virtual void AppendDataVector(
         const std::string& dataname, const std::vector<double>& datavalues) = 0;
 
     //! write one line to csv file. Data must have been passed via AppendDataVector()
-    virtual void WriteCollectedDataToFile() = 0;
+    virtual void write_collected_data_to_file() = 0;
 
     //! write @p data to file at @p time and @p timestep
     virtual void WriteDataToFile(double time, unsigned int timestep,
@@ -56,7 +56,7 @@ namespace IO
     void RegisterDataVector(
         const std::string& dataname, unsigned int numcomponents, int precision) override;
 
-    void ResetTimeAndTimeStep(const double time, const unsigned int timestep) override
+    void reset_time_and_time_step(const double time, const unsigned int timestep) override
     {
       time_ = time;
       timestep_ = timestep;
@@ -65,7 +65,7 @@ namespace IO
     void AppendDataVector(
         const std::string& dataname, const std::vector<double>& datavalues) override;
 
-    void WriteCollectedDataToFile() override;
+    void write_collected_data_to_file() override;
 
     void WriteDataToFile(double time, unsigned int timestep,
         const std::map<std::string, std::vector<double>>& data) const override;
@@ -101,14 +101,14 @@ namespace IO
     {
     }
 
-    void ResetTimeAndTimeStep(const double time, const unsigned int timestep) override {}
+    void reset_time_and_time_step(const double time, const unsigned int timestep) override {}
 
     void AppendDataVector(
         const std::string& dataname, const std::vector<double>& datavalues) override
     {
     }
 
-    void WriteCollectedDataToFile() override {}
+    void write_collected_data_to_file() override {}
 
     void WriteDataToFile(double time, unsigned int timestep,
         const std::map<std::string, std::vector<double>>& data) const override
@@ -122,9 +122,9 @@ namespace IO
     implementation_->RegisterDataVector(dataname, numcomponents, precision);
   }
 
-  void RuntimeCsvWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
+  void RuntimeCsvWriter::reset_time_and_time_step(double time, unsigned int timestep)
   {
-    implementation_->ResetTimeAndTimeStep(time, timestep);
+    implementation_->reset_time_and_time_step(time, timestep);
   }
 
   void RuntimeCsvWriter::AppendDataVector(
@@ -133,7 +133,10 @@ namespace IO
     implementation_->AppendDataVector(dataname, datavalues);
   }
 
-  void RuntimeCsvWriter::WriteCollectedDataToFile() { implementation_->WriteCollectedDataToFile(); }
+  void RuntimeCsvWriter::write_collected_data_to_file()
+  {
+    implementation_->write_collected_data_to_file();
+  }
 
   void RuntimeCsvWriter::WriteDataToFile(const double time, const unsigned int timestep,
       const std::map<std::string, std::vector<double>>& data) const
@@ -242,7 +245,7 @@ namespace IO
     data_vectors_[dataname].first = datavalues;
   }
 
-  void RuntimeCsvWriterProc0::WriteCollectedDataToFile()
+  void RuntimeCsvWriterProc0::write_collected_data_to_file()
   {
     if (data_vectors_.empty()) FOUR_C_THROW("no data vectors registered!");
 

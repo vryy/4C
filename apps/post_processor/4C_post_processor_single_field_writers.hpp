@@ -40,7 +40,7 @@ class StructureFilter : public PostFilterBase
  protected:
   void WriteAllResults(PostField* field) override;
 
-  void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep) override;
+  void write_all_results_one_time_step(PostResult& result, bool firststep, bool laststep) override;
 
   /*!
   \brief postprocess gauss point stresses and write results

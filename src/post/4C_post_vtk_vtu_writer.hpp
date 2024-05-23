@@ -81,12 +81,12 @@ class PostVtuWriter : public PostVtkWriter
       const bool fillzeros) override;
 
   //! Write a single result step
-  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
-  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -106,7 +106,7 @@ class PostVtuWriter : public PostVtkWriter
   void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
       std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
-  CORE::FE::CellType MapNurbsDisTypeToLagrangeDisType(
+  CORE::FE::CellType map_nurbs_dis_type_to_lagrange_dis_type(
       const CORE::FE::CellType nurbs_dis_type) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
@@ -115,25 +115,25 @@ class PostVtuWriter : public PostVtkWriter
       std::vector<double>& coordinates);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
-      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
-      const bool fillzeros) const;
+  virtual void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from, const bool fillzeros) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <CORE::FE::CellType nurbs_type>
-  void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
+  void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
       const bool fillzeros) const;
 
-  virtual void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+  virtual void write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+  virtual void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
@@ -142,7 +142,7 @@ class PostVtuWriter : public PostVtkWriter
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <CORE::FE::CellType nurbs_type>
-  void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
+  void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
   ///! width of the proc identifier number in the processor specific file names

@@ -85,21 +85,22 @@ double MAT::PAR::PoroDensityLawExp::ComputeCurDensity(const double& refdensity, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensity(const double& press)
+double MAT::PAR::PoroDensityLawExp::compute_ref_density_to_cur_density(const double& press)
 {
   return exp(-1.0 * press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensityDerivative(const double& press)
+double MAT::PAR::PoroDensityLawExp::compute_ref_density_to_cur_density_derivative(
+    const double& press)
 {
   return -1.0 / bulkmodulus_ * exp(-1.0 * press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensitySecondDerivative(
+double MAT::PAR::PoroDensityLawExp::compute_ref_density_to_cur_density_second_derivative(
     const double& press)
 {
   return 1.0 / (bulkmodulus_ * bulkmodulus_) * exp(-1.0 * press / bulkmodulus_);
@@ -107,7 +108,7 @@ double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensitySecondDerivativ
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeCurDensityDerivative(
+double MAT::PAR::PoroDensityLawExp::compute_cur_density_derivative(
     const double& refdensity, const double& press)
 {
   return refdensity / bulkmodulus_ * exp(press / bulkmodulus_);

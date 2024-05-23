@@ -63,7 +63,7 @@ void SlaveElementInterface<distype>::DefineStateNames(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 Teuchos::RCP<SlaveElementInterface<distype>>
-SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
+SlaveElementInterface<distype>::create_slave_element_representation(
     DRT::Element* slave_ele,  ///< coupling slave element
     CORE::LINALG::SerialDenseMatrix&
         slave_xyz  ///< global node coordinates of coupling slave element
@@ -178,7 +178,8 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
+Teuchos::RCP<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
     CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
@@ -191,9 +192,10 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-    DRT::Element* bele, CORE::LINALG::SerialDenseMatrix::Base& bele_xyz,
-    CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
+Teuchos::RCP<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(DRT::Element* bele,
+    CORE::LINALG::SerialDenseMatrix::Base& bele_xyz, CORE::LINALG::SerialDenseMatrix::Base& C_umum,
+    CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
@@ -287,7 +289,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 Teuchos::RCP<NitscheInterface<distype>>
-NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(DRT::Element* bele,
     CORE::LINALG::SerialDenseMatrix::Base& bele_xyz, CORE::LINALG::SerialDenseMatrix::Base& C_umum,
     CORE::LINALG::SerialDenseMatrix::Base& C_usum, CORE::LINALG::SerialDenseMatrix::Base& C_umus,
     CORE::LINALG::SerialDenseMatrix::Base& C_usus, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
@@ -398,11 +400,12 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_TwoSided(
-    DRT::Element* vele, CORE::LINALG::SerialDenseMatrix::Base& vele_xyz,
-    CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& C_usum,
-    CORE::LINALG::SerialDenseMatrix::Base& C_umus, CORE::LINALG::SerialDenseMatrix::Base& C_usus,
-    CORE::LINALG::SerialDenseMatrix::Base& rhC_um, CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
+Teuchos::RCP<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_two_sided(DRT::Element* vele,
+    CORE::LINALG::SerialDenseMatrix::Base& vele_xyz, CORE::LINALG::SerialDenseMatrix::Base& C_umum,
+    CORE::LINALG::SerialDenseMatrix::Base& C_usum, CORE::LINALG::SerialDenseMatrix::Base& C_umus,
+    CORE::LINALG::SerialDenseMatrix::Base& C_usus, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
+    CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
@@ -480,7 +483,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 Teuchos::RCP<HybridLMInterface<distype>>
-HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
+HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard &
                                   ///< adjoint viscous term
 )
@@ -495,7 +498,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 Teuchos::RCP<HybridLMInterface<distype>>
-HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
+HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     DRT::Element* bele,                         ///< boundary element
     CORE::LINALG::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
     bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard &
@@ -554,7 +557,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 Teuchos::RCP<HybridLMInterface<distype>>
-HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
+HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
     DRT::Element* bele,                         ///< boundary element
     CORE::LINALG::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
     CORE::LINALG::SerialDenseMatrix& C_usum,    ///< C_usum coupling matrix

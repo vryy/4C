@@ -45,12 +45,12 @@ namespace FPSI
     static Teuchos::RCP<FPSI::Utils> instance_;
 
     //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
-    Teuchos::RCP<FPSI::FpsiBase> SetupDiscretizations(const Epetra_Comm& comm,
+    Teuchos::RCP<FPSI::FpsiBase> setup_discretizations(const Epetra_Comm& comm,
         const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! redistribute interface for parallel computations
-    void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis,
+    void redistribute_interface(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<const DRT::Discretization> slavedis, const std::string& condname,
         std::map<int, int>& interfacefacingelementmap);
 
@@ -74,16 +74,16 @@ namespace FPSI
 
        See Detailed Description section for further discussion.
     */
-    void SetupLocalInterfaceFacingElementMap(DRT::Discretization& masterdis,
+    void setup_local_interface_facing_element_map(DRT::Discretization& masterdis,
         const DRT::Discretization& slavedis, const std::string& condname,
         std::map<int, int>& interfacefacingelementmap);
 
     //! access methods
-    Teuchos::RCP<std::map<int, int>> Get_Fluid_PoroFluid_InterfaceMap()
+    Teuchos::RCP<std::map<int, int>> get_fluid_poro_fluid_interface_map()
     {
       return fluid_poro_fluid_interface_map_;
     };
-    Teuchos::RCP<std::map<int, int>> Get_PoroFluid_Fluid_InterfaceMap()
+    Teuchos::RCP<std::map<int, int>> get_poro_fluid_fluid_interface_map()
     {
       return poro_fluid_fluid_interface_map_;
     };
@@ -128,7 +128,7 @@ namespace FPSI
           const FPSI::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> ConditionedElementMap(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)

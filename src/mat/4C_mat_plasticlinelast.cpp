@@ -717,7 +717,7 @@ void MAT::PlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
-  SetupCmatElastoPlastic(*cmat, Dgamma, G, qbar, Nbar, heaviside, Hiso, Hkin);
+  setup_cmat_elasto_plastic(*cmat, Dgamma, G, qbar, Nbar, heaviside, Hiso, Hkin);
 
 #ifdef DEBUGMATERIAL
   std::cout << "Nach Setup Cep\n" << std::endl;
@@ -850,7 +850,7 @@ void MAT::PlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STR
  | computes isotropic elasticity tensor in matrix notion     dano 05/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::PlasticLinElast::SetupCmatElastoPlastic(
+void MAT::PlasticLinElast::setup_cmat_elasto_plastic(
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,                                     // elasto-plastic tangent modulus (out)
     double Dgamma,                                // plastic multiplier
@@ -964,7 +964,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   }
 #endif  // #ifdef DEBUGMATERIAL
 
-}  // SetupCmatElastoPlastic()
+}  // setup_cmat_elasto_plastic()
 
 
 /*---------------------------------------------------------------------*

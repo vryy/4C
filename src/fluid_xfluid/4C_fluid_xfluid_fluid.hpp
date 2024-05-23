@@ -75,7 +75,7 @@ namespace FLD
     void UseBlockMatrix(bool splitmatrix = true) override;
 
     /// set fluid-fluid coupling specific parameters
-    void SetXFluidFluidParams();
+    void set_x_fluid_fluid_params();
 
     /// set initial flow field for fluid domains
     void SetInitialFlowField(
@@ -112,7 +112,7 @@ namespace FLD
      * in the merged fluid-fluid-dof-map
      * \param (in) condelements map of conditioned elements
      */
-    void PrepareShapeDerivatives(
+    void prepare_shape_derivatives(
         const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fsiextractor,
         const Teuchos::RCP<std::set<int>> condelements);
 
@@ -132,7 +132,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Veln() override { return xff_state_->xffluidveln_; }
     Teuchos::RCP<const Epetra_Vector> Stepinc() override { return stepinc_; }
 
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispOldState() { return dispnpoldstate_; }
+    Teuchos::RCP<Epetra_Vector> write_access_disp_old_state() { return dispnpoldstate_; }
 
     /// get merged fluid dofmap
     Teuchos::RCP<const Epetra_Map> DofRowMap() override
@@ -153,7 +153,7 @@ namespace FLD
     // get merged velocity dof-map
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> extended_shape_derivatives()
     {
       return extended_shapederivatives_;
     }
@@ -173,7 +173,7 @@ namespace FLD
     }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& XFluidFluidMapExtractor()
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor()
     {
       return xff_state_->xffluidsplitter_;
     }
@@ -188,10 +188,10 @@ namespace FLD
     Teuchos::RCP<FLD::XFluidState> GetNewState() override;
 
     /// solve fluid field after ALE-mesh relaxation
-    void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
+    void update_monolithic_fluid_solution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
 
     /// interpolate embedded fluid state vectors from previous mesh displacement state
-    void InterpolateEmbeddedStateVectors();
+    void interpolate_embedded_state_vectors();
 
     /// create a result test
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
@@ -200,12 +200,12 @@ namespace FLD
     void Output() override;
 
     /// evaluate errors compared to implemented analytical solutions
-    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol() override;
+    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
 
    private:
     /// projection of history from other discretization - returns true if projection was successful
     /// for all nodes
-    bool XTimint_ProjectFromEmbeddedDiscretization(
+    bool x_timint_project_from_embedded_discretization(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  ///< vectors to be reconstructed
@@ -215,7 +215,7 @@ namespace FLD
         ) override;
 
     //! transfer dofs between Newton steps
-    bool XTimint_DoIncrementStepTransfer(
+    bool x_timint_do_increment_step_transfer(
         const bool screen_out, const bool firstcall_in_timestep) override;
 
     //! create a new merged state container
@@ -229,7 +229,7 @@ namespace FLD
     void UpdateByIncrement() override;
 
     /// add additional EOS terms to interface-contributing embedded fluid elements
-    void AddEosPresStabToEmbLayer();
+    void add_eos_pres_stab_to_emb_layer();
 
     //! @name XFF time integration
 

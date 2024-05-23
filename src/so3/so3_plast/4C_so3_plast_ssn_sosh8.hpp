@@ -45,14 +45,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoSh8PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
     class SoSh8Plast : public virtual So3Plast<CORE::FE::CellType::hex8>
@@ -132,7 +132,7 @@ namespace DRT
       // don't want = operator
       SoSh8Plast& operator=(const SoSh8Plast& old) = delete;
 
-      std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
+      std::string get_element_type_string() const { return "SOLIDSH8PLAST"; }
 
      protected:
       static constexpr int num_sp = 8;  ///< number of ANS sampling points, here 8

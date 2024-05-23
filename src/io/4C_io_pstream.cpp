@@ -107,7 +107,7 @@ std::ostream& IO::Pstream::os(const Verbositylevel level) const
 {
   if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
-  if (level <= RequestedOutputLevel())
+  if (level <= requested_output_level())
   {
     if (prefixgroup_id_) *mystream_ << prefixgroup_id_ << ": ";
     return *mystream_;
@@ -231,7 +231,7 @@ IO::Level& IO::flush(IO::Level& out)
  *----------------------------------------------------------------------*/
 void IO::Level::flush()
 {
-  if (level_ <= pstream_->RequestedOutputLevel()) pstream_->flush();
+  if (level_ <= pstream_->requested_output_level()) pstream_->flush();
 
   return;
 }

@@ -347,7 +347,7 @@ namespace FLD
     // write resolved turbulent kinetic energy for given discretization
     //-------------------------------------------------------------------------
     if (type_ == decaying_homogeneous_isotropic_turbulence)
-      CalculateResolvedEnergyDecayingTurbulence();
+      calculate_resolved_energy_decaying_turbulence();
 
     return;
   }
@@ -1323,7 +1323,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | dump statistics to file                      rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::DumpScatraStatistics(int step, bool multiple_records)
+  void TurbulenceStatisticsHit::dump_scatra_statistics(int step, bool multiple_records)
   {
     //------------------------------
     // compute remaining quantities
@@ -1437,7 +1437,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | reset statistics to zero                     rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::ClearScatraStatistics()
+  void TurbulenceStatisticsHit::clear_scatra_statistics()
   {
     for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
     {
@@ -1462,7 +1462,7 @@ namespace FLD
    | calculate the resolved energy for the given discretization   |
    |                                              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::CalculateResolvedEnergyDecayingTurbulence()
+  void TurbulenceStatisticsHit::calculate_resolved_energy_decaying_turbulence()
   {
     //----------------------------------------
     // set reference values
@@ -1626,24 +1626,27 @@ namespace FLD
     {
       if (E_exp_1[rr - 1] > 0.0)
       {
-        q_1 += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_1[rr - 1], E_exp_1[rr]);
+        q_1 += integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_1[rr - 1], E_exp_1[rr]);
         if (k_exp[rr] <= k_c)
         {
-          q_1_r += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_1[rr - 1], E_exp_1[rr]);
+          q_1_r +=
+              integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_1[rr - 1], E_exp_1[rr]);
           rr_k_max = rr;
         }
       }
       if (E_exp_2[rr - 1] > 0.0)
       {
-        q_2 += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_2[rr - 1], E_exp_2[rr]);
+        q_2 += integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_2[rr - 1], E_exp_2[rr]);
         if (k_exp[rr] <= k_c)
-          q_2_r += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_2[rr - 1], E_exp_2[rr]);
+          q_2_r +=
+              integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_2[rr - 1], E_exp_2[rr]);
       }
       if (E_exp_2[rr] > 0.0)
       {
-        q_3 += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_3[rr - 1], E_exp_3[rr]);
+        q_3 += integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_3[rr - 1], E_exp_3[rr]);
         if (k_exp[rr] <= k_c)
-          q_3_r += IntegrateTrapezoidalRule(k_exp[rr - 1], k_exp[rr], E_exp_3[rr - 1], E_exp_3[rr]);
+          q_3_r +=
+              integrate_trapezoidal_rule(k_exp[rr - 1], k_exp[rr], E_exp_3[rr - 1], E_exp_3[rr]);
       }
     }
     // integrate resolved turbulent kinetic energy from k_max to k_c,
@@ -1652,17 +1655,17 @@ namespace FLD
     {
       const double E1_k_c = Interpolate(
           k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_1[rr_k_max], E_exp_1[rr_k_max + 1]);
-      q_1_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_1[rr_k_max], E1_k_c);
+      q_1_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_1[rr_k_max], E1_k_c);
 
       const double E2_k_c = Interpolate(
           k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_2[rr_k_max], E_exp_2[rr_k_max + 1]);
-      q_2_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_2[rr_k_max], E2_k_c);
+      q_2_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_2[rr_k_max], E2_k_c);
 
       if (E_exp_3[rr_k_max + 1] > 0.0 and E_exp_3[rr_k_max] > 0.0)
       {
         const double E3_k_c = Interpolate(
             k_c, k_exp[rr_k_max], k_exp[rr_k_max + 1], E_exp_3[rr_k_max], E_exp_3[rr_k_max + 1]);
-        q_3_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_3[rr_k_max], E3_k_c);
+        q_3_r += integrate_trapezoidal_rule(k_exp[rr_k_max], k_c, E_exp_3[rr_k_max], E3_k_c);
       }
     }
 

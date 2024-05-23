@@ -36,7 +36,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -198,10 +198,11 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevector3) override;
 
       //! Evaluate trace inequality and return the maximal eigenvalue
-      virtual double EstimateNitscheTraceMaxEigenvalueCombined(std::vector<double>& parent_disp);
+      virtual double estimate_nitsche_trace_max_eigenvalue_combined(
+          std::vector<double>& parent_disp);
 
       //! Evaluate trace inequality and return the maximal eigenvalue
-      virtual double EstimateNitscheTraceMaxEigenvalueTSI(std::vector<double>& parent_disp);
+      virtual double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! Return a pointer to the parent element of this boundary element
       virtual DRT::Element* ParentElement() const { return ParentMasterElement(); }
@@ -283,7 +284,7 @@ namespace DRT
 
       This method computes the analytical surface derivative if necessary (for follower loads).
       */
-      void analytical_DSurfaceIntegration(CORE::LINALG::SerialDenseMatrix& d_normal,
+      void analytical_d_surface_integration(CORE::LINALG::SerialDenseMatrix& d_normal,
           const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
@@ -292,7 +293,7 @@ namespace DRT
       This method computes the automatic (Sacado) surface derivative if necessary (for follower
       loads). This method is for development purposes only, and currently not used.
       */
-      void automatic_DSurfaceIntegration(CORE::LINALG::SerialDenseMatrix& d_normal,
+      void automatic_d_surface_integration(CORE::LINALG::SerialDenseMatrix& d_normal,
           const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
@@ -300,7 +301,7 @@ namespace DRT
 
       \param x  (out)  : nodal coords in material frame
       */
-      inline void MaterialConfiguration(CORE::LINALG::SerialDenseMatrix& x) const
+      inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -318,7 +319,7 @@ namespace DRT
       \param x     (out)  : nodal coords in spatial frame
       \param disp  (int)  : displacements
       */
-      inline void SpatialConfiguration(
+      inline void spatial_configuration(
           CORE::LINALG::SerialDenseMatrix& x, const std::vector<double>& disp) const
       {
         const int numnode = NumNode();
@@ -338,7 +339,7 @@ namespace DRT
       \param xrefe (out)  : nodal coords in material frame
       \param disp  (int)  : displacements
       */
-      inline void SpatialConfiguration(CORE::LINALG::SerialDenseMatrix& x,
+      inline void spatial_configuration(CORE::LINALG::SerialDenseMatrix& x,
           CORE::LINALG::SerialDenseMatrix& xrefe, const std::vector<double>& disp) const
       {
         const int numnode = NumNode();
@@ -388,7 +389,7 @@ namespace DRT
           const std::vector<double>& mydisp, bool refconfig);
 
       //! Submethod to compute surface porosity
-      void CalculateSurfacePorosity(
+      void calculate_surface_porosity(
           Teuchos::ParameterList& params, DRT::Discretization& discretization, LocationArray& la);
 
      private:
@@ -407,19 +408,20 @@ namespace DRT
 
       //! Templated version: parent and surface discretization type
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-      double EstimateNitscheTraceMaxEigenvalueCombined(std::vector<double>& parent_disp);
+      double estimate_nitsche_trace_max_eigenvalue_combined(std::vector<double>& parent_disp);
 
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
       template <CORE::FE::CellType dt_vol>
-      void TraceEstimateVolMatrix(const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
+      void trace_estimate_vol_matrix(
+          const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>&
               vol);
 
       //! the surface stiffness matrix
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-      void TraceEstimateSurfMatrix(
+      void trace_estimate_surf_matrix(
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>&
@@ -445,19 +447,19 @@ namespace DRT
 
       //! Templated version: parent and surface discretization type
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-      double EstimateNitscheTraceMaxEigenvalueTSI(std::vector<double>& parent_disp);
+      double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! the volume stiffness matrix
       //! unlike the "full" stiffness matrix we don't use the geometric term here
       template <CORE::FE::CellType dt_vol>
-      void TraceEstimateVolMatrixTSI(
+      void trace_estimate_vol_matrix_tsi(
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& vol);
 
       //! the surface stiffness matrix
       template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-      void TraceEstimateSurfMatrixTSI(
+      void trace_estimate_surf_matrix_tsi(
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& surf);
@@ -465,7 +467,7 @@ namespace DRT
 
       //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
       template <CORE::FE::CellType dt_vol>
-      void SubspaceProjectorScalar(
+      void subspace_projector_scalar(
           CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol> - 1>& proj);
       //@}
 

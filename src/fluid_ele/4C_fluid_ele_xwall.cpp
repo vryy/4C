@@ -50,7 +50,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallType::Create(const int id, c
   return Teuchos::rcp(new DRT::ELEMENTS::FluidXWall(id, owner));
 }
 
-void DRT::ELEMENTS::FluidXWallType::NodalBlockInformation(
+void DRT::ELEMENTS::FluidXWallType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   // this is necessary here! Otherwise it would not be consistent with the non-enriched nodes
@@ -67,7 +67,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidXWallType::ComputeNullSpace(
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition(
+void DRT::ELEMENTS::FluidXWallType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsxwall = definitions["FLUIDXW"];

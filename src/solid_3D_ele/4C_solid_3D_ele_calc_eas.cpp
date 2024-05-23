@@ -654,7 +654,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
 };
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceStiffnessMass(
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force_stiffness_mass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
@@ -725,7 +725,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
 
         if (force.has_value())
         {
-          AddInternalForceVector(Bop, stress, integration_factor, *force);
+          add_internal_force_vector(Bop, stress, integration_factor, *force);
         }
 
         if (stiff.has_value())
@@ -791,7 +791,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(DRT::Element& el
 
   if (params_interface.IsDefaultStep())
   {
-    params_interface.SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+    params_interface.sum_into_my_previous_sol_norm(NOX::NLN::StatusTest::quantity_eas,
         STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_(0, 0),
         ele.Owner());
 
@@ -910,7 +910,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DR
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateInternalEnergy(
+double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_energy(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -969,7 +969,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::MaterialPostSetup(
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::InitializeGaussPointDataOutput(
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_data_output(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -981,7 +981,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::InitializeGaussPointData
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateGaussPointDataOutput(
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_data_output(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -993,7 +993,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateGaussPointDataOu
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::ResetToLastConverged(
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::reset_to_last_converged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();

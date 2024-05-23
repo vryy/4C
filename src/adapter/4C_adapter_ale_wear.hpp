@@ -51,7 +51,7 @@ namespace ADAPTER
     Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
     //! add ALE wear condition vector
-    void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+    void apply_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp)
     {
       interface_->AddAleWearCondVector(idisp, WriteAccessDispnp());
     }

@@ -302,7 +302,7 @@ namespace CORE::GEO
        \param label                label of structure the query point belongs to
        \return set of node gids
        */
-      std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
+      std::map<int, std::set<int>> search_elements_in_radius(const DRT::Discretization& dis,
           const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
           const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -310,13 +310,13 @@ namespace CORE::GEO
        \brief    build the static search tree for the collision detection
        \param currentBVs        map of all current AABBs for all elements
        */
-      void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
+      void build_static_search_tree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
 
       /*!
        \brief    build the static search tree for the collision detection
        \param currentBVs        map of all current 18-DOPs for all elements
        */
-      void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
+      void build_static_search_tree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
 
       /*!
        \brief returns a set of gids of elements whose AABB (bounding volume) intersect with
@@ -387,7 +387,7 @@ namespace CORE::GEO
      \param elements             elements
      \param treetype             quadtree
      */
-    void initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
+    void initialize_tree_slide_ale(const CORE::LINALG::Matrix<3, 2>& nodeBox,
         std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype);
 
     void insertElement(const int eid);
@@ -401,7 +401,7 @@ namespace CORE::GEO
      \param label                label
      \return set of node gids
      */
-    std::map<int, std::set<int>> searchElementsInRadius(const DRT::Discretization& dis,
+    std::map<int, std::set<int>> search_elements_in_radius(const DRT::Discretization& dis,
         const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
         const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
@@ -409,13 +409,13 @@ namespace CORE::GEO
      \brief    build the static search tree for the collision detection
      \param currentBVs        map of all current AABBs for all elements
      */
-    void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
+    void build_static_search_tree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
 
     /*!
      \brief    build the static search tree for the collision detection
      \param currentBVs        map of all current 18-DOPs for all elements
      */
-    void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
+    void build_static_search_tree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
 
     /*!
      \brief returns a set of gids of elements whose AABB (bounding volume) intersect with

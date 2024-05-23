@@ -215,10 +215,10 @@ CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>
 /*----------------------------------------------------------------------*
  |  update master and slave sets (nodes etc.)                farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::UpdateMasterSlaveSets()
+void CONTACT::Interface::update_master_slave_sets()
 {
   // call mortar function
-  MORTAR::Interface::UpdateMasterSlaveSets();
+  MORTAR::Interface::update_master_slave_sets();
 
   //********************************************************************
   // DOFS
@@ -407,7 +407,7 @@ void CONTACT::Interface::AddElement(Teuchos::RCP<CONTACT::Element> cele)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+void CONTACT::Interface::update_parallel_layout_and_data_structures(const bool perform_rebalancing,
     const bool enforce_ghosting_update, const int maxdof, const double meanVelocity)
 {
   if (perform_rebalancing)
@@ -422,7 +422,7 @@ void CONTACT::Interface::UpdateParallelLayoutAndDataStructures(const bool perfor
     if (!Filled()) FillCompleteNew(false, maxdof);
 
     // Finalize interface maps
-    ExtendInterfaceGhostingSafely(meanVelocity);
+    extend_interface_ghosting_safely(meanVelocity);
     FillCompleteNew(true, maxdof);
   }
 
@@ -431,7 +431,7 @@ void CONTACT::Interface::UpdateParallelLayoutAndDataStructures(const bool perfor
   {
     if (Comm().MyPID() == 0)
       std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
-    PrintParallelDistribution();
+    print_parallel_distribution();
   }
 
   if (perform_rebalancing || enforce_ghosting_update) CreateSearchTree();
@@ -467,29 +467,29 @@ void CONTACT::Interface::FillCompleteNew(const bool isFinalParallelDistribution,
   Discret().FillComplete(isFinalParallelDistribution, false, false);
 
   // check whether crosspoints / edge nodes shall be considered or not
-  InitializeCrossPoints();
+  initialize_cross_points();
 
   // check for const/linear interpolation of 2D/3D quadratic Lagrange multipliers
-  InitializeLagMultConst();
-  InitializeLagMultLin();
+  initialize_lag_mult_const();
+  initialize_lag_mult_lin();
 
   // check/init corner/edge modification
-  InitializeCornerEdge();
+  initialize_corner_edge();
 
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily address them
-  UpdateMasterSlaveSets();
+  update_master_slave_sets();
 
   // initialize node and element data container
-  InitializeDataContainer();
+  initialize_data_container();
 
   // Communicate quadslave status among ALL processors
-  CommunicateQuadSlaveStatusAmongAllProcs();
+  communicate_quad_slave_status_among_all_procs();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity)
+void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVelocity)
 {
   using Teuchos::RCP;
 
@@ -553,7 +553,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
       // redistribute the discretization of the interface according to the
       // new column layout
       Discret().ExportColumnNodes(*newnodecolmap);
-      Discret().ExportColumnElements(*newelecolmap);
+      Discret().export_column_elements(*newelecolmap);
 
       break;
     }
@@ -639,7 +639,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
       // redistribute the discretization of the interface according to the
       // new node / element column layout (i.e. master = full overlap)
       Discret().ExportColumnNodes(*newnodecolmap);
-      Discret().ExportColumnElements(*newelecolmap);
+      Discret().export_column_elements(*newelecolmap);
 
       break;
     }
@@ -653,13 +653,13 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
       // Extend master column map via binning
 
       // Create the binning strategy
-      RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(meanVelocity);
+      RCP<BINSTRATEGY::BinningStrategy> binningstrategy = setup_binning_strategy(meanVelocity);
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;
-      binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+      binningstrategy->distribute_eles_to_bins(Discret(), slavebinelemap, true);
       std::map<int, std::set<int>> masterbinelemap;
-      binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+      binningstrategy->distribute_eles_to_bins(Discret(), masterbinelemap, false);
 
       // Extend ghosting of the master elements
       std::map<int, std::set<int>> ext_bin_to_ele_map;
@@ -667,7 +667,7 @@ void CONTACT::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity
           binningstrategy->ExtendElementColMap(slavebinelemap, masterbinelemap, ext_bin_to_ele_map,
               Teuchos::null, Teuchos::null, Discret().ElementColMap());
 
-      Discret().ExportColumnElements(*extendedmastercolmap);
+      Discret().export_column_elements(*extendedmastercolmap);
 
       // get the node ids of the elements that are to be ghosted and create a proper node column
       // map for their export
@@ -729,9 +729,9 @@ void CONTACT::Interface::Redistribute()
   // perform contact search (still with non-optimal distribution)
   Initialize();
   if (SearchAlg() == INPAR::MORTAR::search_bfele)
-    EvaluateSearchBruteForce(SearchParam());
+    evaluate_search_brute_force(SearchParam());
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
 
@@ -740,7 +740,7 @@ void CONTACT::Interface::Redistribute()
   std::vector<int> closeele, noncloseele;
   std::vector<int> localcns, localfns;
 
-  SplitIntoFarAndCloseSets(closeele, noncloseele, localcns, localfns);
+  split_into_far_and_close_sets(closeele, noncloseele, localcns, localfns);
 
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
@@ -782,7 +782,7 @@ void CONTACT::Interface::Redistribute()
   // print old parallel distribution
   if (myrank == 0)
     std::cout << "\nInterface parallel distribution before rebalancing:" << std::endl;
-  PrintParallelDistribution();
+  print_parallel_distribution();
 
   // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
@@ -922,7 +922,7 @@ void CONTACT::Interface::Redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, masterRowEles, comm, mproc, imbalance_tol);
+  redistribute_master_side(mrownodes, mcolnodes, masterRowEles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -1021,7 +1021,7 @@ void CONTACT::Interface::Redistribute()
   //**********************************************************************
   // build reasonable element maps from the already valid and final node maps
   // (note that nothing is actually redistributed in here)
-  const auto& [roweles, coleles] = Discret().BuildElementRowColumn(*rownodes, *colnodes);
+  const auto& [roweles, coleles] = Discret().build_element_row_column(*rownodes, *colnodes);
 
   // export nodes and elements to the row map
   Discret().ExportRowNodes(*rownodes);
@@ -1029,12 +1029,12 @@ void CONTACT::Interface::Redistribute()
 
   // export nodes and elements to the column map (create ghosting)
   Discret().ExportColumnNodes(*colnodes);
-  Discret().ExportColumnElements(*coleles);
+  Discret().export_column_elements(*coleles);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
+void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeele,
     std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
 {
   const bool performSplitting = CORE::UTILS::IntegralValue<bool>(
@@ -1086,7 +1086,7 @@ void CONTACT::Interface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
 /*----------------------------------------------------------------------*
  | collect distribution data (public)                         popp 10/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::CollectDistributionData(int& numColElements, int& numRowElements)
+void CONTACT::Interface::collect_distribution_data(int& numColElements, int& numRowElements)
 {
   // loop over proc's column slave elements of the interface
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -1210,10 +1210,10 @@ void CONTACT::Interface::CreateSearchTree()
 /*----------------------------------------------------------------------*
  |  Initialize Data Container for nodes and elements         farah 02/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::InitializeDataContainer()
+void CONTACT::Interface::initialize_data_container()
 {
   // call base class functionality
-  MORTAR::Interface::InitializeDataContainer();
+  MORTAR::Interface::initialize_data_container();
 
   // ==================
   // non-smooth contact:
@@ -1230,7 +1230,7 @@ void CONTACT::Interface::InitializeDataContainer()
       DRT::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
-      mnode->InitializeDataContainer();
+      mnode->initialize_data_container();
     }
   }
 
@@ -1476,7 +1476,7 @@ void CONTACT::Interface::SetElementAreas()
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
       MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
-      element->InitializeDataContainer();
+      element->initialize_data_container();
       element->MoData().Area() = element->ComputeArea();
     }
   }
@@ -1501,9 +1501,9 @@ void CONTACT::Interface::PreEvaluate(const int& step, const int& iter)
   // search algorithm
   //**********************************************************************
   if (SearchAlg() == INPAR::MORTAR::search_bfele)
-    EvaluateSearchBruteForce(SearchParam());
+    evaluate_search_brute_force(SearchParam());
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
 
@@ -1532,7 +1532,7 @@ void CONTACT::Interface::PreEvaluate(const int& step, const int& iter)
   else
   {
     // evaluate averaged nodal normals on slave side
-    EvaluateNodalNormals();
+    evaluate_nodal_normals();
 
     // export nodal normals to slave node column map
     // this call is very expensive and the computation
@@ -1541,7 +1541,7 @@ void CONTACT::Interface::PreEvaluate(const int& step, const int& iter)
   }
 
   // set condition specific parameters needed for evaluation
-  SetConditionSpecificParameters();
+  set_condition_specific_parameters();
 
   // compute scaling between coupling types
   //  if(nonSmoothContact_)
@@ -2736,7 +2736,7 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AddLTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -2933,7 +2933,7 @@ void CONTACT::Interface::AddLTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::Sparse
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AddNTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -3864,13 +3864,13 @@ void CONTACT::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
 /*----------------------------------------------------------------------*
  |  Check and initialize corner/edge contact                 farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::InitializeCornerEdge()
+void CONTACT::Interface::initialize_corner_edge()
 {
   // return if nonsmooth contact is activated
   if (nonSmoothContact_) return;
 
   // call base function
-  MORTAR::Interface::InitializeCornerEdge();
+  MORTAR::Interface::initialize_corner_edge();
 
   return;
 }
@@ -3879,7 +3879,7 @@ void CONTACT::Interface::InitializeCornerEdge()
 /*----------------------------------------------------------------------*
  |  stuff for non-smooth contact geometries                 farah 02/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::DetectNonSmoothGeometries()
+void CONTACT::Interface::detect_non_smooth_geometries()
 {
   FOUR_C_THROW("outdated!");
 
@@ -3953,7 +3953,7 @@ void CONTACT::Interface::DetectNonSmoothGeometries()
 /*----------------------------------------------------------------------*
  |  cpp to edge + Lin                                       farah 11/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::Element& mele,
+double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORTAR::Element& mele,
     double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin)
 {
   // define tolerance
@@ -4310,7 +4310,7 @@ double CONTACT::Interface::ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::
 /*----------------------------------------------------------------------*
  |  cpp to node + Lin                                       farah 01/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::Node& mnode,
+double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORTAR::Node& mnode,
     double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin)
 {
   const int dim = Dim();
@@ -4453,11 +4453,11 @@ void CONTACT::Interface::EvaluateCPPNormals()
     mrtrnode->BuildAveragedNormal();
 
     // build tangent
-    if (mrtrnode->IsOnEdge()) mrtrnode->BuildAveragedEdgeTangent();
+    if (mrtrnode->IsOnEdge()) mrtrnode->build_averaged_edge_tangent();
   }
 
   // export nodal normals
-  ExportMasterNodalNormals();
+  export_master_nodal_normals();
 
   // loop over slave nodes
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -4516,7 +4516,7 @@ void CONTACT::Interface::EvaluateCPPNormals()
 /*----------------------------------------------------------------------*
  |  export master nodal normals (protected)                  farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::ExportMasterNodalNormals()
+void CONTACT::Interface::export_master_nodal_normals()
 {
   std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
@@ -4746,7 +4746,7 @@ void CONTACT::Interface::ExportMasterNodalNormals()
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                          farah 02/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateAveragedNodalNormals()
+void CONTACT::Interface::evaluate_averaged_nodal_normals()
 {
   FOUR_C_THROW("outdated function!");
   // safety
@@ -4896,7 +4896,7 @@ void CONTACT::Interface::ComputeScalingLTL()
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // push back into vector
           lineElementsS.push_back(lineEle);
@@ -4992,7 +4992,7 @@ void CONTACT::Interface::ComputeScalingLTL()
             lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
-            lineEle->InitializeDataContainer();
+            lineEle->initialize_data_container();
 
             // push back into vector
             lineElementsM.push_back(lineEle);
@@ -5569,7 +5569,7 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
               3, linsize + 1 + meles[ele]->NumNode());
 
           // compute distance between corners
-          dist = ComputeNormalNodeToNode(mrtrnode, *mnode, auxnormal, auxlin);
+          dist = compute_normal_node_to_node(mrtrnode, *mnode, auxnormal, auxlin);
 
           // if nodes lying on each other
           if (abs(dist) < 1e-12)
@@ -5630,14 +5630,15 @@ double CONTACT::Interface::ComputeCPPNormal2D(MORTAR::Node& mrtrnode,
     {
       // perform CPP to find normals based on element normals
       MORTAR::Projector::Impl(*meles[ele])
-          ->ProjectSNodeByMNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
+          ->project_s_node_by_m_normal_lin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
     // compute normal with averaged nodal normal field from master surface
     else
     {
       // perform CPP to find normals based on averaged nodal normal field
       MORTAR::Projector::Impl(*meles[ele])
-          ->ProjectSNodeByMNodalNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
+          ->project_s_node_by_m_nodal_normal_lin(
+              mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
 
     // check if found parameter space coordinate is within element domain
@@ -5743,9 +5744,9 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
     std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(3, 1000);
 
     // perform CPP to find normals
-    bool success =
-        MORTAR::Projector::Impl(*meles[ele])
-            ->ProjectSNodeByMNodalNormalLin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
+    bool success = MORTAR::Projector::Impl(*meles[ele])
+                       ->project_s_node_by_m_nodal_normal_lin(
+                           mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
 
     // newton not converged
     if (!success) continue;
@@ -5880,7 +5881,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
           lineEle->BuildNodalPointers(nodes);
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // call cpp function for edge to edge
 
@@ -5890,7 +5891,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
               3, 100 + 1 + meles[ele]->NumNode());
 
           // compute distance between node and edge
-          dist = ComputeNormalNodeToEdge(mrtrnode, *lineEle, auxnormal, auxlin);
+          dist = compute_normal_node_to_edge(mrtrnode, *lineEle, auxnormal, auxlin);
 
           // angle between trajectory and normal
           if (pathdependent)
@@ -5954,7 +5955,7 @@ double CONTACT::Interface::ComputeCPPNormal3D(MORTAR::Node& mrtrnode,
               3, linsize + 1 + meles[ele]->NumNode());
 
           // compute distance between corners
-          dist = ComputeNormalNodeToNode(mrtrnode, *mnode, auxnormal, auxlin);
+          dist = compute_normal_node_to_node(mrtrnode, *mnode, auxnormal, auxlin);
 
           // angle between trajectory and normal
           if (pathdependent)
@@ -6682,14 +6683,14 @@ void CONTACT::Interface::ExportNodalNormals() const
 /*----------------------------------------------------------------------*
  |  Search for potentially contacting sl/ma pairs (public)    popp 10/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::EvaluateSearchBinarytree()
+bool CONTACT::Interface::evaluate_search_binarytree()
 {
   // *********************************************************************
   // self contact:
   // *********************************************************************
   // We call EvaluateSearch(), which does both, the bottom-up update (on the whole interface) and
-  // the search. Then the dynamic master/slave assignment routine UpdateMasterSlaveSets() is called
-  // and the new slave nodes' data containers are initialized.
+  // the search. Then the dynamic master/slave assignment routine update_master_slave_sets() is
+  // called and the new slave nodes' data containers are initialized.
   // *********************************************************************
   if (SelfContact())
   {
@@ -6697,7 +6698,7 @@ bool CONTACT::Interface::EvaluateSearchBinarytree()
     binarytreeself_->EvaluateSearch();
 
     // update master/slave sets of interface
-    UpdateMasterSlaveSets();
+    update_master_slave_sets();
 
     // initialize node data container
     // (include slave side boundary nodes / crosspoints)
@@ -6709,7 +6710,7 @@ bool CONTACT::Interface::EvaluateSearchBinarytree()
       MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
 
       // initialize container if not yet initialized before
-      mnode->InitializeDataContainer();
+      mnode->initialize_data_container();
     }
 
     // no initialization of element data container as this would
@@ -6720,7 +6721,7 @@ bool CONTACT::Interface::EvaluateSearchBinarytree()
   else
   {
     // call mortar routine
-    MORTAR::Interface::EvaluateSearchBinarytree();
+    MORTAR::Interface::evaluate_search_binarytree();
   }
 
   return true;
@@ -6818,7 +6819,7 @@ void CONTACT::Interface::EvaluateSTL()
             lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
-            lineEle->InitializeDataContainer();
+            lineEle->initialize_data_container();
 
             std::vector<Element*> seleElements;
             seleElements.push_back(selement);
@@ -6950,7 +6951,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
       FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
 
     // we then compute the unit normal vector at the element center
-    selement->ComputeUnitNormalAtXi(loccenter, slaveN);
+    selement->compute_unit_normal_at_xi(loccenter, slaveN);
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -6982,7 +6983,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
         FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
 
       // we then compute the unit normal vector at the element center
-      melement->ComputeUnitNormalAtXi(loccenterM, masterN);
+      melement->compute_unit_normal_at_xi(loccenterM, masterN);
 
       double scaprod = slaveN[0] * masterN[0] + slaveN[1] * masterN[1] + slaveN[2] * masterN[2];
 
@@ -7107,7 +7108,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // push back into vector
           lineElements.push_back(lineEle);
@@ -7176,7 +7177,7 @@ void CONTACT::Interface::EvaluateLTS()
       FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
 
     // we then compute the unit normal vector at the element center
-    selement->ComputeUnitNormalAtXi(loccenter, slaveN);
+    selement->compute_unit_normal_at_xi(loccenter, slaveN);
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -7208,7 +7209,7 @@ void CONTACT::Interface::EvaluateLTS()
         FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
 
       // we then compute the unit normal vector at the element center
-      melement->ComputeUnitNormalAtXi(loccenterM, masterN);
+      melement->compute_unit_normal_at_xi(loccenterM, masterN);
 
       double scaprod = slaveN[0] * masterN[0] + slaveN[1] * masterN[1] + slaveN[2] * masterN[2];
 
@@ -7329,7 +7330,7 @@ void CONTACT::Interface::EvaluateLTS()
         lineEle->BuildNodalPointers(nodes.data());
 
         // init data container for dual shapes
-        lineEle->InitializeDataContainer();
+        lineEle->initialize_data_container();
 
         // push back into vector
         lineElements.push_back(lineEle);
@@ -7445,7 +7446,7 @@ void CONTACT::Interface::EvaluateLTL()
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // push back into vector
           lineElementsS.push_back(lineEle);
@@ -7515,7 +7516,7 @@ void CONTACT::Interface::EvaluateLTL()
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // push back into vector
           lineElementsS.push_back(lineEle);
@@ -7611,7 +7612,7 @@ void CONTACT::Interface::EvaluateLTL()
             lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
-            lineEle->InitializeDataContainer();
+            lineEle->initialize_data_container();
 
             // push back into vector
             lineElementsM.push_back(lineEle);
@@ -7681,7 +7682,7 @@ void CONTACT::Interface::EvaluateLTL()
             lineEle->BuildNodalPointers(nodes.data());
 
             // init data container for dual shapes
-            lineEle->InitializeDataContainer();
+            lineEle->initialize_data_container();
 
             // push back into vector
             lineElementsM.push_back(lineEle);
@@ -7829,7 +7830,7 @@ bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTA
 /*----------------------------------------------------------------------*
  |  Integrate penalty scaling factor kapp (public)            popp 11/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::Element& sele)
+bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 {
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -7870,7 +7871,7 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::Element& sele)
 
       // create a CONTACT integrator instance with correct NumGP and Dim
       CONTACT::Integrator integrator(imortar_, sele.Shape(), Comm());
-      integrator.IntegrateKappaPenalty(sele, sxia, sxib, gseg);
+      integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
 
       // do the assembly into the slave nodes
       integrator.AssembleG(Comm(), sele, *gseg);
@@ -7888,7 +7889,7 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::Element& sele)
 
         // create a CONTACT integrator instance with correct NumGP and Dim
         CONTACT::Integrator integrator(imortar_, sauxelements[i]->Shape(), Comm());
-        integrator.IntegrateKappaPenalty(sele, *(sauxelements[i]), sxia, sxib, gseg);
+        integrator.integrate_kappa_penalty(sele, *(sauxelements[i]), sxia, sxib, gseg);
 
         // do the assembly into the slave nodes
         integrator.AssembleG(Comm(), *(sauxelements[i]), *gseg);
@@ -7897,7 +7898,7 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::Element& sele)
 
     else
     {
-      FOUR_C_THROW("IntegrateKappaPenalty: Invalid case for 3D mortar contact LM interpolation");
+      FOUR_C_THROW("integrate_kappa_penalty: Invalid case for 3D mortar contact LM interpolation");
     }
   }
 
@@ -7911,7 +7912,7 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::Element& sele)
 
     // create a CONTACT integrator instance with correct NumGP and Dim
     CONTACT::Integrator integrator(imortar_, sele.Shape(), Comm());
-    integrator.IntegrateKappaPenalty(sele, sxia, sxib, gseg);
+    integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
 
     // do the assembly into the slave nodes
     integrator.AssembleG(Comm(), sele, *gseg);
@@ -8622,7 +8623,7 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::UpdateActiveSetSemiSmooth()
+bool CONTACT::Interface::update_active_set_semi_smooth()
 {
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
@@ -8843,7 +8844,7 @@ bool CONTACT::Interface::UpdateActiveSetSemiSmooth()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::UpdateActiveSetInitialStatus() const
+void CONTACT::Interface::update_active_set_initial_status() const
 {
   // List of GIDs of all my slave row nodes
   int* my_slave_row_node_gids = SlaveRowNodes()->MyGlobalElements();
@@ -8856,7 +8857,7 @@ void CONTACT::Interface::UpdateActiveSetInitialStatus() const
     Node* cnode = dynamic_cast<Node*>(Discret().gNode(gid));
     if (!cnode) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-    SetNodeInitiallyActive(*cnode);
+    set_node_initially_active(*cnode);
   }
 
   return;
@@ -9273,9 +9274,9 @@ void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CONTACT::Interface& CONTACT::Interface::GetMaSharingRefInterface() const
+const CONTACT::Interface& CONTACT::Interface::get_ma_sharing_ref_interface() const
 {
-  return dynamic_cast<const Interface&>(interface_data_->GetMaSharingRefInterface());
+  return dynamic_cast<const Interface&>(interface_data_->get_ma_sharing_ref_interface());
 }
 
 
@@ -9325,7 +9326,7 @@ void CONTACT::Interface::StoreToOld(MORTAR::StrategyBase::QuantityType type)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::UpdateSelfContactLagMultSet(
+void CONTACT::Interface::update_self_contact_lag_mult_set(
     const Epetra_Map& gref_lmmap, const Epetra_Map& gref_smmap)
 {
   if (gref_lmmap.NumMyElements() != gref_smmap.NumMyElements()) FOUR_C_THROW("Size mismatch!");
@@ -9355,7 +9356,7 @@ void CONTACT::Interface::UpdateSelfContactLagMultSet(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::SetNodeInitiallyActive(CONTACT::Node& cnode) const
+void CONTACT::Interface::set_node_initially_active(CONTACT::Node& cnode) const
 {
   static const bool init_contact_by_gap =
       CORE::UTILS::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
@@ -9368,7 +9369,7 @@ void CONTACT::Interface::SetNodeInitiallyActive(CONTACT::Node& cnode) const
   else if (node_init_active)
     cnode.Active() = true;
   else if (init_contact_by_gap)
-    SetNodeInitiallyActiveByGap(cnode);
+    set_node_initially_active_by_gap(cnode);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (node_init_active)
@@ -9383,7 +9384,7 @@ void CONTACT::Interface::SetNodeInitiallyActive(CONTACT::Node& cnode) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::SetNodeInitiallyActiveByGap(CONTACT::Node& cnode) const
+void CONTACT::Interface::set_node_initially_active_by_gap(CONTACT::Node& cnode) const
 {
   static const double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
 
@@ -9394,7 +9395,7 @@ void CONTACT::Interface::SetNodeInitiallyActiveByGap(CONTACT::Node& cnode) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::SetConditionSpecificParameters()
+void CONTACT::Interface::set_condition_specific_parameters()
 {
   if (InterfaceParams().isSublist("ContactS2ICoupling"))
   {
@@ -9406,7 +9407,7 @@ void CONTACT::Interface::SetConditionSpecificParameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::PostprocessQuantities(const Teuchos::ParameterList& outputParams)
+void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams)
 {
   using Teuchos::RCP;
 

@@ -57,22 +57,23 @@ namespace PARTICLEINTERACTION
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! register specific runtime output writer
-    void RegisterSpecificRuntimeOutputWriter(const std::string& fieldname);
+    void register_specific_runtime_output_writer(const std::string& fieldname);
 
     //! register specific runtime csv writer
-    void RegisterSpecificRuntimeCsvWriter(const std::string& fieldname);
+    void register_specific_runtime_csv_writer(const std::string& fieldname);
 
     //! set current write result flag
-    void SetCurrentWriteResultFlag(bool writeresultsthisstep)
+    void set_current_write_result_flag(bool writeresultsthisstep)
     {
       writeresultsthisstep_ = writeresultsthisstep;
     };
 
     //! get current write result flag
-    inline bool GetCurrentWriteResultFlag() const { return writeresultsthisstep_; }
+    inline bool get_current_write_result_flag() const { return writeresultsthisstep_; }
 
     //! get specific runtime output writer
-    inline IO::VisualizationManager* GetSpecificRuntimeOutputWriter(const std::string& fieldname)
+    inline IO::VisualizationManager* get_specific_runtime_output_writer(
+        const std::string& fieldname)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not runtime_visualization_managers_.count(fieldname))
@@ -83,7 +84,7 @@ namespace PARTICLEINTERACTION
     }
 
     //! get specific runtime csv writer
-    inline IO::RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
+    inline IO::RuntimeCsvWriter* get_specific_runtime_csv_writer(const std::string& fieldname)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not runtime_csvwriters_.count(fieldname))
@@ -94,7 +95,7 @@ namespace PARTICLEINTERACTION
     }
 
     // write particle interaction runtime output
-    void WriteParticleInteractionRuntimeOutput(const int step, const double time) const;
+    void write_particle_interaction_runtime_output(const int step, const double time) const;
 
    private:
     //! communication

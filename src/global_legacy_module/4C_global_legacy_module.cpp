@@ -397,7 +397,7 @@ namespace
                                           .AddNamedString("QUANTITY")
                                           .AddNamedDouble("VALUE")
                                           .AddNamedDouble("TOLERANCE")
-                                          .AddOptionalNamedString("NAME")
+                                          .add_optional_named_string("NAME")
                                           .Build();
 
     INPUT::LineDefinition structure_special = INPUT::LineDefinition::Builder()
@@ -406,7 +406,7 @@ namespace
                                                   .AddNamedString("QUANTITY")
                                                   .AddNamedDouble("VALUE")
                                                   .AddNamedDouble("TOLERANCE")
-                                                  .AddOptionalNamedString("NAME")
+                                                  .add_optional_named_string("NAME")
                                                   .Build();
 
     INPUT::LineDefinition fluid_node = INPUT::LineDefinition::Builder()
@@ -416,7 +416,7 @@ namespace
                                            .AddNamedString("QUANTITY")
                                            .AddNamedDouble("VALUE")
                                            .AddNamedDouble("TOLERANCE")
-                                           .AddOptionalNamedString("NAME")
+                                           .add_optional_named_string("NAME")
                                            .Build();
 
     INPUT::LineDefinition fluid_ele = INPUT::LineDefinition::Builder()
@@ -426,7 +426,7 @@ namespace
                                           .AddNamedString("QUANTITY")
                                           .AddNamedDouble("VALUE")
                                           .AddNamedDouble("TOLERANCE")
-                                          .AddOptionalNamedString("NAME")
+                                          .add_optional_named_string("NAME")
                                           .Build();
 
     INPUT::LineDefinition xfluid_node = INPUT::LineDefinition::Builder()
@@ -436,7 +436,7 @@ namespace
                                             .AddNamedString("QUANTITY")
                                             .AddNamedDouble("VALUE")
                                             .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
+                                            .add_optional_named_string("NAME")
                                             .Build();
 
     INPUT::LineDefinition ale = INPUT::LineDefinition::Builder()
@@ -446,7 +446,7 @@ namespace
                                     .AddNamedString("QUANTITY")
                                     .AddNamedDouble("VALUE")
                                     .AddNamedDouble("TOLERANCE")
-                                    .AddOptionalNamedString("NAME")
+                                    .add_optional_named_string("NAME")
                                     .Build();
 
     INPUT::LineDefinition thermal = INPUT::LineDefinition::Builder()
@@ -456,7 +456,7 @@ namespace
                                         .AddNamedString("QUANTITY")
                                         .AddNamedDouble("VALUE")
                                         .AddNamedDouble("TOLERANCE")
-                                        .AddOptionalNamedString("NAME")
+                                        .add_optional_named_string("NAME")
                                         .Build();
 
     INPUT::LineDefinition lubrication = INPUT::LineDefinition::Builder()
@@ -466,7 +466,7 @@ namespace
                                             .AddNamedString("QUANTITY")
                                             .AddNamedDouble("VALUE")
                                             .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
+                                            .add_optional_named_string("NAME")
                                             .Build();
 
     INPUT::LineDefinition porofluidmultiphase_node = INPUT::LineDefinition::Builder()
@@ -476,7 +476,7 @@ namespace
                                                          .AddNamedString("QUANTITY")
                                                          .AddNamedDouble("VALUE")
                                                          .AddNamedDouble("TOLERANCE")
-                                                         .AddOptionalNamedString("NAME")
+                                                         .add_optional_named_string("NAME")
                                                          .Build();
 
     INPUT::LineDefinition porofluidmultiphase_ele = INPUT::LineDefinition::Builder()
@@ -486,7 +486,7 @@ namespace
                                                         .AddNamedString("QUANTITY")
                                                         .AddNamedDouble("VALUE")
                                                         .AddNamedDouble("TOLERANCE")
-                                                        .AddOptionalNamedString("NAME")
+                                                        .add_optional_named_string("NAME")
                                                         .Build();
 
     INPUT::LineDefinition porofluidmultiphase_special = INPUT::LineDefinition::Builder()
@@ -496,7 +496,7 @@ namespace
                                                             .AddNamedString("QUANTITY")
                                                             .AddNamedDouble("VALUE")
                                                             .AddNamedDouble("TOLERANCE")
-                                                            .AddOptionalNamedString("NAME")
+                                                            .add_optional_named_string("NAME")
                                                             .Build();
 
     INPUT::LineDefinition scatra = INPUT::LineDefinition::Builder()
@@ -506,7 +506,7 @@ namespace
                                        .AddNamedString("QUANTITY")
                                        .AddNamedDouble("VALUE")
                                        .AddNamedDouble("TOLERANCE")
-                                       .AddOptionalNamedString("NAME")
+                                       .add_optional_named_string("NAME")
                                        .Build();
 
     INPUT::LineDefinition scatra_special = INPUT::LineDefinition::Builder()
@@ -516,7 +516,7 @@ namespace
                                                .AddNamedString("QUANTITY")
                                                .AddNamedDouble("VALUE")
                                                .AddNamedDouble("TOLERANCE")
-                                               .AddOptionalNamedString("NAME")
+                                               .add_optional_named_string("NAME")
                                                .Build();
 
     INPUT::LineDefinition ssi = INPUT::LineDefinition::Builder()
@@ -526,7 +526,7 @@ namespace
                                     .AddNamedString("QUANTITY")
                                     .AddNamedDouble("VALUE")
                                     .AddNamedDouble("TOLERANCE")
-                                    .AddOptionalNamedString("NAME")
+                                    .add_optional_named_string("NAME")
                                     .Build();
 
     INPUT::LineDefinition ssi_special = INPUT::LineDefinition::Builder()
@@ -560,7 +560,7 @@ namespace
                                            .AddNamedString("QUANTITY")
                                            .AddNamedDouble("VALUE")
                                            .AddNamedDouble("TOLERANCE")
-                                           .AddOptionalNamedString("NAME")
+                                           .add_optional_named_string("NAME")
                                            .Build();
 
     INPUT::LineDefinition red_airway_ele = INPUT::LineDefinition::Builder()
@@ -570,7 +570,7 @@ namespace
                                                .AddNamedString("QUANTITY")
                                                .AddNamedDouble("VALUE")
                                                .AddNamedDouble("TOLERANCE")
-                                               .AddOptionalNamedString("NAME")
+                                               .add_optional_named_string("NAME")
                                                .Build();
 
     INPUT::LineDefinition art_net_node = INPUT::LineDefinition::Builder()
@@ -580,7 +580,7 @@ namespace
                                              .AddNamedString("QUANTITY")
                                              .AddNamedDouble("VALUE")
                                              .AddNamedDouble("TOLERANCE")
-                                             .AddOptionalNamedString("NAME")
+                                             .add_optional_named_string("NAME")
                                              .Build();
 
     INPUT::LineDefinition art_net_ele = INPUT::LineDefinition::Builder()
@@ -590,7 +590,7 @@ namespace
                                             .AddNamedString("QUANTITY")
                                             .AddNamedDouble("VALUE")
                                             .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
+                                            .add_optional_named_string("NAME")
                                             .Build();
 
     INPUT::LineDefinition fld_adj = INPUT::LineDefinition::Builder()
@@ -600,7 +600,7 @@ namespace
                                         .AddNamedString("QUANTITY")
                                         .AddNamedDouble("VALUE")
                                         .AddNamedDouble("TOLERANCE")
-                                        .AddOptionalNamedString("NAME")
+                                        .add_optional_named_string("NAME")
                                         .Build();
 
     INPUT::LineDefinition opti_node = INPUT::LineDefinition::Builder()
@@ -610,7 +610,7 @@ namespace
                                           .AddNamedString("QUANTITY")
                                           .AddNamedDouble("VALUE")
                                           .AddNamedDouble("TOLERANCE")
-                                          .AddOptionalNamedString("NAME")
+                                          .add_optional_named_string("NAME")
                                           .Build();
 
     INPUT::LineDefinition opti_ele = INPUT::LineDefinition::Builder()
@@ -620,7 +620,7 @@ namespace
                                          .AddNamedString("QUANTITY")
                                          .AddNamedDouble("VALUE")
                                          .AddNamedDouble("TOLERANCE")
-                                         .AddOptionalNamedString("NAME")
+                                         .add_optional_named_string("NAME")
                                          .Build();
 
     INPUT::LineDefinition fsi_node = INPUT::LineDefinition::Builder()
@@ -629,7 +629,7 @@ namespace
                                          .AddNamedString("QUANTITY")
                                          .AddNamedDouble("VALUE")
                                          .AddNamedDouble("TOLERANCE")
-                                         .AddOptionalNamedString("NAME")
+                                         .add_optional_named_string("NAME")
                                          .Build();
 
     INPUT::LineDefinition fsi_special = INPUT::LineDefinition::Builder()
@@ -638,7 +638,7 @@ namespace
                                             .AddNamedString("QUANTITY")
                                             .AddNamedDouble("VALUE")
                                             .AddNamedDouble("TOLERANCE")
-                                            .AddOptionalNamedString("NAME")
+                                            .add_optional_named_string("NAME")
                                             .Build();
 
     INPUT::LineDefinition particle = INPUT::LineDefinition::Builder()
@@ -682,7 +682,7 @@ namespace
                                        .AddNamedString("QUANTITY")
                                        .AddNamedDouble("VALUE")
                                        .AddNamedDouble("TOLERANCE")
-                                       .AddOptionalNamedString("NAME")
+                                       .add_optional_named_string("NAME")
                                        .Build();
 
     INPUT::LineDefinition cardiovascular0d = INPUT::LineDefinition::Builder()
@@ -692,7 +692,7 @@ namespace
                                                  .AddNamedString("QUANTITY")
                                                  .AddNamedDouble("VALUE")
                                                  .AddNamedDouble("TOLERANCE")
-                                                 .AddOptionalNamedString("NAME")
+                                                 .add_optional_named_string("NAME")
                                                  .Build();
     lines.Add(structure);
     lines.Add(structure_special);

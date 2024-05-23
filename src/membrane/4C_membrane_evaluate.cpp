@@ -49,7 +49,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.values(), true);
 
   // set params interface pointer
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // start with ActionType none
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -378,7 +378,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       {
         // only add contributions from row elements to avoid counting them on more than one proc
         if (discretization.Comm().MyPID() == Owner())
-          StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+          StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -474,7 +474,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // set params interface pointer
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (material_inelastic_thickness != Teuchos::null)
     {
       // Let material decide the total stretch in thickness direction
-      lambda3 = material_inelastic_thickness->EvaluateMembraneThicknessStretch(
+      lambda3 = material_inelastic_thickness->evaluate_membrane_thickness_stretch(
           defgrd_glob, params, gp, Id());
 
       // update surface deformation gradient in 3 dimensions in global coordinates

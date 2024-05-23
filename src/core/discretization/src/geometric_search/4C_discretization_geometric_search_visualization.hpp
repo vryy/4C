@@ -43,7 +43,7 @@ namespace CORE::GEOMETRICSEARCH
      * @param predicates (out) Vector containing all predicate bounding volumes and their element
      * GID
      */
-    void WritePrimitivesAndPredicatesToDisk(const double visualziation_time,
+    void write_primitives_and_predicates_to_disk(const double visualziation_time,
         const int visualization_step,
         const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& primitives,
         const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& predicates);

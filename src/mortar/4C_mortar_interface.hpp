@@ -349,14 +349,14 @@ namespace MORTAR
       return *sl_exporter_;
     }
 
-    void SetMaSharingRefInterfacePtr(const Interface* interface_ptr)
+    void set_ma_sharing_ref_interface_ptr(const Interface* interface_ptr)
     {
       masharingrefinterface_ = interface_ptr;
     }
 
-    const Interface* GetMaSharingRefInterfacePtr() const { return masharingrefinterface_; }
+    const Interface* get_ma_sharing_ref_interface_ptr() const { return masharingrefinterface_; }
 
-    const Interface& GetMaSharingRefInterface() const
+    const Interface& get_ma_sharing_ref_interface() const
     {
       if (masharingrefinterface_ == nullptr) FOUR_C_THROW("nullpointer");
       return *masharingrefinterface_;
@@ -613,7 +613,7 @@ namespace MORTAR
     /*!
     \brief Print parallel distribution of this Interface
     */
-    void PrintParallelDistribution() const;
+    void print_parallel_distribution() const;
 
     /*!
     \brief Get communicator
@@ -797,7 +797,7 @@ namespace MORTAR
     /*!
     \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterRowNodesNoBound() const
+    const Teuchos::RCP<Epetra_Map>& master_row_nodes_no_bound() const
     {
       if (Filled())
         return mnoderowmapnobound_;
@@ -809,7 +809,7 @@ namespace MORTAR
     /*!
     \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterColNodesNoBound() const
+    const Teuchos::RCP<Epetra_Map>& master_col_nodes_no_bound() const
     {
       if (Filled())
         return mnodecolmapnobound_;
@@ -996,7 +996,7 @@ namespace MORTAR
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
     only if requested by the user/algorithm.
 
-    \sa ExtendInterfaceGhosting()
+    \sa extend_interface_ghosting()
 
     \warning This is a legacy code path, where interface ghosting is not sufficienct in some cases.
 
@@ -1024,7 +1024,7 @@ namespace MORTAR
     @param maxdof Largest GID of underlying solid discretization
     @param meanVelocity Mean velocity of this interface
     */
-    virtual void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+    virtual void update_parallel_layout_and_data_structures(const bool perform_rebalancing,
         const bool enforce_ghosting_update, const int maxdof, const double meanVelocity);
 
     /*!
@@ -1098,7 +1098,7 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 07/2016 */
-    void StoreUnredistributedMaps();
+    void store_unredistributed_maps();
 
     /*! \brief Redistribute the lagrange multiplier sets in a deterministic way
      *  in correlation to the redistributed slave dofs.
@@ -1108,7 +1108,7 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 07/2016 */
-    Teuchos::RCP<Epetra_Map> RedistributeLagMultSets() const;
+    Teuchos::RCP<Epetra_Map> redistribute_lag_mult_sets() const;
 
     /*!
     \brief Initialize / reset mortar interface
@@ -1197,7 +1197,7 @@ namespace MORTAR
     \brief Evaluate nodal normals
 
     */
-    virtual void EvaluateNodalNormals() const;
+    virtual void evaluate_nodal_normals() const;
 
     /*!
     \brief Evaluate nodal normals
@@ -1207,7 +1207,7 @@ namespace MORTAR
     as key. This function was only added because we want to use the NodalNormal computation
     of the mortar interface in UQ simulations.
     */
-    virtual void EvaluateNodalNormals(std::map<int, std::vector<double>>& mynormals);
+    virtual void evaluate_nodal_normals(std::map<int, std::vector<double>>& mynormals);
 
     /*!
     \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
@@ -1264,24 +1264,24 @@ namespace MORTAR
     /*!
     \brief Detect actual meshtying zone (node by node)
     */
-    void DetectTiedSlaveNodes(int& founduntied);
+    void detect_tied_slave_nodes(int& founduntied);
 
     /*!
     \brief Ghost underlying volume elements
     */
-    void CreateVolumeGhosting();
+    void create_volume_ghosting();
 
     /*!
     \brief Binary tree search algorithm for potentially coupling
            slave / master pairs (element-based algorithm)
     */
-    virtual bool EvaluateSearchBinarytree();
+    virtual bool evaluate_search_binarytree();
 
     /*!
     \brief Brute force search algorithm for potentially coupling
            slave / master pairs (element-based algorithm)
     */
-    void EvaluateSearchBruteForce(const double& eps);
+    void evaluate_search_brute_force(const double& eps);
 
     /*!
     \brief find meles for one snode
@@ -1318,8 +1318,8 @@ namespace MORTAR
 
     //@}
 
-    bool HasMaSharingRefInterface() const;
-    void AddMaSharingRefInterface(const Interface* ref_interface);
+    bool has_ma_sharing_ref_interface() const;
+    void add_ma_sharing_ref_interface(const Interface* ref_interface);
 
     //! @name Output
     //! @{
@@ -1334,7 +1334,7 @@ namespace MORTAR
 
     \param[in] ouputParams Parameter list with stuff required by interfaces to write output
     */
-    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+    virtual void postprocess_quantities(const Teuchos::ParameterList& outputParams);
 
     //! @}
 
@@ -1364,7 +1364,7 @@ namespace MORTAR
 
     //! @}
 
-    const Interface* GetMaSharingRefInterfacePtr() const;
+    const Interface* get_ma_sharing_ref_interface_ptr() const;
 
     //! @name Parallel distribution and ghosting
     //! @{
@@ -1379,7 +1379,7 @@ namespace MORTAR
     \param[in] parts Number of desired subdomains after redistribution
     \param[in] imbalance Max. relative imbalance of subdomain size
     */
-    void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
+    void redistribute_master_side(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
         const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
 
@@ -1393,7 +1393,7 @@ namespace MORTAR
     @param[in] meanVelocity Current absolute value of the mean velocity of this interface
     @return Binning strategy object ready to be used
     */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double meanVelocity);
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> setup_binning_strategy(const double meanVelocity);
 
     //! @}
 
@@ -1500,13 +1500,13 @@ namespace MORTAR
     \brief Initialize data container for nodes and elements
 
     */
-    virtual void InitializeDataContainer();
+    virtual void initialize_data_container();
 
     /*!
     \brief check and init possible corner/edge modification
 
     */
-    virtual void InitializeCornerEdge();
+    virtual void initialize_corner_edge();
 
     /*!
     \brief Set element areas
@@ -1531,7 +1531,7 @@ namespace MORTAR
     slave/master status is assigned dynamically.
 
     */
-    virtual void UpdateMasterSlaveSets();
+    virtual void update_master_slave_sets();
 
    private:
     //! @name Parallel distribution and ghosting
@@ -1549,7 +1549,7 @@ namespace MORTAR
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
     only if requested by the user/algorithm.
 
-    \sa ExtendInterfaceGhostingSafely()
+    \sa extend_interface_ghosting_safely()
 
     @param[in] isFinalParallelDistribution Is this the final parallel distribution?
     @param[in] maxdof Largest GID of underlying solid discretization
@@ -1570,7 +1570,7 @@ namespace MORTAR
     - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
     Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
-    virtual void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0);
+    virtual void extend_interface_ghosting_safely(const double meanVelocity = 0.0);
 
     /*!
     \brief Extend interface ghosting
@@ -1604,7 +1604,8 @@ namespace MORTAR
     \param[in] isFinalParallelDistribution Is this parallel distribution final?
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
-    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution, const double meanVelocity);
+    void extend_interface_ghosting(
+        const bool isFinalParallelDistribution, const double meanVelocity);
 
     //! @}
 
@@ -1616,7 +1617,7 @@ namespace MORTAR
     \pre A valid node column map of interface discretization exists.
     \post DOF row/column maps for slave/master side exist.
     */
-    void UpdateMasterSlaveDofMaps();
+    void update_master_slave_dof_maps();
 
     /*!
     \brief Update master and slave interface maps for elements based on current maps in the
@@ -1624,9 +1625,9 @@ namespace MORTAR
 
     \pre A valid node column map of interface discretization exists.
 
-    \sa UpdateMasterSlaveElementMaps(const Epetra_Map&, const Epetra_Map&)
+    \sa update_master_slave_element_maps(const Epetra_Map&, const Epetra_Map&)
     */
-    void UpdateMasterSlaveElementMaps();
+    void update_master_slave_element_maps();
 
     /*!
     \brief Update master and slave interface maps for elements using given maps
@@ -1640,7 +1641,7 @@ namespace MORTAR
     \warning Use the row map only for checking ownership of an element. Do not loop the row map,
     because we sometimes pass a column map to the row map argument.
     */
-    void UpdateMasterSlaveElementMaps(
+    void update_master_slave_element_maps(
         const Epetra_Map& elementRowMap, const Epetra_Map& elementColumnMap);
 
     /*!
@@ -1649,9 +1650,9 @@ namespace MORTAR
 
     \pre A valid node column map of interface discretization exists.
 
-    \sa UpdateMasterSlaveNodeMaps(const Epetra_Map&, const Epetra_Map&)
+    \sa update_master_slave_node_maps(const Epetra_Map&, const Epetra_Map&)
     */
-    void UpdateMasterSlaveNodeMaps();
+    void update_master_slave_node_maps();
 
     /*!
     \brief Update master and slave interface maps for nodes
@@ -1665,7 +1666,8 @@ namespace MORTAR
     \warning Use the row map only for checking ownership of a node. Do not loop the row map, because
     we sometimes pass a column map to the row map argument.
     */
-    void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
+    void update_master_slave_node_maps(
+        const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
 
    protected:
     /*!
@@ -1687,25 +1689,25 @@ namespace MORTAR
 
     \warning Only implemented for 2D problems. Will throw for 3D.
     */
-    void InitializeCrossPoints();
+    void initialize_cross_points();
 
     /*!
     \brief check and initialize for linear Lagrange multiplier interpolation for 2nd order FE
 
     */
-    void InitializeLagMultLin();
+    void initialize_lag_mult_lin();
 
     /*!
     \brief check and initialize for constant Lagrange multiplier interpolation for 2nd order FE
 
     */
-    void InitializeLagMultConst();
+    void initialize_lag_mult_const();
 
     /*!
     \brief Communicate the quadslave status among all processes
 
     */
-    void CommunicateQuadSlaveStatusAmongAllProcs();
+    void communicate_quad_slave_status_among_all_procs();
 
     /*!
     \brief Get a const reference to internal interface data
@@ -1719,14 +1721,14 @@ namespace MORTAR
 
     Creates either a regular DRT::Discretization or a DRT::NurbsDiscretization.
     */
-    void CreateInterfaceDiscretization();
+    void create_interface_discretization();
 
     /*!
     \brief Set type of shape functions
 
     Read type of shape function form input file parameter list and store it in #shapefcn_.
     */
-    void SetShapeFunctionType();
+    void set_shape_function_type();
 
     /// pointer to the interface data object
     Teuchos::RCP<InterfaceDataContainer> interface_data_;

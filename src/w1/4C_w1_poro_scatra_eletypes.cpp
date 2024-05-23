@@ -63,11 +63,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad4PoroScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad4PoroScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  WallQuad4PoroType::SetupElementDefinition(definitions_wall);
+  WallQuad4PoroType::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ4PORO"];
 
@@ -124,11 +124,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad9PoroScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad9PoroScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  WallQuad9PoroType::SetupElementDefinition(definitions_wall);
+  WallQuad9PoroType::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ9PORO"];
 
@@ -186,11 +186,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallNurbs4PoroScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::WallNurbs4PoroScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  WallNurbs4PoroType::SetupElementDefinition(definitions_wall);
+  WallNurbs4PoroType::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN4PORO"];
 
@@ -249,11 +249,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallNurbs9PoroScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::WallNurbs9PoroScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  WallNurbs9PoroType::SetupElementDefinition(definitions_wall);
+  WallNurbs9PoroType::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN9PORO"];
 
@@ -311,11 +311,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallTri3PoroScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::WallTri3PoroScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  WallTri3PoroType::SetupElementDefinition(definitions_wall);
+  WallTri3PoroType::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLT3PORO"];
 

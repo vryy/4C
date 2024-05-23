@@ -211,7 +211,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const DRT::Discretization& discret,
+    void fe_assemble_ele_force_stiff_into_system_vector_matrix(const DRT::Discretization& discret,
         std::vector<int> const& elegid, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec,

@@ -24,7 +24,7 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lline);
+  set_parent_master_element(parent, lline);
   // type of gaussian integration
   switch (Shape())
   {

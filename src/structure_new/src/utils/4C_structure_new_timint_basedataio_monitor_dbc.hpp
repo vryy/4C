@@ -48,7 +48,7 @@ namespace STR
 
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
-      int OutputIntervalInSteps() const
+      int output_interval_in_steps() const
       {
         CheckInitSetup();
         return output_interval_steps_;

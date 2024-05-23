@@ -55,14 +55,14 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
       EOS_whichtau_(INPAR::FLUID::EOS_tau_burman_fernandez),
       EOS_element_length_(INPAR::FLUID::EOS_he_max_dist_to_opp_surf),
       presKrylov2Dz_(false),
-      ghost_penalty_visc_fac(0.0),
-      ghost_penalty_trans_fac(0.0),
+      ghost_penalty_visc_fac_(0.0),
+      ghost_penalty_trans_fac_(0.0),
       ghost_penalty_visc_(false),
       ghost_penalty_trans_(false),
       ghost_penalty_u_p_2nd_(false),
       ghost_penalty_u_p_2nd_normal_(false),
-      ghost_penalty_visc_2nd_fac(0.0),
-      ghost_penalty_press_2nd_fac(0.0),
+      ghost_penalty_visc_2nd_fac_(0.0),
+      ghost_penalty_press_2nd_fac_(0.0),
       is_face_EOS_Pres_(false),
       is_face_EOS_Conv_Stream_(false),
       is_face_EOS_Conv_Cross_(false),
@@ -81,7 +81,7 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
 //----------------------------------------------------------------------*
 //  set general parameters                                 schott Jun14 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
+void DRT::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_face_general_fluid_parameter_ == false) set_face_general_fluid_parameter_ = true;
@@ -206,7 +206,7 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
 //----------------------------------------------------------------------*
 //  set general parameters                                 schott Jun14 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
+void DRT::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_face_general_XFEM_parameter_ == false)
@@ -221,14 +221,14 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
 
   Teuchos::ParameterList& stablist_xfem = params.sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  ghost_penalty_visc_fac = stablist_xfem.get<double>("GHOST_PENALTY_FAC", 0.0);
-  ghost_penalty_trans_fac = stablist_xfem.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0);
+  ghost_penalty_visc_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_FAC", 0.0);
+  ghost_penalty_trans_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0);
 
   ghost_penalty_visc_ = (bool)CORE::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_STAB");
   ghost_penalty_trans_ =
       (bool)CORE::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_TRANSIENT_STAB");
-  ghost_penalty_visc_2nd_fac = stablist_xfem.get<double>("GHOST_PENALTY_2nd_FAC", 0.0);
-  ghost_penalty_press_2nd_fac = stablist_xfem.get<double>("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.0);
+  ghost_penalty_visc_2nd_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_2nd_FAC", 0.0);
+  ghost_penalty_press_2nd_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.0);
 
   // safety check
   if (fldparatimint_->IsStationary() and ghost_penalty_trans_)
@@ -247,18 +247,18 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
 // and return if stabilization for current face is required             |
 //                                                         schott Jun14 |
 //---------------------------------------------------------------------*/
-bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
+bool DRT::ELEMENTS::FluidEleParameterIntFace::set_face_specific_fluid_xfem_parameter(
     const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
     Teuchos::ParameterList& params           ///< parameter list
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: SetFaceSpecificFluidXFEMParameter");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: set_face_specific_fluid_xfem_parameter");
 
-  Set_GhostPenaltyReconstruction(params.get<bool>("ghost_penalty_reconstruct", false));
+  set_ghost_penalty_reconstruction(params.get<bool>("ghost_penalty_reconstruct", false));
 
   // do not assemble non-ghost-penalty faces if not necessary!
   // remark: flags for ghost penalty have to be set
-  if (Is_GhostPenaltyReconstruction())
+  if (is_ghost_penalty_reconstruction())
   {
     if (face_type != INPAR::XFEM::face_type_ghost_penalty)
       return false;  // do not assembly (stabilizing just the ghost-penalty faces is sufficient)
@@ -276,10 +276,10 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   if (face_type == INPAR::XFEM::face_type_std)
   {
     Set_Face_EOS_Pres((EOS_Pres() == INPAR::FLUID::EOS_PRES_std_eos));
-    Set_Face_EOS_Conv_Stream((EOS_Conv_Stream() == INPAR::FLUID::EOS_CONV_STREAM_std_eos));
-    Set_Face_EOS_Conv_Cross((EOS_Conv_Cross() == INPAR::FLUID::EOS_CONV_CROSS_std_eos));
-    Set_Face_EOS_Div_vel_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_vel_jump_std_eos));
-    Set_Face_EOS_Div_div_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_div_jump_std_eos));
+    set_face_eos_conv_stream((EOS_Conv_Stream() == INPAR::FLUID::EOS_CONV_STREAM_std_eos));
+    set_face_eos_conv_cross((EOS_Conv_Cross() == INPAR::FLUID::EOS_CONV_CROSS_std_eos));
+    set_face_eos_div_vel_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_vel_jump_std_eos));
+    set_face_eos_div_div_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_div_jump_std_eos));
 
     Set_Face_GP_visc(false);
     Set_Face_GP_trans(false);
@@ -288,26 +288,26 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   else if (face_type == INPAR::XFEM::face_type_ghost_penalty)
   {
     Set_Face_EOS_Pres((EOS_Pres() != INPAR::FLUID::EOS_PRES_none));
-    Set_Face_EOS_Conv_Stream((EOS_Conv_Stream() != INPAR::FLUID::EOS_CONV_STREAM_none));
-    Set_Face_EOS_Conv_Cross((EOS_Conv_Cross() != INPAR::FLUID::EOS_CONV_CROSS_none));
-    Set_Face_EOS_Div_vel_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_vel_jump_std_eos or
+    set_face_eos_conv_stream((EOS_Conv_Stream() != INPAR::FLUID::EOS_CONV_STREAM_none));
+    set_face_eos_conv_cross((EOS_Conv_Cross() != INPAR::FLUID::EOS_CONV_CROSS_none));
+    set_face_eos_div_vel_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_vel_jump_std_eos or
                                EOS_Div() == INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp));
-    Set_Face_EOS_Div_div_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_div_jump_std_eos or
+    set_face_eos_div_div_jump((EOS_Div() == INPAR::FLUID::EOS_DIV_div_jump_std_eos or
                                EOS_Div() == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp));
 
-    Set_Face_GP_visc(Is_General_Ghost_Penalty_visc());
-    Set_Face_GP_trans(Is_General_Ghost_Penalty_trans());
-    Set_Face_GP_u_p_2nd(Is_General_Ghost_Penalty_u_p_2nd());
+    Set_Face_GP_visc(is_general_ghost_penalty_visc());
+    Set_Face_GP_trans(is_general_ghost_penalty_trans());
+    Set_Face_GP_u_p_2nd(is_general_ghost_penalty_u_p_2nd());
   }
   else if (face_type == INPAR::XFEM::face_type_boundary_ghost_penalty)
   {
     // TODO: this can be improved if only pressure is assembled later on
 
     Set_Face_EOS_Pres((EOS_Pres() == INPAR::FLUID::EOS_PRES_xfem_gp));
-    Set_Face_EOS_Conv_Stream(false);
-    Set_Face_EOS_Conv_Cross(false);
-    Set_Face_EOS_Div_vel_jump(false);
-    Set_Face_EOS_Div_div_jump(false);
+    set_face_eos_conv_stream(false);
+    set_face_eos_conv_cross(false);
+    set_face_eos_div_vel_jump(false);
+    set_face_eos_div_div_jump(false);
 
     Set_Face_GP_visc(false);
     Set_Face_GP_trans(false);
@@ -316,10 +316,10 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   else if (face_type == INPAR::XFEM::face_type_ghost)
   {
     Set_Face_EOS_Pres(false);
-    Set_Face_EOS_Conv_Stream(false);
-    Set_Face_EOS_Conv_Cross(false);
-    Set_Face_EOS_Div_vel_jump(false);
-    Set_Face_EOS_Div_div_jump(false);
+    set_face_eos_conv_stream(false);
+    set_face_eos_conv_cross(false);
+    set_face_eos_div_vel_jump(false);
+    set_face_eos_div_div_jump(false);
     Set_Face_GP_visc(false);
     Set_Face_GP_trans(false);
     Set_Face_GP_u_p_2nd(false);
@@ -328,10 +328,10 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   {
     EOS_whichtau_actual_ = INPAR::FLUID::EOS_tau_poroelast_fluid;
     Set_Face_EOS_Pres(true);
-    Set_Face_EOS_Conv_Stream(false);
-    Set_Face_EOS_Conv_Cross(false);
-    Set_Face_EOS_Div_vel_jump(false);
-    Set_Face_EOS_Div_div_jump(true);
+    set_face_eos_conv_stream(false);
+    set_face_eos_conv_cross(false);
+    set_face_eos_div_vel_jump(false);
+    set_face_eos_div_div_jump(true);
     Set_Face_GP_visc(false);
     Set_Face_GP_trans(false);
     Set_Face_GP_u_p_2nd(false);
@@ -342,18 +342,18 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   // which pattern has to be activated?
   // TODO: this can be improved if only pressure is assembled and so on!
 
-  if (Face_EOS_Div_div_jump())
+  if (face_eos_div_div_jump())
   {
-    Set_Face_EOS_GP_Pattern(INPAR::FLUID::EOS_GP_Pattern_up);
+    set_face_eos_gp_pattern(INPAR::FLUID::EOS_GP_Pattern_up);
   }
   else
   {
-    Set_Face_EOS_GP_Pattern(INPAR::FLUID::EOS_GP_Pattern_uvwp);
+    set_face_eos_gp_pattern(INPAR::FLUID::EOS_GP_Pattern_uvwp);
   }
 
   // return false if no stabilization is required
-  if (!Face_EOS_Pres() and !Face_EOS_Conv_Stream() and !Face_EOS_Conv_Cross() and
-      !Face_EOS_Div_vel_jump() and !Face_EOS_Div_div_jump() and !Face_GP_visc() and
+  if (!Face_EOS_Pres() and !face_eos_conv_stream() and !Face_EOS_Conv_Cross() and
+      !face_eos_div_vel_jump() and !face_eos_div_div_jump() and !Face_GP_visc() and
       !Face_GP_trans() and !Face_GP_u_p_2nd())
   {
     return false;

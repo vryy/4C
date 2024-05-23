@@ -936,7 +936,7 @@ void FLD::TurbulenceStatisticsTgv::DumpStatistics(const int step)
 
   return;
 
-}  // TurbulenceStatisticsTvg::TimeAverageMeansAndOutputOfStatistics
+}  // TurbulenceStatisticsTvg::time_average_means_and_output_of_statistics
 
 
 /*----------------------------------------------------------------------*

@@ -62,7 +62,7 @@ namespace WEAR
     \brief Assemble matrices LinT containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void AssembleLinT_D_Master(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
@@ -74,7 +74,7 @@ namespace WEAR
     \brief Assemble matrices LinT containing linearizations
            w.r.t. LM
     */
-    virtual void AssembleLinT_LM_Master(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinE containing linearizations
@@ -86,7 +86,7 @@ namespace WEAR
     \brief Assemble matrices LinE containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void AssembleLinE_D_Master(CORE::LINALG::SparseMatrix& lineglobal);
+    virtual void assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& lineglobal);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -166,7 +166,7 @@ namespace WEAR
     \brief Build corresponding active set for master side
 
     */
-    virtual bool BuildActiveSetMaster();
+    virtual bool build_active_set_master();
 
     /*!
     \brief Check mortar wear T derivatives with finite differences
@@ -178,7 +178,7 @@ namespace WEAR
     \brief Check mortar wear T derivatives with finite differences (Master)
 
     */
-    void FDCheckMortarT_Master_Deriv();
+    void fd_check_mortar_t_master_deriv();
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
@@ -190,7 +190,7 @@ namespace WEAR
     \brief Check mortar wear E derivatives with finite differences (for master)
 
     */
-    void FDCheckMortarE_Master_Deriv();
+    void fd_check_mortar_e_master_deriv();
 
     /*!
     \brief Check mortar wear T derivatives with finite differences
@@ -204,7 +204,7 @@ namespace WEAR
       --> for wear condition (Master)
 
     */
-    void FDCheckDerivT_D_Master(CORE::LINALG::SparseMatrix& lintdis);
+    void fd_check_deriv_t_d_master(CORE::LINALG::SparseMatrix& lintdis);
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
@@ -218,7 +218,7 @@ namespace WEAR
       --> for wear condition (Master)
 
     */
-    void FDCheckDerivE_D_Master(CORE::LINALG::SparseMatrix& linedis);
+    void fd_check_deriv_e_d_master(CORE::LINALG::SparseMatrix& linedis);
     /*!
     \brief Check weighted gap g derivatives with finite differences
 
@@ -255,12 +255,12 @@ namespace WEAR
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)
     */
-    virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
+    virtual void assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)
     */
-    virtual void AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs);
+    virtual void assemble_inactive_wear_rhs_master(Epetra_FEVector& inactiverhs);
 
     /*!
     \brief Assemble wear-cond. rhs
@@ -270,7 +270,7 @@ namespace WEAR
     /*!
     \brief Assemble wear-cond. rhs
     */
-    virtual void AssembleWearCondRhs_Master(Epetra_FEVector& rhs);
+    virtual void assemble_wear_cond_rhs_master(Epetra_FEVector& rhs);
 
     /*!
     \brief Initialize / reset interface for contact
@@ -309,7 +309,7 @@ namespace WEAR
     \brief Evaluate nodal normals
 
     */
-    void EvaluateNodalNormals() const final;
+    void evaluate_nodal_normals() const final;
 
 
     /*!
@@ -436,7 +436,7 @@ namespace WEAR
     Derived verision!
 
     */
-    void InitializeDataContainer() final;
+    void initialize_data_container() final;
 
 
     // both-sided wear specific stuff

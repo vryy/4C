@@ -41,15 +41,16 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
 {
   // Create assembly manager..
   Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-      assembly_manager = BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
-          discretization1, discretization2, *(GetPairs()), GetParams(), assemblystrategy_);
+      assembly_manager =
+          BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
+              discretization1, discretization2, *(GetPairs()), GetParams(), assemblystrategy_);
   // compute and assembly the coupling matrices and vectors
   assembly_manager->EvaluateForceStiff(
       *discretization1, *discretization2, ff_, fs_, cff_, css_, csf_, cfs_, fluid_vel, beam_vel);
   cff_->Complete();
 
   // Unset the dirichlet flag in case we were doing a fluid solve
-  UnsetWeakDirichletFlag();
+  unset_weak_dirichlet_flag();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -63,20 +64,20 @@ void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::SetWeakDirichletFlag()
+void ADAPTER::FBIConstraintBridgePenalty::set_weak_dirichlet_flag()
 {
-  beam_interaction_params_->SetWeakDirichletFlag();
+  beam_interaction_params_->set_weak_dirichlet_flag();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::UnsetWeakDirichletFlag()
+void ADAPTER::FBIConstraintBridgePenalty::unset_weak_dirichlet_flag()
 {
-  beam_interaction_params_->UnsetWeakDirichletFlag();
+  beam_interaction_params_->unset_weak_dirichlet_flag();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyStructureContributions()
+void ADAPTER::FBIConstraintBridgePenalty::scale_penalty_structure_contributions()
 {
   if (!structure_scaled_)
   {
@@ -88,7 +89,7 @@ void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyStructureContributions()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
+void ADAPTER::FBIConstraintBridgePenalty::scale_penalty_fluid_contributions()
 {
   if (!fluid_scaled_)
   {

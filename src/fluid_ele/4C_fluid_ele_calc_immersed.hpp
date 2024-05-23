@@ -69,7 +69,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       //! compute residual of momentum equation and subgrid-scale velocity
-      void ComputeSubgridScaleVelocity(
+      void compute_subgrid_scale_velocity(
           const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,  ///< acceleration at time n+alpha_M
           double& fac1,                                    ///< factor for old s.-s. velocities
           double& fac2,                                    ///< factor for old s.-s. accelerations
@@ -89,9 +89,9 @@ namespace DRT
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
       //! reactive terms of the Galerkin part
-      void InertiaConvectionReactionGalPart(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                                                estif_u,  ///< block (weighting function v x u)
-          CORE::LINALG::Matrix<nsd_, nen_>& velforce,     ///< rhs forces velocity
+      void inertia_convection_reaction_gal_part(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                                                    estif_u,  ///< block (weighting function v x u)
+          CORE::LINALG::Matrix<nsd_, nen_>& velforce,         ///< rhs forces velocity
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
               lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
           CORE::LINALG::Matrix<nsd_, 1>&
@@ -109,8 +109,8 @@ namespace DRT
           ) override;
 
       //! Compute element matrix entries: conservative formulation
-      void ConservativeFormulation(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                                       estif_u,        ///< block (weighting function v x u)
+      void conservative_formulation(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                                        estif_u,       ///< block (weighting function v x u)
           CORE::LINALG::Matrix<nsd_, nen_>& velforce,  ///< rhs forces velocity
           const double& timefacfac,                    ///< = timefac x fac
           const double& rhsfac                         ///< right-hand-side factor

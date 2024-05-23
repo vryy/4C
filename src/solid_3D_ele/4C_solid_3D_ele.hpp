@@ -38,7 +38,7 @@ namespace DRT::ELEMENTS
   class SolidType : public DRT::ElementType
   {
    public:
-    void SetupElementDefinition(
+    void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
@@ -50,7 +50,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] std::string Name() const override { return "SolidType"; }
 
-    void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+    void nodal_block_information(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -143,7 +143,7 @@ namespace DRT::ELEMENTS
       return *interface_ptr_;
     }
 
-    void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+    void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
     [[nodiscard]] bool HaveEAS() const
     {

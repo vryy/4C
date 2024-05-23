@@ -59,13 +59,13 @@ PARTICLEINTERACTION::SPHSurfaceTension::~SPHSurfaceTension() = default;
 void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 {
   // init interface viscosity handler
-  InitInterfaceViscosityHandler();
+  init_interface_viscosity_handler();
 
   // init evaporation induced recoil pressure handler
-  InitRecoilPressureEvaporationHandler();
+  init_recoil_pressure_evaporation_handler();
 
   // init barrier force handler
-  InitBarrierForceHandler();
+  init_barrier_force_handler();
 
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
@@ -111,7 +111,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set kernel handler
   kernel_ = kernel;
@@ -160,7 +160,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::SetCurrentTime(const double current
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHSurfaceTension::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -196,53 +196,55 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InsertParticleStatesOfParticleTypes
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceQuantities()
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_quantities()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceQuantities");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_quantities");
 
   // compute colorfield gradient
-  ComputeColorfieldGradient();
+  compute_colorfield_gradient();
 
   // compute interface normal
-  ComputeInterfaceNormal();
+  compute_interface_normal();
 
   if (not boundarytypes_.empty())
   {
     // compute wall colorfield and wall interface normal
-    ComputeWallColorfieldAndWallInterfaceNormal();
+    compute_wall_colorfield_and_wall_interface_normal();
 
     // correct normal vector of particles close to triple point
-    CorrectTriplePointNormal();
+    correct_triple_point_normal();
   }
 
   // refresh interface normal
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(intnormtorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(intnormtorefresh_);
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution()
+void PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution");
 
   // compute curvature
   ComputeCurvature();
 
   // compute surface tension contribution
-  ComputeSurfaceTensionContribution();
+  compute_surface_tension_contribution();
 
   // compute temperature gradient driven contribution
-  if (alpha_t_ != 0.0) ComputeTempGradDrivenContribution();
+  if (alpha_t_ != 0.0) compute_temp_grad_driven_contribution();
 
   // compute interface viscosity contribution
-  if (interfaceviscosity_) interfaceviscosity_->ComputeInterfaceViscosityContribution();
+  if (interfaceviscosity_) interfaceviscosity_->compute_interface_viscosity_contribution();
 
   // compute evaporation induced recoil pressure contribution
-  if (recoilpressureevaporation_) recoilpressureevaporation_->ComputeRecoilPressureContribution();
+  if (recoilpressureevaporation_)
+    recoilpressureevaporation_->compute_recoil_pressure_contribution();
 
   // compute barrier force contribution
-  if (barrierforce_) barrierforce_->ComputeBarrierForceContribution();
+  if (barrierforce_) barrierforce_->compute_barrier_force_contribution();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::InitInterfaceViscosityHandler()
+void PARTICLEINTERACTION::SPHSurfaceTension::init_interface_viscosity_handler()
 {
   // create interface viscosity handler
   if (CORE::UTILS::IntegralValue<int>(params_sph_, "INTERFACE_VISCOSITY"))
@@ -253,7 +255,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InitInterfaceViscosityHandler()
   if (interfaceviscosity_) interfaceviscosity_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::InitRecoilPressureEvaporationHandler()
+void PARTICLEINTERACTION::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
 {
   // create evaporation induced recoil pressure handler
   if (CORE::UTILS::IntegralValue<int>(params_sph_, "VAPOR_RECOIL"))
@@ -264,7 +266,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InitRecoilPressureEvaporationHandle
   if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::InitBarrierForceHandler()
+void PARTICLEINTERACTION::SPHSurfaceTension::init_barrier_force_handler()
 {
   // create barrier force handler
   if (CORE::UTILS::IntegralValue<int>(params_sph_, "BARRIER_FORCE"))
@@ -275,14 +277,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InitBarrierForceHandler()
   if (barrierforce_) barrierforce_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_colorfield_gradient() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear colorfield gradient state
     container_i->ClearState(PARTICLEENGINE::ColorfieldGradient);
@@ -290,13 +292,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -314,10 +316,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -347,7 +349,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -365,14 +367,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_normal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear interface normal state
     container_i->ClearState(PARTICLEENGINE::InterfaceNormal);
@@ -395,14 +397,15 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceNormal() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfaceNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_wall_colorfield_and_wall_interface_normal()
+    const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear wall colorfield state
     container_i->ClearState(PARTICLEENGINE::WallColorfield);
@@ -413,14 +416,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+  neighborpairs_->get_relevant_particle_pair_indices_for_disjoint_combination(
       boundarytypes_, fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -435,17 +438,17 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // evaluate contribution of neighboring boundary particle j
     if (fluidtypes_.count(type_i))
     {
       // get material for current particle type
       const MAT::PAR::ParticleMaterialBase* material_j =
-          particlematerial_->GetPtrToParticleMatParameter(type_j);
+          particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
       // get pointer to particle states
       const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -483,7 +486,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
     {
       // get material for current particle type
       const MAT::PAR::ParticleMaterialBase* material_i =
-          particlematerial_->GetPtrToParticleMatParameter(type_i);
+          particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
       // get pointer to particle states
       const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
@@ -521,7 +524,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -543,7 +546,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::correct_triple_point_normal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -557,7 +560,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -628,7 +631,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear curvature state
     container_i->ClearState(PARTICLEENGINE::Curvature);
@@ -672,13 +675,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -693,10 +696,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -759,7 +762,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -781,7 +784,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_surface_tension_contribution() const
 {
   // evaluate surface tension time ramp function
   double timefac = 1.0;
@@ -795,7 +798,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -832,7 +835,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution() const
+void PARTICLEINTERACTION::SPHSurfaceTension::compute_temp_grad_driven_contribution() const
 {
   // evaluate surface tension time ramp function
   double timefac = 1.0;
@@ -849,7 +852,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)

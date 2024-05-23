@@ -38,7 +38,7 @@ CONTACT::AUG::LAGRANGE::Strategy::Strategy(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
 {
-  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
     Data().StrContactRhsPtr() = Teuchos::null;
     return;

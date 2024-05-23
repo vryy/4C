@@ -94,7 +94,7 @@ namespace CONTACT
     // //! @name Access methods
 
     CORE::LINALG::SerialDenseMatrix* GetTopology() { return &topology_; };
-    double GetMaxTopologyHeight() { return maxTopologyHeight_; };
+    double get_max_topology_height() { return maxTopologyHeight_; };
 
    protected:
     int hurstexponentfunction_;

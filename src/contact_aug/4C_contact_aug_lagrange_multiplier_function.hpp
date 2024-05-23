@@ -74,15 +74,15 @@ namespace CONTACT
         if (not issetup_) FOUR_C_THROW("Call Setup() first!");
       }
 
-      Teuchos::RCP<Epetra_Vector> GetStructureGradient(
+      Teuchos::RCP<Epetra_Vector> get_structure_gradient(
           const CONTACT::ParamsInterface& cparams) const;
 
       void CreateBMatrix();
 
-      void AssembleGradientBMatrixContribution(
+      void assemble_gradient_b_matrix_contribution(
           const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const;
 
-      void AssembleGradientBBMatrixContribution(
+      void assemble_gradient_bb_matrix_contribution(
           const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const;
 
      private:

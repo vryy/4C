@@ -47,10 +47,10 @@ namespace SCATRA
     void Update() override{};
 
     //! set the nodal L2-flux
-    virtual void SetL2FluxOfMultiFluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
+    virtual void set_l2_flux_of_multi_fluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
 
     //! set solution field of the multiphase fluid
-    virtual void SetSolutionFieldOfMultiFluid(Teuchos::RCP<const Epetra_Vector> phinp_fluid,
+    virtual void set_solution_field_of_multi_fluid(Teuchos::RCP<const Epetra_Vector> phinp_fluid,
         Teuchos::RCP<const Epetra_Vector> phin_fluid);
 
     //! set the velocity field (zero or field by function)
@@ -82,15 +82,16 @@ namespace SCATRA
     void OutputState() override;
 
     //! problem specific output
-    void OutputProblemSpecific() override;
+    void output_problem_specific() override;
 
     //! add parameters depending on the problem
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params  //!< parameter list
+    void add_problem_specific_parameters_and_vectors(
+        Teuchos::ParameterList& params  //!< parameter list
         ) override;
 
    protected:
     //! output of oxygen partial pressure
-    void OutputOxygenPartialPressure();
+    void output_oxygen_partial_pressure();
     //! do we employ L2-projection for reconstruction of velocity field
     bool L2_projection_;
   };

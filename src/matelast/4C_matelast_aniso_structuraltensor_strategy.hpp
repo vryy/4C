@@ -104,7 +104,7 @@ namespace MAT
        * This is the core functionality of this object.
        * Each derived class has to implement this method (pure virtual).
        */
-      virtual void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      virtual void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<6, 1>& structural_tensor_stress) = 0;
 
       /*!
@@ -114,7 +114,7 @@ namespace MAT
        * This is the core functionality of this object.
        * Each derived class has to implement this method (pure virtual).
        */
-      virtual void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      virtual void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<3, 3>& structural_tensor) = 0;
 
       /*!
@@ -172,7 +172,7 @@ namespace MAT
        * @param fiber_vector (in) : direction of fiber 'M'
        * @param structural_tensor_stress (out) : structural tensor is 'H' filled inside
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<6, 1>& structural_tensor_stress) override;
 
       /*!
@@ -187,7 +187,7 @@ namespace MAT
        * @param fiber_vector (in) : direction of fiber 'M'
        * @param structural_tensor_stress (out) : structural tensor is 'H' filled inside
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // namespace ELASTIC
 
@@ -286,7 +286,7 @@ namespace MAT
        * @param[out] structural_tensor_stress generalized structural tensor in stress-like Voigt
        * notation
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<6, 1>& structural_tensor_stress) override;
 
       /*!
@@ -298,7 +298,7 @@ namespace MAT
        * @param[in] fiber_vector
        * @param[out] structural_tensor
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyByDistributionFunction
 
@@ -340,7 +340,7 @@ namespace MAT
        * if c1 = 0.0 -> same as StructuralTensorStrategyStandard
        * if 0<c1<1/3 -> varying transverse isotropy
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<6, 1>& structural_tensor_stress) override;
 
       /*!
@@ -352,7 +352,7 @@ namespace MAT
        * @param fiber_vector
        * @param structural_tensor
        */
-      void SetupStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+      void setup_structural_tensor(const CORE::LINALG::Matrix<3, 1>& fiber_vector,
           CORE::LINALG::Matrix<3, 3>& structural_tensor) override;
     };  // class StructuralTensorStrategyDispersedTransverselyIsotropic
 

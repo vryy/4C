@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>>
-DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVariableManager(
+DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::create_variable_manager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<CORE::MAT::Material> mat,
     int numdofpernode, int numfluidphases)
@@ -136,7 +136,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVaria
  | extract node values related to the state vector 'phinp'   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::extract_element_and_node_values(
     const DRT::Element& ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
@@ -168,7 +168,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::EvaluateGPVa
 )
 {
   // check
-  if (not this->isextracted_) FOUR_C_THROW("ExtractElementAndNodeValues() has not been called!");
+  if (not this->isextracted_)
+    FOUR_C_THROW("extract_element_and_node_values() has not been called!");
 
   // loop over DOFs
   for (int k = 0; k < this->numdofpernode_; ++k)
@@ -216,9 +217,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhiGradPhi<nsd, nen>::Evalu
  | extract node values related to time derivatives           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractElementAndNodeValues(
-    const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd,
+    nen>::extract_element_and_node_values(const DRT::Element& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
@@ -236,7 +238,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractEl
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
 
   // call wrapped class
-  this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
+  this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   return;
 };
@@ -273,9 +275,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::EvaluateG
  | extract node values related to deforming domain           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractElementAndNodeValues(
-    const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd,
+    nen>::extract_element_and_node_values(const DRT::Element& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   if (dofsetnum != 0)
     FOUR_C_THROW(
@@ -283,7 +286,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
         "The VariableManagerStruct always has to be called with a porofluid-element");
 
   // call internal class
-  this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
+  this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel_].lm_.size() / nen;
@@ -359,12 +362,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::EvaluateG
  | extract node values related to ScaTra coupling           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::ExtractElementAndNodeValues(
-    const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd,
+    nen>::extract_element_and_node_values(const DRT::Element& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
-  this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
+  this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   // get state vector from discretization
   Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(ndsscalar_, "scalars");
@@ -419,12 +423,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::EvaluateG
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,
-    nen>::ExtractElementAndNodeValues(const DRT::Element& ele,
+    nen>::extract_element_and_node_values(const DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
-  this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
+  this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState(dofsetnum, "phin_fluid");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin_fluid'");

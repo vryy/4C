@@ -35,8 +35,8 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
   {
     int dummy = 0;
     // create constraint discretization and store it with label 0, within the map
-    constraintdis_ =
-        CreateDiscretizationFromCondition(actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
+    constraintdis_ = create_discretization_from_condition(
+        actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     Teuchos::RCP<Epetra_Map> newcolnodemap =
         CORE::REBALANCE::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
@@ -144,7 +144,7 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
-CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
+CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     Teuchos::RCP<DRT::Discretization> actdisc,
     std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
@@ -176,7 +176,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
     std::vector<int> ngid = *(constrcondvec[j]->GetNodes());
     const int numnodes = ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
-    ReorderConstraintNodes(ngid, constrcondvec[j]);
+    reorder_constraint_nodes(ngid, constrcondvec[j]);
 
     remove_copy_if(ngid.data(), ngid.data() + numnodes, inserter(rownodeset, rownodeset.begin()),
         std::not_fn(CORE::Conditions::MyGID(actnoderowmap)));
@@ -234,7 +234,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
  |(private)                                                 tk 04/08    |
  |reorder MPC nodes based on condition input                            |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::ReorderConstraintNodes(
+void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
     std::vector<int>& nodeids, const CORE::Conditions::Condition* cond)
 {
   // get this condition's nodes
@@ -263,7 +263,7 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // see what we have for input
   bool assemblemat1 = systemmatrix1 != Teuchos::null;

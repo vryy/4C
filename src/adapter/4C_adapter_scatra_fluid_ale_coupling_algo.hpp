@@ -64,7 +64,7 @@ namespace ADAPTER
         ) override = 0;
 
     /// solve fluid-ale
-    virtual void FluidAleNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+    virtual void fluid_ale_nonlinear_solve(Teuchos::RCP<Epetra_Vector> idisp,
         Teuchos::RCP<Epetra_Vector> ivel, const bool pseudotransient);
 
     /// access to ale field

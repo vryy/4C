@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<double> CORE::FE::ElementCenterRefeCoords(const DRT::Element& ele)
+std::vector<double> CORE::FE::element_center_refe_coords(const DRT::Element& ele)
 {
   // get nodes of element
   const DRT::Node* const* nodes = ele.Nodes();

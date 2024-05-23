@@ -31,10 +31,10 @@ namespace DRT
       static FluidEleParameterPoro* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
-      void SetElementPoroParameter(Teuchos::ParameterList& params, int myrank);
+      void set_element_poro_parameter(Teuchos::ParameterList& params, int myrank);
 
       //! print parameter to screen
-      void PrintFluidParameterPoro() const;
+      void print_fluid_parameter_poro() const;
 
       //! partial integration of porosity gradient in continuity equation
       bool PoroContiPartInt() const { return poro_conti_partint_; };
@@ -56,7 +56,7 @@ namespace DRT
       };
 
       //! flag for inclusion of transient terms in momentum equation
-      bool IsStationaryMomentum() const
+      bool is_stationary_momentum() const
       {
         return (not(transient_terms_ == INPAR::POROELAST::transient_all or
                     transient_terms_ == INPAR::POROELAST::transient_momentum_only));

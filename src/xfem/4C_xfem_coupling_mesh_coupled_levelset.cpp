@@ -33,9 +33,9 @@ XFEM::MeshCouplingNavierSlipTwoPhase::MeshCouplingNavierSlipTwoPhase(
 }
 
 
-void XFEM::MeshCouplingNavierSlipTwoPhase::SetConditionSpecificParameters()
+void XFEM::MeshCouplingNavierSlipTwoPhase::set_condition_specific_parameters()
 {
-  XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters();
+  XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters();
 
   std::vector<CORE::Conditions::Condition*> conditions_NS;
   cutter_dis_->GetCondition(cond_name_, conditions_NS);

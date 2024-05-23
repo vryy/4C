@@ -49,7 +49,7 @@ void FLD::Vreman::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
   boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
 
   // Initialize Boxfilter
-  boxfsc_->InitializeVremanScatra(scatradiscret_);
+  boxfsc_->initialize_vreman_scatra(scatradiscret_);
 
   return;
 }
@@ -60,7 +60,7 @@ void FLD::Vreman::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
  |                                                             (public) |
  |                                                           krank 09/13|
  *----------------------------------------------------------------------*/
-void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
+void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
     const Teuchos::RCP<const Epetra_Vector> velocity,
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
@@ -78,8 +78,8 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
   boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
 
   // get fitered fields
-  boxf_->GetFilteredVremanStrainrate(col_filtered_strainrate_);
-  boxf_->GetFilteredVremanAlphaij(col_filtered_alphaij_);
+  boxf_->get_filtered_vreman_strainrate(col_filtered_strainrate_);
+  boxf_->get_filtered_vreman_alphaij(col_filtered_alphaij_);
   boxf_->GetExpression(col_filtered_expression_);
   boxf_->GetAlpha2(col_filtered_alpha2_);
 
@@ -89,7 +89,7 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
   return;
 }
 
-void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
+void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle, Teuchos::ParameterList& extraparams,
     const int ndsvel)
@@ -106,8 +106,8 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
   boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
   boxfsc_->GetFilteredPhi(col_filtered_phi_);
   boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
-  boxfsc_->GetFilteredPhiexpression(col_filtered_phiexpression_);
-  boxfsc_->GetFilteredVremanAlphaijsc(col_filtered_alphaijsc_);
+  boxfsc_->get_filtered_phiexpression(col_filtered_phiexpression_);
+  boxfsc_->get_filtered_vreman_alphaijsc(col_filtered_alphaijsc_);
   DynVremanComputeDt(extraparams);
   return;
 }

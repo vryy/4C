@@ -67,9 +67,9 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
-  //  problem->MortarCouplingParams()
+  //  problem->mortar_coupling_params()
   const auto coupling = CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
       poroelastdyn, "COUPALGO");
 
@@ -172,7 +172,7 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
   }
 }
 
-void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
+void POROELAST::UTILS::create_volume_ghosting(DRT::Discretization& idiscret)
 {
   //**********************************************************************
   // Prerequisites of this funtion:
@@ -246,7 +246,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0], &(*voldis[1]));
+  POROELAST::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
   Teuchos::RCP<DRT::DiscretizationFaces> facediscret =
@@ -254,7 +254,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
 
-void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
+void POROELAST::UTILS::reconnect_parent_pointers(DRT::Discretization& idiscret,
     DRT::Discretization& voldiscret, DRT::Discretization* voldiscret2)
 {
   const Epetra_Map* ielecolmap = idiscret.ElementColMap();
@@ -280,22 +280,22 @@ void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
   int volgid = faceele->ParentElementId();
 
   if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-    FOUR_C_THROW("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
+    FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
   DRT::Element* vele = voldiscret.gElement(volgid);
   if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
-  faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+  faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
 
   if (voldiscret2)
   {
     const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
     if (elecolmap2->LID(volgid) == -1)  // Volume Discretization has not Element
-      faceele->SetParentSlaveElement(nullptr, -1);
+      faceele->set_parent_slave_element(nullptr, -1);
     else
     {
       vele = voldiscret2->gElement(volgid);
       if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
-      faceele->SetParentSlaveElement(vele, faceele->FaceParentNumber());
+      faceele->set_parent_slave_element(vele, faceele->FaceParentNumber());
     }
   }
 }
@@ -388,12 +388,12 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*ele1);
+    std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*ele1);
 
     for (int id_2 : ids_2)
     {
       DRT::Element* actele2 = dis2->gElement(id_2);
-      std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*actele2);
+      std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
@@ -438,12 +438,12 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*ele2);
+    std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (int id_1 : ids_1)
     {
       DRT::Element* actele1 = dis1->gElement(id_1);
-      std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*actele1);
+      std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 

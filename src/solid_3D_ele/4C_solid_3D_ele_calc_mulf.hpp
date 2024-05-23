@@ -89,13 +89,13 @@ namespace DRT::ELEMENTS
       return linearization.Bop;
     }
 
-    static void AddInternalForceVector(const MulfLinearizationContainer<celltype>& linearization,
+    static void add_internal_force_vector(const MulfLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
         MulfHistoryData<celltype>& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
-      DRT::ELEMENTS::AddInternalForceVector(
+      DRT::ELEMENTS::add_internal_force_vector(
           linearization.Bop, stress, integration_factor, force_vector);
     }
 

@@ -61,13 +61,13 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -287,7 +287,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+      void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
       /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
@@ -306,15 +306,15 @@ namespace DRT
 
       //! computes the number of different random numbers required in each time step for generation
       //! of stochastic forces
-      int HowManyRandomNumbersINeed();
+      int how_many_random_numbers_i_need();
 
       /// \brief get generalized interpolation matrix which yields the variation of the position
-      virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      virtual void get_generalized_interpolation_matrix_variations_at_xi(
           CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
           const std::vector<double>& dummy2) const;
 
       /// \brief get generalized interpolation matrix which yields the increments of the position
-      virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      virtual void get_generalized_interpolation_matrix_increments_at_xi(
           CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
           const std::vector<double>& dummy2) const;
 
@@ -324,7 +324,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      virtual void get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
           CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
           const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
       {
@@ -455,7 +455,7 @@ namespace DRT
       //! @name Internal calculation methods
 
       //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
-      void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params, std::vector<double>& vel,
+      void calc_brownian_forces_and_stiff(Teuchos::ParameterList& params, std::vector<double>& vel,
           std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
           CORE::LINALG::SerialDenseVector* force);
 
@@ -477,7 +477,7 @@ namespace DRT
       //                         CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of background fluid velocity and gradient of velocity
-      void GetBackgroundVelocity(Teuchos::ParameterList& params,
+      void get_background_velocity(Teuchos::ParameterList& params,
           CORE::LINALG::Matrix<3, 1>& velbackground, CORE::LINALG::Matrix<3, 3>& velbackgroundgrad);
 
       //! computes damping coefficient

@@ -34,7 +34,8 @@ namespace POROELAST
       GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
       // access the problem-specific parameter list
-      const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+      const Teuchos::ParameterList& porodyn =
+          GLOBAL::Problem::Instance()->poroelast_dynamic_params();
       const bool matchinggrid = CORE::UTILS::IntegralValue<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
@@ -142,7 +143,7 @@ namespace POROELAST
             ndofpernode_struct, ndofperelement_struct, 0, true));
         if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
 
-        // call AssignDegreesOfFreedom also for auxiliary dofsets
+        // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
         // 1. structure dofs
         // 2. fluiddis dofs

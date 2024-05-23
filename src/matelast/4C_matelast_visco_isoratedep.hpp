@@ -88,7 +88,7 @@ namespace MAT
       //@}
 
       /// Add modified coeffiencts.
-      void AddCoefficientsViscoModified(
+      void add_coefficients_visco_modified(
           const CORE::LINALG::Matrix<3, 1>&
               modinv,                         ///< modified invariants of right Cauchy-Green tensor
           CORE::LINALG::Matrix<8, 1>& modmu,  ///< necassary coefficients for piola-kirchhoff-stress
@@ -111,7 +111,7 @@ namespace MAT
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      void SpecifyViscoFormulation(
+      void specify_visco_formulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution

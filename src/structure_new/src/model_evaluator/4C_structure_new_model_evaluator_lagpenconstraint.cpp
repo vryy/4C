@@ -71,8 +71,8 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // time-integration dies ...
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  constrman_->Init(dis, GLOBAL::Problem::Instance()->StructuralDynamicParams());
-  constrman_->Setup(disnp_ptr_, GLOBAL::Problem::Instance()->StructuralDynamicParams());
+  constrman_->Init(dis, GLOBAL::Problem::Instance()->structural_dynamic_params());
+  constrman_->Setup(disnp_ptr_, GLOBAL::Problem::Instance()->structural_dynamic_params());
 
   // set flag
   issetup_ = true;
@@ -166,7 +166,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
           "are present!");
 
     const int elements_f = f.Map().NumGlobalElements();
-    const int max_gid = GetBlockDofRowMapPtr()->MaxAllGID();
+    const int max_gid = get_block_dof_row_map_ptr()->MaxAllGID();
     // only call when f is the rhs of the full problem (not for structural
     // equilibriate initial state call)
     if (elements_f == max_gid + 1)
@@ -238,7 +238,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::RunPostComputeX(
   CheckInitSetup();
 
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
-      Teuchos::rcp(new Epetra_Vector(*GetBlockDofRowMapPtr()));
+      Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
 
   CORE::LINALG::Export(dir, *lagmult_incr);
 
@@ -270,7 +270,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::UpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::DetermineStressStrain()
+void STR::MODELEVALUATOR::LagPenConstraint::determine_stress_strain()
 {
   // nothing to do
 }
@@ -284,7 +284,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::DetermineOptionalQuantity()
+void STR::MODELEVALUATOR::LagPenConstraint::determine_optional_quantity()
 {
   // nothing to do
 }
@@ -329,7 +329,8 @@ STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_dof_row_map_ptr()
+    const
 {
   CheckInitSetup();
 
@@ -345,7 +346,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::GetBlockDo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::GetCurrentSolutionPtr()
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::get_current_solution_ptr()
     const
 {
   // there are no model specific solution entries
@@ -355,7 +356,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::GetCurr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::LagPenConstraint::GetLastTimeStepSolutionPtr() const
+STR::MODELEVALUATOR::LagPenConstraint::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;

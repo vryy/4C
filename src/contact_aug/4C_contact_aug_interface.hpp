@@ -81,7 +81,8 @@ namespace CONTACT
         return *assemble_strategy_;
       }
 
-      inline void SetAssembleStratType(const enum INPAR::CONTACT::AssembleStrategy assemble_strat)
+      inline void set_assemble_strat_type(
+          const enum INPAR::CONTACT::AssembleStrategy assemble_strat)
       {
         assemble_strat_ = assemble_strat;
       }
@@ -91,27 +92,27 @@ namespace CONTACT
         return assemble_strat_;
       }
 
-      inline void SetVariationalApproachType(
+      inline void set_variational_approach_type(
           const enum INPAR::CONTACT::VariationalApproach var_type)
       {
         var_type_ = var_type;
       }
 
-      inline enum INPAR::CONTACT::VariationalApproach VariationalApproachType() const
+      inline enum INPAR::CONTACT::VariationalApproach variational_approach_type() const
       {
         return var_type_;
       }
 
-      inline int SlMaElementAreaRatio() const { return sl_ma_element_area_ratio_; }
+      inline int sl_ma_element_area_ratio() const { return sl_ma_element_area_ratio_; }
 
-      inline void SetSlMaElementAreaRatio(int slMaElementAreaRatio)
+      inline void set_sl_ma_element_area_ratio(int slMaElementAreaRatio)
       {
         sl_ma_element_area_ratio_ = slMaElementAreaRatio;
       }
 
       inline bool IsTriangleOnMaster() const { return is_triangle_on_master_; }
 
-      inline void SetIsTriangleOnMaster(bool isTriangleOnMaster)
+      inline void set_is_triangle_on_master(bool isTriangleOnMaster)
       {
         is_triangle_on_master_ = isTriangleOnMaster;
       }
@@ -215,7 +216,7 @@ namespace CONTACT
       //! @{
 
       /// share the data with other derived interfaces via copy constructor
-      Teuchos::RCP<AUG::InterfaceDataContainer> SharedInterfaceDataPtr() const
+      Teuchos::RCP<AUG::InterfaceDataContainer> shared_interface_data_ptr() const
       {
         return interface_data_ptr_;
       }
@@ -258,7 +259,7 @@ namespace CONTACT
        *  search algorithm and we don't have to build the nodal normals again. */
       void RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
-      void EvalActiveContributions(
+      void eval_active_contributions(
           const int rriter, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
       //@}
 
@@ -268,8 +269,8 @@ namespace CONTACT
       //! @name Assemble scalar (nodal) quantities
       //! @{
 
-      void AssembleContactPotentialTerms(const Epetra_Vector& cnVec, double& zn_gn, double& gn_gn,
-          double& zn_zn, double& zt_zt) const;
+      void assemble_contact_potential_terms(const Epetra_Vector& cnVec, double& zn_gn,
+          double& gn_gn, double& zn_zn, double& zt_zt) const;
 
       //! @}
 
@@ -291,10 +292,10 @@ namespace CONTACT
 
       /*! Assemble the averaged weighted gap vector and the weighted gap
        *  vector of all active nodes */
-      void AssembleActiveGapVectors(Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const;
+      void assemble_active_gap_vectors(Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const;
 
       /// assemble the gap vector of all nodes (not only the active ones)
-      void AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapAllSlNodesVec) const;
+      void assemble_gap_vector_of_all_sl_nodes(Epetra_Vector& wGapAllSlNodesVec) const;
 
       /** Add the varied tributary area contributions to the force originating
        *  from the augmented gap term */
@@ -302,11 +303,11 @@ namespace CONTACT
 
       /** Add the varied tributary area contributions to the force originating
        *  from the inactive Lagrange multipliers */
-      void Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
+      void assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// assemble the inactive second order derivative matrix w.r.t. the displ.
-      void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+      void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /*! Assemble the normal Lagrange multiplier vector */
@@ -318,7 +319,7 @@ namespace CONTACT
       /*! \brief Assemble inactive constraint rhs
        *
        *  Combination of tangential and normal parts. */
-      void AssembleAugInactiveRhs(
+      void assemble_aug_inactive_rhs(
           Epetra_Vector& augInactiveRhs, Epetra_Vector& cnVec, const double inactive_scale) const;
       //! @}
 
@@ -327,44 +328,44 @@ namespace CONTACT
       /*! \brief Assemble DGLmLinMatrix
        *
        *  Linearization w.r.t. the displacements */
-      void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const;
+      void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const;
 
       /*! \brief Assemble DGGLinMatrix
        *
        *  Linearization w.r.t. the displacements */
-      virtual void AssembleDGGLinMatrix(
+      virtual void assemble_dgg_lin_matrix(
           CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
 
       /*! \brief Assemble DLmNWGapLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleDLmNWGapLinMatrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+      void assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
           const enum MapType map_type = MapType::active_slave_nodes) const;
 
       /*! \brief Assemble DLmTLmTMatrix
        *
        *  Linearization w.r.t. the LM */
-      void AssembleDLmTLmTMatrix(CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const;
+      void assemble_d_lm_t_lm_t_matrix(CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const;
 
       /*! \brief Assemble DLmTLmTLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleDLmTLmTLinMatrix(CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const;
+      void assemble_d_lm_t_lm_t_lin_matrix(CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const;
 
       /*! \brief Assemble AugInactiveMatrix
        *
        *  Linearization w.r.t. the LM */
-      void AssembleAugInactiveDiagMatrix(Epetra_Vector& augInactiveDiagMatrix,
+      void assemble_aug_inactive_diag_matrix(Epetra_Vector& augInactiveDiagMatrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /*! \brief Assemble AugInactiveLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleAugInactiveLinMatrix(CORE::LINALG::SparseMatrix& augInactiveLinMatrix,
+      void assemble_aug_inactive_lin_matrix(CORE::LINALG::SparseMatrix& augInactiveLinMatrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// collect the owner of each interface node
-      Teuchos::RCP<Epetra_Vector> CollectRowNodeOwners(
+      Teuchos::RCP<Epetra_Vector> collect_row_node_owners(
           const DRT::Discretization& structure_dis) const;
 
       //! @}
@@ -388,7 +389,7 @@ namespace CONTACT
       //! @{
 
       /// set nodes initially active (by gap and/or condition line)
-      bool SetNodeInitiallyActive(
+      bool set_node_initially_active(
           const CONTACT::ParamsInterface& cparams, CONTACT::Node& cnode) const;
 
       //! Split the sdofrowmap_ into a normal and tangential part
@@ -396,13 +397,13 @@ namespace CONTACT
       //! @}
 
       /// return my characteristic element length of the interface elements
-      double MyCharacteristicElementLength(const enum CONTACT::AUG::SideType stype) const;
+      double my_characteristic_element_length(const enum CONTACT::AUG::SideType stype) const;
 
       /** \brief compute and return a measure for the weighted gap gradient error
        *
        *  This quantity indicates the difference between D and M and the actual
        *  weighted gap gradient. */
-      double GetMySquareOfWeightedGapGradientError() const;
+      double get_my_square_of_weighted_gap_gradient_error() const;
 
      protected:
       /** Perform a split into far and close sets
@@ -413,26 +414,26 @@ namespace CONTACT
        *  is called as fallback solution.
        *
        *  \author hiermeier */
-      void SplitIntoFarAndCloseSets(std::vector<int>& close_sele, std::vector<int>& far_sele,
+      void split_into_far_and_close_sets(std::vector<int>& close_sele, std::vector<int>& far_sele,
           std::vector<int>& local_close_nodes, std::vector<int>& local_far_nodes) const override;
 
       /// return the variational approach type (complete, incomplete, etc.)
-      INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const
+      INPAR::CONTACT::VariationalApproach get_variational_approach_type() const
       {
-        return interface_data_.VariationalApproachType();
+        return interface_data_.variational_approach_type();
       }
 
       /// derived
-      void EvaluateNodalNormals() const final;
+      void evaluate_nodal_normals() const final;
 
       /// export the 2nd order derivatives of the nodal smooth normals
-      void ExportDeriv2ndNodalNormals() const;
+      void export_deriv2nd_nodal_normals() const;
 
       /// export the 1st order derivatives of the nodal smooth normals
-      void ExportDeriv1stNodalNormals() const;
+      void export_deriv1st_nodal_normals() const;
 
       /// export only the nodal normals (no derivatives)
-      void ExportNodalNormalsOnly() const;
+      void export_nodal_normals_only() const;
 
       /** \brief Export nodal normals information from row lay-out to column
        *  lay-out [derived]
@@ -446,13 +447,13 @@ namespace CONTACT
       void ExportNodalNormals() const final;
 
       //! derived
-      void UpdateMasterSlaveSets() final;
+      void update_master_slave_sets() final;
 
       /// setup the interface and internal class members
       void Setup();
 
       /// setup the assemble strategy used to assemble specific matrices and vectors
-      void SetupAssembleStrategy();
+      void setup_assemble_strategy();
 
       /** \brief create a node-based assemble strategy
        *
@@ -460,7 +461,7 @@ namespace CONTACT
        *  slow.
        *
        *  \return the desired node-based assembly strategy. */
-      virtual Teuchos::RCP<INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy();
+      virtual Teuchos::RCP<INTERFACE::AssembleStrategy> create_node_based_assemble_strategy();
 
      public:
       /** @name Assemble routines for the Lagrange multiplier function
@@ -468,29 +469,29 @@ namespace CONTACT
       /// @{
 
       /// assemble the gradient of the B-matrix
-      void AssembleGradientBMatrixContribution(
+      void assemble_gradient_b_matrix_contribution(
           const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const;
 
       /// assemble the gradient of the B' B matrix
-      void AssembleGradientBBMatrixContribution(
+      void assemble_gradient_bb_matrix_contribution(
           const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const;
 
       /// @}
 
      private:
-      void SetNodeInitiallyActiveByGap(Node& cnode) const;
+      void set_node_initially_active_by_gap(Node& cnode) const;
 
       void BuildActiveColMaps();
 
-      void BuildActiveSlaveElementColMap(const Epetra_Map& sanode_col_map);
+      void build_active_slave_element_col_map(const Epetra_Map& sanode_col_map);
 
-      void AssembleGradientBMatrixContributionOfSide(const Epetra_BlockMap& gslmadofrowmap,
+      void assemble_gradient_b_matrix_contribution_of_side(const Epetra_BlockMap& gslmadofrowmap,
           const Deriv2ndMap& varWGapLinSideMap, const double scalar,
           const double* const str_grad_vals, const double* const dincr_vals,
           double& lmincr_j) const;
 
       template <enum CONTACT::AUG::SideType side>
-      void AssembleGradientBBMatrixContributionOfSide(const int nummynodes,
+      void assemble_gradient_bb_matrix_contribution_of_side(const int nummynodes,
           const int* const mynodegids, const Epetra_BlockMap& dincr_block_map,
           const Epetra_BlockMap& lm_block_map, const Node& cnode_k, const double scalar,
           const double lk, const double* const dincr_vals, const double* const lm_vals,
@@ -563,18 +564,18 @@ namespace CONTACT
 
         virtual void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const = 0;
 
-        virtual void Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
+        virtual void assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+        virtual void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const = 0;
+        virtual void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const = 0;
 
-        virtual void AssembleDGGLinMatrix(
+        virtual void assemble_dgg_lin_matrix(
             CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const = 0;
 
-        virtual void AssembleDLmNWGapLinMatrix(
+        virtual void assemble_d_lm_nw_gap_lin_matrix(
             CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const = 0;
 
        protected:
@@ -635,22 +636,22 @@ namespace CONTACT
         void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;
 
         /// derived
-        void Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
+        void assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+        void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const override;
+        void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const override;
 
         /// derived
-        void AssembleDGGLinMatrix(
+        void assemble_dgg_lin_matrix(
             CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
 
         /// derived
-        void AssembleDLmNWGapLinMatrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+        void assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
             const enum MapType map_type) const override;
       };
 
@@ -667,7 +668,8 @@ namespace CONTACT
         inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
 
-        inline void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,
+        inline void assemble_inactive_dd_matrix(const double scale,
+            const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& inactive_dd_matrix) const {/* empty */};
 
         inline bool Add_Var_A_GG(
@@ -676,8 +678,8 @@ namespace CONTACT
           return false;
         };
 
-        inline bool Assemble_SlForceLmInactive(const double scale, const NodeDataContainer& augdata,
-            Epetra_Vector& sl_force_lminactive) const
+        inline bool assemble_sl_force_lm_inactive(const double scale,
+            const NodeDataContainer& augdata, Epetra_Vector& sl_force_lminactive) const
         {
           return false;
         };
@@ -704,13 +706,13 @@ namespace CONTACT
         inline void Add_DD_A_GG(const double cn_awgap_awgap, const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
-        void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,
+        void assemble_inactive_dd_matrix(const double scale, const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& inactive_dd_matrix) const;
 
         bool Add_Var_A_GG(
             const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g_col) const;
 
-        bool Assemble_SlForceLmInactive(const double scale, const NodeDataContainer& augdata,
+        bool assemble_sl_force_lm_inactive(const double scale, const NodeDataContainer& augdata,
             Epetra_Vector& sl_force_lminactive) const;
       };
 

@@ -73,7 +73,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateAction
   {
     case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
     {
-      myelch::CalcElchBoundaryKinetics(
+      myelch::calc_elch_boundary_kinetics(
           ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);
 
       break;
@@ -144,7 +144,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeuman
  | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchBoundaryKinetics(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch_boundary_kinetics(
     const DRT::Element* ele,                ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
 )
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKinetics(ele, emat, erhs, ephinp, ehist, timefac, material, cond,
+  myelch::evaluate_elch_boundary_kinetics(ele, emat, erhs, ephinp, ehist, timefac, material, cond,
       nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
   }  // switch(myelch::elchparams_->EquPot())
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchBoundaryKinetics
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch_boundary_kinetics
 
 
 /*-------------------------------------------------------------------------------------*

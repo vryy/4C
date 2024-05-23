@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 bool NOX::NLN::Direction::Test::VolumeChange::checkTest(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
-  computeElementVolumes(dir, grp);
+  compute_element_volumes(dir, grp);
 
   gnum_bad_eles_ = 0;
   identifyBadElements(grp, gnum_bad_eles_);
-  computePrimalDirectionMeasures(dir, grp);
+  compute_primal_direction_measures(dir, grp);
 
   return isAccepted();
 }
@@ -53,7 +53,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::isAccepted()
                 << "Direction::Test::VolumeChange::" << __FUNCTION__ << "\n";
 
   const bool isaccepted =
-      ((isValidDirectionLength() or isValidElementVolumes()) and isPositiveDefinite());
+      ((is_valid_direction_length() or is_valid_element_volumes()) and isPositiveDefinite());
 
   utils_->out() << ::NOX::Utils::fill(40, '=') << "\n\n";
 
@@ -64,7 +64,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::isAccepted()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::computePrimalDirectionMeasures(
+void NOX::NLN::Direction::Test::VolumeChange::compute_primal_direction_measures(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
@@ -88,18 +88,18 @@ void NOX::NLN::Direction::Test::VolumeChange::computePrimalDirectionMeasures(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Direction::Test::VolumeChange::computeElementVolumes(
+::NOX::Abstract::Group::ReturnType NOX::NLN::Direction::Test::VolumeChange::compute_element_volumes(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
 
   const ::NOX::Abstract::Group::ReturnType eval_status =
-      nln_grp.computeElementVolumes(ref_ele_vols_);
+      nln_grp.compute_element_volumes(ref_ele_vols_);
 
   if (eval_status != ::NOX::Abstract::Group::Ok)
     FOUR_C_THROW("The evaluation of the reference volumes failed!");
 
-  return nln_grp.computeTrialElementVolumes(curr_ele_vols_, dir, 1.0);
+  return nln_grp.compute_trial_element_volumes(curr_ele_vols_, dir, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -133,14 +133,15 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentD
     const NOX::NLN::Group& grp) const
 {
   Teuchos::RCP<Epetra_Vector> diagonal = getEmptyDiagonal(grp);
-  fillDiagonalAtBadDofs(*diagonal);
+  fill_diagonal_at_bad_dofs(*diagonal);
 
   return diagonal;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::fillDiagonalAtBadDofs(Epetra_Vector& diagonal) const
+void NOX::NLN::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
+    Epetra_Vector& diagonal) const
 {
   for (int i : my_bad_dofs_)
   {
@@ -198,7 +199,7 @@ int NOX::NLN::Direction::Test::VolumeChange::fillMyBadDofs(NOX::NLN::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::isValidElementVolumes() const
+bool NOX::NLN::Direction::Test::VolumeChange::is_valid_element_volumes() const
 {
   const bool isvalidev = (gnum_bad_eles_ == 0);
 
@@ -212,7 +213,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::isValidElementVolumes() const
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::isValidDirectionLength() const
+bool NOX::NLN::Direction::Test::VolumeChange::is_valid_direction_length() const
 {
   bool isvalidlength = (dirres_ > dirdir_ and dirdir_ < dirdir_last_);
 

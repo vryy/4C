@@ -298,7 +298,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
 
       for (int k = 0; k < i; k++) ApplyPlaneRotation(H(k, i), H(k + 1, i), cs(k), sn(k));
 
-      GeneratePlaneRotation(H(i, i), H(i + 1, i), cs(i), sn(i));
+      generate_plane_rotation(H(i, i), H(i + 1, i), cs(i), sn(i));
       ApplyPlaneRotation(H(i, i), H(i + 1, i), cs(i), sn(i));
       ApplyPlaneRotation(s(i), s(i + 1), cs(i), sn(i));
 
@@ -355,7 +355,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
 }
 
 
-void NOX::FSI::LinearSystemGCR::GeneratePlaneRotation(
+void NOX::FSI::LinearSystemGCR::generate_plane_rotation(
     double& dx, double& dy, double& cs, double& sn)
 {
   if (dy == 0.0)

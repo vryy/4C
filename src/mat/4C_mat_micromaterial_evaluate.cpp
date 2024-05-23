@@ -151,10 +151,10 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation
   // is required)
-  actmicromatgp->PerformMicroSimulation(defgrd_enh, stress, cmat);
+  actmicromatgp->perform_micro_simulation(defgrd_enh, stress, cmat);
 
   // reactivate macroscale material
-  GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
+  GLOBAL::Problem::Instance()->Materials()->reset_read_from_problem();
 }
 
 double MAT::MicroMaterial::Density() const { return density_; }
@@ -176,10 +176,10 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation
   // is required)
-  actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat);
+  actmicromatgp->perform_micro_simulation(defgrd, stress, cmat);
 
   // reactivate macroscale material
-  GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
+  GLOBAL::Problem::Instance()->Materials()->reset_read_from_problem();
 }
 
 

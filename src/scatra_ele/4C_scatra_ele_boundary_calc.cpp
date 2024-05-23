@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
   //--------------------------------------------------------------------------------
   if (SetupCalc(ele, params, discretization) == -1) return 0;
 
-  ExtractDisplacementValues(ele, discretization, la);
+  extract_displacement_values(ele, discretization, la);
 
   // check for the action parameter
   const auto action = Teuchos::getIntegralValue<SCATRA::BoundaryAction>(params, "action");
@@ -114,7 +114,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacement_values(
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -122,37 +122,37 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
   {
     case CORE::FE::CellType::hex8:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::hex8>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::hex8>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::hex27:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::hex27>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::hex27>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::tet4:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::tet4>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::tet4>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::quad4:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::quad4>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::quad4>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::tri6:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::tri6>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::tri6>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::tri3:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::tri3>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::tri3>(ele, discretization, la);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      ExtractDisplacementValues<CORE::FE::CellType::nurbs9>(ele, discretization, la);
+      extract_displacement_values<CORE::FE::CellType::nurbs9>(ele, discretization, la);
       break;
     }
     default:
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType parentdistype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displacement_values(
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -191,7 +191,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
-    UpdateNodeCoordinates();
+    update_node_coordinates();
 
     // determine location array information of parent element
     DRT::Element::LocationArray parent_la(discretization.NumDofSets());
@@ -255,7 +255,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     {
       // NOTE: add area value only for elements which are NOT ghosted!
       const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
-      IntegrateShapeFunctions(ele, params, elevec1_epetra, addarea);
+      integrate_shape_functions(ele, params, elevec1_epetra, addarea);
 
       break;
     }
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       const auto heatranscoeff = cond->parameters().Get<double>("coeff");
       const auto surtemp = cond->parameters().Get<double>("surtemp");
 
-      ConvectiveHeatTransfer(
+      convective_heat_transfer(
           ele, mat, ephinp, elemat1_epetra, elevec1_epetra, heatranscoeff, surtemp);
 
       break;
@@ -367,14 +367,15 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
     case SCATRA::BoundaryAction::calc_fs3i_surface_permeability:
     {
-      EvaluateSurfacePermeability(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
+      evaluate_surface_permeability(
+          ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
     case SCATRA::BoundaryAction::calc_fps3i_surface_permeability:
     {
-      EvaluateKedemKatchalsky(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
+      evaluate_kedem_katchalsky(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
@@ -418,7 +419,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
-      rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
+      rotsymmpbc_->rotate_my_values_if_necessary(econvel);
 
       // for the moment we ignore the return values of this method
       CalcConvectiveFlux(ele, ephinp, econvel, elevec1_epetra);
@@ -436,7 +437,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
     case SCATRA::BoundaryAction::calc_s2icoupling_capacitance:
     {
-      EvaluateS2ICouplingCapacitance(
+      evaluate_s2_i_coupling_capacitance(
           discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra);
 
       break;
@@ -444,19 +445,20 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
     case SCATRA::BoundaryAction::calc_s2icoupling_od:
     {
-      EvaluateS2ICouplingOD(ele, params, discretization, la, elemat1_epetra);
+      evaluate_s2_i_coupling_od(ele, params, discretization, la, elemat1_epetra);
       break;
     }
 
     case SCATRA::BoundaryAction::calc_s2icoupling_capacitance_od:
     {
-      EvaluateS2ICouplingCapacitanceOD(params, discretization, la, elemat1_epetra, elemat2_epetra);
+      evaluate_s2_i_coupling_capacitance_od(
+          params, discretization, la, elemat1_epetra, elemat2_epetra);
       break;
     }
 
     case SCATRA::BoundaryAction::calc_boundary_integral:
     {
-      CalcBoundaryIntegral(ele, elevec1_epetra);
+      calc_boundary_integral(ele, elevec1_epetra);
       break;
     }
     case SCATRA::BoundaryAction::calc_nodal_size:
@@ -516,7 +518,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    double fac = EvalShapeFuncAndIntFac(intpoints, iquad);
+    double fac = eval_shape_func_and_int_fac(intpoints, iquad);
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -664,7 +666,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
+  rotsymmpbc_->rotate_my_values_if_necessary(econvel);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -676,7 +678,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
     // loop over all integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
+      const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get velocity at integration point
       velint_.Multiply(econvel, funct_);
@@ -802,7 +804,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
     // loop over all integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
+      const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get velocity at integration point
       velint_.Multiply(evelnp, funct_);
@@ -831,7 +833,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTransfer(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::convective_heat_transfer(
     const DRT::FaceElement* ele, Teuchos::RCP<const CORE::MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const double heatranscoeff, const double surtemp)
@@ -846,7 +848,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
     // loop over all integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
+      const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get specific heat capacity at constant volume
       double shc = 0.0;
@@ -905,13 +907,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
       }
     }
   }
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::convective_heat_transfer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
-    EvaluateSpatialDerivativeOfAreaIntegrationFactor(
+    evaluate_spatial_derivative_of_area_integration_factor(
         const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
         CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd)
 {
@@ -919,7 +921,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
   if (nsd_ele_ != 2)
     FOUR_C_THROW("Computation of shape derivatives only implemented for 2D interfaces!");
 
-  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
+  evaluate_shape_func_and_derivative_at_int_point(intpoints, iquad);
 
   // compute derivatives of spatial coordinates w.r.t. reference coordinates
   static CORE::LINALG::Matrix<nsd_ele_, nsd_> dxyz_drs;
@@ -954,11 +956,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
     const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
     CORE::LINALG::Matrix<nsd_, 1>* normalvec)
 {
-  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
+  evaluate_shape_func_and_derivative_at_int_point(intpoints, iquad);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
@@ -980,7 +982,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndI
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
-    EvaluateShapeFuncAndDerivativeAtIntPoint(
+    evaluate_shape_func_and_derivative_at_int_point(
         const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
@@ -1135,14 +1137,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
     ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
-        scatraparams_->NdsTwoTensorQuantity());
+        scatraparams_->nds_two_tensor_quantity());
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac =
-        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
             intpoints, gpid, &normal);
 
     // evaluate overall integration factors
@@ -1151,9 +1153,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     const double pseudo_contact_fac =
-        CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
+        calculate_pseudo_contact_factor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
-    EvaluateS2ICouplingAtIntegrationPoint<distype>(ephinp_, emasterphinp, pseudo_contact_fac,
+    evaluate_s2_i_coupling_at_integration_point<distype>(ephinp_, emasterphinp, pseudo_contact_fac,
         funct_, funct_, funct_, funct_, numscal_, scatraparamsboundary_, timefacfac, timefacrhsfac,
         eslavematrix, emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
   }  // end of loop over integration points
@@ -1163,19 +1165,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType distype_master>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingAtIntegrationPoint(
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-    const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>& emasterphinp,
-    const double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
-    const CORE::LINALG::Matrix<nen_, 1>& test_slave,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
-    const int numscal,
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-    const double timefacfac, const double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,
-    CORE::LINALG::SerialDenseMatrix& k_sm, CORE::LINALG::SerialDenseMatrix& k_ms,
-    CORE::LINALG::SerialDenseMatrix& k_mm, CORE::LINALG::SerialDenseVector& r_s,
-    CORE::LINALG::SerialDenseVector& r_m)
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
+    evaluate_s2_i_coupling_at_integration_point(
+        const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+        const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
+            emasterphinp,
+        const double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
+        const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+        const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
+        const int numscal,
+        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+        const double timefacfac, const double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,
+        CORE::LINALG::SerialDenseMatrix& k_sm, CORE::LINALG::SerialDenseMatrix& k_ms,
+        CORE::LINALG::SerialDenseMatrix& k_mm, CORE::LINALG::SerialDenseVector& r_s,
+        CORE::LINALG::SerialDenseVector& r_m)
 {
   // get condition specific parameters
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
@@ -1271,7 +1275,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoContactFactor(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_pseudo_contact_factor(
     const bool is_pseudo_contact,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavestress_vector,
     const CORE::LINALG::Matrix<nsd_, 1>& gp_normal,
@@ -1302,7 +1306,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoCo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_parent_element(
     const DRT::FaceElement* faceele, const double* faceele_xsi)
 {
   if (scatraparams_->IsAle())
@@ -1311,11 +1315,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
     {
       case CORE::FE::CellType::hex8:
       {
-        return CalculateDetFOfParentElement<CORE::FE::CellType::hex8>(faceele, faceele_xsi);
+        return calculate_det_f_of_parent_element<CORE::FE::CellType::hex8>(faceele, faceele_xsi);
       }
       case CORE::FE::CellType::tet4:
       {
-        return CalculateDetFOfParentElement<CORE::FE::CellType::tet4>(faceele, faceele_xsi);
+        return calculate_det_f_of_parent_element<CORE::FE::CellType::tet4>(faceele, faceele_xsi);
       }
       default:
       {
@@ -1333,7 +1337,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType parentdistype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_parent_element(
     const DRT::FaceElement* faceele, const double* faceele_xi)
 {
   const int parent_ele_dim = CORE::FE::dim<parentdistype>;
@@ -1373,7 +1377,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingOD(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_coupling_od(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
@@ -1392,7 +1396,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
       6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
     ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
-        scatraparams_->NdsTwoTensorQuantity());
+        scatraparams_->nds_two_tensor_quantity());
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<CORE::Conditions::Condition> s2icondition =
@@ -1412,15 +1416,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions at current integration point
-    EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
+    eval_shape_func_and_int_fac(intpoints, gpid, &normal);
 
     const double pseudo_contact_fac =
-        CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
+        calculate_pseudo_contact_factor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
     // evaluate shape derivatives
     static CORE::LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
-      EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
+      evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
 
     // evaluate overall integration factor
     const double timefacwgt = scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
@@ -1496,7 +1500,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
       }  // selection of kinetic model
     }    // loop over scalars
   }      // loop over integration points
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::evaluate_s2_i_coupling_od
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1544,7 +1548,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegral(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_boundary_integral(
     const DRT::FaceElement* ele, CORE::LINALG::SerialDenseVector& scalar)
 {
   // initialize variable for boundary integral
@@ -1560,7 +1564,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegra
     // evaluate values of shape functions and boundary integration factor at current integration
     // point
     const double fac =
-        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
             intpoints, iquad);
 
     // add contribution from current integration point to boundary integral
@@ -1569,7 +1573,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcBoundaryIntegra
 
   // write result into result vector
   scalar(0) = boundaryintegral;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::calc_boundary_integral
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1587,7 +1591,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcMatMass(
     // evaluate values of shape functions and boundary integration factor at current integration
     // point
     const double fac =
-        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
             intpoints, iquad);
 
     // add contribution from current integration point to element mass matrix
@@ -1602,7 +1606,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcMatMass(
       }
     }
   }  // loop over integration points
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::calc_boundary_integral
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1673,7 +1677,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
         // evaluate values of shape functions and domain integration factor at current integration
         // point
         const double intfac =
-            DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+            DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
                 intpoints, gpid);
 
         // evaluate reference concentration factor
@@ -1725,7 +1729,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePermeability(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surface_permeability(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
@@ -1775,7 +1779,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
+  // rotsymmpbc_->rotate_my_values_if_necessary(ewss);
 
   //////////////////////////////////////////////////////////////////////
   //                  get current condition
@@ -1815,14 +1819,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
         // loop over all integration points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         {
-          const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
+          const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
           const double refconcfac = FacForRefConc(iquad, ele, params, discretization);
           // integration factor for right-hand side
           double facfac = 0.0;
           if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
             facfac = scatraparamstimint_->TimeFac() * fac * refconcfac;
           else
-            FOUR_C_THROW("EvaluateSurfacePermeability: Requested scheme not yet implemented");
+            FOUR_C_THROW("evaluate_surface_permeability: Requested scheme not yet implemented");
 
           // scalar at integration point
           const double phi = funct_.Dot(ephinp[k]);
@@ -1863,7 +1867,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatchalsky(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_katchalsky(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
@@ -1911,7 +1915,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*pressure, epressure, lmpres);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  // rotsymmpbc_->RotateMyValuesIfNecessary(epressure);
+  // rotsymmpbc_->rotate_my_values_if_necessary(epressure);
 
 
   // ------------get values of wall shear stress-----------------------
@@ -1971,7 +1975,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
       // loop over all integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
       {
-        const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
+        const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
         // integration factor
         double facfac = 0.0;
@@ -2060,7 +2064,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WSSinfluence(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunctions(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::integrate_shape_functions(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
 {
@@ -2074,7 +2078,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunct
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid);
+    const double fac = eval_shape_func_and_int_fac(intpoints, gpid);
 
     // compute integral of shape functions
     for (int node = 0; node < nen_; ++node)
@@ -2087,7 +2091,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::IntegrateShapeFunct
 
   // add contribution to the global value
   params.set<double>("area", boundaryint);
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::integrate_shape_functions
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2166,7 +2170,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*convel, econvel, plmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd, pnen>(econvel);
+  rotsymmpbc_->template rotate_my_values_if_necessary<pnsd, pnen>(econvel);
 
   // get scalar values at parent element nodes
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -2810,13 +2814,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristicGalerkinBoundary(
-    DRT::FaceElement* ele,                             //!< transport element
-    Teuchos::ParameterList& params,                    //!< parameter list
-    DRT::Discretization& discretization,               //!< discretization
-    Teuchos::RCP<const CORE::MAT::Material> material,  //!< material
-    CORE::LINALG::SerialDenseMatrix& elemat_epetra,    //!< ele sysmat
-    CORE::LINALG::SerialDenseVector& elevec_epetra     //!< ele rhs
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype,
+    probdim>::reinit_characteristic_galerkin_boundary(DRT::FaceElement* ele,  //!< transport element
+    Teuchos::ParameterList& params,                                           //!< parameter list
+    DRT::Discretization& discretization,                                      //!< discretization
+    Teuchos::RCP<const CORE::MAT::Material> material,                         //!< material
+    CORE::LINALG::SerialDenseMatrix& elemat_epetra,                           //!< ele sysmat
+    CORE::LINALG::SerialDenseVector& elevec_epetra                            //!< ele rhs
 )
 {
   //------------------------------------------------------------------------
@@ -3110,7 +3114,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac =
-        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
+        DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_func_and_int_fac(
             intpoints, gpid);
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -3124,7 +3128,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
  *----------------------------------------------------------------------*/
 // explicit instantiation of template methods
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::tri3>(
+    evaluate_s2_i_coupling_at_integration_point<CORE::FE::CellType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
         const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
@@ -3136,7 +3140,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::quad4>(
+    evaluate_s2_i_coupling_at_integration_point<CORE::FE::CellType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
         const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
@@ -3148,7 +3152,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::tri3>::
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::tri3>(
+    evaluate_s2_i_coupling_at_integration_point<CORE::FE::CellType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
         const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tri3>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
@@ -3160,7 +3164,7 @@ template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4>::
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
 template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<CORE::FE::CellType::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<CORE::FE::CellType::quad4>(
+    evaluate_s2_i_coupling_at_integration_point<CORE::FE::CellType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
         const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::quad4>, 1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,

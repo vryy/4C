@@ -174,11 +174,11 @@ namespace IO
      *  @param[in] linesearch_iteration  Number of the current line search iteration.
      *
      *  @author hiermeier @date 11/17 */
-    void AddLineSearchIteration(const int newton_iteration, const int linesearch_iteration);
+    void add_line_search_iteration(const int newton_iteration, const int linesearch_iteration);
 
    private:
     /// Throw if Init() has not been called.
-    inline void ThrowIfNotInitialized(const int line) const
+    inline void throw_if_not_initialized(const int line) const
     {
       if (not isinit_) FOUR_C_THROW("LINE %d: Call Init() first!", line);
     }

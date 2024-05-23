@@ -70,10 +70,10 @@ namespace DRT
             if (actnode->Elements()[i + 1]->ElementType() != actnode->Elements()[i]->ElementType())
             {
               int numdof1, dimnsp1, nv1, np1;
-              actnode->Elements()[i]->ElementType().NodalBlockInformation(
+              actnode->Elements()[i]->ElementType().nodal_block_information(
                   actnode->Elements()[i], numdof1, dimnsp1, nv1, np1);
               int numdof2, dimnsp2, nv2, np2;
-              actnode->Elements()[i + 1]->ElementType().NodalBlockInformation(
+              actnode->Elements()[i + 1]->ElementType().nodal_block_information(
                   actnode->Elements()[i + 1], numdof2, dimnsp2, nv2, np2);
 
               if (numdof1 != numdof2 || dimnsp1 != dimnsp2)

@@ -62,9 +62,9 @@ namespace
     const FADdouble lambda_r = FADdouble(2, 1, 1.05);
 
     const FADdouble y =
-        fiber.EvaluateGrowthEvolutionEquationDt(lambda_f, lambda_r, lambda_ext, growth_scalar);
+        fiber.evaluate_growth_evolution_equation_dt(lambda_f, lambda_r, lambda_ext, growth_scalar);
     const FADdouble dGrowthEvolutionEquationDtDGrowth =
-        fiber.EvaluateDGrowthEvolutionEquationDtDGrowth(
+        fiber.evaluate_d_growth_evolution_equation_dt_d_growth(
             lambda_f, lambda_r, lambda_ext, growth_scalar);
 
     EXPECT_FLOAT_EQ(y.dx(0), dGrowthEvolutionEquationDtDGrowth.val());
@@ -81,9 +81,9 @@ namespace
     const FADdouble lambda_r = FADdouble(2, 1, 1.05);
 
     const FADdouble y =
-        fiber.EvaluateGrowthEvolutionEquationDt(lambda_f, lambda_r, lambda_ext, growth_scalar);
+        fiber.evaluate_growth_evolution_equation_dt(lambda_f, lambda_r, lambda_ext, growth_scalar);
     const FADdouble dGrowthEvolutionEquationDtDRemodel =
-        fiber.EvaluateDGrowthEvolutionEquationDtDRemodel(
+        fiber.evaluate_d_growth_evolution_equation_dt_d_remodel(
             lambda_f, lambda_r, lambda_ext, growth_scalar);
 
     EXPECT_FLOAT_EQ(y.dx(1), dGrowthEvolutionEquationDtDRemodel.val());
@@ -99,9 +99,10 @@ namespace
     const FADdouble growth_scalar = FADdouble(2, 0, 1.12);
     const FADdouble lambda_r = FADdouble(2, 1, 1.05);
 
-    const FADdouble y = fiber.EvaluateRemodelEvolutionEquationDt(lambda_f, lambda_r, lambda_ext);
+    const FADdouble y =
+        fiber.evaluate_remodel_evolution_equation_dt(lambda_f, lambda_r, lambda_ext);
     const FADdouble dRemodelEvolutionEquationDtDGrowth =
-        fiber.EvaluateDRemodelEvolutionEquationDtDGrowth(lambda_f, lambda_r, lambda_ext);
+        fiber.evaluate_d_remodel_evolution_equation_dt_d_growth(lambda_f, lambda_r, lambda_ext);
 
     EXPECT_FLOAT_EQ(y.dx(0), dRemodelEvolutionEquationDtDGrowth.val());
   }
@@ -116,9 +117,10 @@ namespace
     const FADdouble growth_scalar = FADdouble(2, 0, 1.12);
     const FADdouble lambda_r = FADdouble(2, 1, 1.05);
 
-    const FADdouble y = fiber.EvaluateRemodelEvolutionEquationDt(lambda_f, lambda_r, lambda_ext);
+    const FADdouble y =
+        fiber.evaluate_remodel_evolution_equation_dt(lambda_f, lambda_r, lambda_ext);
     const FADdouble dRemodelEvolutionEquationDtDRemodel =
-        fiber.EvaluateDRemodelEvolutionEquationDtDRemodel(lambda_f, lambda_r, lambda_ext);
+        fiber.evaluate_d_remodel_evolution_equation_dt_d_remodel(lambda_f, lambda_r, lambda_ext);
 
     EXPECT_FLOAT_EQ(y.dx(1), dRemodelEvolutionEquationDtDRemodel.val());
   }
@@ -133,9 +135,9 @@ namespace
     const FADdouble growth_scalar = FADdouble(2, 0, 1.12);
     const FADdouble lambda_r = FADdouble(2, 1, 1.05);
 
-    const FADdouble y = fiber.EvaluateFiberCauchyStress(lambda_f, lambda_r, lambda_ext);
+    const FADdouble y = fiber.evaluate_fiber_cauchy_stress(lambda_f, lambda_r, lambda_ext);
     const FADdouble dFiberCauchyStressDRemodel =
-        fiber.EvaluateDFiberCauchyStressDRemodel(lambda_f, lambda_r, lambda_ext);
+        fiber.evaluate_d_fiber_cauchy_stress_d_remodel(lambda_f, lambda_r, lambda_ext);
 
     EXPECT_FLOAT_EQ(y.dx(1), dFiberCauchyStressDRemodel.val());
   }

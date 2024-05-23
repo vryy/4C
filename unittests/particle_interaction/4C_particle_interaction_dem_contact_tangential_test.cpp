@@ -73,7 +73,7 @@ namespace
     const double normalcontactforce = 2.5e2;
 
     double tangentialcontactforce[3];
-    contacttangential_->TangentialContactForce(gap_tangential, stick_tangential, e_ji,
+    contacttangential_->tangential_contact_force(gap_tangential, stick_tangential, e_ji,
         vel_rel_tangential, m_eff, mu_tangential_, normalcontactforce, tangentialcontactforce);
 
     double gap_tangential_ref[3] = {0.17923102017884, 0.16378007016342, -0.12669779012642};
@@ -110,7 +110,7 @@ namespace
     const double normalcontactforce = 1.5;
 
     double tangentialcontactforce[3];
-    contacttangential_->TangentialContactForce(gap_tangential, stick_tangential, e_ji,
+    contacttangential_->tangential_contact_force(gap_tangential, stick_tangential, e_ji,
         vel_rel_tangential, m_eff, mu_tangential_, normalcontactforce, tangentialcontactforce);
 
     double gap_tangential_ref[3] = {0.068586669580933, 0.050624254285441, -0.057826737044788};
@@ -124,7 +124,7 @@ namespace
     EXPECT_FALSE(stick_tangential);
   }
 
-  TEST_F(DEMContactTangentialLinearSpringDampTest, TangentialPotentialEnergy)
+  TEST_F(DEMContactTangentialLinearSpringDampTest, tangential_potential_energy)
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;
@@ -136,7 +136,7 @@ namespace
         0.5 * k_tangential * PARTICLEINTERACTION::UTILS::VecDot(gap_tangential, gap_tangential);
 
     double tangentialpotentialenergy = 0.0;
-    contacttangential_->TangentialPotentialEnergy(gap_tangential, tangentialpotentialenergy);
+    contacttangential_->tangential_potential_energy(gap_tangential, tangentialpotentialenergy);
 
     EXPECT_NEAR(tangentialpotentialenergy, tangentialpotentialenergy_ref, 1.0e-12);
   }

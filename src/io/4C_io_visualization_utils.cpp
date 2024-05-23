@@ -25,7 +25,8 @@ namespace IO
       const std::vector<CORE::LINALG::Matrix<n_dim, 1>>& point_coordinates,
       const std::vector<std::vector<int>>& face_connectivity)
   {
-    const std::size_t n_points_data_old = visualization_data.GetPointCoordinatesNumberOfPoints();
+    const std::size_t n_points_data_old =
+        visualization_data.get_point_coordinates_number_of_points();
 
     // Add the points, connectivity ids and offsets
     for (const auto& point : point_coordinates)

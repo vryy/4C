@@ -74,7 +74,7 @@ void XFEM::XfsCouplingManager::InitCouplingStates()
 void XFEM::XfsCouplingManager::SetCouplingStates()
 {
   // 1 update last increment, before we set new idispnp
-  mcfsi_->UpdateDisplacementIterationVectors();
+  mcfsi_->update_displacement_iteration_vectors();
 
   // 2 Set Displacement on both mesh couplings ... we get them from the structure field!
   InsertVector(0, struct_->Dispnp(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
@@ -95,7 +95,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   InsertVector(0, velnp, 0, mcfsi_->IVelnp(), CouplingCommManager::partial_to_partial);
 
   // 4 Set Structural Velocity onto the structural discretization
-  if (mcfsi_->GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+  if (mcfsi_->get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
   {
     // Set Dispnp (used to calc local coord of gausspoints)
     struct_->Discretization()->SetState("dispnp", struct_->Dispnp());

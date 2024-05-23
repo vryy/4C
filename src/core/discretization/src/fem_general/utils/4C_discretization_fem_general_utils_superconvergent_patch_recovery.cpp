@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
+Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery(
     DRT::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
     const int numvec, Teuchos::ParameterList& params)
 {
@@ -52,7 +52,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
   // handle pbcs if existing
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
-  std::map<int, std::vector<int>>* allcoupledcolnodes = dis.GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis.get_all_pbc_coupled_col_nodes();
 
   if (allcoupledcolnodes)
   {
@@ -589,13 +589,13 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
   return fullnodevec;
 }
 
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<1>(
     DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<2>(
     DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<3>(
     DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 

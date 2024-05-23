@@ -46,7 +46,7 @@ namespace IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DomainReader::CreatePartitionedMesh(int nodeGIdOfFirstNewNode) const
+  void DomainReader::create_partitioned_mesh(int nodeGIdOfFirstNewNode) const
   {
     const int myrank = comm_->MyPID();
 
@@ -57,7 +57,7 @@ namespace IO
                << " discretization ...\nCreate and partition elements      in...." << IO::endl;
 
     GRIDGENERATOR::RectangularCuboidInputs inputData =
-        DomainReader::ReadRectangularCuboidInputData();
+        DomainReader::read_rectangular_cuboid_input_data();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
     IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
@@ -73,7 +73,7 @@ namespace IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData() const
+  GRIDGENERATOR::RectangularCuboidInputs DomainReader::read_rectangular_cuboid_input_data() const
   {
     IO::GRIDGENERATOR::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
@@ -82,7 +82,7 @@ namespace IO
       // open input file at the right position
       std::string inputFileName = reader_.MyInputfileName();
       std::ifstream file(inputFileName.c_str());
-      std::ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
+      std::ifstream::pos_type pos = reader_.excluded_section_position(sectionname_);
       if (pos != std::ifstream::pos_type(-1))
       {
         file.seekg(pos);
@@ -229,7 +229,7 @@ namespace IO
     if (!myrank && !reader_.MyOutputFlag())
       IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;
 
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis_);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*dis_);
   }
 
 }  // namespace IO

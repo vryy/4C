@@ -38,17 +38,17 @@ namespace SCATRA
     virtual void SetTheta();
 
     //! set states in the time integration schemes: additional vectors for HDG
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! set the part of the right hand side belonging to the last time step
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     //! update the solution after convergence of the nonlinear iteration,
     //! current solution becomes old solution of next time step
     void Update() override;
 
     //  //! Initialization procedure before the first time step is done
-    //  void PrepareFirstTimeStep ();
+    //  void prepare_first_time_step ();
 
     //! update configuration and output to file/screen
     void OutputState() override;
@@ -78,17 +78,17 @@ namespace SCATRA
     */
     virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError() const;
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test() override;
 
    protected:
     //! copy constructor
     TimIntHDG(const TimIntHDG& old);
 
     //! update time derivative for generalized-alpha time integration
-    virtual void GenAlphaComputeTimeDerivative();
+    virtual void gen_alpha_compute_time_derivative();
 
     //! compute values at intermediate time steps for gen.-alpha
-    virtual void GenAlphaIntermediateValues();
+    virtual void gen_alpha_intermediate_values();
 
     //! number of dofset for interior variables
     int nds_intvar_;
@@ -119,25 +119,28 @@ namespace SCATRA
     //@}
 
     //! calculate intermediate solution
-    void ComputeIntermediateValues() override;
+    void compute_intermediate_values() override;
 
     //! compute values at the interior of the elements
-    void ComputeInteriorValues() override;
+    void compute_interior_values() override;
 
     //! update interior variables
-    virtual void UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> updatevector);
+    virtual void update_interior_variables(Teuchos::RCP<Epetra_Vector> updatevector);
 
     //! write problem specific output
-    virtual void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi) { return; }
+    virtual void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi)
+    {
+      return;
+    }
 
     //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    void CalcInitialTimeDerivative() override { return; };
+    void calc_initial_time_derivative() override { return; };
 
     //! fd check
     void FDCheck() override;
 
     //! calculation of error with reference to analytical solution during the simulation
-    void EvaluateErrorComparedToAnalyticalSol() override;
+    void evaluate_error_compared_to_analytical_sol() override;
 
     //! adapt degree of test functions and change dofsets accordingly
     virtual void AdaptDegree();

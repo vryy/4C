@@ -59,7 +59,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
       auto scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);
       scatraele->SetImplType(INPAR::SCATRA::impltype_std_hdg);
       scatraele->SetDegree(oldele->Degree());
-      scatraele->SetCompletePolynomialSpace(false);
+      scatraele->set_complete_polynomial_space(false);
     }
     else
     {

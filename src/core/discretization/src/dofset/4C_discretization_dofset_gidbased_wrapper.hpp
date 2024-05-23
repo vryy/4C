@@ -63,7 +63,7 @@ namespace CORE::Dofsets
     ~DofSetGIDBasedWrapper() override;
 
     //! original DofSet has new dofs
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! original DofSet has been reset
@@ -268,7 +268,7 @@ namespace CORE::Dofsets
     //@}
 
    private:
-    /// check if \ref AssignDegreesOfFreedom was called on parent dofset
+    /// check if \ref assign_degrees_of_freedom was called on parent dofset
     void CheckIsAssigned() const;
 
     //! source discretization

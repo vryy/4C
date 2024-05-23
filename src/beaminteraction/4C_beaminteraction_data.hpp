@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
     }
 
     /// number of crosslinkers per type
-    INPAR::BEAMINTERACTION::RepartitionStrategy GetRepartitionStrategy() const
+    INPAR::BEAMINTERACTION::RepartitionStrategy get_repartition_strategy() const
     {
       CheckInitSetup();
       return rep_strategy_;
@@ -227,7 +227,8 @@ namespace BEAMINTERACTION
       };
 
       // not [] necessary here in case element has no binding spot of certain type
-      unsigned int GetNumberOfBindingSpotsOfType(INPAR::BEAMINTERACTION::CrosslinkerType linkertype)
+      unsigned int get_number_of_binding_spots_of_type(
+          INPAR::BEAMINTERACTION::CrosslinkerType linkertype)
       {
         return bspotstatus_[linkertype].size();
       };
@@ -269,12 +270,12 @@ namespace BEAMINTERACTION
         bspotstatus_[linkertype][bspotid] = clgids;
       };
 
-      void EraseBondFromBindingSpot(
+      void erase_bond_from_binding_spot(
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
       {
         bspotstatus_.at(linkertype).at(locbspotid).erase(clgid);
       }
-      void AddBondToBindingSpot(
+      void add_bond_to_binding_spot(
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
       {
         bspotstatus_.at(linkertype).at(locbspotid).insert(clgid);

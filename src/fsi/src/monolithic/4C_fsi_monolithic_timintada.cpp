@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
 {
   // access to structural time adaptivity parameters
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // access to FSI time adaptivity parameters
@@ -204,12 +204,12 @@ void FSI::Monolithic::TimeloopAdaDt(
   // the time loop
   while (NotFinished())
   {
-    PrepareAdaptiveTimeStep();
+    prepare_adaptive_time_step();
 
     // time step adaptivity loop
     while (StepNotAccepted() and (adaptstep_ < adaptstepmax) and (not dtminused_))
     {
-      PrintHeaderRepeatedStep();
+      print_header_repeated_step();
       PrepareTimeStep();
 
       // Do the auxiliary step first
@@ -276,7 +276,7 @@ void FSI::Monolithic::TimeloopAdaDt(
       CheckIfDtsSame();
 #endif
 
-      PrintAdaptivitySummary();
+      print_adaptivity_summary();
     }
     constexpr bool force_prepare = false;
     PrepareOutput(force_prepare);
@@ -292,7 +292,7 @@ void FSI::Monolithic::TimeloopAdaDt(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::PrepareAdaptiveTimeStep()
+void FSI::Monolithic::prepare_adaptive_time_step()
 {
   // reset from last time step
   dtminused_ = false;
@@ -310,7 +310,7 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::PrintHeaderRepeatedStep() const
+void FSI::Monolithic::print_header_repeated_step() const
 {
   if (adaptstep_ != 0 and Comm().MyPID() == 0)
   {
@@ -328,7 +328,7 @@ void FSI::Monolithic::WriteAdaFileHeader() const
   if (Comm().MyPID() == 0 and (not logada_.is_null()))
   {
     // get string of type of auxiliary time integration scheme in structure field
-    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
     const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
     std::string strmethod = sada.get<std::string>("KIND");
 
@@ -387,7 +387,7 @@ void FSI::Monolithic::WriteAdaFile() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::PrintAdaptivitySummary() const
+void FSI::Monolithic::print_adaptivity_summary() const
 {
   if (Comm().MyPID() == 0)
   {
@@ -489,9 +489,9 @@ void FSI::Monolithic::AdaptTimeStepSize()
     const double order = FluidField()->GetTimAdaErrOrder();
 
     // calculate time step sizes resulting from errors in the fluid field
-    dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, order);
-    dtflfsi_ = CalculateTimeStepSize(flfsinorm_, errtolfl_, order);
-    dtflinner_ = CalculateTimeStepSize(flinnernorm_, errtolfl_, order);
+    dtfl_ = calculate_time_step_size(flnorm_, errtolfl_, order);
+    dtflfsi_ = calculate_time_step_size(flfsinorm_, errtolfl_, order);
+    dtflinner_ = calculate_time_step_size(flinnernorm_, errtolfl_, order);
   }
   // ---------------------------------------------------------------------------
 
@@ -611,7 +611,7 @@ void FSI::Monolithic::DetermineAdaReason(const double dt)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double FSI::Monolithic::CalculateTimeStepSize(
+double FSI::Monolithic::calculate_time_step_size(
     const double errnorm, const double errtol, const double estorder) const
 {
   //----------------------------------------------------------------------------

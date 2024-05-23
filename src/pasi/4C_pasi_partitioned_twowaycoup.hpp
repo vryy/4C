@@ -104,7 +104,7 @@ namespace PASI
      * \param[in] intfdispnp  interface displacement
      * \param[in] intfforcenp interface force
      */
-    void ResetIncrementStates(Teuchos::RCP<const Epetra_Vector> intfdispnp,
+    void reset_increment_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
         Teuchos::RCP<const Epetra_Vector> intfforcenp);
 
     /*!
@@ -114,7 +114,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 03/2017
      */
-    void BuildIncrementStates();
+    void build_increment_states();
 
     /*!
      * \brief set interface forces
@@ -143,7 +143,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void ClearInterfaceForces();
+    void clear_interface_forces();
 
     /*!
      * \brief get interface forces
@@ -278,14 +278,14 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 07/2020
      */
-    void InitRelaxationInterfaceStates();
+    void init_relaxation_interface_states();
 
     /*!
      * \brief perform relaxation of interface states
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void PerformRelaxationInterfaceStates();
+    void perform_relaxation_interface_states();
   };
 
   /*!

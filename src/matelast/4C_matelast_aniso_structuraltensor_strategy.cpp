@@ -113,20 +113,20 @@ void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
   result.MultiplyNT(M, M);
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyStandard::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector,
     CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   DyadicProduct(fiber_vector, structural_tensor_stress);
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyStandard::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
   DyadicProduct(fiber_vector, structural_tensor);
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector,
     CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
@@ -285,15 +285,15 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   structural_tensor_stress.Scale(1.0 / trace);
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
   CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
-  SetupStructuralTensor(fiber_vector, structural_tensor_stress);
+  setup_structural_tensor(fiber_vector, structural_tensor_stress);
   CORE::LINALG::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector,
     CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
@@ -310,11 +310,11 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
   structural_tensor_stress.Update(c1, Identity, (1.0 - 3.0 * c1));
 }
 
-void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
+void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::setup_structural_tensor(
     const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
   CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
-  SetupStructuralTensor(fiber_vector, structural_tensor_stress);
+  setup_structural_tensor(fiber_vector, structural_tensor_stress);
   CORE::LINALG::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
@@ -322,7 +322,7 @@ double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 {
   double restol = -1.0;
   GLOBAL::Problem* gprob = GLOBAL::Problem::Instance();
-  restol = gprob->StructuralDynamicParams().get<double>("TOLRES");
+  restol = gprob->structural_dynamic_params().get<double>("TOLRES");
 
   return restol;
 }

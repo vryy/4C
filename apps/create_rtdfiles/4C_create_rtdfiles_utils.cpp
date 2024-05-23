@@ -320,7 +320,7 @@ namespace RTD
     {
       if (auto *separator = dynamic_cast<INPUT::SeparatorComponent *>(parameterterm.get()))
       {
-        parametertable.AddRow(separator->WriteReadTheDocsTableRow());
+        parametertable.AddRow(separator->write_read_the_docs_table_row());
 
         if (parameter.length() > 60)
         {
@@ -551,7 +551,7 @@ namespace RTD
       if (auto *compBundleSelector = dynamic_cast<INPUT::SwitchComponent *>(condparameter.get()))
       {
         condCompName = compBundleSelector->Name();
-        std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
+        std::vector<std::string> bundle = compBundleSelector->write_read_the_docs_lines();
         condCompStrings.insert(condCompStrings.end(), bundle.begin(), bundle.end());
         tablerow[0] = condCompName;
         Teuchos::Array<std::string> datfilevalues = compBundleSelector->GetOptions();
@@ -651,7 +651,7 @@ namespace RTD
     {
       if (auto *separator = dynamic_cast<INPUT::SeparatorComponent *>(parameterterm.get()))
       {
-        parametertable.AddRow(separator->WriteReadTheDocsTableRow());
+        parametertable.AddRow(separator->write_read_the_docs_table_row());
 
         if (parameter.length() > 60)
         {

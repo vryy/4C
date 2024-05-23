@@ -481,8 +481,8 @@ namespace XFEM
 
 
     //! check if edge between x1 and x2 cuts the side
-    bool callSideEdgeIntersection(CORE::GEO::CUT::SideHandle* sh,  /// side handle
-        int sid,                                                   /// side id
+    bool call_side_edge_intersection(CORE::GEO::CUT::SideHandle* sh,  /// side handle
+        int sid,                                                      /// side id
         CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
         CORE::LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
     ) const;
@@ -490,8 +490,8 @@ namespace XFEM
 
     //! check if edge between x1 and x2 cuts the side
     template <CORE::FE::CellType sidetype>
-    bool callSideEdgeIntersectionT(CORE::GEO::CUT::SideHandle* sh,  /// side handle
-        int sid,                                                    /// side id
+    bool call_side_edge_intersection_t(CORE::GEO::CUT::SideHandle* sh,  /// side handle
+        int sid,                                                        /// side id
         CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
         CORE::LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
     ) const;
@@ -697,7 +697,7 @@ namespace XFEM
     //!  back-tracking of data at final Lagrangian origin of a point                       schott
     //!  04/12 *
     template <const int numnode>
-    void extractNodalValuesFromVector(
+    void extract_nodal_values_from_vector(
         CORE::LINALG::Matrix<3, numnode>& evel,  ///< element velocities
         CORE::LINALG::Matrix<numnode, 1>& epre,  ///< element pressure
         Teuchos::RCP<Epetra_Vector> vel_vec,     ///< global vector
@@ -762,10 +762,11 @@ namespace XFEM
     );
 
     //! find the nearest surface point, return if successful
-    bool FindNearestSurfPoint(CORE::LINALG::Matrix<3, 1>& x,  ///< coords of point to be projected
-        CORE::LINALG::Matrix<3, 1>& proj_x,                   ///< coords of projected point
-        CORE::GEO::CUT::VolumeCell* vc,  ///< volumcell on that's cut-surface we want to project
-        const std::string state          ///< state n or np?
+    bool find_nearest_surf_point(
+        CORE::LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
+        CORE::LINALG::Matrix<3, 1>& proj_x,  ///< coords of projected point
+        CORE::GEO::CUT::VolumeCell* vc,      ///< volumcell on that's cut-surface we want to project
+        const std::string state              ///< state n or np?
     );
 
     //! call and prepare the projection of point to side
@@ -860,9 +861,9 @@ namespace XFEM
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a side
-    void ComputeStartPoint_Side(DRT::Element* side,  ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
-        const std::vector<int>& lm,                  ///< local map
+    void compute_start_point_side(DRT::Element* side,  ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side_xyze,    ///< side's node coordinates
+        const std::vector<int>& lm,                    ///< local map
         CORE::LINALG::Matrix<2, 1>& xi_side,   ///< local coordinates of projected point w.r.t side
         double& dist,                          ///< distance from point to its projection
         CORE::LINALG::Matrix<3, 1>& proj_x_n,  ///< projected point at t^n
@@ -871,20 +872,20 @@ namespace XFEM
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a line
-    void ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side1_xyze,  ///< side's node coordinates
-        DRT::Element* side2,                          ///< pointer to side element
-        CORE::LINALG::SerialDenseMatrix& side2_xyze,  ///< side's node coordinates
-        const std::vector<int>& lm1,                  ///< local map
-        const std::vector<int>& lm2,                  ///< local map
-        double& dist,                                 ///< distance from point to its projection
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,         ///< projected point at t^n
-        CORE::LINALG::Matrix<3, 1>& start_point       ///< final start point
+    void compute_start_point_line(DRT::Element* side1,  ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side1_xyze,    ///< side's node coordinates
+        DRT::Element* side2,                            ///< pointer to side element
+        CORE::LINALG::SerialDenseMatrix& side2_xyze,    ///< side's node coordinates
+        const std::vector<int>& lm1,                    ///< local map
+        const std::vector<int>& lm2,                    ///< local map
+        double& dist,                                   ///< distance from point to its projection
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,           ///< projected point at t^n
+        CORE::LINALG::Matrix<3, 1>& start_point         ///< final start point
     );
 
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a point
-    void ComputeStartPoint_AVG(
+    void compute_start_point_avg(
         const std::vector<DRT::Element*>& sides,                   ///< pointer to side element
         std::vector<CORE::LINALG::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
         const std::vector<std::vector<int>>& sides_lm,             ///< local map
@@ -894,7 +895,7 @@ namespace XFEM
     );
 
     //! compute the normal vector on side at time t^n
-    void callgetNormalSide_tn(DRT::Element* side,    ///< pointer to side element
+    void callget_normal_side_tn(DRT::Element* side,  ///< pointer to side element
         CORE::LINALG::Matrix<3, 1>& normal,          ///< normal vector w.r.t side
         CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
         const std::vector<int>& lm,                  ///< local map
@@ -911,7 +912,7 @@ namespace XFEM
         CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
     );
 
-    void call_get_projxn_Line(DRT::Element* side,  ///< pointer to structural side element
+    void call_get_projxn_line(DRT::Element* side,  ///< pointer to structural side element
         DRT::Element* line,                        ///< pointer to structural line of side element
         CORE::LINALG::Matrix<3, 1>& proj_x_n,      ///< projected point on line
         double& xi_line  ///< local coordinates of projected point w.r.t line

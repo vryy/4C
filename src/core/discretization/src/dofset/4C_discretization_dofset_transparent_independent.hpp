@@ -56,7 +56,7 @@ namespace CORE::Dofsets
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:

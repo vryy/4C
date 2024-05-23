@@ -38,7 +38,7 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode,
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lline);
+  set_parent_master_element(parent, lline);
   switch (CORE::FE::DisTypeToFaceShapeType<distype>::shape)
   {
     case CORE::FE::CellType::line2:

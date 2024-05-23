@@ -27,7 +27,7 @@ IMMERSED::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
+void IMMERSED::ImmersedBase::create_volume_condition(const Teuchos::RCP<DRT::Discretization>& dis,
     const std::vector<int> dvol_fenode, const CORE::Conditions::ConditionType condtype,
     const std::string condname, bool buildgeometry)
 {
@@ -60,12 +60,12 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
   }
 
   return;
-}  // CreateVolumeCondition
+}  // create_volume_condition
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::BuildConditionDofMap(
+void IMMERSED::ImmersedBase::build_condition_dof_map(
     const Teuchos::RCP<const DRT::Discretization>& dis, const std::string condname,
     const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig, const int numdof,
     Teuchos::RCP<Epetra_Map>& cond_dofmap)
@@ -108,7 +108,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
       Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, dis->Comm()));
 
   return;
-}  // BuildConditionDofRowMap
+}  // build_condition_dof_row_map
 
 
 /*----------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
       field_wrapper->GetDBCMapExtractor()->CondMap();
 
   // build map of dofs subjected to Dirichlet condition
-  BuildConditionDofMap(dis, condname, condmap_orig, numdof, cond_dofrowmap);
+  build_condition_dof_map(dis, condname, condmap_orig, numdof, cond_dofrowmap);
 
   // add adhesion dofs to dbc map
   field_wrapper->AddDirichDofs(cond_dofrowmap);
@@ -207,7 +207,7 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
+void IMMERSED::ImmersedBase::apply_dirichlet_to_fluid(
     const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
     const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
@@ -218,7 +218,7 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
       field_wrapper->GetDBCMapExtractor()->CondMap();
 
   // build map of dofs subjected to Dirichlet condition
-  BuildConditionDofMap(dis, condname, condmap_orig, numdof, cond_dofrowmap);
+  build_condition_dof_map(dis, condname, condmap_orig, numdof, cond_dofrowmap);
 
   // add adhesion dofs to dbc map
   field_wrapper->AddDirichCond(cond_dofrowmap);
@@ -242,7 +242,7 @@ void IMMERSED::ImmersedBase::RemoveDirichlet(const Teuchos::RCP<const Epetra_Map
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::RemoveDirichletFromFluid(
+void IMMERSED::ImmersedBase::remove_dirichlet_from_fluid(
     const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
     const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper)
 {
@@ -310,7 +310,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
+void IMMERSED::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
     std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action)
@@ -356,11 +356,11 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
     }
   }
   return;
-}  // EvaluateImmersedNoAssembly
+}  // evaluate_immersed_no_assembly
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
+void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const DRT::Discretization> idis,
     DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
@@ -421,13 +421,13 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
 /// other discretization to the conditioned elements (e.g. in immersed method).
 /// The integration point of a conditioned element requesting a quantity may be owned by another
 /// proc as the interpolating element providing this quantity.  rauch 05/14
-void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
+void IMMERSED::ImmersedBase::evaluate_interpolation_condition(
     Teuchos::RCP<DRT::Discretization> evaldis, Teuchos::ParameterList& params,
     DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (!(evaldis->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(evaldis->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(evaldis->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 #endif
 
   int row = strategy.FirstDofSet();
@@ -552,25 +552,25 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
     }      // if condstring found
   }        // for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
-}  // EvaluateInterpolationCondition
+}  // evaluate_interpolation_condition
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::SearchPotentiallyCoveredBackgrdElements(
+void IMMERSED::ImmersedBase::search_potentially_covered_backgrd_elements(
     std::map<int, std::set<int>>* current_subset_tofill,
     Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
 {
   *current_subset_tofill =
-      backgrd_SearchTree->searchElementsInRadius(dis, currentpositions, point, radius, label);
+      backgrd_SearchTree->search_elements_in_radius(dis, currentpositions, point, radius, label);
   return;
-}  // SearchPotentiallyCoveredBackgrdElements
+}  // search_potentially_covered_backgrd_elements
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& params,
+void IMMERSED::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>& elementstoeval, int action)
 {
   // pointer to element
@@ -595,7 +595,7 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
   }
 
   return;
-}  // EvaluateSubsetElements
+}  // evaluate_subset_elements
 
 
 /*----------------------------------------------------------------------*/
@@ -628,7 +628,7 @@ void IMMERSED::ImmersedBase::WriteExtraOutput(const Epetra_Comm& comm, const dou
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> IMMERSED::ImmersedBase::CalcGlobalResultantfromEpetraVector(
+std::vector<double> IMMERSED::ImmersedBase::calc_global_resultantfrom_epetra_vector(
     const Epetra_Comm& comm, const Teuchos::RCP<const DRT::Discretization>& dis,
     const Teuchos::RCP<const Epetra_Vector>& vec_epetra)
 {

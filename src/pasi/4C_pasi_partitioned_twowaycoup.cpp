@@ -68,7 +68,7 @@ void PASI::PasiPartTwoWayCoup::Setup()
   {
     // get interface to particle wall handler
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
-        particlealgorithm_->GetParticleWallHandlerInterface();
+        particlealgorithm_->get_particle_wall_handler_interface();
 
     // get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -117,7 +117,7 @@ void PASI::PasiPartTwoWayCoup::Timeloop()
     Outerloop();
 
     // post evaluate time step
-    PostEvaluateTimeStep();
+    post_evaluate_time_step();
 
     // output of fields
     Output();
@@ -147,13 +147,13 @@ void PASI::PasiPartTwoWayCoup::Outerloop()
     ++itnum;
 
     // reset increment states
-    ResetIncrementStates(intfdispnp_, intfforcenp_);
+    reset_increment_states(intfdispnp_, intfforcenp_);
 
     // reset particle states
     ResetParticleStates();
 
     // clear interface forces
-    ClearInterfaceForces();
+    clear_interface_forces();
 
     // particle time step
     ParticleStep();
@@ -168,10 +168,10 @@ void PASI::PasiPartTwoWayCoup::Outerloop()
     StructStep();
 
     // extract interface states
-    ExtractInterfaceStates();
+    extract_interface_states();
 
     // build increment states
-    BuildIncrementStates();
+    build_increment_states();
 
     // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
@@ -194,14 +194,14 @@ void PASI::PasiPartTwoWayCoup::Output()
   ParticleOutput();
 }
 
-void PASI::PasiPartTwoWayCoup::ResetIncrementStates(
+void PASI::PasiPartTwoWayCoup::reset_increment_states(
     Teuchos::RCP<const Epetra_Vector> intfdispnp, Teuchos::RCP<const Epetra_Vector> intfforcenp)
 {
   intfdispincnp_->Update(1.0, *intfdispnp, 0.0);
   intfforceincnp_->Update(1.0, *intfforcenp, 0.0);
 }
 
-void PASI::PasiPartTwoWayCoup::BuildIncrementStates()
+void PASI::PasiPartTwoWayCoup::build_increment_states()
 {
   intfdispincnp_->Update(1.0, *intfdispnp_, -1.0);
   intfforceincnp_->Update(1.0, *intfforcenp_, -1.0);
@@ -230,18 +230,18 @@ void PASI::PasiPartTwoWayCoup::ResetParticleStates()
 
   // get interface to particle engine
   std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface =
-      particlealgorithm_->GetParticleEngineInterface();
+      particlealgorithm_->get_particle_engine_interface();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface->GetParticleContainerBundle();
+      particleengineinterface->get_particle_container_bundle();
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle->GetParticleTypes())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(type, PARTICLEENGINE::Owned);
 
     // reset position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::Position, 1.0, PARTICLEENGINE::LastIterPosition);
@@ -275,13 +275,13 @@ void PASI::PasiPartTwoWayCoup::ResetParticleStates()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::ClearInterfaceForces()
+void PASI::PasiPartTwoWayCoup::clear_interface_forces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::ClearInterfaceForces");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::clear_interface_forces");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
-      particlealgorithm_->GetParticleWallHandlerInterface();
+      particlealgorithm_->get_particle_wall_handler_interface();
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -301,7 +301,7 @@ void PASI::PasiPartTwoWayCoup::GetInterfaceForces()
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
-      particlealgorithm_->GetParticleWallHandlerInterface();
+      particlealgorithm_->get_particle_wall_handler_interface();
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -428,18 +428,18 @@ void PASI::PasiPartTwoWayCoup::SaveParticleStates()
 
   // get interface to particle engine
   std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface =
-      particlealgorithm_->GetParticleEngineInterface();
+      particlealgorithm_->get_particle_engine_interface();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface->GetParticleContainerBundle();
+      particleengineinterface->get_particle_container_bundle();
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle->GetParticleTypes())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(type, PARTICLEENGINE::Owned);
 
     // save position, velocity and acceleration states of all particles
     container->UpdateState(0.0, PARTICLEENGINE::LastIterPosition, 1.0, PARTICLEENGINE::Position);
@@ -506,7 +506,7 @@ void PASI::PasiPartTwoWayCoupDispRelax::Outerloop()
   }
 
   // init relaxation of interface states
-  InitRelaxationInterfaceStates();
+  init_relaxation_interface_states();
 
   // set interface states
   SetInterfaceStates(relaxintfdispnp_, relaxintfvelnp_, relaxintfaccnp_);
@@ -520,13 +520,13 @@ void PASI::PasiPartTwoWayCoupDispRelax::Outerloop()
     ++itnum;
 
     // reset increment states
-    ResetIncrementStates(relaxintfdispnp_, intfforcenp_);
+    reset_increment_states(relaxintfdispnp_, intfforcenp_);
 
     // reset particle states
     ResetParticleStates();
 
     // clear interface forces
-    ClearInterfaceForces();
+    clear_interface_forces();
 
     // particle time step
     ParticleStep();
@@ -541,10 +541,10 @@ void PASI::PasiPartTwoWayCoupDispRelax::Outerloop()
     StructStep();
 
     // extract interface states
-    ExtractInterfaceStates();
+    extract_interface_states();
 
     // build increment states
-    BuildIncrementStates();
+    build_increment_states();
 
     // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
@@ -553,7 +553,7 @@ void PASI::PasiPartTwoWayCoupDispRelax::Outerloop()
     CalcOmega(omega_, itnum);
 
     // perform relaxation of interface states
-    PerformRelaxationInterfaceStates();
+    perform_relaxation_interface_states();
 
     // set interface states
     SetInterfaceStates(relaxintfdispnp_, relaxintfvelnp_, relaxintfaccnp_);
@@ -567,14 +567,14 @@ void PASI::PasiPartTwoWayCoupDispRelax::CalcOmega(double& omega, const int itnum
     std::cout << "Fixed relaxation parameter: " << omega << std::endl;
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::InitRelaxationInterfaceStates()
+void PASI::PasiPartTwoWayCoupDispRelax::init_relaxation_interface_states()
 {
   relaxintfdispnp_->Update(1.0, *intfdispnp_, 0.0);
   relaxintfvelnp_->Update(1.0, *intfvelnp_, 0.0);
   relaxintfaccnp_->Update(1.0, *intfaccnp_, 0.0);
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::PerformRelaxationInterfaceStates()
+void PASI::PasiPartTwoWayCoupDispRelax::perform_relaxation_interface_states()
 {
   relaxintfdispnp_->Update(omega_, *intfdispincnp_, 1.0);
 

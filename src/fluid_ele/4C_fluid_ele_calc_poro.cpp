@@ -136,15 +136,15 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
     CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(mat);
-  const_permeability_ = (actmat->PermeabilityFunction() == MAT::PAR::constant);
+  const_permeability_ = (actmat->permeability_function() == MAT::PAR::constant);
 
   auto* poroele = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele);
 
   if (poroele)
   {
     kintype_ = poroele->KinematicType();
-    anisotropic_permeability_directions_ = poroele->GetAnisotropicPermeabilityDirections();
-    anisotropic_permeability_nodal_coeffs_ = poroele->GetAnisotropicPermeabilityNodalCoeffs();
+    anisotropic_permeability_directions_ = poroele->get_anisotropic_permeability_directions();
+    anisotropic_permeability_nodal_coeffs_ = poroele->get_anisotropic_permeability_nodal_coeffs();
   }
 
   if (not offdiag)
@@ -187,7 +187,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
-  // (only required to be set up for routines "ExtractValuesFromGlobalVector")
+  // (only required to be set up for routines "extract_values_from_global_vector")
   Base::rotsymmpbc_->Setup(ele);
 
   // ---------------------------------------------------------------------
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   evelaf.Clear();
   static CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   epreaf.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
@@ -230,14 +230,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   static CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   eprenp.Clear();
   if (Base::fldparatimint_->IsGenalphaNP())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
   static CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
   emhist.Clear();
   static CORE::LINALG::Matrix<nen_, 1> echist(true);
   echist.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &emhist, &echist, "hist");
 
   static CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
@@ -246,30 +246,30 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   epressam_timederiv.Clear();
 
   if (Base::fldparatimint_->IsGenalpha())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
   static CORE::LINALG::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.Clear();
   if (Base::fldparatimint_->IsGenalpha())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
   static CORE::LINALG::Matrix<nen_, 1> epren(true);
   epren.Clear();
   static CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
   eveln.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &eveln, &epren, "veln");
 
   static CORE::LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
   epressnp_timederiv.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &epressnp_timederiv, "accnp");
 
   static CORE::LINALG::Matrix<nen_, 1> escaaf(true);
   escaaf.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
   // ---------------------------------------------------------------------
@@ -286,13 +286,13 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
 
   CORE::LINALG::Matrix<nen_, 1> eporositynp(true);
 
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &egridv, nullptr, "gridv");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &egridvn, nullptr, "gridvn");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispn, nullptr, "dispn");
 
   // get node coordinates and number of elements per node
@@ -346,7 +346,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
-  // (only required to be set up for routines "ExtractValuesFromGlobalVector")
+  // (only required to be set up for routines "extract_values_from_global_vector")
   Base::rotsymmpbc_->Setup(ele);
 
   // construct views
@@ -387,7 +387,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   static CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   evelaf.Clear();
   epreaf.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
@@ -396,14 +396,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   evelnp.Clear();
   eprenp.Clear();
   if (Base::fldparatimint_->IsGenalphaNP())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
   static CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
   static CORE::LINALG::Matrix<nen_, 1> epren(true);
   eveln.Clear();
   epren.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &eveln, &epren, "veln");
 
   static CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
@@ -412,30 +412,30 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   epressam_timederiv.Clear();
 
   if (Base::fldparatimint_->IsGenalpha())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
   static CORE::LINALG::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.Clear();
   if (Base::fldparatimint_->IsGenalpha())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
   static CORE::LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
   epressnp_timederiv.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &epressnp_timederiv, "accnp");
 
   static CORE::LINALG::Matrix<nen_, 1> escaaf(true);
   epressnp_timederiv.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
   static CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
   static CORE::LINALG::Matrix<nen_, 1> echist(true);
   emhist.Clear();
   echist.Clear();
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &emhist, &echist, "hist");
 
   // ---------------------------------------------------------------------
@@ -450,13 +450,13 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   static CORE::LINALG::Matrix<nsd_, nen_> egridvn(true);
   egridvn.Clear();
 
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispn, nullptr, "dispn");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &egridv, nullptr, "gridv");
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &egridvn, nullptr, "gridvn");
 
   // get node coordinates and number of elements per node
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& pa
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  Base::EvalShapeFuncAndDerivsAtEleCenter();
+  Base::eval_shape_func_and_derivs_at_ele_center();
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& 
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  Base::EvalShapeFuncAndDerivsAtEleCenter();
+  Base::eval_shape_func_and_derivs_at_ele_center();
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -810,7 +810,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& 
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
     const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
@@ -820,8 +820,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
     CORE::LINALG::Matrix<nen_, 1>& preforce)
 {
   // first evaluate terms without porosity time derivative
-  EvaluatePressureEquationNonTransient(params, timefacfacpre, rhsfac, dphi_dp, dphi_dJ, dphi_dJdp,
-      dphi_dpp, dgradphi_dp, estif_q_u, ppmat, preforce);
+  evaluate_pressure_equation_non_transient(params, timefacfacpre, rhsfac, dphi_dp, dphi_dJ,
+      dphi_dJdp, dphi_dpp, dgradphi_dp, estif_q_u, ppmat, preforce);
 
   // now the porosity time derivative (different for standard poro and other poro elements)
   if (!porofldpara_->IsStationaryConti())
@@ -859,7 +859,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
     }
 
     // in case of reactive porous medium : additional rhs term
-    double refporositydot = struct_mat_->RefPorosityTimeDeriv();
+    double refporositydot = struct_mat_->ref_porosity_time_deriv();
     for (int vi = 0; vi < nen_; ++vi)
     {
       preforce(vi) -= rhsfac * refporositydot * Base::funct_(vi);
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransient(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_non_transient(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
     const CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
@@ -1133,9 +1133,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
-    SetupMaterialDerivatives();
+    setup_material_derivatives();
 
     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
     // N_XYZ_^T
@@ -1150,9 +1150,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     double volchange = 0.0;
 
     // compute J and the volume change
-    ComputeJacobianDeterminantVolumeChange(J_, volchange, defgrd, N_XYZ_, edispnp);
+    compute_jacobian_determinant_volume_change(J_, volchange, defgrd, N_XYZ_, edispnp);
 
-    EvaluateVariablesAtGaussPoint(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren,
+    evaluate_variables_at_gauss_point(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren,
         epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, egridv, egridvn,
         escaaf, emhist, echist, eporositynp, eporositydot, eporositydotn);
 
@@ -1204,14 +1204,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
           grad_porosity_, refgrad_porosity_);
     }
 
-    ComputeLinearization(dphi_dp, dphi_dpp, dphi_dJdp, gradJ, dgradphi_dp);
+    compute_linearization(dphi_dp, dphi_dpp, dphi_dJdp, gradJ, dgradphi_dp);
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters and/or stabilization
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    GetMaterialParamters(material);
+    get_material_paramters(material);
 
     // set viscous term from previous iteration to zero (required for
     // using routine for evaluation of momentum rhs/residual as given)
@@ -1221,13 +1221,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     if (Base::is_higher_order_ele_ and Base::visceff_) CalcDivEps(evelaf);
 
     // get reaction tensor and linearisations of material reaction tensor
-    ComputeSpatialReactionTerms(material, defgrd_inv);
+    compute_spatial_reaction_terms(material, defgrd_inv);
 
     // get stabilization parameters at integration point
-    ComputeStabilizationParameters(vol);
+    compute_stabilization_parameters(vol);
 
     // compute old RHS of momentum equation and subgrid scale velocity
-    ComputeOldRHSAndSubgridScaleVelocity();
+    compute_old_rhs_and_subgrid_scale_velocity();
 
     // compute old RHS of continuity equation
     ComputeOldRHSConti(dphi_dp);
@@ -1235,7 +1235,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
         struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
-      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, false);
+      compute_mixture_strong_residual(params, defgrd, edispnp, edispn, F_X, *iquad, false);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -1303,7 +1303,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     }
 
     // inertia terms on the right hand side for instationary fluids
-    if (not porofldpara_->IsStationaryMomentum())
+    if (not porofldpara_->is_stationary_momentum())
     {
       for (int idim = 0; idim < nsd_; ++idim)
       {
@@ -1494,7 +1494,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     /* ********************************************************************** */
     // 4) standard Galerkin continuity term + poroelasticity terms
 
-    EvaluatePressureEquation(params, timefacfacpre, rhsfac, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dpp,
+    evaluate_pressure_equation(params, timefacfacpre, rhsfac, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dpp,
         eporositydot, eporositydotn, echist, dgradphi_dp, estif_q_u, ppmat, preforce);
 
     /* *********************************************************************************************************
@@ -1505,7 +1505,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
     if (Base::fldpara_->PSPG() or Base::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none or
         Base::fldpara_->SUPG())
-      ComputeLinResMDuStabilization(timefacfac, lin_resM_Du);
+      compute_lin_res_m_du_stabilization(timefacfac, lin_resM_Du);
 
     // 6) PSPG term
     if (Base::fldpara_->PSPG())
@@ -1642,10 +1642,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     lin_resM_Dus_gridvel.Clear();
 
     // evaluate shape functions and derivatives at integration point
-    Base::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
-    SetupMaterialDerivatives();
+    setup_material_derivatives();
 
     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
     // N_XYZ_^T
@@ -1660,11 +1660,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     double volchange = 0.0;
 
     // compute J and the volume change
-    ComputeJacobianDeterminantVolumeChange(J_, volchange, defgrd, N_XYZ_, edispnp);
+    compute_jacobian_determinant_volume_change(J_, volchange, defgrd, N_XYZ_, edispnp);
 
-    EvaluateVariablesAtGaussPointOD(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp, epren,
-        epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn, egridv,
-        egridvn, escaaf, emhist, echist, eporositynp);
+    evaluate_variables_at_gauss_point_od(params, ebofoaf, evelaf, evelnp, eveln, epreaf, eprenp,
+        epren, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam, edispnp, edispn,
+        egridv, egridvn, escaaf, emhist, echist, eporositynp);
 
     //************************************************auxilary variables for computing the porosity_
 
@@ -1685,7 +1685,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
         nullptr,  // dphi_dpp not needed
         false);
 
-    double refporositydot = struct_mat_->RefPorosityTimeDeriv();
+    double refporositydot = struct_mat_->ref_porosity_time_deriv();
 
     //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
     static CORE::LINALG::Matrix<nsd_, 1> gradJ(false);
@@ -1718,20 +1718,20 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     ComputeGradients(J_, dphi_dp, dphi_dJ, defgrd_IT_vec, F_x, Base::gradp_, eporositynp, gradJ,
         grad_porosity_, refgrad_porosity_);
 
-    ComputeLinearizationOD(dphi_dJ, dphi_dJJ, dphi_dJdp, defgrd_inv, defgrd_IT_vec, F_x, F_X, gradJ,
-        dJ_dus, dphi_dus, dgradphi_dus);
+    compute_linearization_od(dphi_dJ, dphi_dJJ, dphi_dJdp, defgrd_inv, defgrd_IT_vec, F_x, F_X,
+        gradJ, dJ_dus, dphi_dus, dgradphi_dus);
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters and/or stabilization
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    GetMaterialParamters(material);
+    get_material_paramters(material);
 
-    ComputeSpatialReactionTerms(material, defgrd_inv);
+    compute_spatial_reaction_terms(material, defgrd_inv);
 
     // compute linearization of spatial reaction tensor w.r.t. structural displacements
-    ComputeLinSpatialReactionTerms(material, defgrd_inv, &dJ_dus, &dphi_dus);
+    compute_lin_spatial_reaction_terms(material, defgrd_inv, &dJ_dus, &dphi_dus);
 
     // set viscous term from previous iteration to zero (required for
     // using routine for evaluation of momentum rhs/residual as given)
@@ -1741,10 +1741,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     if (Base::is_higher_order_ele_ and Base::visceff_) CalcDivEps(evelaf);
 
     // get stabilization parameters at integration point
-    ComputeStabilizationParameters(vol);
+    compute_stabilization_parameters(vol);
 
     // compute old RHS of momentum equation and subgrid scale velocity
-    ComputeOldRHSAndSubgridScaleVelocity();
+    compute_old_rhs_and_subgrid_scale_velocity();
 
     // compute old RHS of continuity equation
     ComputeOldRHSConti(dphi_dp);
@@ -1752,7 +1752,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
         struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
-      ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
+      compute_mixture_strong_residual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -1764,7 +1764,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     //**************************************************************************
     // 1) coupling terms in momentum balance
 
-    FillMatrixMomentumOD(timefacfac, evelaf, egridv, epreaf, dgradphi_dus, dphi_dp, dphi_dJ,
+    fill_matrix_momentum_od(timefacfac, evelaf, egridv, epreaf, dgradphi_dus, dphi_dp, dphi_dJ,
         dphi_dus, refporositydot, lin_resM_Dus, lin_resM_Dus_gridvel, ecoupl_u);
 
     //**************************************************************************
@@ -1776,7 +1776,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double& timefacfac,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const double& timefacfac,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
     const CORE::LINALG::Matrix<nen_, 1>& epreaf,
     const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus, const double& dphi_dp,
@@ -2293,9 +2293,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
   //**************************************************************************
   // shape derivatives
   if (nsd_ == 3)
-    LinMeshMotion_3D_Pres_OD(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
+    lin_mesh_motion_3_d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
   else if (nsd_ == 2)
-    LinMeshMotion_2D_Pres_OD(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
+    lin_mesh_motion_2_d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
   else
     FOUR_C_THROW("Linearization of the mesh motion is only available in 2D and 3D");
 }
@@ -2319,7 +2319,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
   //*************************** linearisation of mesh motion in momentum
   // balance**********************************
   // mass
-  if (!porofldpara_->IsStationaryMomentum())
+  if (!porofldpara_->is_stationary_momentum())
   {
     const double fac0 = Base::fac_ * Base::densam_ * (1.0 + addstab) * Base::velint_(0);
     const double fac1 = Base::fac_ * Base::densam_ * (1.0 + addstab) * Base::velint_(1);
@@ -3180,7 +3180,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
     CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
@@ -3825,7 +3825,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
   //*************************** linearisation of mesh motion in momentum
   // balance**********************************
   // mass
-  if (!porofldpara_->IsStationaryMomentum())
+  if (!porofldpara_->is_stationary_momentum())
   {
     const double fac0 = Base::fac_ * Base::densam_ * (1.0 + addstab) * Base::velint_(0);
     const double fac1 = Base::fac_ * Base::densam_ * (1.0 + addstab) * Base::velint_(1);
@@ -4103,7 +4103,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2_d_pres_od(
     CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
@@ -4716,12 +4716,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeGradients(const double& J,
   gradJ.MultiplyTN(J, F_x, defgrd_IT_vec);
 
   // if(grad_porosity or refgrad_porosity)
-  ComputePorosityGradient(
+  compute_porosity_gradient(
       dphidp, dphidJ, gradJ, gradp, eporositynp, grad_porosity, refgrad_porosity);
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(const double& dphidp,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity_gradient(const double& dphidp,
     const double& dphidJ, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
     const CORE::LINALG::Matrix<nsd_, 1>& gradp, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
     CORE::LINALG::Matrix<nsd_, 1>& grad_porosity, CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity)
@@ -4737,7 +4737,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(const dou
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(const double& dphi_dp,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization(const double& dphi_dp,
     const double& dphi_dpp, const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
     CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp)
 {
@@ -4754,7 +4754,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(const double
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const double& dphi_dJ,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization_od(const double& dphi_dJ,
     const double& dphi_dJJ, const double& dphi_dJp,
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
     const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
@@ -4862,7 +4862,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosity(Teuchos::Paramete
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::FluidEleCalcPoro<distype>::SetupMaterialDerivatives()
+double DRT::ELEMENTS::FluidEleCalcPoro<distype>::setup_material_derivatives()
 {
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
@@ -5105,7 +5105,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ReacStab(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::get_material_paramters(
     Teuchos::RCP<const CORE::MAT::Material> material)
 {
   if (Base::fldpara_->MatGp())
@@ -5121,7 +5121,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
     Base::densn_ = Base::densaf_;
 
     // calculate reaction coefficient
-    Base::reacoeff_ = actmat->ComputeReactionCoeff() * porosity_;
+    Base::reacoeff_ = actmat->compute_reaction_coeff() * porosity_;
 
     Base::visceff_ = actmat->EffectiveViscosity();
   }
@@ -5130,7 +5130,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_spatial_reaction_terms(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const CORE::LINALG::Matrix<nsd_, nsd_>& invdefgrd)
 {
@@ -5143,7 +5143,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
       {
         if (actmat->IsNodalOrthotropic())
         {
-          return ComputeAnisotropicPermeabilityCoeffsAtGP();
+          return compute_anisotropic_permeability_coeffs_at_gp();
         }
         else
         {
@@ -5152,7 +5152,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
       });
 
   // material reaction tensor = inverse material permeability
-  actmat->ComputeReactionTensor(mat_reac_tensor_, J_, porosity_,
+  actmat->compute_reaction_tensor(mat_reac_tensor_, J_, porosity_,
       anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
 
   // spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
@@ -5165,7 +5165,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   reac_tensor_convvel_.Multiply(reac_tensor_, convvel_);
 
   // linearisations of material reaction tensor
-  actmat->ComputeLinMatReactionTensor(
+  actmat->compute_lin_mat_reaction_tensor(
       mat_reac_tensor_linporosity_, mat_reac_tensor_linJ_, J_, porosity_);
 
   static CORE::LINALG::Matrix<nsd_, nsd_> lin_p_tmp_1(false);
@@ -5179,7 +5179,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_terms(
     Teuchos::RCP<const CORE::MAT::Material> material,
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
     const CORE::LINALG::Matrix<1, nsd_ * nen_>* dJ_dus,
@@ -5312,13 +5312,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVelocity()
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_scale_velocity()
 {
   //----------------------------------------------------------------------
   // computation of various residuals and residual-based values such as
   // the subgrid-scale velocity
   //----------------------------------------------------------------------
-  if (Base::fldparatimint_->IsGenalpha() and (not porofldpara_->IsStationaryMomentum()))
+  if (Base::fldparatimint_->IsGenalpha() and (not porofldpara_->is_stationary_momentum()))
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
     Base::rhsmom_.Update(Base::densaf_, Base::bodyforce_, 0.0);
@@ -5334,7 +5334,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
   }
   else
   {
-    if (not porofldpara_->IsStationaryMomentum())
+    if (not porofldpara_->is_stationary_momentum())
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
@@ -5381,7 +5381,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(const double& vol)
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_stabilization_parameters(const double& vol)
 {
   // calculate stabilization parameters at integration point
   if (Base::fldpara_->TauGp())
@@ -5419,7 +5419,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     // due to time factor and reaction coefficient
     double sigma_tot = Base::reacoeff_;
 
-    if (not porofldpara_->IsStationaryMomentum())
+    if (not porofldpara_->is_stationary_momentum())
     {
       sigma_tot += 1.0 / Base::fldparatimint_->TimeFac();
     }
@@ -5488,7 +5488,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
       */
 
       const double scaling = porofldpara_->StabBiotScaling();
-      const double effective_stiffness = ComputeEffectiveStiffness();
+      const double effective_stiffness = compute_effective_stiffness();
       // note: I do not know if the stabilization parameter should be devided by TimeFac(). It seems
       // to work, though...
       tau_struct_ =
@@ -5561,7 +5561,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& ti
   }
 
   // mass
-  if (!porofldpara_->IsStationaryMomentum())
+  if (!porofldpara_->is_stationary_momentum())
   {
     const double fac_densam = Base::fac_ * Base::densam_;
 
@@ -5626,7 +5626,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& ti
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDuStabilization(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_du_stabilization(
     const double& timefacfac, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du)
 {
   if (Base::is_higher_order_ele_ and Base::visceff_)
@@ -5831,7 +5831,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(const double& ti
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
     const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
@@ -5983,7 +5983,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point_od(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
     const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
     const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
@@ -6156,12 +6156,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
   Base::eid_ = ele->Id();
 
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   CORE::LINALG::Matrix<nen_, 1> epressnp(true);
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &evelnp, &epressnp, "velnp");
 
   xyze0_ = Base::xyze_;
@@ -6173,7 +6173,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
        iquad != Base::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
@@ -6264,14 +6264,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   // ost:         velocity/pressure at time n+1
   CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
   CORE::LINALG::Matrix<nen_, 1> epreaf(true);
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   if (Base::fldparatimint_->IsGenalphaNP())
-    Base::ExtractValuesFromGlobalVector(
+    Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
   //----------------------------------------------------------------------------
@@ -6285,7 +6285,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   Base::eid_ = ele->Id();
 
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  Base::ExtractValuesFromGlobalVector(
+  Base::extract_values_from_global_vector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
   // get new node positions for isale
@@ -6299,7 +6299,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
        ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -6441,7 +6441,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residual(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
     const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
     const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X, const int gp, const bool computeLinOD)
@@ -6774,7 +6774,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
+double DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_effective_stiffness()
 {
   Teuchos::RCP<CORE::MAT::Material> curmat = struct_mat_->GetMaterial();
   double effective_stiffness = 0.0;
@@ -6813,7 +6813,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeChange(double& J,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_jacobian_determinant_volume_change(double& J,
     double& volchange, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
     const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
     const CORE::LINALG::Matrix<nsd_, nen_>& nodaldisp)
@@ -6846,7 +6846,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
 
 template <CORE::FE::CellType distype>
 std::vector<double>
-DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeAnisotropicPermeabilityCoeffsAtGP() const
+DRT::ELEMENTS::FluidEleCalcPoro<distype>::compute_anisotropic_permeability_coeffs_at_gp() const
 {
   std::vector<double> anisotropic_permeability_coeffs(nsd_, 0.0);
 

@@ -78,46 +78,46 @@ namespace PARTICLEINTERACTION
     void SetCurrentTime(const double currenttime);
 
     //! insert surface tension evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! compute interface quantities
-    void ComputeInterfaceQuantities();
+    void compute_interface_quantities();
 
     //! add surface tension contribution to acceleration field
-    void AddAccelerationContribution();
+    void add_acceleration_contribution();
 
    private:
     //! init interface viscosity handler
-    void InitInterfaceViscosityHandler();
+    void init_interface_viscosity_handler();
 
     //! init evaporation induced recoil pressure handler
-    void InitRecoilPressureEvaporationHandler();
+    void init_recoil_pressure_evaporation_handler();
 
     //! init barrier force handler
-    void InitBarrierForceHandler();
+    void init_barrier_force_handler();
 
     //! compute colorfield gradient
-    void ComputeColorfieldGradient() const;
+    void compute_colorfield_gradient() const;
 
     //! compute interface normal
-    void ComputeInterfaceNormal() const;
+    void compute_interface_normal() const;
 
     //! compute wall colorfield and wall interface normal
-    void ComputeWallColorfieldAndWallInterfaceNormal() const;
+    void compute_wall_colorfield_and_wall_interface_normal() const;
 
     //! correct normal vector of particles close to triple point
-    void CorrectTriplePointNormal() const;
+    void correct_triple_point_normal() const;
 
     //! compute curvature
     void ComputeCurvature() const;
 
     //! compute surface tension contribution
-    void ComputeSurfaceTensionContribution() const;
+    void compute_surface_tension_contribution() const;
 
     //! compute temperature gradient driven contribution
-    void ComputeTempGradDrivenContribution() const;
+    void compute_temp_grad_driven_contribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

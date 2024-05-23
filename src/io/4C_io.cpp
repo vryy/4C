@@ -125,7 +125,7 @@ void IO::DiscretizationReader::ReadMultiVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadSerialDenseMatrix(
+void IO::DiscretizationReader::read_serial_dense_matrix(
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
     std::string name)
 {
@@ -142,7 +142,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char>> data =
-      reader_->ReadResultDataVecChar(id_path, value_path, columns, Comm(), elemap);
+      reader_->read_result_data_vec_char(id_path, value_path, columns, Comm(), elemap);
 
   std::vector<char>::size_type position = 0;
   for (int i = 0; i < elemap->NumMyElements(); ++i)
@@ -256,7 +256,7 @@ void IO::DiscretizationReader::ReadCharVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadRedundantDoubleVector(
+void IO::DiscretizationReader::read_redundant_double_vector(
     Teuchos::RCP<std::vector<double>>& doublevec, const std::string name)
 {
   int length;
@@ -285,7 +285,7 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadRedundantIntVector(
+void IO::DiscretizationReader::read_redundant_int_vector(
     Teuchos::RCP<std::vector<int>>& intvec, const std::string name)
 {
   int length;
@@ -681,7 +681,7 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 {
   if (binio_)
   {
-    CreateNewResultAndMeshFile();
+    create_new_result_and_mesh_file();
     output_->NewResultFile(numb_run, spatial_approx_);
   }
 }
@@ -693,7 +693,7 @@ void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb
 {
   if (binio_)
   {
-    CreateNewResultAndMeshFile();
+    create_new_result_and_mesh_file();
     output_->NewResultFile(name_appendix, numb_run, spatial_approx_);
   }
 }
@@ -704,7 +704,7 @@ void IO::DiscretizationWriter::NewResultFile(std::string name)
 {
   if (binio_)
   {
-    CreateNewResultAndMeshFile();
+    create_new_result_and_mesh_file();
     output_->NewResultFile(name, spatial_approx_);
   }
 }
@@ -715,7 +715,7 @@ void IO::DiscretizationWriter::OverwriteResultFile()
 {
   if (binio_)
   {
-    CreateNewResultAndMeshFile();
+    create_new_result_and_mesh_file();
     output_->OverwriteResultFile(spatial_approx_);
   }
 }
@@ -729,7 +729,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
   {
     bool write_file = false;
 
-    if (not HaveResultOrMeshFileChanged())
+    if (not have_result_or_mesh_file_changed())
     {
       // do not perform the step if already called
       if (step_ == step and fabs(time_ - time) < 1e-14)
@@ -1207,7 +1207,7 @@ void IO::DiscretizationWriter::WriteMesh(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
+void IO::DiscretizationWriter::write_only_nodes_in_new_field_group_to_control_file(
     const int step, const double time, const bool writerestart)
 {
   if (binio_)
@@ -1510,7 +1510,7 @@ void IO::DiscretizationWriter::WriteCharVector(
 /*----------------------------------------------------------------------*/
 /* write a stl vector of doubles from proc0                             */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteRedundantDoubleVector(
+void IO::DiscretizationWriter::write_redundant_double_vector(
     const std::string name, Teuchos::RCP<std::vector<double>> doublevec)
 {
   if (binio_)
@@ -1557,7 +1557,7 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
 /*----------------------------------------------------------------------*/
 /* write a stl set of integers from proc0                             */
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteRedundantIntVector(
+void IO::DiscretizationWriter::write_redundant_int_vector(
     const std::string name, Teuchos::RCP<std::vector<int>> vectorint)
 {
   if (binio_)

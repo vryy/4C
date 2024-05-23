@@ -206,7 +206,7 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // check correct masslin type
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   if (CORE::UTILS::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
   {
     FOUR_C_THROW(
@@ -345,11 +345,11 @@ MAT::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
       Parameter()->PolyCoeffs(), Parameter()->XMin(), Parameter()->XMax()));
 
   // get reference intercalation fraction
-  const double x_ref = MAT::Electrode::ComputeIntercalationFraction(
+  const double x_ref = MAT::Electrode::compute_intercalation_fraction(
       Parameter()->Scalar1RefConc(), Parameter()->Chimax(), Parameter()->Cmax(), 1.0);
 
   // set the polynomial value in the reference configuration
-  Parameter()->SetPolynomReferenceValue(polynomial_growth_->ComputePolynomial(x_ref));
+  Parameter()->set_polynom_reference_value(polynomial_growth_->ComputePolynomial(x_ref));
 }
 
 /*--------------------------------------------------------------------*
@@ -358,11 +358,11 @@ double MAT::InelasticDefgradPolyIntercalFrac::EvaluatePolynomial(
     const double concentration, const double detjacobian)
 {
   // get intercalation fraction
-  const double x = MAT::Electrode::ComputeIntercalationFraction(
+  const double x = MAT::Electrode::compute_intercalation_fraction(
       concentration, Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // check bounds of validity of polynomial
-  polynomial_growth_->CheckPolynomialBounds(x);
+  polynomial_growth_->check_polynomial_bounds(x);
 
   // calculate and return the value of the polynomial
   return polynomial_growth_->ComputePolynomial(x);
@@ -370,14 +370,14 @@ double MAT::InelasticDefgradPolyIntercalFrac::EvaluatePolynomial(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::InelasticDefgradPolyIntercalFrac::EvaluatePolynomialDerivative(
+double MAT::InelasticDefgradPolyIntercalFrac::evaluate_polynomial_derivative(
     const double concentration, const double detjacobian)
 {
   // get intercalation fraction
-  const double x = MAT::Electrode::ComputeIntercalationFraction(
+  const double x = MAT::Electrode::compute_intercalation_fraction(
       concentration, Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
-  return polynomial_growth_->ComputePolynomialDerivative(x);
+  return polynomial_growth_->compute_polynomial_derivative(x);
 }
 
 /*--------------------------------------------------------------------*
@@ -393,7 +393,7 @@ MAT::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(CORE::MAT::PAR::
     : InelasticDefgradScalar(params)
 {
   linear_growth_ = Teuchos::rcp(new InelasticDefgradLinearShape(
-      Parameter()->Scalar1MolarGrowthFac(), Parameter()->Scalar1RefConc()));
+      Parameter()->scalar1_molar_growth_fac(), Parameter()->Scalar1RefConc()));
 }
 
 /*--------------------------------------------------------------------*
@@ -405,7 +405,7 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinScalarIso::GetInelasticSource(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradLinScalarIso::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameter
@@ -413,7 +413,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
   const double material_concentration = GetConcentrationGP().at(sc1 - 1) * defgrad->Determinant();
 
   // get growth factor
-  const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
+  const double growth_factor = linear_growth_->evaluate_linear_growth(material_concentration);
 
   const double isoinelasticdefo = std::pow(1.0 + growth_factor, (1.0 / 3.0));
 
@@ -423,7 +423,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradLinScalarIso::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -442,7 +442,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
   const double detjacobian = defgrad->Determinant();
 
   // get growth factor
-  const double growth_factor = linear_growth_->EvaluateLinearGrowth(concentration * detjacobian);
+  const double growth_factor = linear_growth_->evaluate_linear_growth(concentration * detjacobian);
 
   // evaluate scaling factor
   const double scalefac =
@@ -472,7 +472,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
   const double material_concentration = GetConcentrationGP().at(sc1 - 1) * detjacobian;
 
   // get growth factor
-  const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
+  const double growth_factor = linear_growth_->evaluate_linear_growth(material_concentration);
 
   // calculate scalefac
   const double scalefac =
@@ -484,7 +484,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradLinScalarIso::evaluate_inelastic_def_grad_derivative(
     const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
@@ -492,7 +492,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
   const double material_concentration = GetConcentrationGP().at(sc1 - 1) * detjacobian;
 
   // get growth factor
-  const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
+  const double growth_factor = linear_growth_->evaluate_linear_growth(material_concentration);
   // calculate the scale factor needed to calculate the derivative below
   const double scalefac = 1.0 / 3.0 * std::pow(1 + growth_factor, -2.0 / 3.0) *
                           linear_growth_->GrowthFac() * detjacobian;
@@ -512,7 +512,7 @@ MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     : InelasticDefgradScalar(params)
 {
   linear_growth_ = Teuchos::rcp(new InelasticDefgradLinearShape(
-      Parameter()->Scalar1MolarGrowthFac(), Parameter()->Scalar1RefConc()));
+      Parameter()->scalar1_molar_growth_fac(), Parameter()->Scalar1RefConc()));
 }
 
 /*--------------------------------------------------------------------*
@@ -524,7 +524,7 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinScalarAniso::GetInelasticSourc
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradLinScalarAniso::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // init and clear variable
@@ -536,7 +536,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
   const double material_concentration = GetConcentrationGP().at(sc1 - 1) * defgrad->Determinant();
 
   // get growth factor
-  const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
+  const double growth_factor = linear_growth_->evaluate_linear_growth(material_concentration);
 
   // calculate inelastic deformation gradient and its inverse
   for (int i = 0; i < 3; ++i) FinM(i, i) = 1.0;
@@ -551,7 +551,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradLinScalarAniso::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -611,7 +611,7 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinScalarAniso::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradLinScalarAniso::evaluate_inelastic_def_grad_derivative(
     const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   const double scalefac = linear_growth_->GrowthFac() * detjacobian;
@@ -634,12 +634,12 @@ MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradPolyIntercalFracIso::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameters
   const int sc1 = Parameter()->Scalar1();
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomial
   const double polynomValue =
@@ -654,7 +654,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradPolyIntercalFracIso::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -672,11 +672,11 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
   const double c_max = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
   const double concentration = GetConcentrationGP().at(sc1 - 1);
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomials
   const double polynomValue = EvaluatePolynomial(concentration, detjacobian);
-  const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+  const double polynomDerivativeValue = evaluate_polynomial_derivative(concentration, detjacobian);
 
   // prepare scalefac
   const double scalefac = -1.0 / (6.0 * c_max) * concentration * chi_max * detjacobian *
@@ -704,12 +704,12 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
   const int sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(sc1 - 1);
   const double detjacobian = defgrad->Determinant();
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomial and derivatives
   const double polynomValue = EvaluatePolynomial(concentration, detjacobian);
-  const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
-  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
+  const double polynomDerivativeValue = evaluate_polynomial_derivative(concentration, detjacobian);
+  const double dChidc = MAT::Electrode::compute_d_intercalation_fraction_d_concentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
@@ -723,7 +723,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradPolyIntercalFracIso::evaluate_inelastic_def_grad_derivative(
     const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   static CORE::LINALG::Matrix<9, 1> id9x1(true);
@@ -733,16 +733,16 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivativ
   // get parameters
   const int sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(sc1 - 1);
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomial and its derivative
   const double polynomValue = EvaluatePolynomial(concentration, detjacobian);
-  const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+  const double polynomDerivativeValue = evaluate_polynomial_derivative(concentration, detjacobian);
 
   // calculate the scale factor needed to get the derivative later
   const double denominator = 1.0 / (polynomReferenceValue + 1.0);
   const double base = (polynomValue + 1.0) * denominator;
-  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
+  const double dChidc = MAT::Electrode::compute_d_intercalation_fraction_d_concentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
   const double scalefac =
       1.0 / 3.0 * std::pow(base, -2.0 / 3.0) * polynomDerivativeValue * denominator * dChidc;
@@ -761,7 +761,7 @@ MAT::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAnis
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradPolyIntercalFracAniso::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // init and clear variable
@@ -770,7 +770,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomials
   const double polynomValue =
@@ -792,7 +792,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradPolyIntercalFracAniso::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -808,10 +808,10 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
   const double c_max = Parameter()->Cmax();
   const double concentration = GetConcentrationGP().at(sc1 - 1);
   const double detjacobian = defgrad->Determinant();
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get first derivative of polynomial
-  const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+  const double polynomDerivativeValue = evaluate_polynomial_derivative(concentration, detjacobian);
 
   // prepare scalefac
   const double scalefac = -detjacobian * concentration * chi_max * polynomDerivativeValue /
@@ -843,12 +843,12 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
   // get parameters
   const int sc1 = Parameter()->Scalar1();
   const double detjacobian = defgrad->Determinant();
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get derivatives
   const double polynomDerivativeValue =
-      EvaluatePolynomialDerivative(GetConcentrationGP().at(sc1 - 1), detjacobian);
-  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
+      evaluate_polynomial_derivative(GetConcentrationGP().at(sc1 - 1), detjacobian);
+  const double dChidc = MAT::Electrode::compute_d_intercalation_fraction_d_concentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
@@ -865,18 +865,18 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradPolyIntercalFracAniso::evaluate_inelastic_def_grad_derivative(
     const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
   const int sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(sc1 - 1);
-  const double polynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+  const double polynomReferenceValue = Parameter()->get_polynom_reference_value();
 
   // get polynomial derivative
-  const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+  const double polynomDerivativeValue = evaluate_polynomial_derivative(concentration, detjacobian);
 
-  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
+  const double dChidc = MAT::Electrode::compute_d_intercalation_fraction_d_concentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
   const double scalefac = polynomDerivativeValue / (polynomReferenceValue + 1.0) * dChidc;
 
@@ -907,7 +907,7 @@ MAT::InelasticDefgradLinearShape::InelasticDefgradLinearShape(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::InelasticDefgradLinearShape::EvaluateLinearGrowth(const double value) const
+double MAT::InelasticDefgradLinearShape::evaluate_linear_growth(const double value) const
 {
   // calculate and return the linear growth factor
   return growth_fac_ * (value - reference_value_);
@@ -936,7 +936,7 @@ double MAT::InelasticDefgradPolynomialShape::ComputePolynomial(const double x)
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::InelasticDefgradPolynomialShape::ComputePolynomialDerivative(const double x)
+double MAT::InelasticDefgradPolynomialShape::compute_polynomial_derivative(const double x)
 {
   // initialize the variable for the derivative of the polynomial
   double polynomDerivative(0.0);
@@ -950,7 +950,7 @@ double MAT::InelasticDefgradPolynomialShape::ComputePolynomialDerivative(const d
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradPolynomialShape::CheckPolynomialBounds(const double x) const
+void MAT::InelasticDefgradPolynomialShape::check_polynomial_bounds(const double x) const
 {
   // safety check for validity of polynomial
   if ((x < x_min_) or (x > x_max_))
@@ -981,7 +981,7 @@ void MAT::InelasticDefgradLinTempIso::PreEvaluate(Teuchos::ParameterList& params
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradLinTempIso::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameters
@@ -998,7 +998,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradLinTempIso::evaluate_inelastic_def_grad_derivative(
     double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
@@ -1018,7 +1018,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinTempIso::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradLinTempIso::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -1059,7 +1059,7 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinTempIso::GetInelasticSource()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(
+void MAT::InelasticDefgradNoGrowth::evaluate_additional_cmat(
     const CORE::LINALG::Matrix<3, 3>* defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
     CORE::LINALG::Matrix<6, 6>& cmatadd)
@@ -1068,14 +1068,14 @@ void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::EvaluateInelasticDefGradDerivative(
+void MAT::InelasticDefgradNoGrowth::evaluate_inelastic_def_grad_derivative(
     double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradNoGrowth::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   iFinM = identity_;
@@ -1112,7 +1112,7 @@ void MAT::InelasticDefgradNoGrowth::PreEvaluate(Teuchos::ParameterList& params, 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradTimeFunct::EvaluateInverseInelasticDefGrad(
+void MAT::InelasticDefgradTimeFunct::evaluate_inverse_inelastic_def_grad(
     const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   const double idetFin = std::pow(funct_value_, -1.0 / 3.0);

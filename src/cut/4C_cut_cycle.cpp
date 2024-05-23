@@ -196,7 +196,7 @@ void CORE::GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
   for (unsigned i = 0; i != points_.size(); ++i)
   {
     Point* p1 = points_[i];
-    p1->DumpConnectivityInfo();
+    p1->dump_connectivity_info();
     Point* p2 = points_[(i + 1) % points_.size()];
     std::stringstream section_name;
     section_name << "Line" << i;

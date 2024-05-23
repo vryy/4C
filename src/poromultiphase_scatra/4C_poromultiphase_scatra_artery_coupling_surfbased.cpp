@@ -31,7 +31,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTr
   if (myrank_ == 0)
   {
     std::cout << "<                                                  >" << std::endl;
-    PrintOutCouplingMethod();
+    print_out_coupling_method();
     std::cout << "<                                                  >" << std::endl;
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     std::cout << "\n";
@@ -40,14 +40,14 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCouplingPairs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_coupling_pairs()
 {
   const int numpatch_axi = GLOBAL::Problem::Instance()
-                               ->PoroFluidMultiPhaseDynamicParams()
+                               ->poro_fluid_multi_phase_dynamic_params()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_AXI");
   const int numpatch_rad = GLOBAL::Problem::Instance()
-                               ->PoroFluidMultiPhaseDynamicParams()
+                               ->poro_fluid_multi_phase_dynamic_params()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_RAD");
   const int numartele = arterydis_->NumGlobalElements();
@@ -126,7 +126,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   }
 
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-    coupl_elepairs_[i]->DeleteUnnecessaryGPs(gp_vector);
+    coupl_elepairs_[i]->delete_unnecessary_g_ps(gp_vector);
 
   int total_num_gp = 0;
   int numgp = 0;
@@ -198,7 +198,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
   if (!porofluidmanagersset_)
   {
     // pre-evaluate the pairs --> has to be done here since radius inside the material is required
-    PreEvaluateCouplingPairs();
+    pre_evaluate_coupling_pairs();
   }
 
   // call base class
@@ -232,7 +232,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovem
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::BloodVesselVolumeFraction()
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for surface-based coupling");
 
@@ -242,10 +242,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::BloodVesselVolumeFr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PrintOutCouplingMethod() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::print_out_coupling_method() const
 {
   std::cout << "<   surface-based formulation                      >" << std::endl;
-  PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCouplingMethod();
+  PoroMultiPhaseScaTraArtCouplNonConforming::print_out_coupling_method();
 }
 
 FOUR_C_NAMESPACE_CLOSE

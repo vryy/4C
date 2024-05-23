@@ -76,7 +76,7 @@ void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
 
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
+  discret_->compute_null_space_if_necessary(solver_->Params());
 
   return;
 }

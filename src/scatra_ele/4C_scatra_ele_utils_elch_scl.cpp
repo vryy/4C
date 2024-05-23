@@ -90,35 +90,37 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
 
   // derivative of electronic conductivity w.r.t. concentration
   diffmanager->SetConcDerivCond(
-      matscl->ComputeConcentrationDerivativeOfConductivity(concentration, temperature), 0);
+      matscl->compute_concentration_derivative_of_conductivity(concentration, temperature), 0);
 
   // diffusion coefficient of cations
-  diffmanager->SetIsotropicDiff(matscl->ComputeDiffusionCoefficient(concentration, temperature), 0);
+  diffmanager->SetIsotropicDiff(
+      matscl->compute_diffusion_coefficient(concentration, temperature), 0);
 
   // derivation of concentration depending diffusion coefficient wrt concentration
-  diffmanager->SetConcDerivIsoDiffCoef(
-      matscl->ComputeConcentrationDerivativeOfDiffusionCoefficient(concentration, temperature), 0,
-      0);
+  diffmanager->set_conc_deriv_iso_diff_coef(
+      matscl->compute_concentration_derivative_of_diffusion_coefficient(concentration, temperature),
+      0, 0);
 
   // Susceptibility of background lattice
-  diffmanager->SetSusceptibility(matscl->ComputeSusceptibility());
+  diffmanager->SetSusceptibility(matscl->compute_susceptibility());
 
   // Permittivity based on susceptibility
   diffmanager->SetPermittivity(matscl->ComputePermittivity());
 
   // derivation of concentration dependent diffusion coefficient wrt temperature
-  diffmanager->SetTempDerivIsoDiffCoef(
-      matscl->ComputeTemperatureDerivativeOfDiffusionCoefficient(concentration, temperature), 0, 0);
+  diffmanager->set_temp_deriv_iso_diff_coef(
+      matscl->compute_temperature_derivative_of_diffusion_coefficient(concentration, temperature),
+      0, 0);
 
   // concentration dependent transference number
-  diffmanager->SetTransNum(matscl->ComputeTransferenceNumber(concentration), 0);
+  diffmanager->SetTransNum(matscl->compute_transference_number(concentration), 0);
 
   // derivation of concentration dependent transference number wrt all ionic species
-  diffmanager->SetDerivTransNum(matscl->ComputeFirstDerivTrans(concentration), 0, 0);
+  diffmanager->SetDerivTransNum(matscl->compute_first_deriv_trans(concentration), 0, 0);
 
   // derivative of electronic conductivity w.r.t. temperature
   diffmanager->SetTempDerivCond(
-      matscl->ComputeTemperatureDerivativeOfConductivity(concentration, temperature), 0);
+      matscl->compute_temperature_derivative_of_conductivity(concentration, temperature), 0);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

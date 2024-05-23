@@ -82,7 +82,7 @@ namespace SSI
     //! \param block  graph of which matrix should be checked
     //! \param size   new size of graph
     //! \return       does old size of graph match new size?
-    bool CheckAndSetSizeOfMatrixGraph(BlockMatrixType block, int size);
+    bool check_and_set_size_of_matrix_graph(BlockMatrixType block, int size);
 
     //! Kinetics condition on scatra dis
     CORE::Conditions::Condition* ConditionKinetics() const { return condition_kinetics_; }
@@ -109,7 +109,7 @@ namespace SSI
     int KineticsConditionID() const { return kinetics_condition_id_; }
 
     //! Map exctractor for dofs in this manifold condition
-    Teuchos::RCP<CORE::LINALG::MapExtractor> ManifoldMapExtractor() const
+    Teuchos::RCP<CORE::LINALG::MapExtractor> manifold_map_extractor() const
     {
       return manifold_map_extractor_;
     }
@@ -162,12 +162,12 @@ namespace SSI
 
     //! call complete on system matrices and coupling matrices
     //@{
-    void CompleteMatrixManifoldScaTra();
-    void CompleteMatrixManifoldStructure();
-    void CompleteMatrixScaTraManifold();
-    void CompleteMatrixScaTraStructure();
-    void CompleteSystemMatrixManifold();
-    void CompleteSystemMatrixScaTra();
+    void complete_matrix_manifold_sca_tra();
+    void complete_matrix_manifold_structure();
+    void complete_matrix_sca_tra_manifold();
+    void complete_matrix_sca_tra_structure();
+    void complete_system_matrix_manifold();
+    void complete_system_matrix_sca_tra();
     //@}
 
     //! write inflow fluxes to csv file
@@ -177,7 +177,7 @@ namespace SSI
     void Evaluate();
 
     //! Evaluate inflow into manifold field from coupling with scatra field
-    void EvaluateScaTraManifoldInflow();
+    void evaluate_sca_tra_manifold_inflow();
 
     //! get all RHS
     //@{
@@ -187,25 +187,25 @@ namespace SSI
 
     //! get all matrices
     //@{
-    Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrixManifold()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_manifold()
     {
       return systemmatrix_manifold_;
     }
     Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrixScaTra() { return systemmatrix_scatra_; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> MatrixManifoldScatra()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix_manifold_scatra()
     {
       return matrix_manifold_scatra_;
     }
-    Teuchos::RCP<CORE::LINALG::SparseOperator> MatrixScaTraManifold()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix_sca_tra_manifold()
     {
       return matrix_scatra_manifold_;
     }
-    Teuchos::RCP<CORE::LINALG::SparseOperator> MatrixManifoldStructure()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix_manifold_structure()
     {
       return matrix_manifold_structure_;
     }
-    Teuchos::RCP<CORE::LINALG::SparseOperator> MatrixScaTraStructure()
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix_sca_tra_structure()
     {
       return matrix_scatra_structure_;
     }
@@ -215,28 +215,28 @@ namespace SSI
     void Output();
 
     //! return all scatra-scatra manifold coupling operators
-    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>>& ScaTraManifoldCouplings()
+    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>>& sca_tra_manifold_couplings()
     {
       return scatra_manifold_couplings_;
     }
 
    private:
     //! Add to global matrices and rhs
-    void AddConditionContribution();
+    void add_condition_contribution();
 
     //! Copy and scale (-1.0) to manifold side
-    void CopyScaTraScaTraManifoldSide(
+    void copy_sca_tra_sca_tra_manifold_side(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate flux and linearizations on bulk side
     void EvaluateBulkSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
-    void EvaluateScaTraManifoldDomainIntegral(
+    void evaluate_sca_tra_manifold_domain_integral(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over positive fluxes
-    void EvaluateScaTraManifoldInflowIntegral(
+    void evaluate_sca_tra_manifold_inflow_integral(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! prepare evaluation of coupling condition: set elemental data
@@ -246,7 +246,7 @@ namespace SSI
     //! updated graphs (i.e. zeros become non-zeros or vice versa). In this case the graph of the
     //! global matrices needs to be updated as well to be able to add the local matrices to the
     //! global matrices
-    void UnCompleteMatricesIfNecessary(
+    void un_complete_matrices_if_necessary(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! map extractor associated with all degrees of freedom inside scatra field
@@ -342,26 +342,26 @@ namespace SSI
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     //! apply mesh tying to right hand side
-    void ApplyMeshTyingToManifoldRHS(Teuchos::RCP<Epetra_Vector> rhs_manifold);
+    void apply_mesh_tying_to_manifold_rhs(Teuchos::RCP<Epetra_Vector> rhs_manifold);
 
     //! apply mesh tying to manifold system matrix
-    virtual void ApplyMeshtyingToManifoldMatrix(
+    virtual void apply_meshtying_to_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_matrix) = 0;
 
     //! apply mesh tying to scatra manifold - scatra matrix
-    virtual void ApplyMeshtyingToManifoldScatraMatrix(
+    virtual void apply_meshtying_to_manifold_scatra_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_scatra_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_scatra_matrix) = 0;
 
     //! apply mesh tying to scatra manifold - structure matrix
-    virtual void ApplyMeshtyingToManifoldStructureMatrix(
+    virtual void apply_meshtying_to_manifold_structure_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_structure_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) = 0;
 
     //! apply mesh tying to scatra manifold - scatra matrix
-    virtual void ApplyMeshtyingToScatraManifoldMatrix(
+    virtual void apply_meshtying_to_scatra_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_scatra_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_manifold_matrix,
         bool do_uncomplete) = 0;
@@ -390,20 +390,20 @@ namespace SSI
     explicit ManifoldMeshTyingStrategySparse(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
         Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
-    void ApplyMeshtyingToManifoldMatrix(
+    void apply_meshtying_to_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_matrix) override;
 
-    void ApplyMeshtyingToManifoldScatraMatrix(
+    void apply_meshtying_to_manifold_scatra_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_scatra_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_scatra_matrix) override;
 
-    void ApplyMeshtyingToManifoldStructureMatrix(
+    void apply_meshtying_to_manifold_structure_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_structure_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
-    void ApplyMeshtyingToScatraManifoldMatrix(
+    void apply_meshtying_to_scatra_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_scatra_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_manifold_matrix,
         bool do_uncomplete) override;
@@ -415,27 +415,27 @@ namespace SSI
     explicit ManifoldMeshTyingStrategyBlock(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
-    void ApplyMeshtyingToManifoldMatrix(
+    void apply_meshtying_to_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_matrix) override;
 
-    void ApplyMeshtyingToManifoldScatraMatrix(
+    void apply_meshtying_to_manifold_scatra_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_scatra_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_scatra_matrix) override;
 
-    void ApplyMeshtyingToManifoldStructureMatrix(
+    void apply_meshtying_to_manifold_structure_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_manifold_structure_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
-    void ApplyMeshtyingToScatraManifoldMatrix(
+    void apply_meshtying_to_scatra_manifold_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> ssi_scatra_manifold_matrix,
         Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_manifold_matrix,
         bool do_uncomplete) override;
 
     //! handles all coupling adapters and multimap extractors with additional MultiMapExtractor
     //! splitting the slave dof map into blocks
-    std::vector<meshtying_block_handler_type> MeshTyingBlockHandler() const
+    std::vector<meshtying_block_handler_type> mesh_tying_block_handler() const
     {
       return meshtying_block_handler_;
     }
@@ -445,7 +445,7 @@ namespace SSI
     //! corresponding dof in @p intersecting map intersects wirh @p block_map. Returns both in a
     //! tuple.
     std::tuple<Teuchos::RCP<const Epetra_Map>, Teuchos::RCP<const Epetra_Map>>
-    IntersectCouplingMapsBlockMap(Teuchos::RCP<const Epetra_Map> block_map,
+    intersect_coupling_maps_block_map(Teuchos::RCP<const Epetra_Map> block_map,
         Teuchos::RCP<const Epetra_Map> intersecting_map,
         Teuchos::RCP<const Epetra_Map> permuted_map, const Epetra_Comm& comm);
 

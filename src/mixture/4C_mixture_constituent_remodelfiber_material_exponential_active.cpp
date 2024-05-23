@@ -36,7 +36,7 @@ MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExpo
 
 template <typename T>
 std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
-MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::CreateRemodelFiberMaterial() const
+MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::create_remodel_fiber_material() const
 {
   return std::make_unique<MIXTURE::RemodelFiberMaterialExponentialActive<T>>(this);
 }
@@ -64,7 +64,7 @@ T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetDCauchyStressDI4(T I4) c
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::GetDCauchyStressDI4DI4(T I4) const
+T MIXTURE::RemodelFiberMaterialExponentialActive<T>::get_d_cauchy_stress_d_i4_d_i4(T I4) const
 {
   return GetDExponentialFiberCauchyStressDI4DI4<T>(params_->passive_params_, I4);
 }

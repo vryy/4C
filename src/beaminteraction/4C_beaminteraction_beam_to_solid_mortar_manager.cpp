@@ -66,13 +66,13 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   const auto& [n_lambda_node_pos, n_lambda_element_pos] =
       MortarShapeFunctionsToNumberOfLagrangeValues(
-          beam_to_solid_params_->GetMortarShapeFunctionType(), 3);
+          beam_to_solid_params_->get_mortar_shape_function_type(), 3);
   n_lambda_node_ = n_lambda_node_pos;
   n_lambda_node_translational_ = n_lambda_node_pos;
   n_lambda_element_ = n_lambda_element_pos;
   n_lambda_element_translational_ = n_lambda_element_pos;
 
-  if (beam_to_solid_params_->IsRotationalCoupling())
+  if (beam_to_solid_params_->is_rotational_coupling())
   {
     // Get the mortar shape functions for rotational coupling
     auto mortar_shape_function_rotation = INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none;
@@ -89,11 +89,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     }
     else if (beam_to_volume_params != Teuchos::null)
     {
-      mortar_shape_function_rotation = beam_to_volume_params->GetMortarShapeFunctionRotationType();
+      mortar_shape_function_rotation =
+          beam_to_volume_params->get_mortar_shape_function_rotation_type();
     }
     else
     {
-      mortar_shape_function_rotation = beam_to_surface_params->GetMortarShapeFunctionType();
+      mortar_shape_function_rotation = beam_to_surface_params->get_mortar_shape_function_type();
     }
 
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
@@ -466,7 +467,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributions(
+void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_global_coupling_contributions(
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   CheckSetup();
@@ -485,9 +486,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributi
   {
     // Evaluate the mortar contributions of the pair and the pair assembles the terms into the
     // global matrices.
-    elepairptr->EvaluateAndAssembleMortarContributions(*discret_, this, *global_g_b_, *global_g_s_,
-        *global_fb_l_, *global_fs_l_, *global_constraint_, *global_kappa_, *global_active_lambda_,
-        displacement_vector);
+    elepairptr->evaluate_and_assemble_mortar_contributions(*discret_, this, *global_g_b_,
+        *global_g_s_, *global_fb_l_, *global_fs_l_, *global_constraint_, *global_kappa_,
+        *global_active_lambda_, displacement_vector);
   }
 
   // Complete the global mortar matrices.
@@ -506,7 +507,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributi
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyContributions(
+void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penalty_contributions(
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const
 {
@@ -656,9 +657,9 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
       Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
           beam_to_solid_params_);
   if (beam_to_volume_params != Teuchos::null)
-    penalty_rotation = beam_to_volume_params->GetRotationalCouplingPenaltyParameter();
+    penalty_rotation = beam_to_volume_params->get_rotational_coupling_penalty_parameter();
   else if (beam_to_surface_params != Teuchos::null)
-    penalty_rotation = beam_to_surface_params->GetRotationalCouplingPenaltyParameter();
+    penalty_rotation = beam_to_surface_params->get_rotational_coupling_penalty_parameter();
   else if (lambda_dof_rowmap_rotations_->NumGlobalElements() > 0)
     FOUR_C_THROW(
         "Rotational penalty coupling only implemented for beam-to-volume and beam-to-surface "

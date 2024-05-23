@@ -48,7 +48,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToConstrRHS(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::add_contributions_to_constr_rhs(
     Epetra_Vector& augConstrRhs) const
 {
   // do nothing
@@ -57,10 +57,10 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToConstrRHS(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
+CONTACT::AUG::STEEPESTASCENT::Strategy::get_rhs_block_ptr_for_norm_check(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep()) return Teuchos::null;
+  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step()) return Teuchos::null;
 
   Teuchos::RCP<Epetra_Vector> rhs_block = Teuchos::null;
 
@@ -76,7 +76,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
     {
       rhs_block = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
 
-      AUG::Strategy::AddContributionsToConstrRHS(*rhs_block);
+      AUG::Strategy::add_contributions_to_constr_rhs(*rhs_block);
       rhs_block->ReplaceMap(LMDoFRowMap(true));
 
       break;
@@ -97,7 +97,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -107,15 +107,15 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
       mat_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
       // build matrix kdd
-      AddContributionsToMatrixBlockDisplDispl(*mat_ptr, cparams);
+      add_contributions_to_matrix_block_displ_displ(*mat_ptr, cparams);
       mat_ptr->Complete(SlMaDoFRowMap(true), SlMaDoFRowMap(true));
 
       // transform parallel row/column distribution
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
       {
-        MORTAR::MatrixRowColTransformer& transformer = Data().MatrixRowColTransformer();
-        mat_ptr = transformer.RedistributedToUnredistributed(bt, *mat_ptr);
+        MORTAR::MatrixRowColTransformer& transformer = Data().matrix_row_col_transformer();
+        mat_ptr = transformer.redistributed_to_unredistributed(bt, *mat_ptr);
       }
 
       break;
@@ -150,7 +150,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToMatrixBlockDisplDispl(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::add_contributions_to_matrix_block_displ_displ(
     CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams) const
 {
   //  if ( cparams and cparams->GetPredictorType() != INPAR::STR::pred_tangdis )
@@ -162,13 +162,13 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToMatrixBlockDisplD
   kdd.Add(*Data().DGLmLinMatrixPtr(), false, -1.0, 1.0);
 
   // add inactive contributions (this is not well tested)
-  if (Data().AddInactivForceContributions())
+  if (Data().add_inactiv_force_contributions())
     kdd.Add(*Data().InactiveDDMatrixPtr(), false, -1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::run_post_apply_jacobian_inverse(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
     const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
@@ -188,7 +188,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
 {
   // if there are no contact contributions, do a direct return
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // extract displ. increment
   Teuchos::RCP<const Epetra_Vector> displ_incr_ptr =
@@ -226,12 +226,12 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
   // --------------------------------------------------------------------------
   // active lagrange multiplier increment in normal direction
   Teuchos::RCP<Epetra_Vector> znincr_active =
-      ComputeActiveLagrangeIncrInNormalDirection(displ_incr);
+      compute_active_lagrange_incr_in_normal_direction(displ_incr);
 
   // --------------------------------------------------------------------------
   // inactive lagrange multiplier increment in normal direction
   Teuchos::RCP<Epetra_Vector> zincr_inactive =
-      ComputeInactiveLagrangeIncrInNormalDirection(displ_incr, zold);
+      compute_inactive_lagrange_incr_in_normal_direction(displ_incr, zold);
 
   // --------------------------------------------------------------------------
   // assemble the Lagrange multiplier contributions
@@ -246,13 +246,13 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
   CORE::LINALG::AssembleMyVector(0.0, dir_mutable, 1.0, zincr_full);
 
   // run at the very end...
-  PostAugmentDirection(cparams, xold, dir_mutable);
+  post_augment_direction(cparams, xold, dir_mutable);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeActiveLagrangeIncrInNormalDirection(
+CONTACT::AUG::STEEPESTASCENT::Strategy::compute_active_lagrange_incr_in_normal_direction(
     const Epetra_Vector& displ_incr)
 {
   // active lagrange multiplier increment in normal direction
@@ -269,8 +269,9 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeActiveLagrangeIncrInNormalDirecti
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> gradWGapUpdate;
   // Split dLmNWGapLinMatrix_
-  CORE::LINALG::SplitMatrix2x2(Data().DLmNWGapLinMatrixPtr(), Data().GActiveNDofRowMapPtr(),
-      emptymap, gdisprowmap_, emptymap, gradWGapUpdate, tempmtx12, tempmtx21, tempmtx22);
+  CORE::LINALG::SplitMatrix2x2(Data().d_lm_nw_gap_lin_matrix_ptr(),
+      Data().g_active_n_dof_row_map_ptr(), emptymap, gdisprowmap_, emptymap, gradWGapUpdate,
+      tempmtx12, tempmtx21, tempmtx22);
 
   // calculate the Uzawa Update increment
   // *** Attention: zincr_Update has the wrong sign here! ***
@@ -297,7 +298,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeActiveLagrangeIncrInNormalDirecti
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeInactiveLagrangeIncrInNormalDirection(
+CONTACT::AUG::STEEPESTASCENT::Strategy::compute_inactive_lagrange_incr_in_normal_direction(
     const Epetra_Vector& displ_incr, const Epetra_Vector& zold)
 {
   Teuchos::RCP<Epetra_Map> ginactivedofs =
@@ -328,15 +329,15 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeInactiveLagrangeIncrInNormalDirec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::PostAugmentDirection(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::post_augment_direction(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir)
 {
-  SetPenaltyUpdateState(cparams, xold, dir);
+  set_penalty_update_state(cparams, xold, dir);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::RemoveCondensedContributionsFromRhs(
+void CONTACT::AUG::STEEPESTASCENT::Strategy::remove_condensed_contributions_from_rhs(
     Epetra_Vector& str_rhs) const
 {
   Epetra_Vector regforce(*Data().GSlMaDofRowMapPtr());

@@ -61,8 +61,8 @@ void FS3I::PartFS3I1Wc::Timeloop()
       CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
-    scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
-    scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();
+    scatravec_[0]->ScaTraField()->prepare_first_time_step();
+    scatravec_[1]->ScaTraField()->prepare_first_time_step();
   }
 
   // output of initial state
@@ -73,8 +73,8 @@ void FS3I::PartFS3I1Wc::Timeloop()
 
   while (NotFinished())
   {
-    IncrementTimeAndStep();
-    SetStructScatraSolution();
+    increment_time_and_step();
+    set_struct_scatra_solution();
     DoFSIStep();
     SetFSISolution();
     DoScatraStep();
@@ -118,9 +118,9 @@ void FS3I::PartFS3I1Wc::DoScatraStep()
 
   while (stopnonliniter == false)
   {
-    ScatraEvaluateSolveIterUpdate();
+    scatra_evaluate_solve_iter_update();
     itnum++;
-    if (ScatraConvergenceCheck(itnum)) break;
+    if (scatra_convergence_check(itnum)) break;
   }
 
   UpdateScatraFields();
@@ -153,7 +153,7 @@ void FS3I::PartFS3I1Wc::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::PartFS3I1Wc::ScatraConvergenceCheck(const int itnum)
+bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
 {
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   INPAR::SCATRA::SolverType scatra_solvtype =
@@ -184,7 +184,7 @@ bool FS3I::PartFS3I1Wc::ScatraConvergenceCheck(const int itnum)
     {
       // some input parameters for the scatra fields
       const Teuchos::ParameterList& scatradyn =
-          GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+          GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -194,7 +194,7 @@ bool FS3I::PartFS3I1Wc::ScatraConvergenceCheck(const int itnum)
       Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
       Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Phinp();
       Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Phinp();
-      SetupCoupledScatraVector(con, scatra1, scatra2);
+      setup_coupled_scatra_vector(con, scatra1, scatra2);
       con->Norm2(&connorm);
 
       // care for the case that nothing really happens in the concentration field

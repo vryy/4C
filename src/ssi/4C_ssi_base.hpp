@@ -82,7 +82,7 @@ namespace SSI
 
     //! increment the counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm) by 1
-    void IncrementIterationCount() { iter_ += 1; }
+    void increment_iteration_count() { iter_ += 1; }
 
     /*! \brief Initialize this object
 
@@ -139,7 +139,7 @@ namespace SSI
      */
     bool IsRestart() const;
 
-    [[nodiscard]] bool IsS2IKineticsWithPseudoContact() const
+    [[nodiscard]] bool is_s2_i_kinetics_with_pseudo_contact() const
     {
       return is_s2i_kinetic_with_pseudo_contact_;
     }
@@ -178,7 +178,7 @@ namespace SSI
     const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& StructureField() const { return structure_; }
 
     /// pointer to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithm() const
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> structure_base_algorithm() const
     {
       return struct_adapterbase_ptr_;
     }
@@ -190,7 +190,7 @@ namespace SSI
     }
 
     //! access the scalar transport base algorithm on manifolds
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraManifoldBaseAlgorithm() const
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& sca_tra_manifold_base_algorithm() const
     {
       return scatra_manifold_base_algorithm_;
     }
@@ -209,31 +209,31 @@ namespace SSI
     virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     /// set micro scatra solution on other fields
-    virtual void SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
+    virtual void set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     /// set temperature field  by evaluating time dependent function
-    void EvaluateAndSetTemperatureField();
+    void evaluate_and_set_temperature_field();
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
-    bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; }
+    bool ssi_interface_meshtying() const { return ssiinterfacemeshtying_; }
 
     //! return the scatra-scatra interface meshtying strategy
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2_i() const
     {
       return meshtying_strategy_s2i_;
     }
 
     //! returns whether calculation of the initial potential field is performed
-    bool DoCalculateInitialPotentialField() const;
+    bool do_calculate_initial_potential_field() const;
 
     //! returns if the scalar transport time integration is of type electrochemistry
-    bool IsElchScaTraTimIntType() const;
+    bool is_elch_sca_tra_tim_int_type() const;
 
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
     //! activate mesh tying between overlapping manifold fields
-    bool IsScaTraManifoldMeshtying() const { return is_manifold_meshtying_; }
+    bool is_sca_tra_manifold_meshtying() const { return is_manifold_meshtying_; }
 
     //! Redistribute nodes and elements on processors
     void Redistribute(RedistributionType redistribution_type);
@@ -242,14 +242,14 @@ namespace SSI
     bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIMeshTying> SSIStructureMeshTying() const
+    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_mesh_tying() const
     {
       return ssi_structure_meshtying_;
     }
 
    protected:
     //! get bool indicating if old structural time integration is used
-    bool UseOldStructureTimeInt() const { return use_old_structure_; }
+    bool use_old_structure_time_int() const { return use_old_structure_; }
 
     //! check if \ref Setup() was called
     void CheckIsSetup() const
@@ -264,18 +264,19 @@ namespace SSI
     }
 
     //! copy modified time step from scatra to scatra manifold field
-    void SetDtFromScaTraToManifold();
+    void set_dt_from_sca_tra_to_manifold();
 
     //! copy modified time step from scatra to this SSI algorithm
-    void SetDtFromScaTraToSSI();
+    void set_dt_from_sca_tra_to_ssi();
 
     //! copy modified time step from scatra to structure field
-    void SetDtFromScaTraToStructure();
+    void set_dt_from_sca_tra_to_structure();
 
     //! set structure stress state on scatra field
-    void SetMechanicalStressState(Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const;
+    void set_mechanical_stress_state(
+        Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const;
 
-    void SetModelevaluatorBaseSSI(
+    void set_modelevaluator_base_ssi(
         Teuchos::RCP<STR::MODELEVALUATOR::Generic> modelevaluator_ssi_base)
     {
       modelevaluator_ssi_base_ = modelevaluator_ssi_base;
@@ -303,7 +304,7 @@ namespace SSI
      * @param[in] scatraparams  parameter list containing the SCALAR TRANSPORT DYNAMIC parameters
      * @param[in] structparams  parameter list containing the STRUCTURAL DYNAMIC parameters
      */
-    static void CheckAdaptiveTimeStepping(
+    static void check_adaptive_time_stepping(
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams);
 
     /*!
@@ -327,7 +328,7 @@ namespace SSI
      *
      * @param[in] struct_disname  name of structure discretization
      */
-    [[nodiscard]] bool CheckS2IKineticsConditionForPseudoContact(
+    [[nodiscard]] bool check_s2_i_kinetics_condition_for_pseudo_contact(
         const std::string& struct_disname) const;
 
     //! check whether scatra-structure interaction flags are set correctly
@@ -338,7 +339,7 @@ namespace SSI
      *
      * @param[in] struct_disname  name of structure discretization
      */
-    void CheckSSIInterfaceConditions(const std::string& struct_disname) const;
+    void check_ssi_interface_conditions(const std::string& struct_disname) const;
 
     //! returns true if Init(..) was called and is still valid
     bool IsInit() const { return isinit_; }

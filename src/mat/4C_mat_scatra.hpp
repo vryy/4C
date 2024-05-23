@@ -138,7 +138,7 @@ namespace MAT
     }
 
     /// reacts to external force
-    [[nodiscard]] double ReactsToExternalForce() const
+    [[nodiscard]] double reacts_to_external_force() const
     {
       return params_->GetParameter(params_->reacts_to_external_force, -1);
     }

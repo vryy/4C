@@ -99,13 +99,13 @@ namespace XFEM
     void GetCouplingIds(const DRT::Discretization& cond_dis, const std::string& condition_name,
         std::set<int>& coupling_ids);
 
-    void SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map);
+    void set_dof_set_coupling_map(const std::map<std::string, int>& dofset_coupling_map);
 
     void Status();
 
-    void IncrementTimeAndStep(const double dt);
+    void increment_time_and_step(const double dt);
 
-    void CreateNewLevelSetCoupling(const std::string& cond_name,
+    void create_new_level_set_coupling(const std::string& cond_name,
         Teuchos::RCP<DRT::Discretization>
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id);
@@ -117,7 +117,7 @@ namespace XFEM
         bool create_mesh_coupling  ///< create mesh coupling or level-set coupling object
     );
 
-    void CreateNewMeshCoupling(const std::string& cond_name,
+    void create_new_mesh_coupling(const std::string& cond_name,
         Teuchos::RCP<DRT::Discretization>
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id);
@@ -216,7 +216,7 @@ namespace XFEM
       if (IsLevelSetCoupling(coup_sid)) return Teuchos::null;
 
       // get the mesh coupling object index
-      int mc_idx = GetMeshCouplingIndex(coup_sid);
+      int mc_idx = get_mesh_coupling_index(coup_sid);
 
       return mesh_coupl_[mc_idx]->GetCutterDis();
     }
@@ -229,7 +229,7 @@ namespace XFEM
       if (IsLevelSetCoupling(coup_sid)) return bg_dis_;
 
       // get the mesh coupling object index
-      int mc_idx = GetMeshCouplingIndex(coup_sid);
+      int mc_idx = get_mesh_coupling_index(coup_sid);
 
       return mesh_coupl_[mc_idx]->GetCouplingDis();
     }
@@ -291,7 +291,7 @@ namespace XFEM
     }
 
 
-    int GetMeshCouplingIndex(const std::string& name)
+    int get_mesh_coupling_index(const std::string& name)
     {
       for (int m = 0; m < NumMeshCoupling(); m++)
       {
@@ -310,7 +310,7 @@ namespace XFEM
     }
 
 
-    INPAR::XFEM::AveragingStrategy GetAveragingStrategy(
+    INPAR::XFEM::AveragingStrategy get_averaging_strategy(
         const int coup_sid,  ///< the global id of the coupling side
         const int back_eid   ///< the global element id of the background mesh
     )
@@ -319,16 +319,16 @@ namespace XFEM
       {
         // TODO: currently only one level-set field supported
         // get the level-set coupling object index for given background element
-        const int lsc_idx = GetLevelSetCouplingIndex(back_eid);
+        const int lsc_idx = get_level_set_coupling_index(back_eid);
 
-        return levelset_coupl_[lsc_idx]->GetAveragingStrategy();
+        return levelset_coupl_[lsc_idx]->get_averaging_strategy();
       }
       else if (IsMeshCoupling(coup_sid))
       {
         // get the mesh coupling object index
-        const int mc_idx = GetMeshCouplingIndex(coup_sid);
+        const int mc_idx = get_mesh_coupling_index(coup_sid);
 
-        return mesh_coupl_[mc_idx]->GetAveragingStrategy();
+        return mesh_coupl_[mc_idx]->get_averaging_strategy();
       }
       else
         FOUR_C_THROW(
@@ -338,7 +338,7 @@ namespace XFEM
     }
 
     /// ...
-    int GetMeshCouplingIndex(const int coup_sid)
+    int get_mesh_coupling_index(const int coup_sid)
     {
       // safety checks
       if (coup_sid < 0)
@@ -381,7 +381,7 @@ namespace XFEM
 
 
     /// ...
-    int GetLevelSetCouplingIndex(const int back_eid  ///< global element id
+    int get_level_set_coupling_index(const int back_eid  ///< global element id
     )
     {
       // find out which level-set index is the active one for the given background element
@@ -399,23 +399,23 @@ namespace XFEM
       int coup_idx = -1;
 
       if (IsLevelSetCoupling(coup_sid))
-        coup_idx = NumMeshCoupling() + GetLevelSetCouplingIndex(back_eid);
+        coup_idx = NumMeshCoupling() + get_level_set_coupling_index(back_eid);
       else
-        coup_idx = GetMeshCouplingIndex(coup_sid);
+        coup_idx = get_mesh_coupling_index(coup_sid);
 
       return coup_idx;
     }
 
     // Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>
-    std::vector<std::pair<int, int>> GetBCCloneInformation(
+    std::vector<std::pair<int, int>> get_bc_clone_information(
         const int coup_sid, const int back_eid, int coup_idx = -1);
 
-    int GetLevelSetCouplingGid() { return levelset_gid_; }
+    int get_level_set_coupling_gid() { return levelset_gid_; }
 
     /// check if the given coupling side corresponds the unique level-set side
     bool IsLevelSetCoupling(const int coupl_sid) { return coupl_sid == levelset_gid_; }
 
-    bool IsMeshCoupling(const int coup_sid) { return GetMeshCouplingIndex(coup_sid) != -1; }
+    bool IsMeshCoupling(const int coup_sid) { return get_mesh_coupling_index(coup_sid) != -1; }
 
     bool HasLevelSetCoupling() { return levelset_coupl_.size() > 0; }
 
@@ -462,7 +462,7 @@ namespace XFEM
     )
     {
       // get the mesh coupling object index
-      const int mc_idx = GetMeshCouplingIndex(coup_sid);
+      const int mc_idx = get_mesh_coupling_index(coup_sid);
 
       // compute the side id w.r.t the cutter discretization the side belongs to
       const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
@@ -485,7 +485,7 @@ namespace XFEM
         FOUR_C_THROW("No cond. element available for non-mesh coupling!");
 
       // get the mesh coupling object index
-      const int mc_idx = GetMeshCouplingIndex(coup_sid);
+      const int mc_idx = get_mesh_coupling_index(coup_sid);
 
       // a map between cond. elements and side ids of the cutter dis is only available
       // for fluidfluid conditions; otherwise this is a bad request
@@ -516,9 +516,9 @@ namespace XFEM
 
     // get the global coupling side id for a given mesh coupling and local side-id w.r.t. cutter
     // discretization
-    int GetMeshCouplingStartGID(const int mc_idx) { return mesh_coupl_start_gid_[mc_idx]; }
+    int get_mesh_coupling_start_gid(const int mc_idx) { return mesh_coupl_start_gid_[mc_idx]; }
 
-    EleCoupCond GetCouplingCondition(const int coup_sid,  ///< the global id of the coupling side
+    EleCoupCond get_coupling_condition(const int coup_sid,  ///< the global id of the coupling side
         const int back_eid  ///< the global element id of the background mesh
     )
     {
@@ -526,19 +526,19 @@ namespace XFEM
       {
         // TODO: currently only one level-set field supported
         // get the level-set coupling object index for given background element
-        const int lsc_idx = GetLevelSetCouplingIndex(back_eid);
+        const int lsc_idx = get_level_set_coupling_index(back_eid);
 
-        return levelset_coupl_[lsc_idx]->GetCouplingCondition(back_eid);
+        return levelset_coupl_[lsc_idx]->get_coupling_condition(back_eid);
       }
       else if (IsMeshCoupling(coup_sid))
       {
         // get the mesh coupling object index
-        const int mc_idx = GetMeshCouplingIndex(coup_sid);
+        const int mc_idx = get_mesh_coupling_index(coup_sid);
 
         // compute the side id w.r.t the cutter discretization the side belongs to
         const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
 
-        return mesh_coupl_[mc_idx]->GetCouplingCondition(cutterdis_sid);
+        return mesh_coupl_[mc_idx]->get_coupling_condition(cutterdis_sid);
       }
       else
         FOUR_C_THROW(
@@ -552,7 +552,7 @@ namespace XFEM
         const int back_eid               ///< the global element id of the background mesh
     )
     {
-      const EleCoupCond& coup_cond = GetCouplingCondition(coup_sid, back_eid);
+      const EleCoupCond& coup_cond = get_coupling_condition(coup_sid, back_eid);
 
       return IsCouplingCondition(coup_cond.first);
     }
@@ -599,11 +599,11 @@ namespace XFEM
 
     void SetLevelSetField(const double time);
 
-    void WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
+    void write_access_geometric_quantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
         Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
         Teuchos::RCP<Epetra_Vector>& curvatureaf);
 
-    void ExportGeometricQuantities();
+    void export_geometric_quantities();
 
     Teuchos::RCP<Epetra_Vector>& GetLevelSetField()
     {
@@ -620,19 +620,19 @@ namespace XFEM
 
     void SetState();
 
-    void SetStateDisplacement();
+    void set_state_displacement();
 
     /// update interface field state vectors
     void UpdateStateVectors();
 
-    void CompleteStateVectors();
+    void complete_state_vectors();
 
-    void ZeroStateVectors_FSI();
+    void zero_state_vectors_fsi();
 
     void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen);
 
-    void GmshOutputDiscretization(std::ostream& gmshfilecontent);
+    void gmsh_output_discretization(std::ostream& gmshfilecontent);
 
     void Output(const int step, const double time, const bool write_restart_data);
 
@@ -645,9 +645,9 @@ namespace XFEM
 
     bool HasMovingInterface();
 
-    bool HasAveragingStrategy(INPAR::XFEM::AveragingStrategy strategy);
+    bool has_averaging_strategy(INPAR::XFEM::AveragingStrategy strategy);
 
-    void GetCouplingEleLocationVector(const int coup_sid, std::vector<int>& patchlm);
+    void get_coupling_ele_location_vector(const int coup_sid, std::vector<int>& patchlm);
 
     /// Get the average weights from the coupling objects
     void GetAverageWeights(const int coup_sid,  ///< the overall global coupling side id
@@ -657,8 +657,8 @@ namespace XFEM
         bool& non_xfluid_coupling);
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void Get_ViscPenalty_Stabfac(const int coup_sid,  ///< the overall global coupling side id
-        DRT::Element* xfele,                          ///< xfluid ele
+    void get_visc_penalty_stabfac(const int coup_sid,  ///< the overall global coupling side id
+        DRT::Element* xfele,                           ///< xfluid ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -671,24 +671,24 @@ namespace XFEM
 
     /// get the estimation of the penalty scaling in Nitsche's method from the trace inequality for
     /// a specific coupling side
-    double Get_TraceEstimate_MaxEigenvalue(
+    double get_trace_estimate_max_eigenvalue(
         const int coup_sid  ///< the overall global coupling side id
     );
 
     /// set material pointer for volume
-    void GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
+    void get_volume_cell_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
         const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
-    void GetInterfaceMasterMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
+    void get_interface_master_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
         const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
-    void GetInterfaceSlaveMaterial(
+    void get_interface_slave_material(
         DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid);
 
     /// Initialize Fluid Intersection/Cut State
-    bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
+    bool initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
@@ -726,8 +726,9 @@ namespace XFEM
     void UpdateLevelSetField();
 
     /// combine two levelset fields via boolean type set operations and set result into vec1
-    void CombineLevelSetField(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
-        const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx,
+    void combine_level_set_field(Teuchos::RCP<Epetra_Vector>& vec1,
+        Teuchos::RCP<Epetra_Vector>& vec2, const int lsc_index_2,
+        Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx,
         XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type);
 
     /// check if the vector maps are equal
@@ -749,11 +750,11 @@ namespace XFEM
 
     /// combine two levelset fields via boolean type "sym_difference" set operation and put result
     /// into vec1
-    void SetSymmetricDifference(Teuchos::RCP<Epetra_Vector>& vec1,
+    void set_symmetric_difference(Teuchos::RCP<Epetra_Vector>& vec1,
         Teuchos::RCP<Epetra_Vector>& vec2, const int lsc_index_2,
         Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
-    void BuildComplementaryLevelSet(Teuchos::RCP<Epetra_Vector>& vec1);
+    void build_complementary_level_set(Teuchos::RCP<Epetra_Vector>& vec1);
 
     ///<
     std::map<std::string, int> dofset_coupling_map_;

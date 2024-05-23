@@ -53,7 +53,7 @@ namespace STR
       };
 
       /// whether to write orientation at visualization point
-      bool OutputOrientationAndLength() const
+      bool output_orientation_and_length() const
       {
         CheckInitSetup();
         return output_orientationandlength_;
@@ -73,7 +73,7 @@ namespace STR
         return output_linkingforce_;
       };
       /*    /// whether to write displacements
-          bool OutputDisplacementState() const
+          bool output_displacement_state() const
           {
             CheckInitSetup();
             return output_displacement_state_;

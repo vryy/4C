@@ -68,7 +68,7 @@ namespace NOX
           };
 
           //! Get the desired linearization terms of the objective model
-          virtual double GetLinearizedModelTerms(const Epetra_Vector& dir,
+          virtual double get_linearized_model_terms(const Epetra_Vector& dir,
               const enum NOX::NLN::MeritFunction::MeritFctName name,
               const enum NOX::NLN::MeritFunction::LinOrder order,
               const enum NOX::NLN::MeritFunction::LinType type) const
@@ -83,40 +83,40 @@ namespace NOX
           //! @{
 
           //! Returns the constraint right-hand-side norms
-          double GetConstraintRHSNorms(
+          double get_constraint_rhs_norms(
               const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ) const
           {
-            return GetConstraintRHSNorms(F, chQ, ::NOX::Abstract::Vector::TwoNorm, false);
+            return get_constraint_rhs_norms(F, chQ, ::NOX::Abstract::Vector::TwoNorm, false);
           };
-          double GetConstraintRHSNorms(const Epetra_Vector& F,
+          double get_constraint_rhs_norms(const Epetra_Vector& F,
               NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type) const
           {
-            return GetConstraintRHSNorms(F, chQ, type, false);
+            return get_constraint_rhs_norms(F, chQ, type, false);
           };
-          virtual double GetConstraintRHSNorms(const Epetra_Vector& F,
+          virtual double get_constraint_rhs_norms(const Epetra_Vector& F,
               NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
               bool isScaled) const = 0;
 
           //! Returns the Root Mean Square (abbr.: RMS) of the Lagrange multiplier updates
-          double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
+          double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, double aTol, double rTol,
               NOX::NLN::StatusTest::QuantityType checkQuantity) const
           {
-            return GetLagrangeMultiplierUpdateRMS(xNew, xOld, aTol, rTol, checkQuantity, false);
+            return get_lagrange_multiplier_update_rms(xNew, xOld, aTol, rTol, checkQuantity, false);
           };
-          virtual double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
+          virtual double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, double aTol, double rTol,
               NOX::NLN::StatusTest::QuantityType checkQuantity,
               bool disable_implicit_weighting) const = 0;
 
           //! Returns the increment norm of the largange multiplier DoFs
-          virtual double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
+          virtual double get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
           //! Returns the previous solution norm of the largange multiplier DoFs
-          virtual double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
+          virtual double get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
               NOX::NLN::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
@@ -131,7 +131,7 @@ namespace NOX
             return ::NOX::StatusTest::Unevaluated;
           }
 
-          virtual Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
+          virtual Teuchos::RCP<const Epetra_Map> get_current_active_set_map(
               enum NOX::NLN::StatusTest::QuantityType qt) const
           {
             return Teuchos::null;

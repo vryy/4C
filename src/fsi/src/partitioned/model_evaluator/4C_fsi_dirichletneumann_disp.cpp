@@ -36,7 +36,7 @@ void FSI::DirichletNeumannDisp::Setup()
   FSI::DirichletNeumann::Setup();
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  SetKinematicCoupling(
+  set_kinematic_coupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 }
 /*----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::FluidOp(
 
     MBFluidField()->SetItemax(itemax);
 
-    return FluidToStruct(MBFluidField()->ExtractInterfaceForces());
+    return FluidToStruct(MBFluidField()->extract_interface_forces());
   }
 }
 /*----------------------------------------------------------------------*/
@@ -85,23 +85,23 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::StructOp(
   {
     // normal structure solve
     if (not use_old_structure_)
-      StructureField()->ApplyInterfaceForces(iforce);
+      StructureField()->apply_interface_forces(iforce);
     else
-      StructureField()->ApplyInterfaceForcesTemporaryDeprecated(
+      StructureField()->apply_interface_forces_temporary_deprecated(
           iforce);  // todo remove this line as soon as possible!
     StructureField()->Solve();
-    StructureField()->WriteGmshStrucOutputStep();
-    return StructureField()->ExtractInterfaceDispnp();
+    StructureField()->write_gmsh_struc_output_step();
+    return StructureField()->extract_interface_dispnp();
   }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::InitialGuess()
 {
-  if (GetKinematicCoupling())
+  if (get_kinematic_coupling())
   {
     // predict displacement
-    return StructureField()->PredictInterfaceDispnp();
+    return StructureField()->predict_interface_dispnp();
   }
   else
   {

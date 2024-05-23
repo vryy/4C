@@ -156,7 +156,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   {
     case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
-      EvaluateFpotandStiffpot_LargeSepApprox();
+      evaluate_fpotand_stiffpot_large_sep_approx();
       break;
     }
 
@@ -214,7 +214,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
-    numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
+    numnodalvalues>::evaluate_fpotand_stiffpot_large_sep_approx()
 {
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
@@ -495,7 +495,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
-    numnodalvalues>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+    numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   CheckInitSetup();
 

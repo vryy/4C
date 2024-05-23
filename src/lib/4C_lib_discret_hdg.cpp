@@ -105,9 +105,9 @@ int DRT::DiscretizationHDG::FillComplete(
       DRT::Element* faceMaster = f->second->ParentMasterElement();
       const int faceMasterNo = f->second->FaceMasterNumber();
       // new master element might be nullptr on MPI computations
-      f->second->SetParentMasterElement(f->second->ParentSlaveElement(),
+      f->second->set_parent_master_element(f->second->ParentSlaveElement(),
           f->second->ParentSlaveElement() != nullptr ? f->second->FaceSlaveNumber() : -1);
-      f->second->SetParentSlaveElement(faceMaster, faceMasterNo);
+      f->second->set_parent_slave_element(faceMaster, faceMasterNo);
     }
   }
 
@@ -121,10 +121,10 @@ int DRT::DiscretizationHDG::FillComplete(
       // add nds 1
       if (this->NumDofSets() == 1)
       {
-        int ndof_ele =
-            this->NumMyRowElements() > 0
-                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerElementAuxiliary()
-                : 0;
+        int ndof_ele = this->NumMyRowElements() > 0
+                           ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))
+                                 ->num_dof_per_element_auxiliary()
+                           : 0;
         Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_ele =
             Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
@@ -136,7 +136,7 @@ int DRT::DiscretizationHDG::FillComplete(
       {
         int ndof_node =
             this->NumMyRowElements() > 0
-                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerNodeAuxiliary()
+                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->num_dof_per_node_auxiliary()
                 : 0;
         Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_node =
             Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
@@ -288,7 +288,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -297,18 +297,18 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::Discretization& discr
   const DRT::DiscretizationFaces& face_discret =
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
-  ReadDirichletCondition(face_discret, cond, time, info, dbcgids, hierarchical_order);
+  read_dirichlet_condition(face_discret, cond, time, info, dbcgids, hierarchical_order);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
+void DRT::UTILS::DbcHDG::read_dirichlet_condition(const DRT::DiscretizationFaces& discret,
     const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  DRT::UTILS::Dbc::ReadDirichletCondition(discret, cond, time, info, dbcgids, hierarchical_order);
+  DRT::UTILS::Dbc::read_dirichlet_condition(discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;
@@ -403,7 +403,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -413,17 +413,17 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::Discretization& discret
   const DRT::DiscretizationFaces& face_discret =
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
-  DoDirichletCondition(face_discret, cond, time, systemvectors, toggle);
+  do_dirichlet_condition(face_discret, cond, time, systemvectors, toggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
+void DRT::UTILS::DbcHDG::do_dirichlet_condition(const DRT::DiscretizationFaces& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, nullptr);
+  DRT::UTILS::Dbc::do_dirichlet_condition(discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;

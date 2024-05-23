@@ -146,7 +146,7 @@ namespace PARTICLEENGINE
      *
      * \return global id of particle
      */
-    inline int ReturnParticleGlobalID() const { return globalid_; };
+    inline int return_particle_global_id() const { return globalid_; };
 
     /*!
      * \brief get states of particle
@@ -155,7 +155,7 @@ namespace PARTICLEENGINE
      *
      * \return reference to states of particle
      */
-    inline const ParticleStates& ReturnParticleStates() const { return states_; };
+    inline const ParticleStates& return_particle_states() const { return states_; };
 
     /*!
      * \brief get global id of bin the particle is located in
@@ -173,7 +173,7 @@ namespace PARTICLEENGINE
      *
      * \return index of particle in container
      */
-    inline int ReturnContainerIndex() const { return index_; };
+    inline int return_container_index() const { return index_; };
 
     //! @}
 

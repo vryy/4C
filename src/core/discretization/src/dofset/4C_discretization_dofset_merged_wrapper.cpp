@@ -68,7 +68,7 @@ const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetMergedWrapper::AssignDegreesOfFreedom(
+int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");

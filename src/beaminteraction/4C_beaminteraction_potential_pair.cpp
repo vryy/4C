@@ -75,7 +75,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
 
   // at the moment, both elements of a beam contact pair must be of same type Todo
   const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
-  const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+  const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;
 
   switch (numnodalvalues)
   {

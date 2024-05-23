@@ -56,14 +56,14 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! compute barrier force contribution
-    void ComputeBarrierForceContribution() const;
+    void compute_barrier_force_contribution() const;
 
    protected:
     //! compute barrier force contribution (particle contribution)
-    void ComputeBarrierForceParticleContribution() const;
+    void compute_barrier_force_particle_contribution() const;
 
     //! compute barrier force contribution (particle-boundary contribution)
-    void ComputeBarrierForceParticleBoundaryContribution() const;
+    void compute_barrier_force_particle_boundary_contribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

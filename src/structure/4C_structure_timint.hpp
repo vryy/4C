@@ -196,7 +196,7 @@ namespace STR
     virtual void CreateFields();
 
     //! Construct all solution vectors
-    void CreateAllSolutionVectors();
+    void create_all_solution_vectors();
 
     //! Resize \p TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
@@ -233,7 +233,7 @@ namespace STR
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
-    void DetermineMassDampConsistAccel();
+    void determine_mass_damp_consist_accel();
 
     //! Clear mass matrix and evaluate mass matrix again.
     //! \note not implemented in base class.
@@ -287,7 +287,7 @@ namespace STR
     INPAR::STR::ConvergenceStatus Solve() override = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override = 0;
+    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override = 0;
 
     /*! \brief Update displacement in case of coupled problems
      *
@@ -297,7 +297,7 @@ namespace STR
      *
      *  with n and i being time and Newton iteration step
      */
-    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
 
     /*! \brief Update displacement and evaluate elements in case of coupled problems
      *
@@ -320,7 +320,7 @@ namespace STR
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    void UpdateIterIncrConstr(
+    void update_iter_incr_constr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
         ) override = 0;
 
@@ -345,7 +345,7 @@ namespace STR
     void UpdateStepTime();
 
     //! Update step for contact / meshtying
-    void UpdateStepContactMeshtying();
+    void update_step_contact_meshtying();
 
     //! Velocity update method (VUM) for contact
     //!
@@ -355,10 +355,10 @@ namespace STR
     //! paper by Laursen and Love (IJNME, 2002) and in the more recent and
     //! mortar-related paper by Hartmann et al. (IJNME, 2007).
     //! CAUTION: The VUM is only available for GenAlpha and GEMM.
-    void UpdateStepContactVUM();
+    void update_step_contact_vum();
 
     //! Update step for beam contact
-    void UpdateStepBeamContact();
+    void update_step_beam_contact();
 
     //! Reset configuration after time step
     //!
@@ -383,13 +383,13 @@ namespace STR
     void PrepareOutputMicro();
 
     //! Calculate stresses and strains
-    void DetermineStressStrain() override;
+    void determine_stress_strain() override;
 
     //! Calculate kinetic, internal and external energy
     virtual void DetermineEnergy();
 
     //! Calculate an optional quantity
-    void DetermineOptionalQuantity();
+    void determine_optional_quantity();
 
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
@@ -411,7 +411,7 @@ namespace STR
     void OutputStep(const bool forced_writerestart = false  ///< [in] Force writing of restart data
     );
 
-    bool HasFinalStateBeenWritten() const override;
+    bool has_final_state_been_written() const override;
 
     //! Write output for every Newton or line search iteration
     //! The step numbers are formated in the following manner:
@@ -425,7 +425,7 @@ namespace STR
     void OutputEveryIter(bool nw = false, bool ls = false);
 
     //! write output of step to the Gmsh format
-    void WriteGmshStrucOutputStep() override;
+    void write_gmsh_struc_output_step() override;
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -451,7 +451,7 @@ namespace STR
     );
 
     //! Add restart information to OutputState
-    void AddRestartToOutputState();
+    void add_restart_to_output_state();
 
     //! Stress & strain output
     //! \author lw (originally)
@@ -471,7 +471,7 @@ namespace STR
     void OutputContact();
 
     //! Nodal positions output
-    void OutputNodalPositions();
+    void output_nodal_positions();
 
     //! Output volume mass
     void OutputVolumeMass();
@@ -549,7 +549,7 @@ namespace STR
     int HaveNonlinearMass() const;
 
     //! check whether the initial conditions are fulfilled */
-    virtual void NonlinearMassSanityCheck(
+    virtual void nonlinear_mass_sanity_check(
         Teuchos::RCP<const Epetra_Vector> fext,             ///< external forces
         Teuchos::RCP<const Epetra_Vector> dis,              ///< displacements
         Teuchos::RCP<const Epetra_Vector> vel,              ///< velocities
@@ -586,22 +586,22 @@ namespace STR
     double TimIntParam() const override = 0;
 
     //! Give order of accuracy
-    int MethodOrderOfAccuracy() const
+    int method_order_of_accuracy() const
     {
-      return std::min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
+      return std::min(method_order_of_accuracy_dis(), method_order_of_accuracy_vel());
     }
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const = 0;
+    virtual int method_order_of_accuracy_dis() const = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const = 0;
+    virtual int method_order_of_accuracy_vel() const = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const = 0;
+    virtual double method_lin_err_coeff_dis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const = 0;
+    virtual double method_lin_err_coeff_vel() const = 0;
 
     //@}
 
@@ -678,22 +678,22 @@ namespace STR
     virtual void ReadRestartForce() = 0;
 
     //! Read and set restart values for constraints
-    void ReadRestartConstraint();
+    void read_restart_constraint();
 
     //! Read and set restart values for Cardiovascular0D
-    void ReadRestartCardiovascular0D();
+    void read_restart_cardiovascular0_d();
 
     //! Read and set restart values for Spring Dashpot
-    void ReadRestartSpringDashpot();
+    void read_restart_spring_dashpot();
 
     //! Read and set restart values for contact / meshtying
-    void ReadRestartContactMeshtying();
+    void read_restart_contact_meshtying();
 
     //! Read and set restart values for beam contact
-    void ReadRestartBeamContact();
+    void read_restart_beam_contact();
 
     //! Read and set restart values for multi scale materials
-    void ReadRestartMultiScale();
+    void read_restart_multi_scale();
 
     //! initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> InitialGuess() override = 0;
@@ -805,10 +805,10 @@ namespace STR
     bool HaveSpringDashpot() override = 0;
 
     //! get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
 
     //! get spring dashpot manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
     INPAR::STR::StcScale GetSTCAlgo() override = 0;
@@ -904,7 +904,7 @@ namespace STR
     /// In partitioned solution schemes, it is better to keep the current
     /// solution instead of evaluating the initial guess (as the predictor)
     /// does.
-    void PreparePartitionStep() override = 0;
+    void prepare_partition_step() override = 0;
 
     //@}
 
@@ -912,10 +912,10 @@ namespace STR
     //@{
 
     //! return bool indicating if contact or meshtying are defined
-    bool HaveContactMeshtying() { return (cmtbridge_ != Teuchos::null); }
+    bool have_contact_meshtying() { return (cmtbridge_ != Teuchos::null); }
 
     //! return contact/meshtying manager
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
     {
       return cmtbridge_;
     }
@@ -941,7 +941,7 @@ namespace STR
 
     @param[in] sdynparams Structural dynamics input parameter list
     */
-    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
+    void prepare_contact_meshtying(const Teuchos::ParameterList& sdynparams);
 
     /*!
     \brief Apply results of mesh initialization to the underlying problem discretization
@@ -953,7 +953,7 @@ namespace STR
 
     @param[in] Xslavemod Vector with modified nodal positions
     */
-    void ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
+    void apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND

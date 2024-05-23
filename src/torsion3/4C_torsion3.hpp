@@ -50,13 +50,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -263,7 +263,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+      void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
       /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
        *

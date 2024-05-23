@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
   facet is projected into appropriate coordinate plane to obtain quadrature
 *---------------------------------------------------------------------------------------------*/
 CORE::LINALG::SerialDenseVector
-CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
+CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule()
 {
   std::vector<std::vector<double>> corners1;
   bcell_->CornerPointsLocal(elem1_, corners1);
@@ -45,7 +45,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
   while (1)
   {
     std::vector<double> eqn = faee1.get_equation();
-    DistributeBoundaryCellGaussPoints(eqn, corners1, bcellgaus_pts_, ptsEachLine);
+    distribute_boundary_cell_gauss_points(eqn, corners1, bcellgaus_pts_, ptsEachLine);
 
 
     std::vector<std::vector<double>> moment_matbc(
@@ -143,7 +143,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
    the gauss points are generated in the coordinate plane - now it has only two coordinates
    value of third coordinate can be calculated from the equation of arbitrary plane
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
+void CORE::GEO::CUT::BoundarycellIntegration::distribute_boundary_cell_gauss_points(
     std::vector<double> eqn, std::vector<std::vector<double>> corners,
     std::vector<std::vector<double>>& bcGausspts, int ptNos)
 {

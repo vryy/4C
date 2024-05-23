@@ -73,7 +73,7 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
   // ---------------------------------------------------------------------------
   // get the element technologies
   // ---------------------------------------------------------------------------
-  const std::set<enum INPAR::STR::EleTech>& eletechs = datasdyn.GetElementTechnologies();
+  const std::set<enum INPAR::STR::EleTech>& eletechs = datasdyn.get_element_technologies();
 
   std::set<enum INPAR::STR::EleTech>::const_iterator etiter;
   for (etiter = eletechs.begin(); etiter != eletechs.end(); ++etiter)
@@ -112,7 +112,8 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
       // add the normal/frictionless case
       qt.push_back(NOX::NLN::StatusTest::quantity_contact_normal);
       // check for friction
-      const Teuchos::ParameterList& p_contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& p_contact =
+          GLOBAL::Problem::Instance()->contact_dynamic_params();
       enum INPAR::CONTACT::FrictionType frictiontype =
           CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
@@ -428,7 +429,7 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
     const std::string& testname)
 {
   if (testname == "NormUpdate")
-    SetNormUpdateParams(p, qtype, datasdyn.GetIncrToleranceType(qtype),
+    SetNormUpdateParams(p, qtype, datasdyn.get_incr_tolerance_type(qtype),
         datasdyn.GetIncrTolerance(qtype), datasdyn.GetNormType());
   else if (testname == "NormF")
     SetNormFParams(p, qtype, datasdyn.GetResToleranceType(qtype), datasdyn.GetResTolerance(qtype),

@@ -51,11 +51,11 @@ bool CORE::GEO::CUT::BoundaryCell::IsValid() const { return points_->size() > 0;
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType celldistype>
-void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
+void CORE::GEO::CUT::BoundaryCell::transform_local_coords(Element* elem1,
     const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::BoundaryCell::TransformLocalCoords" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::BoundaryCell::transform_local_coords" );
 
 
   const int numnodes = CORE::FE::num_nodes<celldistype>;
@@ -76,7 +76,7 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
       if (not elem1->isShadow())
         elem1->LocalCoordinates(glo, loc);
       else
-        elem1->LocalCoordinatesQuad(glo, loc);
+        elem1->local_coordinates_quad(glo, loc);
     }
     xyze(0, i) = loc(0);
     xyze(1, i) = loc(1);
@@ -598,10 +598,10 @@ bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 }
 
 // function specializations
-template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellType::tri3>(
+template void CORE::GEO::CUT::BoundaryCell::transform_local_coords<CORE::FE::CellType::tri3>(
     Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
-template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<CORE::FE::CellType::quad4>(
+template void CORE::GEO::CUT::BoundaryCell::transform_local_coords<CORE::FE::CellType::quad4>(
     Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
 

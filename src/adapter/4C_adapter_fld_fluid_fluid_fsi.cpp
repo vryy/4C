@@ -113,16 +113,16 @@ void ADAPTER::FluidFluidFSI::Update()
     xfluidfluid_->SetInterfaceFixed();
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
-      xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
+      xfluidfluid_->update_monolithic_fluid_solution(FluidFSI::Interface()->FSICondMap());
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation)
-      xfluidfluid_->InterpolateEmbeddedStateVectors();
+      xfluidfluid_->interpolate_embedded_state_vectors();
 
     // refresh the merged fluid map extractor
     SetupInterface();
 
     // create new extended shape derivatives matrix
-    PrepareShapeDerivatives();
+    prepare_shape_derivatives();
   }
 
   FluidWrapper::Update();
@@ -131,20 +131,20 @@ void ADAPTER::FluidFluidFSI::Update()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const&
-ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
+ADAPTER::FluidFluidFSI::x_fluid_fluid_map_extractor()
 {
-  return xfluidfluid_->XFluidFluidMapExtractor();
+  return xfluidfluid_->x_fluid_fluid_map_extractor();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+void ADAPTER::FluidFluidFSI::apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   // store old state
   Teuchos::RCP<const Epetra_Vector> disp = meshmap_->ExtractCondVector(fluidimpl_->Dispnp());
-  meshmap_->InsertCondVector(disp, xfluidfluid_->WriteAccessDispOldState());
+  meshmap_->InsertCondVector(disp, xfluidfluid_->write_access_disp_old_state());
   // apply mesh displacement and update grid velocity
-  FluidFSI::ApplyMeshDisplacement(fluiddisp);
+  FluidFSI::apply_mesh_displacement(fluiddisp);
 
   return;
 }
@@ -173,7 +173,7 @@ void ADAPTER::FluidFluidFSI::Evaluate(
 )
 {
   if (monolithic_approach_ == INPAR::XFEM::XFFSI_Full_Newton)
-    *xfluidfluid_->WriteAccessDispOldState() = *fluidimpl_->Dispnp();
+    *xfluidfluid_->write_access_disp_old_state() = *fluidimpl_->Dispnp();
 
   // call the usual routine
   xfluidfluid_->Evaluate(stepinc);
@@ -232,7 +232,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
   // Lagrange multiplier in standard ALE-FSI class (fluidsplit) in case of active
   // shape derivatives)
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-  maps.push_back(xfluidfluid_->XFluidFluidMapExtractor()->FluidMap());
+  maps.push_back(xfluidfluid_->x_fluid_fluid_map_extractor()->FluidMap());
   maps.push_back(xfluidfluid_->VelocityRowMap());
   Teuchos::RCP<const Epetra_Map> innervelocitymap =
       CORE::LINALG::MultiMapExtractor::IntersectMaps(maps);
@@ -241,7 +241,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat) { PrepareShapeDerivatives(); }
+void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat) { prepare_shape_derivatives(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ bool ADAPTER::FluidFluidFSI::IsAleRelaxationStep(int step) const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivatives()
 {
-  return xfluidfluid_->ExtendedShapeDerivatives();
+  return xfluidfluid_->extended_shape_derivatives();
 }
 
 /*----------------------------------------------------------------------*
@@ -276,7 +276,8 @@ void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
   FluidFSI::SetupInterface();
 
   // get background fluid map
-  Teuchos::RCP<const Epetra_Map> xfluidmap = xfluidfluid_->XFluidFluidMapExtractor()->XFluidMap();
+  Teuchos::RCP<const Epetra_Map> xfluidmap =
+      xfluidfluid_->x_fluid_fluid_map_extractor()->XFluidMap();
   // do the setup
   mergedfluidinterface_->Setup(xfluidmap, *FluidFSI::Interface());
 
@@ -285,12 +286,12 @@ void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
+void ADAPTER::FluidFluidFSI::prepare_shape_derivatives()
 {
   // the dof-maps may have changed: create a new shape derivatives matrix
   Teuchos::RCP<std::set<int>> condelements =
-      mergedfluidinterface_->ConditionedElementMap(*fluidimpl_->Discretization()());
-  xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_, condelements);
+      mergedfluidinterface_->conditioned_element_map(*fluidimpl_->Discretization()());
+  xfluidfluid_->prepare_shape_derivatives(mergedfluidinterface_, condelements);
 }
 
 FOUR_C_NAMESPACE_CLOSE

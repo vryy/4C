@@ -84,7 +84,7 @@ namespace UTILS
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    double GetCardiovascular0DRHSNorm() const
+    double get_cardiovascular0_drhs_norm() const
     {
       double foo;
       cardvasc0d_res_m_->Norm2(&foo);
@@ -94,7 +94,7 @@ namespace UTILS
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    double GetCardiovascular0DRHSInfNorm() const
+    double get_cardiovascular0_drhs_inf_norm() const
     {
       double foo;
       cardvasc0d_res_m_->NormInf(&foo);
@@ -104,7 +104,7 @@ namespace UTILS
     /*!
      \brief Return cardiovascular0d dof inbcr norm
     */
-    double GetCardiovascular0DDofIncrNorm() const
+    double get_cardiovascular0_d_dof_incr_norm() const
     {
       double foo;
       cv0ddofincrement_->Norm2(&foo);
@@ -114,7 +114,7 @@ namespace UTILS
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    int GetCardiovascular0DLinSolveError() const { return linsolveerror_; };
+    int get_cardiovascular0_d_lin_solve_error() const { return linsolveerror_; };
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -129,7 +129,7 @@ namespace UTILS
 
     bool IsRealtiveEqualTo(const double A, const double B, const double Ref);
 
-    bool ModuloIsRealtiveZero(const double value, const double modulo, const double Ref);
+    bool modulo_is_realtive_zero(const double value, const double modulo, const double Ref);
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -141,7 +141,7 @@ namespace UTILS
     );
 
     ///
-    void EvaluateNeumannCardiovascular0DCoupling(
+    void evaluate_neumann_cardiovascular0_d_coupling(
         Teuchos::ParameterList params, const Teuchos::RCP<Epetra_Vector> actpres,
         Teuchos::RCP<Epetra_Vector> systemvector,                ///< structural rhs
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix  ///< structural stiffness matrix
@@ -150,13 +150,16 @@ namespace UTILS
     /*!
          \brief Return cardiovascular0d rhs at generalized midpoint $t_{n+\theta}$
     */
-    Teuchos::RCP<Epetra_Vector> GetCardiovascular0DRHS() const { return cardvasc0d_res_m_; }
+    Teuchos::RCP<Epetra_Vector> get_cardiovascular0_drhs() const { return cardvasc0d_res_m_; }
 
     /*!
      \brief Return EpetraMap that determined distribution of Cardiovascular0D functions and
      pressures over processors
     */
-    Teuchos::RCP<Epetra_Map> GetCardiovascular0DMap() const { return cardiovascular0dmap_full_; };
+    Teuchos::RCP<Epetra_Map> get_cardiovascular0_d_map() const
+    {
+      return cardiovascular0dmap_full_;
+    };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatDcardvasc0dDd()  // const
@@ -165,13 +168,13 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatDstructDcv0ddof()  // const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> get_mat_dstruct_dcv0ddof()  // const
     {
       return mat_dstruct_dcv0ddof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCardiovascular0DStiffness()  // const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> get_cardiovascular0_d_stiffness()  // const
     {
       return cardiovascular0dstiffness_;
     };
@@ -214,7 +217,7 @@ namespace UTILS
     /*!
      \brief Return if there are Cardiovascular0Ds
     */
-    bool HaveCardiovascular0D() const { return havecardiovascular0d_; };
+    bool have_cardiovascular0_d() const { return havecardiovascular0d_; };
 
     /*!
      \brief Read restart information
@@ -281,22 +284,22 @@ namespace UTILS
         const double k_ptc                            ///< for 3D-0D PTC
     );
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()
+    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d4_element_windkessel()
     {
       return cardvasc0d_4elementwindkessel_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DArterialProxDist()
+    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d_arterial_prox_dist()
     {
       return cardvasc0d_arterialproxdist_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvasc0DSysPulCirculation()
+    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d_sys_pul_circulation()
     {
       return cardvasc0d_syspulcirculation_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> GetCardvascRespir0DSysPulPeriphCirculation()
+    Teuchos::RCP<Cardiovascular0D> get_cardvasc_respir0_d_sys_pul_periph_circulation()
     {
       return cardvascrespir0d_syspulperiphcirculation_;
     }

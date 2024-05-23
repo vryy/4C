@@ -62,7 +62,7 @@ namespace XFEM
     virtual void TransferToNewState(
         const DRT::Discretization& new_discret, XFEM::XFieldState& new_xstate) const = 0;
 
-    virtual void ResetNonStandardDofs(const DRT::Discretization& full_discret) = 0;
+    virtual void reset_non_standard_dofs(const DRT::Discretization& full_discret) = 0;
 
     virtual void SetNewState(const XFEM::XFieldState& xstate);
 

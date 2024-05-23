@@ -4,7 +4,7 @@
 multipliers for monolithical coupled multifield problems!
 Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
 do nothing, as they are called directly in the structure. To use the contact
-the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
+the additional methods apply_force_stiff_cmt_coupled() & RecoverCoupled() have
 to be called!
 
 
@@ -43,7 +43,7 @@ CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
  | structural contact global evaluation method called from time         |
  | integrator + condensation of offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
+void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
     std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>*> k_sx,
     Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor)
@@ -55,7 +55,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
   std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>*>::iterator matiter;
   for (matiter = k_sx.begin(); matiter != k_sx.end(); ++matiter)
   {
-    EvaluateOffDiagContact(*(matiter->second), matiter->first);
+    evaluate_off_diag_contact(*(matiter->second), matiter->first);
   }
   has_to_evaluate_ = false;
   return;
@@ -65,7 +65,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
  | structural contact global evaluation method called from time                |
  | integrator + condensation of one!!! offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
+void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& k_sx, Teuchos::RCP<Epetra_Vector>& rhs_s,
     const int step, const int iter, bool predictor)
@@ -74,7 +74,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
   CONTACT::AbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
-  EvaluateOffDiagContact(k_sx, 0);
+  evaluate_off_diag_contact(k_sx, 0);
 
   has_to_evaluate_ = false;
   return;
@@ -83,12 +83,12 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
 /*------------------------------------------------------------------------*
  |  condense off-diagonal blocks                      (public)  ager 02/15|
  *-----------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
+void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, int Column_Block_Id)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -144,7 +144,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
       FOUR_C_THROW("ParRedist(): CHECK ME!");
       // split and transform to redistributed maps
       //      CORE::LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-      //      ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+      //      ksmsm = MORTAR::matrix_row_col_transform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
       //      ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
       //      knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
     }
@@ -323,7 +323,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   LagrangeStrategy::Recover(
       disi);  // Update Structural Part! --> Here just Part from Coupling Matrix will be added!
@@ -443,8 +443,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
   }
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);  // Here done twice: already in structural
-                                                         // contact --> not wanted
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate);  // Here done twice: already in structural
+                                                           // contact --> not wanted
 
   has_to_recover_ = false;
   return;
@@ -467,7 +467,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 /*---------------------------------------------------------------------------*
  | Save mortar coupling matrices for evaluation of off diag terms! ager 08/14|
  *--------------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::SaveCouplingMatrices(
+void CONTACT::MonoCoupledLagrangeStrategy::save_coupling_matrices(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat, Teuchos::RCP<CORE::LINALG::SparseMatrix> mhataam,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> invda)
 {

@@ -50,18 +50,18 @@ namespace MAT
 
       double GetScalarProduct(int gp) const override;
       const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
+      const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       /*!
        * /copydoc
        *
        * The coupling structural tensor and the scalar product will be computed here
        */
-      void OnGlobalDataInitialized() override;
+      void on_global_data_initialized() override;
 
      protected:
-      void OnGlobalElementDataInitialized() override;
-      void OnGlobalGPDataInitialized() override;
+      void on_global_element_data_initialized() override;
+      void on_global_gp_data_initialized() override;
 
      private:
       /**
@@ -162,7 +162,7 @@ namespace MAT
        *
        * \param anisotropy anisotropy manager
        */
-      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
@@ -176,7 +176,7 @@ namespace MAT
           ) override;
 
      protected:
-      const CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface() const override
+      const CoupAnisoExpoBaseInterface& get_coup_aniso_expo_base_interface() const override
       {
         return anisotropy_extension_;
       }

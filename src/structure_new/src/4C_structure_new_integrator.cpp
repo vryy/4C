@@ -99,7 +99,7 @@ void STR::Integrator::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::SetInitialDisplacement(
+void STR::Integrator::set_initial_displacement(
     const INPAR::STR::InitialDisp init, const int startfuncno)
 {
   switch (init)
@@ -172,7 +172,7 @@ void STR::Integrator::ResetModelStates(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::EquilibrateInitialState()
+void STR::Integrator::equilibrate_initial_state()
 {
   CheckInit();
 
@@ -206,8 +206,8 @@ void STR::Integrator::EquilibrateInitialState()
   EvalData().SetTotalTime(gstate_ptr_->GetTimeN());
 
   // initialize the mass matrix and the Rayleigh damping matrix (optional)
-  if (not ModelEval().InitializeInertiaAndDamping(*disnp_ptr, *stiff_ptr))
-    FOUR_C_THROW("InitializeInertiaAndDamping failed!");
+  if (not ModelEval().initialize_inertia_and_damping(*disnp_ptr, *stiff_ptr))
+    FOUR_C_THROW("initialize_inertia_and_damping failed!");
 
   /* If we are restarting the simulation, we do not have to calculate a
    * consistent acceleration, since we get it anyway from the restart file.
@@ -217,7 +217,7 @@ void STR::Integrator::EquilibrateInitialState()
   /* However, if we need to restart the initial state, e.g. when starting dynamics
    * analysis from the static one, we should re-calculate the initial state
    * for a warm start-up */
-  if (timint_ptr_->IsRestarting() && !timint_ptr_->IsRestartingInitialState())
+  if (timint_ptr_->IsRestarting() && !timint_ptr_->is_restarting_initial_state())
   {
     return;
   }
@@ -242,7 +242,7 @@ void STR::Integrator::EquilibrateInitialState()
   stiff_ptr->Complete();
 
   // treatment of elements with special element technology (e.g. pressure DOFs)
-  GlobalState().ApplyElementTechnologyToAccelerationSystem(*stiff_ptr, *rhs_ptr);
+  GlobalState().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
 
   // ---------------------------------------------------------------------------
   // build a NOX::NLN::STR::LinearSystem
@@ -254,7 +254,7 @@ void STR::Integrator::EquilibrateInitialState()
 
   // copy the nox parameter-list
   Teuchos::ParameterList p_nox = TimInt().GetDataSDyn().GetNoxParams();
-  NOX::NLN::AUX::SetPrintingParameters(p_nox, GlobalState().GetComm());
+  NOX::NLN::AUX::set_printing_parameters(p_nox, GlobalState().GetComm());
 
   // create a copy of the initial displacement vector
   Teuchos::RCP<Epetra_Vector> soln_ptr =
@@ -316,7 +316,7 @@ void STR::Integrator::EquilibrateInitialState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Integrator::CurrentStateIsEquilibrium(const double& tol)
+bool STR::Integrator::current_state_is_equilibrium(const double& tol)
 {
   CheckInit();
 
@@ -352,10 +352,10 @@ bool STR::Integrator::CurrentStateIsEquilibrium(const double& tol)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::DetermineStressStrain()
+void STR::Integrator::determine_stress_strain()
 {
   CheckInitSetup();
-  ModelEval().DetermineStressStrain();
+  ModelEval().determine_stress_strain();
 }
 
 /*----------------------------------------------------------------------------*
@@ -378,10 +378,10 @@ double STR::Integrator::GetModelValue(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::Integrator::GetTotalMidTimeStrEnergy(const Epetra_Vector& x)
+double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
 {
   CheckInitSetup();
-  if (not mt_energy_.IsCorrectlyConfigured())
+  if (not mt_energy_.is_correctly_configured())
     FOUR_C_THROW(
         "You are trying to compute the mid-time energy in case of a non-static"
         " simulation, but you have not specified the desired energy averaging type."
@@ -396,7 +396,7 @@ double STR::Integrator::GetTotalMidTimeStrEnergy(const Epetra_Vector& x)
   Teuchos::RCP<const Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
   const Epetra_Vector& velnp = *velnp_ptr;
 
-  EvalData().ClearValuesForAllEnergyTypes();
+  EvalData().clear_values_for_all_energy_types();
   STR::MODELEVALUATOR::Structure& str_model =
       dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
 
@@ -418,32 +418,32 @@ double STR::Integrator::GetTotalMidTimeStrEnergy(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::UpdateStructuralEnergy()
+void STR::Integrator::update_structural_energy()
 {
   if (not mt_energy_.StoreEnergyN()) return;
 
-  GetTotalMidTimeStrEnergy(*GlobalState().GetDisNp());
+  get_total_mid_time_str_energy(*GlobalState().GetDisNp());
   mt_energy_.CopyNpToN();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::DetermineOptionalQuantity()
+void STR::Integrator::determine_optional_quantity()
 {
   CheckInitSetup();
-  ModelEval().DetermineOptionalQuantity();
+  ModelEval().determine_optional_quantity();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Integrator::DetermineElementVolumes(
+bool STR::Integrator::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
   CheckInitSetup();
   STR::MODELEVALUATOR::Generic& model = Evaluator(INPAR::STR::model_structure);
   STR::MODELEVALUATOR::Structure& smodel = dynamic_cast<STR::MODELEVALUATOR::Structure&>(model);
 
-  return smodel.DetermineElementVolumes(x, ele_vols);
+  return smodel.determine_element_volumes(x, ele_vols);
 }
 
 /*----------------------------------------------------------------------------*
@@ -463,18 +463,18 @@ void STR::Integrator::MonitorDbc(IO::DiscretizationWriter& writer) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::RuntimePreOutputStepState()
+void STR::Integrator::runtime_pre_output_step_state()
 {
   CheckInitSetup();
-  ModelEval().RuntimePreOutputStepState();
+  ModelEval().runtime_pre_output_step_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::RuntimeOutputStepState() const
+void STR::Integrator::runtime_output_step_state() const
 {
   CheckInitSetup();
-  ModelEval().RuntimeOutputStepState();
+  ModelEval().runtime_output_step_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -495,7 +495,7 @@ void STR::Integrator::ResetStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::Integrator::GetCondensedUpdateNorm(
+double STR::Integrator::get_condensed_update_norm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
   CheckInitSetup();
@@ -503,25 +503,25 @@ double STR::Integrator::GetCondensedUpdateNorm(
   double myupdatenorm = eval_data_ptr_->GetMyUpdateNorm(qtype);
   const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
 
-  return GetCondensedGlobalNorm(qtype, normtype, myupdatenorm);
+  return get_condensed_global_norm(qtype, normtype, myupdatenorm);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::Integrator::GetCondensedPreviousSolNorm(
+double STR::Integrator::get_condensed_previous_sol_norm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
   CheckInitSetup();
 
-  double myprevsolnorm = eval_data_ptr_->GetMyPreviousSolNorm(qtype);
+  double myprevsolnorm = eval_data_ptr_->get_my_previous_sol_norm(qtype);
   const enum ::NOX::Abstract::Vector::NormType normtype = eval_data_ptr_->GetUpdateNormType(qtype);
 
-  return GetCondensedGlobalNorm(qtype, normtype, myprevsolnorm);
+  return get_condensed_global_norm(qtype, normtype, myprevsolnorm);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::Integrator::GetCondensedSolutionUpdateRMS(
+double STR::Integrator::get_condensed_solution_update_rms(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
   CheckInitSetup();
@@ -530,7 +530,7 @@ double STR::Integrator::GetCondensedSolutionUpdateRMS(
   // get proc data
   double myrmsnorm = eval_data_ptr_->GetMyRMSNorm(qtype);
   // get total dof number
-  int gdofnumber = GetCondensedDofNumber(qtype);
+  int gdofnumber = get_condensed_dof_number(qtype);
   // sum over all procs
   gstate_ptr_->GetComm().SumAll(&myrmsnorm, &grmsnorm, 1);
 
@@ -540,7 +540,7 @@ double STR::Integrator::GetCondensedSolutionUpdateRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::Integrator::GetCondensedDofNumber(
+int STR::Integrator::get_condensed_dof_number(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
   CheckInitSetup();
@@ -553,7 +553,8 @@ int STR::Integrator::GetCondensedDofNumber(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::Integrator::GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+double STR::Integrator::get_condensed_global_norm(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype,
     const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const
 {
   double gnorm = 0;
@@ -703,10 +704,10 @@ void STR::Integrator::CreateBackupState(const Epetra_Vector& dir)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::RecoverFromBackupState()
+void STR::Integrator::recover_from_backup_state()
 {
   CheckInitSetup();
-  ModelEval().RecoverFromBackupState();
+  ModelEval().recover_from_backup_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -796,7 +797,7 @@ void STR::Integrator::MidTimeEnergy::CopyNpToN()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Integrator::MidTimeEnergy::IsCorrectlyConfigured() const
+bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
 {
   FOUR_C_ASSERT(issetup_, "Call Setup() first.");
 
@@ -818,7 +819,7 @@ bool STR::Integrator::MidTimeEnergy::StoreEnergyN() const
  *----------------------------------------------------------------------------*/
 void STR::Integrator::MidTimeEnergy::Setup()
 {
-  avg_type_ = integrator_.SDyn().GetMidTimeEnergyType();
+  avg_type_ = integrator_.SDyn().get_mid_time_energy_type();
   issetup_ = true;
 }
 

@@ -74,7 +74,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidCouplingWrapper::OutflowBoundary
       */
-      void ApplyBoundaryConditions(double time, double dta, double theta);
+      void apply_boundary_conditions(double time, double dta, double theta);
 
       /*!
       \brief Wrapper for FluidCouplingWrapper::UpdateResidual

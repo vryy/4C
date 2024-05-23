@@ -178,7 +178,7 @@ namespace GLOBAL
     /// manipulate problem type
     void SetProblemType(GLOBAL::ProblemType targettype);
 
-    void SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type);
+    void set_spatial_approximation_type(CORE::FE::ShapeFunctionType shape_function_type);
 
     /// @name General query methods
     /// Once and for all definitions
@@ -200,7 +200,7 @@ namespace GLOBAL
 
 
     //! Return type of the basis function encoded as enum
-    CORE::FE::ShapeFunctionType SpatialApproximationType() const { return shapefuntype_; }
+    CORE::FE::ShapeFunctionType spatial_approximation_type() const { return shapefuntype_; }
 
     //! @}
 
@@ -226,7 +226,7 @@ namespace GLOBAL
     Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
 
     /// write parameters read from input file for documentation
-    void WriteInputParameters();
+    void write_input_parameters();
 
     //@}
 
@@ -254,44 +254,44 @@ namespace GLOBAL
     /// @name Input parameter sections
     /// direct access to parameters from input file sections
 
-    const Teuchos::ParameterList& BinningStrategyParams() const
+    const Teuchos::ParameterList& binning_strategy_params() const
     {
       return parameters_->sublist("BINNING STRATEGY");
     }
-    const Teuchos::ParameterList& GeometricSearchParams() const
+    const Teuchos::ParameterList& geometric_search_params() const
     {
       return parameters_->sublist("BOUNDINGVOLUME STRATEGY");
     }
     const Teuchos::ParameterList& IOParams() const { return parameters_->sublist("IO"); }
-    const Teuchos::ParameterList& StructuralDynamicParams() const
+    const Teuchos::ParameterList& structural_dynamic_params() const
     {
       return parameters_->sublist("STRUCTURAL DYNAMIC");
     }
-    const Teuchos::ParameterList& Cardiovascular0DStructuralParams() const
+    const Teuchos::ParameterList& cardiovascular0_d_structural_params() const
     {
       return parameters_->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING");
     }
-    const Teuchos::ParameterList& MortarCouplingParams() const
+    const Teuchos::ParameterList& mortar_coupling_params() const
     {
       return parameters_->sublist("MORTAR COUPLING");
     }
-    const Teuchos::ParameterList& ContactDynamicParams() const
+    const Teuchos::ParameterList& contact_dynamic_params() const
     {
       return parameters_->sublist("CONTACT DYNAMIC");
     }
-    const Teuchos::ParameterList& BeamInteractionParams() const
+    const Teuchos::ParameterList& beam_interaction_params() const
     {
       return parameters_->sublist("BEAM INTERACTION");
     }
-    const Teuchos::ParameterList& RveMultiPointConstraintParams() const
+    const Teuchos::ParameterList& rve_multi_point_constraint_params() const
     {
       return getParameterList()->sublist("MULTI POINT CONSTRAINTS");
     }
-    const Teuchos::ParameterList& BrownianDynamicsParams() const
+    const Teuchos::ParameterList& brownian_dynamics_params() const
     {
       return parameters_->sublist("BROWNIAN DYNAMICS");
     }
-    const Teuchos::ParameterList& ThermalDynamicParams() const
+    const Teuchos::ParameterList& thermal_dynamic_params() const
     {
       return parameters_->sublist("THERMAL DYNAMIC");
     }
@@ -303,11 +303,11 @@ namespace GLOBAL
     {
       return parameters_->sublist("FLUID DYNAMIC");
     }
-    const Teuchos::ParameterList& LubricationDynamicParams() const
+    const Teuchos::ParameterList& lubrication_dynamic_params() const
     {
       return parameters_->sublist("LUBRICATION DYNAMIC");
     }
-    const Teuchos::ParameterList& ScalarTransportDynamicParams() const
+    const Teuchos::ParameterList& scalar_transport_dynamic_params() const
     {
       return parameters_->sublist("SCALAR TRANSPORT DYNAMIC");
     }
@@ -331,7 +331,7 @@ namespace GLOBAL
     {
       return parameters_->sublist("FPSI DYNAMIC");
     }
-    const Teuchos::ParameterList& ImmersedMethodParams() const
+    const Teuchos::ParameterList& immersed_method_params() const
     {
       return parameters_->sublist("IMMERSED METHOD");
     }
@@ -355,7 +355,7 @@ namespace GLOBAL
     {
       return parameters_->sublist("LOMA CONTROL");
     }
-    const Teuchos::ParameterList& BIOFILMControlParams() const
+    const Teuchos::ParameterList& biofilm_control_params() const
     {
       return parameters_->sublist("BIOFILM CONTROL");
     }
@@ -367,39 +367,39 @@ namespace GLOBAL
     {
       return parameters_->sublist("CARDIAC MONODOMAIN CONTROL");
     }
-    const Teuchos::ParameterList& ArterialDynamicParams() const
+    const Teuchos::ParameterList& arterial_dynamic_params() const
     {
       return parameters_->sublist("ARTERIAL DYNAMIC");
     }
-    const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const
+    const Teuchos::ParameterList& reduced_d_airway_dynamic_params() const
     {
       return parameters_->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC");
     }
-    const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const
+    const Teuchos::ParameterList& red_airway_tissue_dynamic_params() const
     {
       return parameters_->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC");
     }
-    const Teuchos::ParameterList& PoroelastDynamicParams() const
+    const Teuchos::ParameterList& poroelast_dynamic_params() const
     {
       return parameters_->sublist("POROELASTICITY DYNAMIC");
     }
-    const Teuchos::ParameterList& PoroFluidMultiPhaseDynamicParams() const
+    const Teuchos::ParameterList& poro_fluid_multi_phase_dynamic_params() const
     {
       return parameters_->sublist("POROFLUIDMULTIPHASE DYNAMIC");
     }
-    const Teuchos::ParameterList& PoroMultiPhaseScatraDynamicParams() const
+    const Teuchos::ParameterList& poro_multi_phase_scatra_dynamic_params() const
     {
       return parameters_->sublist("POROMULTIPHASESCATRA DYNAMIC");
     }
-    const Teuchos::ParameterList& PoroMultiPhaseDynamicParams() const
+    const Teuchos::ParameterList& poro_multi_phase_dynamic_params() const
     {
       return parameters_->sublist("POROMULTIPHASE DYNAMIC");
     }
-    const Teuchos::ParameterList& PoroScatraControlParams() const
+    const Teuchos::ParameterList& poro_scatra_control_params() const
     {
       return parameters_->sublist("POROSCATRA CONTROL");
     }
-    const Teuchos::ParameterList& ElastoHydroDynamicParams() const
+    const Teuchos::ParameterList& elasto_hydro_dynamic_params() const
     {
       return parameters_->sublist("ELASTO HYDRO DYNAMIC");
     }
@@ -445,11 +445,11 @@ namespace GLOBAL
     {
       return parameters_->sublist("BEAM POTENTIAL");
     }
-    const Teuchos::ParameterList& SemiSmoothPlastParams() const
+    const Teuchos::ParameterList& semi_smooth_plast_params() const
     {
       return parameters_->sublist("SEMI-SMOOTH PLASTICITY");
     }
-    const Teuchos::ParameterList& ElectromagneticParams() const
+    const Teuchos::ParameterList& electromagnetic_params() const
     {
       return parameters_->sublist("ELECTROMAGNETIC DYNAMIC");
     }
@@ -458,7 +458,7 @@ namespace GLOBAL
       return parameters_->sublist("VOLMORTAR COUPLING");
     }
     const Teuchos::ParameterList& MORParams() const { return parameters_->sublist("MOR"); };
-    const Teuchos::ParameterList& MeshPartitioningParams() const
+    const Teuchos::ParameterList& mesh_partitioning_params() const
     {
       return parameters_->sublist("MESH PARTITIONING");
     }
@@ -509,7 +509,7 @@ namespace GLOBAL
     Teuchos::RCP<MAT::PAR::Bundle> Materials() { return materials_; }
 
     // return pointer to contact constitutive law bundled to the problem
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> ContactConstitutiveLaws()
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contact_constitutive_laws()
     {
       return contactconstitutivelaws_;
     }
@@ -554,7 +554,7 @@ namespace GLOBAL
       resulttest_.AddFieldTest(test);
     }
 
-    CORE::UTILS::ResultTestManager& GetResultTestManager() { return resulttest_; }
+    CORE::UTILS::ResultTestManager& get_result_test_manager() { return resulttest_; }
 
     //@}
 

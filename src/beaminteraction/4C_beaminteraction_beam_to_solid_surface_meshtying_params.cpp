@@ -38,7 +38,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_surface_meshtying_params_list =
-      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID SURFACE MESHTYING");
 
   // Set the common beam-to-solid parameters.
@@ -92,7 +92,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::GetVisualizationOutputParamsPtr()
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::get_visualization_output_params_ptr()
 {
   return output_params_ptr_;
 };

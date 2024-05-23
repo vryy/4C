@@ -58,7 +58,7 @@ MAT::ELASTIC::IsoMuscleBlemker::IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBle
 
 {
   // initialize fiber directions and structural tensor
-  anisotropy_extension_.RegisterNeededTensors(
+  anisotropy_extension_.register_needed_tensors(
       MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
@@ -75,15 +75,15 @@ void MAT::ELASTIC::IsoMuscleBlemker::UnpackSummand(
   anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
-void MAT::ELASTIC::IsoMuscleBlemker::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MAT::ELASTIC::IsoMuscleBlemker::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::Matrix<6, 1>& rcg,
-    const CORE::LINALG::Matrix<6, 1>& icg, CORE::LINALG::Matrix<6, 6>& cmat,
-    CORE::LINALG::Matrix<6, 1>& stress, double I3, const int gp, const int eleGID,
-    Teuchos::ParameterList& params)
+void MAT::ELASTIC::IsoMuscleBlemker::add_stress_aniso_modified(
+    const CORE::LINALG::Matrix<6, 1>& rcg, const CORE::LINALG::Matrix<6, 1>& icg,
+    CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress, double I3, const int gp,
+    const int eleGID, Teuchos::ParameterList& params)
 {
   // right Cauchy Green tensor C in matrix notation
   CORE::LINALG::Matrix<3, 3> C(true);
@@ -99,7 +99,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
 
   // structural tensor M, i.e. dyadic product of fibre directions
   CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
-  CORE::LINALG::Matrix<6, 1> Mv = anisotropy_extension_.GetStructuralTensor_stress(gp, 0);
+  CORE::LINALG::Matrix<6, 1> Mv = anisotropy_extension_.get_structural_tensor_stress(gp, 0);
 
   // compute modified invariants modI1, modI4 and modI5
   double modI1 = modC(0, 0) + modC(1, 1) + modC(2, 2);
@@ -127,7 +127,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
   double sigma_fiber_total = 0.0;
   double deriv_sigma_fiber_total = 0.0;
   double lambdaM = std::sqrt(modI4);  // fiber stretch
-  EvaluateTotalFiberCauchyStressAndDerivative(
+  evaluate_total_fiber_cauchy_stress_and_derivative(
       lambdaM, sigma_max_ft, sigma_fiber_total, deriv_sigma_fiber_total);
 
   // helper variables for computation of 2nd Piola Kirchhoff stress and elasticity tensor
@@ -268,7 +268,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
   cmat.Update(1.0, cmatiso, 1.0);
 }
 
-void MAT::ELASTIC::IsoMuscleBlemker::EvaluateTotalFiberCauchyStressAndDerivative(
+void MAT::ELASTIC::IsoMuscleBlemker::evaluate_total_fiber_cauchy_stress_and_derivative(
     double lambdaM, double sigma_max_ft, double& sigma_fiber_total, double& deriv_sigma_fiber_total)
 {
   // get active material parameters

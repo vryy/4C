@@ -126,7 +126,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment
         Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
 
-    void StoreNodalQuantities(
+    void store_nodal_quantities(
         MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
 
     /*!

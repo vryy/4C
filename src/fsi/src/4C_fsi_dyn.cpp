@@ -96,7 +96,7 @@ void fluid_ale_drt()
   if (CORE::UTILS::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
-    FLD::XFluid::SetupFluidDiscretization();
+    FLD::XFluid::setup_fluid_discretization();
   }
   else
   {
@@ -150,7 +150,7 @@ void fluid_xfem_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  FLD::XFluid::SetupFluidDiscretization();
+  FLD::XFluid::setup_fluid_discretization();
 
   const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
   bool alefluid = CORE::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
@@ -362,10 +362,11 @@ void fsi_immersed_drt()
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
     binningstrategy->Init(dis);
     Teuchos::RCP<Epetra_Map> rowbins =
-        binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-            dis, stdelecolmap, stdnodecolmap);
-    binningstrategy->FillBinsIntoBinDiscretization(rowbins);
-    binningstrategy->FillBinsIntoBinDiscretization(rowbins);
+        binningstrategy
+            ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+                dis, stdelecolmap, stdnodecolmap);
+    binningstrategy->fill_bins_into_bin_discretization(rowbins);
+    binningstrategy->fill_bins_into_bin_discretization(rowbins);
   }
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
@@ -436,7 +437,7 @@ void fsi_ale_drt()
   if (CORE::UTILS::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
-    FLD::XFluid::SetupFluidDiscretization();
+    FLD::XFluid::setup_fluid_discretization();
   }
   else
     problem->GetDis("fluid")->FillComplete();
@@ -484,8 +485,9 @@ void fsi_ale_drt()
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
             Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
         binningstrategy->Init(dis);
-        binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-            dis, stdelecolmap, stdnodecolmap);
+        binningstrategy
+            ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+                dis, stdelecolmap, stdnodecolmap);
       }
     }
   }
@@ -599,7 +601,7 @@ void fsi_ale_drt()
             redistribute == INPAR::FSI::Redistribute_fluid)
         {
           // redistribute either structure or fluid domain
-          fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1, weight2, comm, 0);
+          fsi->redistribute_domain_decomposition(redistribute, coupling, weight1, weight2, comm, 0);
 
           // do setup again after redistribution
           fsi->SetupSystem();
@@ -611,7 +613,7 @@ void fsi_ale_drt()
           if (secweight1 != -1.0)
           {
             // redistribute either structure or fluid domain
-            fsi->RedistributeDomainDecomposition(
+            fsi->redistribute_domain_decomposition(
                 redistribute, coupling, secweight1, secweight2, comm, 0);
 
             // do setup again after redistribution
@@ -623,13 +625,13 @@ void fsi_ale_drt()
           int numproc = comm.NumProc();
 
           // redistribute both structure and fluid domain
-          fsi->RedistributeDomainDecomposition(
+          fsi->redistribute_domain_decomposition(
               INPAR::FSI::Redistribute_structure, coupling, weight1, weight2, comm, numproc / 2);
 
           // do setup again after redistribution (do this again here in between because the P matrix
           // changed!)
           fsi->SetupSystem();
-          fsi->RedistributeDomainDecomposition(
+          fsi->redistribute_domain_decomposition(
               INPAR::FSI::Redistribute_fluid, coupling, weight1, weight2, comm, numproc / 2);
 
           // do setup again after redistribution
@@ -637,7 +639,7 @@ void fsi_ale_drt()
         }
         else if (redistribute == INPAR::FSI::Redistribute_monolithic)
         {
-          fsi->RedistributeMonolithicGraph(coupling, comm);
+          fsi->redistribute_monolithic_graph(coupling, comm);
 
           // do setup again after redistribution
           fsi->SetupSystem();
@@ -780,7 +782,7 @@ void xfsi_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  FLD::XFluid::SetupFluidDiscretization();
+  FLD::XFluid::setup_fluid_discretization();
 
   Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
@@ -930,7 +932,7 @@ void xfpsi_drt()
   POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
   // setup of discretization for xfluid
-  FLD::XFluid::SetupFluidDiscretization();
+  FLD::XFluid::setup_fluid_discretization();
   Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
@@ -1001,8 +1003,8 @@ void xfpsi_drt()
 
 
       // 3.2.- redistribute the FPSI interface
-      // Todo .... fsi->RedistributeInterface(); // this is required for paralles fpi-condition (not
-      // included in this commit)
+      // Todo .... fsi->redistribute_interface(); // this is required for paralles fpi-condition
+      // (not included in this commit)
 
       // here we go...
       fsi->Timeloop();

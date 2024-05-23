@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::BoundaryDiscretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::boundary_discretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -56,7 +56,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::BoundaryDiscretization()
 
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
 
-  return xfluid->BoundaryDiscretization();
+  return xfluid->boundary_discretization();
 }
 
 
@@ -114,10 +114,10 @@ void ADAPTER::FluidXFEM::NonlinearSolve(
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
 
   // set idispnp in Xfluid
-  if (idisp != Teuchos::null) xfluid->ApplyStructMeshDisplacement(idisp);
+  if (idisp != Teuchos::null) xfluid->apply_struct_mesh_displacement(idisp);
 
   // set ivelnp in Xfluid
-  if (ivel != Teuchos::null) xfluid->ApplyStructInterfaceVelocities(ivel);
+  if (ivel != Teuchos::null) xfluid->apply_struct_interface_velocities(ivel);
 
   FluidField()->Solve();
 }
@@ -139,36 +139,36 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::extract_interface_forces()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceForces();
+  return xfluid->extract_struct_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceVelnp();
+  return xfluid->extract_struct_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::extract_interface_veln()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceVeln();
+  return xfluid->extract_struct_interface_veln();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::integrate_interface_shape()
 {
-  return FluidField()->IntegrateInterfaceShape();
+  return FluidField()->integrate_interface_shape();
 }
 
 

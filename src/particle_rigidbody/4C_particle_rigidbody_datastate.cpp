@@ -25,7 +25,7 @@ void PARTICLERIGIDBODY::RigidBodyDataState::Setup()
   // nothing to do
 }
 
-void PARTICLERIGIDBODY::RigidBodyDataState::AllocateStoredStates(const int numrigidbodies)
+void PARTICLERIGIDBODY::RigidBodyDataState::allocate_stored_states(const int numrigidbodies)
 {
   mass_.resize(numrigidbodies, 0.0);
   inertia_.resize(numrigidbodies, std::vector<double>(6, 0.0));

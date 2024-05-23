@@ -39,7 +39,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
   issetup_ = false;
 
   const Teuchos::ParameterList& crosslinking_params_list =
-      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING");
+      GLOBAL::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING");
 
   // viscosity
   viscosity_ = crosslinking_params_list.get<double>("VISCOSITY");
@@ -75,7 +75,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
   if (not feasibleboxinput)
   {
     std::istringstream pbb_stream(Teuchos::getNumericStringParameter(
-        GLOBAL::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
+        GLOBAL::Problem::Instance()->binning_strategy_params(), "DOMAINBOUNDINGBOX"));
     for (int col = 0; col < 2; ++col)
     {
       for (int row = 0; row < 3; ++row)

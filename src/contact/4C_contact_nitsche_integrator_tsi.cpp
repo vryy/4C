@@ -103,8 +103,8 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
   std::vector<CORE::GEN::Pairedvector<int, double>> deriv_master_normal(0, 0);
-  sele.ComputeUnitNormalAtXi(sxi, slave_normal.A());
-  mele.ComputeUnitNormalAtXi(mxi, master_normal.A());
+  sele.compute_unit_normal_at_xi(sxi, slave_normal.A());
+  mele.compute_unit_normal_at_xi(mxi, master_normal.A());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
   mele.DerivUnitNormalAtXi(mxi, deriv_master_normal);
 
@@ -266,17 +266,17 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
         cauchy_nt2_weighted_average, cauchy_nt2_weighted_average_deriv,
         cauchy_nt2_weighted_average_deriv_T, t2, dt2);
 
-    IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
         cauchy_nt1_weighted_average_deriv, cauchy_nt1_weighted_average_deriv_T, sele,
         t1_adjoint_test_slave, deriv_t1_adjoint_test_slave, deriv_t1_adjoint_test_slave_T);
-    IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
         cauchy_nt2_weighted_average_deriv, cauchy_nt2_weighted_average_deriv_T, sele,
         t2_adjoint_test_slave, deriv_t2_adjoint_test_slave, deriv_t2_adjoint_test_slave_T);
 
-    IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
         cauchy_nt1_weighted_average_deriv, cauchy_nt1_weighted_average_deriv_T, mele,
         t1_adjoint_test_master, deriv_t1_adjoint_test_master, deriv_t1_adjoint_test_master_T);
-    IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
         cauchy_nt2_weighted_average_deriv, cauchy_nt2_weighted_average_deriv_T, mele,
         t2_adjoint_test_master, deriv_t2_adjoint_test_master, deriv_t2_adjoint_test_master_T);
   }
@@ -290,11 +290,11 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
         cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv,
         cauchy_nn_weighted_average_deriv_T, contact_normal, deriv_contact_normal);
 
-    IntegrateAdjointTest<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
         cauchy_nn_weighted_average_deriv, cauchy_nn_weighted_average_deriv_T, sele,
         normal_adjoint_test_slave, deriv_normal_adjoint_test_slave,
         deriv_normal_adjoint_test_slave_T);
-    IntegrateAdjointTest<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
+    integrate_adjoint_test<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
         cauchy_nn_weighted_average_deriv, cauchy_nn_weighted_average_deriv_T, mele,
         normal_adjoint_test_master, deriv_normal_adjoint_test_master,
         deriv_normal_adjoint_test_master_T);
@@ -314,10 +314,10 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
     IntegrateTest<dim>(+theta_2_ * pen, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, gap,
         dgapgp, empty, contact_normal, deriv_contact_normal);
 
-    IntegrateAdjointTest<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, empty, sele,
+    integrate_adjoint_test<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, empty, sele,
         normal_adjoint_test_slave, deriv_normal_adjoint_test_slave,
         deriv_normal_adjoint_test_slave_T);
-    IntegrateAdjointTest<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, empty, mele,
+    integrate_adjoint_test<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, empty, mele,
         normal_adjoint_test_master, deriv_normal_adjoint_test_master,
         deriv_normal_adjoint_test_master_T);
 
@@ -469,16 +469,16 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
           sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2_T, t2, dt2);
 
 
-      IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
+      integrate_adjoint_test<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
           d_sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1_T, sele, t1_adjoint_test_slave,
           deriv_t1_adjoint_test_slave, deriv_t1_adjoint_test_slave_T);
-      IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
+      integrate_adjoint_test<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
           d_sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1_T, mele, t1_adjoint_test_master,
           deriv_t1_adjoint_test_master, deriv_t1_adjoint_test_master_T);
-      IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
+      integrate_adjoint_test<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
           d_sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2_T, sele, t2_adjoint_test_slave,
           deriv_t2_adjoint_test_slave, deriv_t2_adjoint_test_slave_T);
-      IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
+      integrate_adjoint_test<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
           d_sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2_T, mele, t2_adjoint_test_master,
           deriv_t2_adjoint_test_master, deriv_t2_adjoint_test_master_T);
     }
@@ -526,16 +526,16 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
         for (const auto& p : d_s_gp_temp_dT) d_q1_T[p.first] += beta_bar * p.second;
         for (const auto& p : d_m_gp_temp_dT) d_q1_T[p.first] += beta_bar * (-p.second);
 
-        IntegrateThermalTest<dim>(
+        integrate_thermal_test<dim>(
             +1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, q1, d_q1_d, d_q1_T);
-        IntegrateThermalTest<dim>(
+        integrate_thermal_test<dim>(
             -1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, q1, d_q1_d, d_q1_T);
 
         if (frtype_)  // account for frictional contact
         {
-          IntegrateThermalTest<dim>(-delta_c, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
+          integrate_thermal_test<dim>(-delta_c, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
               diss, d_diss_d, d_diss_T);
-          IntegrateThermalTest<dim>(-(1 - delta_c), mele, mval, mderiv, dmxi, jac, jacintcellmap,
+          integrate_thermal_test<dim>(-(1 - delta_c), mele, mval, mderiv, dmxi, jac, jacintcellmap,
               wgt, diss, d_diss_d, d_diss_T);
         }
         break;
@@ -665,14 +665,14 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
                                              pen_thermo * (1. - delta_c - ws_thermo) * diss);
           }
 
-          IntegrateThermalTest<dim>(+1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
+          integrate_thermal_test<dim>(+1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
               test_val, deriv_test_val_d, deriv_test_val_T);
-          IntegrateThermalTest<dim>(-1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+          integrate_thermal_test<dim>(-1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
               test_val, deriv_test_val_d, deriv_test_val_T);
 
-          IntegrateThermalTest<dim>(-delta_c, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
+          integrate_thermal_test<dim>(-delta_c, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
               diss, d_diss_d, d_diss_T);
-          IntegrateThermalTest<dim>(-(1 - delta_c), mele, mval, mderiv, dmxi, jac, jacintcellmap,
+          integrate_thermal_test<dim>(-(1 - delta_c), mele, mval, mderiv, dmxi, jac, jacintcellmap,
               wgt, diss, d_diss_d, d_diss_T);
         }
 
@@ -727,10 +727,10 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
                 std::pow(pen_thermo + beta_bar, 2) * beta * (-p.second);
           }
 
-          IntegrateThermalAdjointTest<dim>(theta_thermo_, jac, jacintcellmap, wgt, test_val,
+          integrate_thermal_adjoint_test<dim>(theta_thermo_, jac, jacintcellmap, wgt, test_val,
               deriv_test_val_d, deriv_test_val_T, sele, thermo_adjoint_test_slave,
               deriv_thermo_adjoint_test_slave_d, deriv_thermo_adjoint_test_slave_T);
-          IntegrateThermalAdjointTest<dim>(theta_thermo_, jac, jacintcellmap, wgt, test_val,
+          integrate_thermal_adjoint_test<dim>(theta_thermo_, jac, jacintcellmap, wgt, test_val,
               deriv_test_val_d, deriv_test_val_T, mele, thermo_adjoint_test_master,
               deriv_thermo_adjoint_test_master_d, deriv_thermo_adjoint_test_master_T);
         }
@@ -789,7 +789,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchy(MORTAR::Element& moEle, double* 
       dsntdT;
   CORE::LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement())
-      ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
+      ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
           sigma_nt, &dsntdd, &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn, &dsntdt,
           &dsntdpxi, &moEle.MoData().ParentTemp(), &dsntdT, &d2sntDdDT, nullptr, nullptr);
 
@@ -864,7 +864,7 @@ void CONTACT::IntegratorNitscheTsi::IntegrateTest(const double fac, MORTAR::Elem
 }
 
 template <int dim>
-void CONTACT::IntegratorNitscheTsi::IntegrateAdjointTest(const double fac, const double jac,
+void CONTACT::IntegratorNitscheTsi::integrate_adjoint_test(const double fac, const double jac,
     const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double test,
     const CORE::GEN::Pairedvector<int, double>& deriv_test_d,
     const CORE::GEN::Pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
@@ -874,7 +874,7 @@ void CONTACT::IntegratorNitscheTsi::IntegrateAdjointTest(const double fac, const
 {
   if (abs(fac) < 1.e-16) return;
 
-  CONTACT::IntegratorNitsche::IntegrateAdjointTest<dim>(
+  CONTACT::IntegratorNitsche::integrate_adjoint_test<dim>(
       fac, jac, jacintcellmap, wgt, test, deriv_test_d, moEle, adjoint_test, deriv_adjoint_test_d);
 
   for (const auto& p : deriv_test_T)
@@ -894,7 +894,7 @@ void CONTACT::IntegratorNitscheTsi::IntegrateAdjointTest(const double fac, const
 
 
 template <int dim>
-void CONTACT::IntegratorNitscheTsi::IntegrateThermalTest(const double fac, MORTAR::Element& ele,
+void CONTACT::IntegratorNitscheTsi::integrate_thermal_test(const double fac, MORTAR::Element& ele,
     const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double jac,
     const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -940,9 +940,9 @@ void CONTACT::IntegratorNitscheTsi::IntegrateThermalTest(const double fac, MORTA
 }
 
 template <int dim>
-void CONTACT::IntegratorNitscheTsi::IntegrateThermalAdjointTest(const double fac, const double jac,
-    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double test,
-    const CORE::GEN::Pairedvector<int, double>& deriv_test_d,
+void CONTACT::IntegratorNitscheTsi::integrate_thermal_adjoint_test(const double fac,
+    const double jac, const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
+    const double test, const CORE::GEN::Pairedvector<int, double>& deriv_test_d,
     const CORE::GEN::Pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
     CORE::LINALG::SerialDenseVector& adjoint_test,
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_d,
@@ -1153,7 +1153,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
 
   if (abs(theta_thermo_) > 1.e-12)
   {
-    BuildAdjointTestThermo<dim>(moEle, w, dq_dT_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi,
+    build_adjoint_test_thermo<dim>(moEle, w, dq_dT_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi,
         normal_deriv, boundary_gpcoord_lin, derivtravo_slave, adjoint_test, deriv_adjoint_test_d,
         deriv_adjoint_test_T);
   }
@@ -1161,8 +1161,8 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
 
 
 template <int dim>
-void CONTACT::IntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::Element& moEle, const double fac,
-    const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
+void CONTACT::IntegratorNitscheTsi::build_adjoint_test_thermo(MORTAR::Element& moEle,
+    const double fac, const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
     const CORE::LINALG::SerialDenseMatrix& d2q_dT_dd,
     const CORE::LINALG::SerialDenseMatrix& d2q_dT_dn,
     const CORE::LINALG::SerialDenseMatrix& d2q_dT_dpxi,

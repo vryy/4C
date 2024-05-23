@@ -28,7 +28,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   ELEMENTS::ActionType act = ELEMENTS::none;
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_energy:
     {
       std::map<std::string, std::vector<double>> ele_state;
-      ExtractElementalVariables(la, discretization, params, ele_state);
+      extract_elemental_variables(la, discretization, params, ele_state);
 
       Energy(ele_state, params, elevec1);
 
@@ -103,7 +103,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_internalforce:
     {
       std::map<std::string, std::vector<double>> ele_state;
-      ExtractElementalVariables(la, discretization, params, ele_state);
+      extract_elemental_variables(la, discretization, params, ele_state);
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
@@ -123,7 +123,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_stress:
     {
       std::map<std::string, std::vector<double>> ele_state;
-      ExtractElementalVariables(la, discretization, params, ele_state);
+      extract_elemental_variables(la, discretization, params, ele_state);
 
       CalcGPStresses(params, ele_state);
       break;
@@ -198,10 +198,10 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
 
   // W_int = 1/2*PK2*A*lrefe*\epsilon
   const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
-  const double intenergy_calc = mat->EvaluateElasticEnergy(epsilon) * crosssec_ * lrefe_;
+  const double intenergy_calc = mat->evaluate_elastic_energy(epsilon) * crosssec_ * lrefe_;
 
   if (IsParamsInterface())  // new structural time integration
-    ParamsInterface().AddContributionToEnergyType(intenergy_calc, STR::internal_energy);
+    ParamsInterface().add_contribution_to_energy_type(intenergy_calc, STR::internal_energy);
   else  // old structural time integration
   {
     // check length of elevec1
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
     CORE::LINALG::SerialDenseVector& DummyForce)
 {
   // calculate force vector and stiffness matrix
-  CalcInternalForceStiffTotLag(ele_state, DummyForce, DummyStiffMatrix);
+  calc_internal_force_stiff_tot_lag(ele_state, DummyForce, DummyStiffMatrix);
 
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
+void DRT::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
     CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx)
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
+void DRT::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
   static CORE::LINALG::Matrix<6, 1> dN_dx;
 
-  PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
+  prep_calc_internal_force_stiff_tot_lag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
   const int ndof = 6;
 
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
   static CORE::LINALG::Matrix<6, 1> dN_dx;
 
-  PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx);
+  prep_calc_internal_force_stiff_tot_lag(ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx);
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
   const double epsilon_GL =
@@ -575,7 +575,7 @@ void DRT::ELEMENTS::Truss3::LumpMass(CORE::LINALG::SerialDenseMatrix* emass)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::ExtractElementalVariables(LocationArray& la,
+void DRT::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
     const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {

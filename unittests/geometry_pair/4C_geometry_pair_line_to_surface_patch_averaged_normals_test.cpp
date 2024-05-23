@@ -140,10 +140,10 @@ namespace
     }
 
     // Calculate the averaged reference normals on the face.
-    face_element->CalculateAveragedReferenceNormals(face_elements_map);
+    face_element->calculate_averaged_reference_normals(face_elements_map);
     {
       for (unsigned int i = 0; i < reference_normals.size(); i++)
-        EXPECT_NEAR(face_element->GetFaceReferenceElementData().nodal_normals_(i),
+        EXPECT_NEAR(face_element->get_face_reference_element_data().nodal_normals_(i),
             reference_normals[i], eps);
     }
 

@@ -32,7 +32,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -646,7 +646,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
   //        }
   //
   //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
@@ -664,7 +664,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).EvaluateTimeDerivative(time);
+  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
   //        }
   //      }
   //    }

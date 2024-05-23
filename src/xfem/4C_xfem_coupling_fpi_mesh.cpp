@@ -58,7 +58,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
       fpsi_contact_fullpcfraction_(0.0),
       xf_c_comm_(Teuchos::null)
 {
-  // TODO: init here, but set in SetConditionSpecificParameters
+  // TODO: init here, but set in set_condition_specific_parameters
 }
 
 /*--------------------------------------------------------------------------*
@@ -94,26 +94,26 @@ void XFEM::MeshCouplingFPI::InitStateVectors()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::DoConditionSpecificSetup()
+void XFEM::MeshCouplingFPI::do_condition_specific_setup()
 {
   // We do ghosting just for the first fpi coupling object, which is PS_PS, then this is done an we
   // just reconnect to the parent pointers for every cutter_dis_ Actually this reconnecting step
   // should be done in an setup routine, to guarantee, that it is done late enought (no ghosting
   // afterwards...)
   if (coupled_field_ == MeshCouplingFPI::ps_ps)
-    POROELAST::UTILS::CreateVolumeGhosting(*cutter_dis_);
+    POROELAST::UTILS::create_volume_ghosting(*cutter_dis_);
   else
-    POROELAST::UTILS::ReconnectParentPointers(*cutter_dis_, *cond_dis_);
+    POROELAST::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
 
   // call base class
-  XFEM::MeshCoupling::DoConditionSpecificSetup();
+  XFEM::MeshCoupling::do_condition_specific_setup();
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::ReconnectParentPointers()
+void XFEM::MeshCouplingFPI::reconnect_parent_pointers()
 {
-  POROELAST::UTILS::ReconnectParentPointers(*cutter_dis_, *cond_dis_);
+  POROELAST::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -127,7 +127,7 @@ void XFEM::MeshCouplingFPI::RegisterSideProc(int sid)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::CompleteStateVectors()
+void XFEM::MeshCouplingFPI::complete_state_vectors()
 {
   //-------------------------------------------------------------------------------
   // finalize itrueresidual vector
@@ -145,7 +145,7 @@ void XFEM::MeshCouplingFPI::CompleteStateVectors()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::SetupConfigurationMap()
+void XFEM::MeshCouplingFPI::setup_configuration_map()
 {
   switch (coupled_field_)
   {
@@ -255,7 +255,7 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
     double& visc_m,          //< master sided dynamic viscosity
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
@@ -382,16 +382,16 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     }
   }
   else
-    UpdateConfigurationMap_GP_Contact(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab,
-        x, cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
+    update_configuration_map_gp_contact(kappa_m, visc_m, visc_s, density_m, visc_stab_tang,
+        full_stab, x, cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
 
   return;
 }
 
 /*--------------------------------------------------------------------------*
- * UpdateConfigurationMap_GP_Contact for XFPSCI
+ * update_configuration_map_gp_contact for XFPSCI
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
+void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
     double& kappa_m,         //< fluid sided weighting
     double& visc_m,          //< master sided dynamic viscosity
     double& visc_s,          //< slave sided dynamic viscosity
@@ -410,7 +410,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
 {
 #ifdef FOUR_C_DEBUG
   FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
-      "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
+      "update_configuration_map_gp_contact but no Xfluid Contact Communicator assigned!");
 #endif
 
   // constant not really ment to be changed
@@ -534,9 +534,9 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     case MeshCouplingFPI::pf_ps:
     {
       double ffac = 1;
-      if (gap < (1 + Get_fpi_pcontact_fullfraction()) * Get_fpi_pcontact_exchange_dist() &&
-          Get_fpi_pcontact_exchange_dist() > 1e-16)
-        ffac = gap / (Get_fpi_pcontact_exchange_dist()) - Get_fpi_pcontact_fullfraction();
+      if (gap < (1 + get_fpi_pcontact_fullfraction()) * get_fpi_pcontact_exchange_dist() &&
+          get_fpi_pcontact_exchange_dist() > 1e-16)
+        ffac = gap / (get_fpi_pcontact_exchange_dist()) - get_fpi_pcontact_fullfraction();
       if (ffac < 0) ffac = 0;
 
 #ifdef WRITE_GMSH
@@ -558,9 +558,9 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     case MeshCouplingFPI::pf_pf:
     {
       double ffac = 1;
-      if (gap < (1 + Get_fpi_pcontact_fullfraction()) * Get_fpi_pcontact_exchange_dist() &&
-          Get_fpi_pcontact_exchange_dist() > 1e-16)
-        ffac = gap / (Get_fpi_pcontact_exchange_dist()) - Get_fpi_pcontact_fullfraction();
+      if (gap < (1 + get_fpi_pcontact_fullfraction()) * get_fpi_pcontact_exchange_dist() &&
+          get_fpi_pcontact_exchange_dist() > 1e-16)
+        ffac = gap / (get_fpi_pcontact_exchange_dist()) - get_fpi_pcontact_fullfraction();
       if (ffac < 0) ffac = 0;
 
       // Configuration of Penalty Terms
@@ -578,7 +578,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::ZeroStateVectors_FPI()
+void XFEM::MeshCouplingFPI::zero_state_vectors_fpi()
 {
   itrueresidual_->PutScalar(0.0);
   iforcecol_->PutScalar(0.0);
@@ -678,10 +678,10 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::GmshOutputDiscretization(std::ostream& gmshfilecontent)
+void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecontent)
 {
   // print surface discretization
-  XFEM::MeshCoupling::GmshOutputDiscretization(gmshfilecontent);
+  XFEM::MeshCoupling::gmsh_output_discretization(gmshfilecontent);
 
   // compute the current solid and boundary position
   std::map<int, CORE::LINALG::Matrix<3, 1>> currsolidpositions;
@@ -719,7 +719,7 @@ void XFEM::MeshCouplingFPI::Output(const int step, const double time, const bool
   }
 }
 
-void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
+void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 {
   std::vector<CORE::Conditions::Condition*> conditions_XFPI;
   cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
@@ -735,22 +735,22 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     {
       if (fabs(bj_coeff_ - cond->parameters().Get<double>("bj_coeff")) > 1e-16)
         FOUR_C_THROW(
-            "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
+            "XFEM::MeshCouplingFPI::set_condition_specific_parameters: You defined two FPI "
             "conditions, with different BJ_coeff!");
 
       if (full_bj_ != full_BJ)
         FOUR_C_THROW(
-            "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
+            "XFEM::MeshCouplingFPI::set_condition_specific_parameters: You defined two FPI "
             "conditions, with different BJ Variant!");
 
       if (sub_tang_ != Sub_tang)
         FOUR_C_THROW(
-            "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
+            "XFEM::MeshCouplingFPI::set_condition_specific_parameters: You defined two FPI "
             "conditions, with different BJ Method!");
 
       if (contact_ != contact)
         FOUR_C_THROW(
-            "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
+            "XFEM::MeshCouplingFPI::set_condition_specific_parameters: You defined two FPI "
             "conditions, with different contact specification!");
     }
 
@@ -903,7 +903,7 @@ double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& poro
     FOUR_C_THROW("no second material defined for element %i", ele->Id());
 
   static CORE::LINALG::Matrix<3, 3> reactiontensor(true);
-  poromat->ComputeReactionTensor(reactiontensor, J, porosity);
+  poromat->compute_reaction_tensor(reactiontensor, J, porosity);
 
   return sqrt((1. / reactiontensor(0, 0) + 1. / reactiontensor(1, 1) + 1. / reactiontensor(2, 2)) /
               (poromat->Viscosity() * 3));
@@ -922,7 +922,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
 
   double pres = 0.0;
-  J = ComputeJacobianandPressure(ele, rst_slave, pres);
+  J = compute_jacobianand_pressure(ele, rst_slave, pres);
 
   Teuchos::RCP<MAT::StructPoro> poromat;
   // access second material in structure element
@@ -948,7 +948,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 // ---------------------------------------------------------------------------------------
 // Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint   ager 12/17
 // ------------------------------------------------------------------------------------------
-double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
+double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
@@ -1052,26 +1052,26 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     }
     else
       FOUR_C_THROW(
-          "TDetDeformationGradient for type %s not yet implemented, just add your element type!",
+          "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
           (CORE::FE::CellTypeToString(coupl_ele->Shape())).c_str());
     return -1.0;
   }
   else
     FOUR_C_THROW(
-        "TDetDeformationGradient for type %s not yet implemented, just add your element type!",
+        "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
         (CORE::FE::CellTypeToString(fele->Shape())).c_str());
   return -1.0;
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
   if (contact_)
-    Get_Contact_Comm()->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
+    Get_Contact_Comm()->initialize_fluid_state(cutwizard, fluiddis, condition_manager, fluidparams);
   return contact_;
 }
 

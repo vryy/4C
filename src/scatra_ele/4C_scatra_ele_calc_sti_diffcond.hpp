@@ -85,7 +85,7 @@ namespace DRT
           ) override;
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
-      void CalcMatAndRhsJouleSolid(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_and_rhs_joule_solid(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
@@ -109,8 +109,8 @@ namespace DRT
           ) override;
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
-      void SysmatODThermoScatra(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat     //!< element matrix
+      void sysmat_od_thermo_scatra(DRT::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat        //!< element matrix
       );
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
@@ -138,10 +138,10 @@ namespace DRT
           ) override;
 
       //! extract quantities for element evaluation
-      void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                  //!< parameter list
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void extract_element_and_node_values(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                      //!< parameter list
+          DRT::Discretization& discretization,                 //!< discretization
+          DRT::Element::LocationArray& la                      //!< location array
           ) override;
 
       //! get material parameters
@@ -167,7 +167,7 @@ namespace DRT
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get thermo diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> DiffManager()

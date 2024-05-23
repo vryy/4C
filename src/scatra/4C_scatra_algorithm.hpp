@@ -62,13 +62,13 @@ namespace SCATRA
     virtual void PrepareTimeLoop(){};
 
     /// initial calculations for two-way coupling time loop
-    void PrepareTimeLoopTwoWay();
+    void prepare_time_loop_two_way();
 
     /// start a new time step
     void PrepareTimeStep() override;
 
     /// start a new time step
-    void PrepareTimeStepConvection();
+    void prepare_time_step_convection();
 
     /// print scatra solver type to screen
     virtual void PrintScaTraSolver();
@@ -83,7 +83,7 @@ namespace SCATRA
     void SetVelocityField();
 
     /// Outer iteration loop for natural convection
-    void OuterIterationConvection();
+    void outer_iteration_convection();
 
     /// take current results for converged and save for next time step
     void Update() override;

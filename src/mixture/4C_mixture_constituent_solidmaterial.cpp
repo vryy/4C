@@ -150,10 +150,10 @@ void MIXTURE::MixtureConstituentSolidMaterial::Evaluate(const CORE::LINALG::Matr
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::RegisterOutputDataNames(
+void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  material_->RegisterOutputDataNames(names_and_size);
+  material_->register_output_data_names(names_and_size);
 }
 
 bool MIXTURE::MixtureConstituentSolidMaterial::EvaluateOutputData(

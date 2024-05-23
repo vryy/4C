@@ -87,7 +87,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, INPUT::LineDefini
       {
         // Read in of data
         ReadFiber(linedef, fibername, a_);
-        params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, aa_);
+        params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
       }
       // error path
       else
@@ -146,7 +146,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle
   A_0.Multiply(idefgrd, ca);
   a_.Update(1. / A_0.Norm2(), A_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, aa_);
+  params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
@@ -173,7 +173,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
          0.5 * alpha * (i5_ - 1.0);
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
+void MAT::ELASTIC::CoupTransverselyIsotropic::add_stress_aniso_principal(
     const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
     CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
@@ -186,12 +186,12 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
   CORE::LINALG::VOIGT::Strains::ToStressLike(rcg, rcg_s);
 
   CORE::LINALG::Matrix<6, 1> rcg_inv_s(false);
-  UpdateSecondPiolaKirchhoffStress(stress, rcg_s, rcg_inv_s);
+  update_second_piola_kirchhoff_stress(stress, rcg_s, rcg_inv_s);
 
-  UpdateElasticityTensor(cmat, rcg_inv_s);
+  update_elasticity_tensor(cmat, rcg_inv_s);
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
+void MAT::ELASTIC::CoupTransverselyIsotropic::update_elasticity_tensor(
     CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const
 {
   const double alpha = params_->alpha_;
@@ -279,14 +279,14 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
   CORE::LINALG::Matrix<6, 1> rcg_quad(false);
-  CORE::LINALG::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
+  CORE::LINALG::VOIGT::Strains::power_of_symmetric_tensor(2, rcg, rcg_quad);
   i5_ = aa_(0) * (rcg_quad(0)) + aa_(1) * (rcg_quad(1)) + aa_(2) * (rcg_quad(2)) +
         aa_(3) * (rcg_quad(3)) + aa_(4) * (rcg_quad(4)) + aa_(5) * (rcg_quad(5));
 
   return 0;
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
+void MAT::ELASTIC::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stress(
     CORE::LINALG::Matrix<6, 1>& stress, const CORE::LINALG::Matrix<6, 1>& rcg_s,
     CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const
 {
@@ -312,10 +312,10 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   // (2) contribution
   {
     CORE::LINALG::Matrix<3, 1> ca(true);
-    CORE::LINALG::VOIGT::Stresses::MultiplyTensorVector(rcg_s, a_, ca);
+    CORE::LINALG::VOIGT::Stresses::multiply_tensor_vector(rcg_s, a_, ca);
 
     CORE::LINALG::Matrix<6, 1> caa_aac(true);
-    CORE::LINALG::VOIGT::Stresses::SymmetricOuterProduct(ca, a_, caa_aac);
+    CORE::LINALG::VOIGT::Stresses::symmetric_outer_product(ca, a_, caa_aac);
 
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);

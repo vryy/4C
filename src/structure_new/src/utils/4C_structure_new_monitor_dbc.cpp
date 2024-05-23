@@ -54,7 +54,7 @@ void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
   // copy the information of the tagged Dirichlet condition into a new
   // auxiliary "ReactionForce" condition and build the related geometry
   for (const CORE::Conditions::Condition* tagged_cond : tagged_conds)
-    CreateReactionForceCondition(*tagged_cond, discret);
+    create_reaction_force_condition(*tagged_cond, discret);
 
   // build geometry
   discret.FillComplete(false, false, true);
@@ -106,7 +106,7 @@ int STR::MonitorDbc::GetUniqueId(int tagged_id, CORE::Conditions::GeometryType g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::CreateReactionForceCondition(
+void STR::MonitorDbc::create_reaction_force_condition(
     const CORE::Conditions::Condition& tagged_cond, DRT::Discretization& discret) const
 {
   const int new_id = GetUniqueId(tagged_cond.Id(), tagged_cond.GType());
@@ -161,7 +161,7 @@ void STR::MonitorDbc::Setup()
   // ... create files paths ...
   full_filepaths_ = CreateFilePaths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
-  ClearFilesAndWriteHeader(rconds, full_filepaths_,
+  clear_files_and_write_header(rconds, full_filepaths_,
       CORE::UTILS::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
@@ -175,7 +175,8 @@ void STR::MonitorDbc::Setup()
     std::vector<std::string> full_restart_filepaths =
         CreateFilePaths(rconds, full_restart_dirpath, filename_restart_only_prefix, filetype);
 
-    ReadResultsPriorRestartStepAndWriteToFile(full_restart_filepaths, gstate_ptr_->GetStepN());
+    read_results_prior_restart_step_and_write_to_file(
+        full_restart_filepaths, gstate_ptr_->GetStepN());
   }
 
   issetup_ = true;
@@ -212,7 +213,7 @@ void STR::MonitorDbc::CreateReactionMaps(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::ReadResultsPriorRestartStepAndWriteToFile(
+void STR::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
     const std::vector<std::string>& full_restart_filepaths, int restart_step) const
 {
   if (Comm().MyPID() != 0) return;
@@ -296,7 +297,7 @@ void STR::MonitorDbc::Execute(IO::DiscretizationWriter& writer)
     GetReactionMoment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr.get());
 
     WriteResultsToFile(*(filepath++), rforce_xyz, rmoment_xyz, area_ref, area_curr);
-    WriteResultsToScreen(rcond_ptr, rforce_xyz, rmoment_xyz, area_ref, area_curr);
+    write_results_to_screen(rcond_ptr, rforce_xyz, rmoment_xyz, area_ref, area_curr);
   }
 }
 
@@ -318,7 +319,7 @@ void STR::MonitorDbc::WriteResultsToFile(const std::string& full_filepath,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::WriteResultsToScreen(
+void STR::MonitorDbc::write_results_to_screen(
     const Teuchos::RCP<CORE::Conditions::Condition>& rcond_ptr,
     const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
@@ -326,7 +327,7 @@ void STR::MonitorDbc::WriteResultsToScreen(
   if (Comm().MyPID() != 0) return;
 
   IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 << " \n";
-  WriteConditionHeader(IO::cout.os(), OS_WIDTH);
+  write_condition_header(IO::cout.os(), OS_WIDTH);
   WriteColumnHeader(IO::cout.os(), OS_WIDTH);
   WriteResults(IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
       gstate_ptr_->GetTimeN(), rforce, rmoment, area_ref, area_curr);
@@ -353,9 +354,9 @@ std::vector<std::string> STR::MonitorDbc::CreateFilePaths(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::ClearFilesAndWriteHeader(
+void STR::MonitorDbc::clear_files_and_write_header(
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
-    std::vector<std::string>& full_filepaths, bool write_condition_header)
+    std::vector<std::string>& full_filepaths, bool do_write_condition_header)
 {
   if (Comm().MyPID() != 0) return;
 
@@ -364,7 +365,7 @@ void STR::MonitorDbc::ClearFilesAndWriteHeader(
   {
     // clear old content
     std::ofstream of(full_filepaths[i], std::ios_base::out);
-    if (write_condition_header) WriteConditionHeader(of, OF_WIDTH, rcond.get());
+    if (do_write_condition_header) write_condition_header(of, OF_WIDTH, rcond.get());
     WriteColumnHeader(of, OF_WIDTH);
     of.close();
     ++i;
@@ -373,7 +374,7 @@ void STR::MonitorDbc::ClearFilesAndWriteHeader(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::WriteConditionHeader(
+void STR::MonitorDbc::write_condition_header(
     std::ostream& os, const int col_width, const CORE::Conditions::Condition* cond) const
 {
   if (cond)

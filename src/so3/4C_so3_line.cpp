@@ -37,7 +37,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lline);
+  set_parent_master_element(parent, lline);
   // type of gaussian integration
   switch (Shape())
   {

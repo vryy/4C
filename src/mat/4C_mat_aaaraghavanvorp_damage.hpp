@@ -171,14 +171,14 @@ namespace MAT
     /// Update internal stress variables
     void Update() override;
 
-    void StressTensTransfSPKtoCauchy(
+    void stress_tens_transf_sp_kto_cauchy(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& f,  ///< deformation gradient tensor
         const double detf,                          ///< determinant of deformation gradient tensor
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
     );
 
-    void StressTensTransfCauchytoSPK(
+    void stress_tens_transf_cauchyto_spk(
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& invf,  ///< deformation gradient tensor
         const double detf,  ///< determinant of deformation gradient tensor
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress

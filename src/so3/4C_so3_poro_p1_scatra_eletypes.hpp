@@ -41,14 +41,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8PoroP1ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8POROP1SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8POROP1SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -68,14 +68,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4PoroP1ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4POROP1SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT4POROP1SCATRA"; }
     };
 
   }  // namespace ELEMENTS

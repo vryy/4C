@@ -47,24 +47,24 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::LargeTimeScaleLoop()
 {
-  PrepareLargeTimeScaleLoop();
+  prepare_large_time_scale_loop();
 
-  while (LargeTimeScaleLoopNotFinished())
+  while (large_time_scale_loop_not_finished())
   {
-    LargeTimeScalePrepareTimeStep();
+    large_time_scale_prepare_time_step();
 
-    LargeTimeScaleOuterLoop();
+    large_time_scale_outer_loop();
 
-    LargeTimeScaleUpdateAndOutput();
+    large_time_scale_update_and_output();
   }
 
-  FinishLargeTimeScaleLoop();
+  finish_large_time_scale_loop();
 }
 
 /*----------------------------------------------------------------------*
  | Prepare the large time scale loop                         Thon 08/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
+void FS3I::ACFSI::prepare_large_time_scale_loop()
 {
   // print info
   if (Comm().MyPID() == 0)
@@ -79,7 +79,7 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
   scatravec_[1]->ScaTraField()->SetDt(dt_large_);
 
   // set mean values in scatra fields
-  LargeTimeScaleSetFSISolution();
+  large_time_scale_set_fsi_solution();
 
   // set back large time scale flags
   fsineedsupdate_ = false;
@@ -93,12 +93,12 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
 /*----------------------------------------------------------------------*
  |  Set mean wall shear stresses in scatra fields            Thon 11/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetMeanWallShearStresses() const
+void FS3I::ACFSI::set_mean_wall_shear_stresses() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> wss;
 
   // ############ Fluid Field ###############
-  scatravec_[0]->ScaTraField()->SetWallShearStresses(FluidToFluidScalar(wall_shear_stress_lp_));
+  scatravec_[0]->ScaTraField()->set_wall_shear_stresses(FluidToFluidScalar(wall_shear_stress_lp_));
 
   // ############ Structure Field ###############
 
@@ -116,23 +116,24 @@ void FS3I::ACFSI::SetMeanWallShearStresses() const
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
   fsi_->StructureField()->Interface()->InsertVector(WallShearStress, 1, structurewss);
-  scatravec_[1]->ScaTraField()->SetWallShearStresses(StructureToStructureScalar(structurewss));
+  scatravec_[1]->ScaTraField()->set_wall_shear_stresses(
+      structure_to_structure_scalar(structurewss));
 }
 
 /*----------------------------------------------------------------------*
  |  Set mean concentration of the fluid scatra field         Thon 11/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetMeanFluidScatraConcentration()
+void FS3I::ACFSI::set_mean_fluid_scatra_concentration()
 {
   Teuchos::RCP<const Epetra_Vector> MeanFluidConc = meanmanager_->GetMeanValue("mean_phi");
 
-  scatravec_[0]->ScaTraField()->SetMeanConcentration(MeanFluidConc);
+  scatravec_[0]->ScaTraField()->set_mean_concentration(MeanFluidConc);
 }
 
 /*----------------------------------------------------------------------*
  |  Set zero velocity field in scatra fields                 Thon 11/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetZeroVelocityField()
+void FS3I::ACFSI::set_zero_velocity_field()
 {
   Teuchos::RCP<Epetra_Vector> zeros =
       Teuchos::rcp(new Epetra_Vector(fsi_->FluidField()->Velnp()->Map(), true));
@@ -140,14 +141,14 @@ void FS3I::ACFSI::SetZeroVelocityField()
       FluidToFluidScalar(zeros), Teuchos::null, FluidToFluidScalar(zeros), Teuchos::null);
   Teuchos::RCP<Epetra_Vector> zeros2 =
       Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(), true));
-  scatravec_[1]->ScaTraField()->SetVelocityField(StructureToStructureScalar(zeros2), Teuchos::null,
-      StructureToStructureScalar(zeros2), Teuchos::null);
+  scatravec_[1]->ScaTraField()->SetVelocityField(structure_to_structure_scalar(zeros2),
+      Teuchos::null, structure_to_structure_scalar(zeros2), Teuchos::null);
 }
 
 /*-------------------------------------------------------------------------------*
  | Evaluate surface permeability condition for struct scatra field    Thon 08/15 |
  *-------------------------------------------------------------------------------*/
-void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of scalar to evaluate
+void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of scalar to evaluate
 )
 {
   // Note: 0 corresponds to fluid-scatra
@@ -156,7 +157,7 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of sca
   //----------------------------------------------------------------------
   // set membrane concentrations
   //----------------------------------------------------------------------
-  SetMembraneConcentration();
+  set_membrane_concentration();
 
   //----------------------------------------------------------------------
   // evaluate simplified kedem-katchalsy condtion
@@ -173,13 +174,13 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of sca
   const Teuchos::RCP<const Epetra_Map> dbcmap =
       scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
   mat_scal->ApplyDirichlet(*dbcmap, false);
-  CORE::LINALG::ApplyDirichletToSystem(*rhs_scal, *scatrazeros_[i], *dbcmap);
+  CORE::LINALG::apply_dirichlet_to_system(*rhs_scal, *scatrazeros_[i], *dbcmap);
 }
 
 /*----------------------------------------------------------------------*
  | Finish the large time scale loop                          Thon 08/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::FinishLargeTimeScaleLoop()
+void FS3I::ACFSI::finish_large_time_scale_loop()
 {
   // Set small time scale time step size
   scatravec_[0]->ScaTraField()->SetDt(dt_);
@@ -221,19 +222,19 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
       GLOBAL::Problem::Instance()->GetDis("structure")->Writer();
   output_writer->NewResultFile(step_);
   // and write all meshes
-  output_writer->CreateNewResultAndMeshFile();
+  output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
   output_writer = GLOBAL::Problem::Instance()->GetDis("fluid")->Writer();
-  output_writer->CreateNewResultAndMeshFile();
+  output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
   output_writer = GLOBAL::Problem::Instance()->GetDis("ale")->Writer();
-  output_writer->CreateNewResultAndMeshFile();
+  output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
   output_writer = GLOBAL::Problem::Instance()->GetDis("scatra1")->Writer();
-  output_writer->CreateNewResultAndMeshFile();
+  output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
   output_writer = GLOBAL::Problem::Instance()->GetDis("scatra2")->Writer();
-  output_writer->CreateNewResultAndMeshFile();
+  output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
 
   // write outputs in new file
@@ -247,12 +248,15 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
 /*----------------------------------------------------------------------*
  | timeloop for large time scales                            Thon 07/15 |
  *----------------------------------------------------------------------*/
-bool FS3I::ACFSI::LargeTimeScaleLoopNotFinished() { return NotFinished() and not fsineedsupdate_; }
+bool FS3I::ACFSI::large_time_scale_loop_not_finished()
+{
+  return NotFinished() and not fsineedsupdate_;
+}
 
 /*----------------------------------------------------------------------*
  | Prepare small time scale time step                        Thon 07/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::LargeTimeScalePrepareTimeStep()
+void FS3I::ACFSI::large_time_scale_prepare_time_step()
 {
   // Set large time scale time step in both scatra fields
   scatravec_[0]->ScaTraField()->SetDt(dt_large_);
@@ -278,13 +282,13 @@ void FS3I::ACFSI::LargeTimeScalePrepareTimeStep()
 /*----------------------------------------------------------------------*
  | OuterLoop for sequentially staggered FS3I scheme          Thon 08/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::LargeTimeScaleOuterLoop()
+void FS3I::ACFSI::large_time_scale_outer_loop()
 {
   DoStructScatraStep();
 
-  if (DoesGrowthNeedsUpdate())  // includes the check for fsineedsupdate_
+  if (does_growth_needs_update())  // includes the check for fsineedsupdate_
   {
-    LargeTimeScaleDoGrowthUpdate();
+    large_time_scale_do_growth_update();
   }
 }
 
@@ -309,16 +313,16 @@ void FS3I::ACFSI::DoStructScatraStep()
 
   while (stopnonliniter == false)
   {
-    StructScatraEvaluateSolveIterUpdate();
+    struct_scatra_evaluate_solve_iter_update();
     itnum++;
-    if (StructScatraConvergenceCheck(itnum)) break;
+    if (struct_scatra_convergence_check(itnum)) break;
   }
 }
 
 /*--------------------------------------------------------------------------------*
  | evaluate, solver and iteratively update structure scalar problem    Thon 08/15 |
  *--------------------------------------------------------------------------------*/
-void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
+void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
 {
   if (infperm_) FOUR_C_THROW("This not a valid option!");  // just for safety
 
@@ -333,13 +337,13 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   //----------------------------------------------------------------------
   // calculate contributions due to finite interface permeability
   //----------------------------------------------------------------------
-  EvaluateithScatraSurfacePermeability(1);
+  evaluateith_scatra_surface_permeability(1);
 
   //----------------------------------------------------------------------
   // recalculate fluid scatra contributions due to possible changed time step size
   // and the using of mean wss and mean phi for the fluid scatra field
   //----------------------------------------------------------------------
-  EvaluateithScatraSurfacePermeability(0);
+  evaluateith_scatra_surface_permeability(0);
 
   //----------------------------------------------------------------------
   // add coupling to the resiudal
@@ -385,14 +389,14 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
 /*----------------------------------------------------------------------*
  | check convergence of structure scatra field               Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
+bool FS3I::ACFSI::struct_scatra_convergence_check(const int itnum)
 {
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
 
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
-      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
   const int scatraitemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
   const double scatraittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
   const double scatraabstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -448,7 +452,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
  | Do we need to update the structure scatra displacments               |
  | due to growth                                             Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
+bool FS3I::ACFSI::does_growth_needs_update()
 {
   bool growthneedsupdate = false;
 
@@ -585,7 +589,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 /*-------------------------------------------------------------------------*
  | update the structure scatra displacments due to growth       Thon 08/15 |
  *-------------------------------------------------------------------------*/
-void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
+void FS3I::ACFSI::large_time_scale_do_growth_update()
 {
   const int growth_updates =
       GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
@@ -642,7 +646,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Prepare time steps
   //----------------------------------------------------------------------
   // fsi problem
-  SetStructScatraSolution();
+  set_struct_scatra_solution();
   fsi_->PrepareTimeStep();
   // scatra fields
   fluidscatra->PrepareTimeStep();
@@ -652,10 +656,10 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // do the growth update
   //----------------------------------------------------------------------
   // Safety check:
-  CheckIfTimesAndStepsAndDtsMatch();
+  check_if_times_and_steps_and_dts_match();
 
   // the actual calculations
-  LargeTimeScaleOuterLoopIterStagg();
+  large_time_scale_outer_loop_iter_stagg();
 
   //----------------------------------------------------------------------
   // write the output
@@ -669,7 +673,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   FsiOutput();
   // fluid scatra update. Structure scatra is done later
   fluidscatra->Update();
-  fluidscatra->CheckAndWriteOutputAndRestart();
+  fluidscatra->check_and_write_output_and_restart();
 
   //----------------------------------------------------------------------
   // Switch back time steps and set mean values in scatra fields
@@ -679,7 +683,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   structurescatra->SetDt(dt_large_);
 
   // set mean values in scatra fields
-  LargeTimeScaleSetFSISolution();
+  large_time_scale_set_fsi_solution();
 
   //----------------------------------------------------------------------
   // higher growth counter
@@ -690,7 +694,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 /*-------------------------------------------------------------------------------*
  | OuterLoop for large time scale iterative staggered FS3I scheme     Thon 11/15 |
  *-------------------------------------------------------------------------------*/
-void FS3I::ACFSI::LargeTimeScaleOuterLoopIterStagg()
+void FS3I::ACFSI::large_time_scale_outer_loop_iter_stagg()
 {
   int itnum = 0;
 
@@ -712,24 +716,24 @@ void FS3I::ACFSI::LargeTimeScaleOuterLoopIterStagg()
     fluidincrement_->Update(1.0, *fsi_->FluidField()->Velnp(), 0.0);
     aleincrement_->Update(1.0, *fsi_->AleField()->Dispnp(), 0.0);
 
-    SetStructScatraSolution();
+    set_struct_scatra_solution();
 
     DoFSIStepStandard();
     // subcycling is not allowed, since we use this function for the growth update. Nevertheless it
     // should work.. periodical repetition is not allowed, since we want to converge the problems
 
-    LargeTimeScaleSetFSISolution();
+    large_time_scale_set_fsi_solution();
 
-    SmallTimeScaleDoScatraStep();
+    small_time_scale_do_scatra_step();
 
-    stopnonliniter = PartFs3iConvergenceCkeck(itnum);
+    stopnonliniter = part_fs3i_convergence_ckeck(itnum);
   }
 }
 
 /*-----------------------------------------------------------------------*
  | set mean FSI values in scatra fields                       Thon 11/15 |
  *---------------------------------------------------- ------------------*/
-void FS3I::ACFSI::LargeTimeScaleSetFSISolution()
+void FS3I::ACFSI::large_time_scale_set_fsi_solution()
 {
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -737,33 +741,33 @@ void FS3I::ACFSI::LargeTimeScaleSetFSISolution()
     scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->ScaTraField()->ClearExternalConcentrations();
+    scatravec_[i]->ScaTraField()->clear_external_concentrations();
   }
 
   SetMeshDisp();
-  SetMeanWallShearStresses();
-  SetMeanFluidScatraConcentration();
-  SetMembraneConcentration();
+  set_mean_wall_shear_stresses();
+  set_mean_fluid_scatra_concentration();
+  set_membrane_concentration();
   // Set zeros velocities since we assume that the large time scale can not see the deformation of
   // the small time scale
-  SetZeroVelocityField();
+  set_zero_velocity_field();
 }
 
 /*----------------------------------------------------------------------*
  | Update and output the large time scale                    Thon 08/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
+void FS3I::ACFSI::large_time_scale_update_and_output()
 {
   // keep fsi time and fluid scatra field up to date
   SetTimeAndStepInFSI(time_, step_);
   scatravec_[0]->ScaTraField()->SetTimeStep(time_, step_);
 
-  // NOTE: fsi output is already updated and written in LargeTimeScaleDoGrowthUpdate()
-  // NOTE: fluid scatra is already updated and written in LargeTimeScaleDoGrowthUpdate()
+  // NOTE: fsi output is already updated and written in large_time_scale_do_growth_update()
+  // NOTE: fluid scatra is already updated and written in large_time_scale_do_growth_update()
 
   // now update and output the structure scatra field
   scatravec_[1]->ScaTraField()->Update();
-  scatravec_[1]->ScaTraField()->CheckAndWriteOutputAndRestart();
+  scatravec_[1]->ScaTraField()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -839,7 +843,7 @@ bool FS3I::ACFSI::IsRealtiveEqualTo(const double A, const double B, const double
 /*----------------------------------------------------------------------*
  | Compare if A mod B is relatively equal to zero            Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool FS3I::ACFSI::ModuloIsRealtiveZero(const double value, const double modulo, const double Ref)
+bool FS3I::ACFSI::modulo_is_realtive_zero(const double value, const double modulo, const double Ref)
 {
   return IsRealtiveEqualTo(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
 }

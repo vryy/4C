@@ -75,9 +75,9 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
+void CONTACT::MtAbstractStrategy::redistribute_meshtying()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtAbstractStrategy::RedistributeMeshtying");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtAbstractStrategy::redistribute_meshtying");
 
   // Do we really want to redistribute?
   if (ParRedist() && Comm().NumProc() > 1)
@@ -92,7 +92,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       // print parallel distribution
       if (Comm().MyPID() == 0)
         std::cout << "\nInterface parallel distribution before rebalancing:" << std::endl;
-      interface_[i]->PrintParallelDistribution();
+      interface_[i]->print_parallel_distribution();
 
       // redistribute optimally among all procs
       interface_[i]->Redistribute();
@@ -103,7 +103,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       // print parallel distribution again
       if (Comm().MyPID() == 0)
         std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
-      interface_[i]->PrintParallelDistribution();
+      interface_[i]->print_parallel_distribution();
     }
 
     // re-setup strategy with flag redistributed=TRUE
@@ -119,7 +119,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   else
   {
     // No parallel redistribution to be performed. Just print the current distribution to screen.
-    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->PrintParallelDistribution();
+    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->print_parallel_distribution();
   }
 
   return;
@@ -323,7 +323,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   //********************************************************************
   // restrict mortar treatment to actual meshtying zone
   //********************************************************************
-  RestrictMeshtyingZone();
+  restrict_meshtying_zone();
 
   //********************************************************************
   // initialize and evaluate global mortar stuff
@@ -358,13 +358,13 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  |  restrict slave boundary to actual meshtying zone          popp 08/10|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
+void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
 {
   // Step 1: detect tied slave nodes on all interfaces
   int localfounduntied = 0;
   int globalfounduntied = 0;
   for (int i = 0; i < (int)interface_.size(); ++i)
-    interface_[i]->DetectTiedSlaveNodes(localfounduntied);
+    interface_[i]->detect_tied_slave_nodes(localfounduntied);
   Comm().SumAll(&localfounduntied, &globalfounduntied, 1);
 
   // get out of here if the whole slave surface is tied
@@ -373,7 +373,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // print message
   if (Comm().MyPID() == 0)
   {
-    std::cout << "*RestrictMeshtyingZone*...............";
+    std::cout << "*restrict_meshtying_zone*...............";
     fflush(stdout);
   }
 
@@ -392,7 +392,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   //**********************************************************************
   bool quadratic = false;
   for (int i = 0; i < (int)interface_.size(); ++i) quadratic += interface_[i]->Quadslave();
-  if (quadratic) FOUR_C_THROW("RestrictMeshtyingZone only implemented for first-order elements");
+  if (quadratic) FOUR_C_THROW("restrict_meshtying_zone only implemented for first-order elements");
 
   INPAR::MORTAR::ShapeFcn shapefcn =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
@@ -400,7 +400,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
       CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
           Params(), "LM_DUAL_CONSISTENT") == INPAR::MORTAR::consistent_none)
     FOUR_C_THROW(
-        "ERROR: RestrictMeshtyingZone for dual shape functions "
+        "ERROR: restrict_meshtying_zone for dual shape functions "
         "only implemented in combination with consistent boundary modification");
 
   // Step 2: restrict slave node/dof sets of all interfaces
@@ -598,7 +598,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<CORE::LINALG::SparseOper
 /*----------------------------------------------------------------------*
  |  Store Lagrange multipliers into MORTAR::Node                popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
+void CONTACT::MtAbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -629,7 +629,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       }
       default:
       {
-        FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
+        FOUR_C_THROW("store_nodal_quantities: Unknown state std::string variable!");
         break;
       }
     }  // switch
@@ -641,7 +641,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     if (vectorglobal != Teuchos::null)
       CORE::LINALG::Export(*vectorglobal, *vectorinterface);
     else
-      FOUR_C_THROW("StoreNodalQuantities: Null vector handed in!");
+      FOUR_C_THROW("store_nodal_quantities: Null vector handed in!");
 
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
@@ -695,7 +695,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           }
           default:
           {
-            FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
+            FOUR_C_THROW("store_nodal_quantities: Unknown state std::string variable!");
             break;
           }
         }  // switch
@@ -709,7 +709,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into MORTAR::Node               popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
+void CONTACT::MtAbstractStrategy::store_dirichlet_status(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
@@ -760,7 +760,7 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
   zold_->Update(1.0, *z_, 0.0);
-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  store_nodal_quantities(MORTAR::StrategyBase::lmold);
 
   // old displacements in nodes
   // (this is needed for calculating the auxiliary positions in
@@ -787,10 +787,10 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   if (!restartwithmeshtying) reader.ReadVector(LagrMult(), "mt_lagrmultold");
-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
+  store_nodal_quantities(MORTAR::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   if (!restartwithmeshtying) reader.ReadVector(LagrMultOld(), "mt_lagrmultold");
-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  store_nodal_quantities(MORTAR::StrategyBase::lmold);
 
   // only for Uzawa strategy
   INPAR::CONTACT::SolvingStrategy st =
@@ -799,7 +799,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     if (!restartwithmeshtying) reader.ReadVector(LagrMultUzawa(), "mt_lagrmultold");
-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+    store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
   }
 
   return;
@@ -1282,7 +1282,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
+void CONTACT::MtAbstractStrategy::collect_maps_for_preconditioner(
     Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
     Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
 {
@@ -1329,10 +1329,10 @@ bool CONTACT::MtAbstractStrategy::IsCondensedSystem() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::FillMapsForPreconditioner(
+void CONTACT::MtAbstractStrategy::fill_maps_for_preconditioner(
     std::vector<Teuchos::RCP<Epetra_Map>>& maps) const
 {
-  /* FixMe This function replaces the deprecated CollectMapsForPreconditioner(),
+  /* FixMe This function replaces the deprecated collect_maps_for_preconditioner(),
    * the old version can be deleted, as soon as the contact uses the new
    * structure framework. */
 
@@ -1375,7 +1375,7 @@ bool CONTACT::MtAbstractStrategy::computePreconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::PostprocessQuantitiesPerInterface(
+void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
   using Teuchos::RCP;
@@ -1393,7 +1393,7 @@ void CONTACT::MtAbstractStrategy::PostprocessQuantitiesPerInterface(
 
   for (std::vector<Teuchos::RCP<MORTAR::Interface>>::iterator it = interface_.begin();
        it < interface_.end(); ++it)
-    (*it)->PostprocessQuantities(*outputParams);
+    (*it)->postprocess_quantities(*outputParams);
 }
 
 FOUR_C_NAMESPACE_CLOSE

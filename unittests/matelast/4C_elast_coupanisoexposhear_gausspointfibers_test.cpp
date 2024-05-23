@@ -84,17 +84,17 @@ namespace
             gpFibers_[gp][GetFiberIds()[0]].Dot(gpFibers_[gp][GetFiberIds()[1]]);
       }
 
-      SetupAnisotropyExtension(GetFiberIds());
+      setup_anisotropy_extension(GetFiberIds());
     }
 
-    void SetupAnisotropyExtension(std::array<int, 2> fiber_ids)
+    void setup_anisotropy_extension(std::array<int, 2> fiber_ids)
     {
       anisotropyExtension_ =
           std::make_unique<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension>(3, fiber_ids);
 
-      anisotropy_.RegisterAnisotropyExtension(*anisotropyExtension_);
+      anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
 
-      anisotropy_.SetNumberOfGaussPoints(2);
+      anisotropy_.set_number_of_gauss_points(2);
 
       // Setup element fibers
       anisotropy_.SetGaussPointFibers(gpFibers_);
@@ -127,7 +127,7 @@ namespace
 
   TEST_P(CoupAnisoExpoShearGaussPointFibersTest, GetStructuralTensorStress)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor_stress(GetGaussPoint()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(GetGaussPoint()),
         gpTensors_stress_[GetGaussPoint()], 1e-10);
   }
 

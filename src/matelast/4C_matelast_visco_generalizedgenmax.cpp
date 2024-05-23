@@ -39,7 +39,7 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
     double nummat = -1.0;
     const std::vector<int>* branchmatids = nullptr;
 
-    ViscoBranch->ReadMaterialParameters(nummat, branchmatids);
+    ViscoBranch->read_material_parameters(nummat, branchmatids);
 
     // loop over materials of ViscoBranch (components of the viscoelastic branch)
     for (int i = 0; i < nummat; ++i)
@@ -58,7 +58,7 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
   }  // end for-loop over branches
 }
 
-void MAT::ELASTIC::GeneralizedGenMax::ReadMaterialParameters(
+void MAT::ELASTIC::GeneralizedGenMax::read_material_parameters(
     int& numbranch, const std::vector<int>*& matids, std::string& solve)
 {
   numbranch = params_->numbranch_;
@@ -76,7 +76,7 @@ MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(const Teuchos::RCP<CORE::MAT::PAR::M
 
 MAT::ELASTIC::ViscoBranch::ViscoBranch(MAT::ELASTIC::PAR::ViscoBranch* params) : params_(params) {}
 
-void MAT::ELASTIC::ViscoBranch::ReadMaterialParameters(
+void MAT::ELASTIC::ViscoBranch::read_material_parameters(
     double& nummat, const std::vector<int>*& matids)
 {
   nummat = params_->nummat_;
@@ -91,6 +91,6 @@ MAT::ELASTIC::PAR::ViscoPart::ViscoPart(const Teuchos::RCP<CORE::MAT::PAR::Mater
 
 MAT::ELASTIC::ViscoPart::ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params) : params_(params) {}
 
-void MAT::ELASTIC::ViscoPart::ReadMaterialParameters(double& tau) { tau = params_->tau_; }
+void MAT::ELASTIC::ViscoPart::read_material_parameters(double& tau) { tau = params_->tau_; }
 
 FOUR_C_NAMESPACE_CLOSE

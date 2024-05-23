@@ -147,7 +147,7 @@ void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
  | or do clipping                                              (public) |
  |                                                           gammi 09/08|
  *----------------------------------------------------------------------*/
-void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
+void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     const Teuchos::RCP<const Epetra_Vector> velocity,
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
@@ -165,17 +165,17 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
     col_filtered_modeled_subgrid_stress_ =
         Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
     boxf_->GetFilteredVelocity(col_filtered_vel_);
-    boxf_->GetFilteredReynoldsStress(col_filtered_reynoldsstress_);
-    boxf_->GetFilteredModeledSubgridStress(col_filtered_modeled_subgrid_stress_);
+    boxf_->get_filtered_reynolds_stress(col_filtered_reynoldsstress_);
+    boxf_->get_filtered_modeled_subgrid_stress(col_filtered_modeled_subgrid_stress_);
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
       col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
       col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
       col_filtered_dens_strainrate_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
-      boxf_->GetFilteredDensVelocity(col_filtered_dens_vel_);
+      boxf_->get_filtered_dens_velocity(col_filtered_dens_vel_);
       boxf_->GetDensity(col_filtered_dens_);
-      boxf_->GetDensityStrainrate(col_filtered_dens_strainrate_);
+      boxf_->get_density_strainrate(col_filtered_dens_strainrate_);
     }
   }
 
@@ -213,7 +213,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
  | or do clipping                                              (public) |
  |                                                       rasthofer 08/12|
  *----------------------------------------------------------------------*/
-void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
+void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle, Teuchos::ParameterList& extraparams,
     const int ndsvel)
@@ -230,9 +230,9 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
   col_filtered_dens_temp_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
   boxfsc_->GetFilteredVelocity(col_filtered_vel_);
-  boxfsc_->GetFilteredDensVelocity(col_filtered_dens_vel_);
-  boxfsc_->GetFilteredDensVelocityTemp(col_filtered_dens_vel_temp_);
-  boxfsc_->GetFilteredDensRateofstrainTemp(col_filtered_dens_rateofstrain_temp_);
+  boxfsc_->get_filtered_dens_velocity(col_filtered_dens_vel_);
+  boxfsc_->get_filtered_dens_velocity_temp(col_filtered_dens_vel_temp_);
+  boxfsc_->get_filtered_dens_rateofstrain_temp(col_filtered_dens_rateofstrain_temp_);
   boxfsc_->GetTemp(col_filtered_temp_);
   boxfsc_->GetDensity(col_filtered_dens_);
   boxfsc_->GetDensTemp(col_filtered_dens_temp_);

@@ -198,7 +198,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunc
     std::vector<std::pair<std::string, double>> constants;
     if (function_lin_def.HaveNamed("CONSTANTS"))
     {
-      function_lin_def.ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
+      function_lin_def.extract_pair_of_string_and_double_vector("CONSTANTS", constants);
     }
 
     return Teuchos::rcp(new CORE::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
@@ -443,7 +443,7 @@ double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
 }
 
 template <int dim>
-std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatialDerivative(
+std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spatial_derivative(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -466,7 +466,7 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpati
 }
 
 template <int dim>
-std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeDerivative(
+std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time_derivative(
     const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector

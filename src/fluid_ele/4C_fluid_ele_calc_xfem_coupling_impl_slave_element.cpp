@@ -196,7 +196,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradnp(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_vel_gradnp(
           CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradint  ///< interface velocity gradients at coupling slave side
       ) const
@@ -208,7 +209,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradn(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_vel_gradn(
           CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradintn  ///< interface velocity gradients at coupling slave side
       ) const
@@ -232,7 +234,7 @@ namespace DRT
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
-      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetInterfaceJumpStatenp(
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_statenp(
           const DRT::Discretization& cutterdis,  ///< cutter discretization
           const std::string state,               ///< state
           const std::vector<int>& lm             ///< local map
@@ -265,7 +267,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetInterfaceJumpStaten(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_staten(
           const DRT::Discretization& cutterdis,  ///< cutter discretization
           const std::string state,               ///< state
           const std::vector<int>& lm             ///< local map
@@ -298,7 +301,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVelnp(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_jump_velnp(
           CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                        ///< or prescribed DBC at Gaussian point
       ) const
@@ -310,7 +314,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVeln(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_jump_veln(
           CORE::LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump
                                                         ///< or prescribed DBC at Gaussian point
       ) const
@@ -388,7 +393,8 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ComputeInterfaceForce(
+      void
+      SlaveElementRepresentation<distype, slave_distype, slave_numdof>::compute_interface_force(
           CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
           CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
           const double& fac                         ///< integration factor

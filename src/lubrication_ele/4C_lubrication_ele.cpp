@@ -50,7 +50,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create(const int id, 
 }
 
 
-void DRT::ELEMENTS::LubricationType::NodalBlockInformation(
+void DRT::ELEMENTS::LubricationType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -64,7 +64,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::LubricationType::ComputeNullSpace
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-void DRT::ELEMENTS::LubricationType::SetupElementDefinition(
+void DRT::ELEMENTS::LubricationType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
@@ -283,7 +283,7 @@ DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int n
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   return;
 }
 

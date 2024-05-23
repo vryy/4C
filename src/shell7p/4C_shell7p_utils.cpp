@@ -620,7 +620,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
       CORE::LINALG::SerialDenseMatrix nodal_directors(
           num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
       SetupDirectorForElement(*scatra_ele, nodal_directors);
-      scatra_ele->SetAllNodalDirectors(nodal_directors);
+      scatra_ele->set_all_nodal_directors(nodal_directors);
     }
     else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(actele))
     {
@@ -630,7 +630,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
       CORE::LINALG::SerialDenseMatrix nodal_directors(
           num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
       SetupDirectorForElement(*shell_ele, nodal_directors);
-      shell_ele->SetAllNodalDirectors(nodal_directors);
+      shell_ele->set_all_nodal_directors(nodal_directors);
     }
     else
       FOUR_C_THROW("Element is not a shell element");

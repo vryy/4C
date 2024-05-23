@@ -76,7 +76,7 @@ namespace ADAPTER
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
 
     /// create result test for scalar transport field
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test();
 
    private:
     /// scalar transport field solver

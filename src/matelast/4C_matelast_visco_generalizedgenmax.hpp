@@ -131,8 +131,8 @@ namespace MAT
       //@}
 
       /// Read material parameters
-      void ReadMaterialParameters(int& numbranch,  ///< number of viscoelastic branches
-          const std::vector<int>*& matids,         ///< material IDs of the viscoelastic branches
+      void read_material_parameters(int& numbranch,  ///< number of viscoelastic branches
+          const std::vector<int>*& matids,           ///< material IDs of the viscoelastic branches
           std::string& solve  /// variant of the solution of the evolution integral
           ) override;
 
@@ -158,7 +158,7 @@ namespace MAT
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      void SpecifyViscoFormulation(
+      void specify_visco_formulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
@@ -200,8 +200,8 @@ namespace MAT
       //@}
 
       /// Read material parameters
-      void ReadMaterialParameters(double& nummat,  ///< number of materials in one branch
-          const std::vector<int>*& matids          ///< matierial IDs of each part of the branch
+      void read_material_parameters(double& nummat,  ///< number of materials in one branch
+          const std::vector<int>*& matids            ///< matierial IDs of each part of the branch
           ) override;
 
       /// Indicator for formulation
@@ -243,7 +243,7 @@ namespace MAT
       //@}
 
       /// Read material parameters
-      virtual void ReadMaterialParameters(
+      virtual void read_material_parameters(
           double& tau  ///< viscous contribution to viscoelastic part
       );
 
@@ -261,7 +261,7 @@ namespace MAT
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      void SpecifyViscoFormulation(
+      void specify_visco_formulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution

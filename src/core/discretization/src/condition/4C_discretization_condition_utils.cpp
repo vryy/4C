@@ -447,7 +447,7 @@ Teuchos::RCP<Epetra_Map> CORE::Conditions::ConditionNodeColMap(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> CORE::Conditions::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> CORE::Conditions::conditioned_element_map(
     const DRT::Discretization& dis, const std::string& condname)
 {
   ConditionSelector conds(dis, condname);

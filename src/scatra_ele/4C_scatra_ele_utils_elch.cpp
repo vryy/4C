@@ -57,7 +57,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  07/15 |
  *---------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrationPoint(
+void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
@@ -666,7 +666,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrationPoint
+}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point
 
 
 /*----------------------------------------------------------------------------------------------------------------*
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
  fang 07/15 |
  *----------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint(
+void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
     const DRT::Element* ele,                                ///< current element
     CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
     const Teuchos::ParameterList& params,                   ///< parameter list
@@ -1248,7 +1248,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   scalars(8) += currderiv;
   scalars(9) += currentresidual;
   scalars(10) += boundaryint_porous;
-}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint
+}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point
 
 
 /*----------------------------------------------------------------------*
@@ -1278,7 +1278,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
     // in the matlist!
     if (equpot == INPAR::ELCH::equpot_enc_pde_elim)
     {
-      diffmanager->IncreaseLengthVector(k, numscal_);
+      diffmanager->increase_length_vector(k, numscal_);
 
       // valence of ionic species
       diffmanager->SetValence(mation->ElimValence(), numscal_);

@@ -24,24 +24,25 @@ namespace CORE::GEOMETRICSEARCH
       : IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = comm.MyPID();
-    this->GetVisualizationData().RegisterCellData<int>("element_id", 1);
-    this->GetVisualizationData().RegisterCellData<int>("element_created_on_rank", 1);
-    this->GetVisualizationData().RegisterCellData<int>("primitive_predicate_flag", 1);
+    this->get_visualization_data().RegisterCellData<int>("element_id", 1);
+    this->get_visualization_data().RegisterCellData<int>("element_created_on_rank", 1);
+    this->get_visualization_data().RegisterCellData<int>("primitive_predicate_flag", 1);
   }
 
-  void GeometricSearchVisualization::WritePrimitivesAndPredicatesToDisk(
+  void GeometricSearchVisualization::write_primitives_and_predicates_to_disk(
       const double visualziation_time, const int visualization_step,
       const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& primitives,
       const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& predicates)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
-        "CORE::GEOMETRICSEARCH::WritePrimitivesAndPredicatesToDisk can only be used with ArborX."
+        "CORE::GEOMETRICSEARCH::write_primitives_and_predicates_to_disk can only be used with "
+        "ArborX."
         "To use it, enable ArborX during the configure process.");
 #else
     ClearData();
 
-    auto& visualization_data = GetVisualizationData();
+    auto& visualization_data = get_visualization_data();
 
     // Function that adds bounding volumes to the visualization data
     const auto add_bounding_volumes =

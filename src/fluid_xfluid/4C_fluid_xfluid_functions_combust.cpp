@@ -44,7 +44,7 @@ void DRT::UTILS::AddValidCombustFunctions(CORE::UTILS::FunctionManager& function
   INPUT::LineDefinition collapsingwatercolumn =
       INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
-  function_manager.AddFunctionDefinition(
+  function_manager.add_function_definition(
       {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);
 }
 

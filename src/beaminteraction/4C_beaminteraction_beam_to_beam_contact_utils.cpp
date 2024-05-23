@@ -64,7 +64,7 @@ double BEAMINTERACTION::CalcEleRadius(const DRT::Element* ele)
       dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
 
   if (beamele != nullptr)
-    eleradius = MANIPULATERADIUS * beamele->GetCircularCrossSectionRadiusForInteractions();
+    eleradius = MANIPULATERADIUS * beamele->get_circular_cross_section_radius_for_interactions();
   else if (thissphere != nullptr)
     eleradius = thissphere->Radius();
   else

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
+void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
 {
   // extract raw data for element-wise stresses
   const std::vector<char>& stressdata = EvalData().StressData();
@@ -89,7 +89,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::get_block_dof_row_map_ptr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();

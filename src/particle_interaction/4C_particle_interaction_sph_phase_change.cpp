@@ -114,7 +114,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -129,7 +129,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromBelowToAbovePhase(
+void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_below_to_above_phase(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>& particlestoinsert)
@@ -147,7 +147,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromBelowToAbov
 
   // get container of owned particles of source particle type
   PARTICLEENGINE::ParticleContainer* container =
-      particlecontainerbundle_->GetSpecificContainer(type_source, PARTICLEENGINE::Owned);
+      particlecontainerbundle_->get_specific_container(type_source, PARTICLEENGINE::Owned);
 
   // get number of particles stored in container
   int particlestored = container->ParticlesStored();
@@ -160,14 +160,15 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromBelowToAbov
 
   // get material for particle types
   const MAT::PAR::ParticleMaterialBase* material_source =
-      particlematerial_->GetPtrToParticleMatParameter(type_source);
+      particlematerial_->get_ptr_to_particle_mat_parameter(type_source);
   const MAT::PAR::ParticleMaterialBase* material_target =
-      particlematerial_->GetPtrToParticleMatParameter(type_target);
+      particlematerial_->get_ptr_to_particle_mat_parameter(type_target);
 
   // get equation of state of target particle type
   const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_target;
   if (not isboundaryrigid_target)
-    equationofstate_target = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_target);
+    equationofstate_target =
+        equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_target);
 
   // iterate over owned particles of current type
   for (int index = 0; index < particlestored; ++index)
@@ -212,7 +213,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromBelowToAbov
   }
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromAboveToBelowPhase(
+void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_above_to_below_phase(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>& particlestoinsert)
@@ -230,7 +231,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromAboveToBelo
 
   // get container of owned particles of source particle type
   PARTICLEENGINE::ParticleContainer* container =
-      particlecontainerbundle_->GetSpecificContainer(type_source, PARTICLEENGINE::Owned);
+      particlecontainerbundle_->get_specific_container(type_source, PARTICLEENGINE::Owned);
 
   // get number of particles stored in container
   int particlestored = container->ParticlesStored();
@@ -243,14 +244,15 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromAboveToBelo
 
   // get material for particle types
   const MAT::PAR::ParticleMaterialBase* material_source =
-      particlematerial_->GetPtrToParticleMatParameter(type_source);
+      particlematerial_->get_ptr_to_particle_mat_parameter(type_source);
   const MAT::PAR::ParticleMaterialBase* material_target =
-      particlematerial_->GetPtrToParticleMatParameter(type_target);
+      particlematerial_->get_ptr_to_particle_mat_parameter(type_target);
 
   // get equation of state of target particle type
   const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_target;
   if (not isboundaryrigid_target)
-    equationofstate_target = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_target);
+    equationofstate_target =
+        equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_target);
 
   // iterate over owned particles of current type
   for (int index = 0; index < particlestored; ++index)
@@ -313,14 +315,14 @@ void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseC
       typevectorsize);
 
   // evaluate phase change from below to above phase
-  EvaluatePhaseChangeFromBelowToAbovePhase(
+  evaluate_phase_change_from_below_to_above_phase(
       particlesfromphasetophase, particlestoremove, particlestoinsert);
 
   // hand over particles to be removed
-  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+  particleengineinterface_->hand_over_particles_to_be_removed(particlestoremove);
 
   // hand over particles to be inserted
-  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
+  particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
 PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::SPHPhaseChangeOneWayScalarAboveToBelow(
@@ -341,14 +343,14 @@ void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseC
       typevectorsize);
 
   // evaluate phase change from above to below phase
-  EvaluatePhaseChangeFromAboveToBelowPhase(
+  evaluate_phase_change_from_above_to_below_phase(
       particlesfromphasetophase, particlestoremove, particlestoinsert);
 
   // hand over particles to be removed
-  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+  particleengineinterface_->hand_over_particles_to_be_removed(particlestoremove);
 
   // hand over particles to be inserted
-  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
+  particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
 PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
@@ -369,18 +371,18 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
       typevectorsize);
 
   // evaluate phase change from below to above phase
-  EvaluatePhaseChangeFromBelowToAbovePhase(
+  evaluate_phase_change_from_below_to_above_phase(
       particlesfromphasetophase, particlestoremove, particlestoinsert);
 
   // evaluate phase change from above to below phase
-  EvaluatePhaseChangeFromAboveToBelowPhase(
+  evaluate_phase_change_from_above_to_below_phase(
       particlesfromphasetophase, particlestoremove, particlestoinsert);
 
   // hand over particles to be removed
-  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+  particleengineinterface_->hand_over_particles_to_be_removed(particlestoremove);
 
   // hand over particles to be inserted
-  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
+  particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -246,7 +246,7 @@ namespace CORE::GEO
       void BuildSelfCutTree();
 
       /// build the static search tree for the collision detection
-      void BuildStaticSearchTree();
+      void build_static_search_tree();
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
       void SearchCollisions(Mesh& cutmesh);
@@ -301,7 +301,7 @@ namespace CORE::GEO
 
       /// Check if there are nodes whose position is undecided (often the case in parallel), return
       /// whether undecided node positions available
-      bool CheckForUndecidedNodePositions(
+      bool check_for_undecided_node_positions(
           std::map<int, int>& undecided_node, std::map<plain_int_set, int>& undecided_shadow_nodes);
 
 
@@ -318,14 +318,15 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// Execute Tessellation with QHULL for each element to generate integrationcells
-      void CreateIntegrationCells(int count, bool tetcellsonly = false);
+      void create_integration_cells(int count, bool tetcellsonly = false);
 
       /// Call the moment fitting method for each element to generate the Gaussian integration rule
-      void MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+      void moment_fit_gauss_weights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
       /// Call the DirectDivergence method for each element to generate the Gaussian integration
       /// rule
-      void DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+      void direct_divergence_gauss_rule(
+          bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
 
       /*========================================================================*/
@@ -333,7 +334,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// ?
-      void RemoveEmptyVolumeCells();
+      void remove_empty_volume_cells();
 
       /// test if for all elements the element volume is equal to the volume of all integration
       /// cells
@@ -373,11 +374,11 @@ namespace CORE::GEO
       void DumpGmshVolumeCells(std::string name, bool include_inner);
 
       /// ?
-      void DumpGmshIntegrationCells(std::string name);
+      void dump_gmsh_integration_cells(std::string name);
 
       /* writre boundary cells belonging to a volume cell with "pos" position
        * and their normals to the given file */
-      void DumpGmshBoundaryCells(std::ofstream& file, Point::PointPosition pos);
+      void dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos);
 
       /// ?
       void DumpGmshVolumeCells(std::string name);
@@ -489,13 +490,13 @@ namespace CORE::GEO
       bool WithinBB(Element& element);
 
       //     Only used in cut_test_volume.cpp
-      void CreateSideIds_CutTest(int lastid = 0);
+      void create_side_ids_cut_test(int lastid = 0);
 
       // only used for testing
-      int CreateSideIdsAll_CutTest(int lastid = 0);
+      int create_side_ids_all_cut_test(int lastid = 0);
 
       //     Only used in cut_test_volume.cpp
-      void AssignOtherVolumeCells_CutTest(const Mesh& other);
+      void assign_other_volume_cells_cut_test(const Mesh& other);
 
       /// return the options
       Options& CreateOptions() { return options_; }

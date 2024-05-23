@@ -56,7 +56,7 @@ scalar_type BEAMINTERACTION::PenaltyForce(const scalar_type& gap,
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
     {
-      const double penalty_parameter_g0 = contact_params->GetPenaltyParameterG0();
+      const double penalty_parameter_g0 = contact_params->get_penalty_parameter_g0();
 
       if (gap < 0.0)
       {
@@ -102,7 +102,7 @@ scalar_type BEAMINTERACTION::PenaltyPotential(const scalar_type& gap,
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
     {
-      const double penalty_parameter_g0 = contact_params->GetPenaltyParameterG0();
+      const double penalty_parameter_g0 = contact_params->get_penalty_parameter_g0();
 
       if (gap < 0.0)
       {
@@ -184,13 +184,13 @@ void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization&
 
   // Create object for triad interpolation schemes.
   std::vector<CORE::LINALG::Matrix<4, 1, double>> nodal_quaternions(3);
-  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
+  beam_ele->get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3, double>(
       beam_displacement_vector_full_double, nodal_quaternions);
   triad_interpolation_scheme.Reset(nodal_quaternions);
 
   std::vector<double> beam_displacement_vector_full_ref(
       beam_displacement_vector_full_double.size(), 0.0);
-  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
+  beam_ele->get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3, double>(
       beam_displacement_vector_full_ref, nodal_quaternions);
   ref_triad_interpolation_scheme.Reset(nodal_quaternions);
 }

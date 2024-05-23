@@ -21,7 +21,7 @@ MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<CORE::MAT::PAR::Mat
 
 MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
+void MAT::ELASTIC::IsoRateDep::add_coefficients_visco_modified(
     const CORE::LINALG::Matrix<3, 1>& modinv, CORE::LINALG::Matrix<8, 1>& modmu,
     CORE::LINALG::Matrix<33, 1>& modxi, CORE::LINALG::Matrix<7, 1>& modrateinv,
     Teuchos::ParameterList& params, const int gp, const int eleGID)

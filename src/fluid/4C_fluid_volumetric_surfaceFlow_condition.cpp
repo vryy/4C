@@ -242,7 +242,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   Teuchos::RCP<std::vector<double>> cmass = Teuchos::rcp(new std::vector<double>);
   Teuchos::RCP<std::vector<double>> normal = Teuchos::rcp(new std::vector<double>);
-  this->CenterOfMassCalculation(cmass, normal, ds_condname);
+  this->center_of_mass_calculation(cmass, normal, ds_condname);
 
   // get the normal
   normal_ = Teuchos::rcp(new std::vector<double>(*normal));
@@ -341,25 +341,27 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // get the node row maps of the condition node
   // -------------------------------------------------------------------
   // evaluate the surface node row map
-  this->BuildConditionNodeRowMap(discret_, ds_condname, condid_, condnum_s_, cond_surfnoderowmap_);
+  this->build_condition_node_row_map(
+      discret_, ds_condname, condid_, condnum_s_, cond_surfnoderowmap_);
 
   // evaluate the line node row map
   //  cond_linenoderowmap_ =
   //  CORE::Conditions::ConditionNodeRowMap(*discret_,"WomersleyBorderNodesCond");
   const std::string border_cond_name = dl_condname;
-  this->BuildConditionNodeRowMap(discret_, ds_condname, condid_, condnum_l_, cond_linenoderowmap_);
+  this->build_condition_node_row_map(
+      discret_, ds_condname, condid_, condnum_l_, cond_linenoderowmap_);
 
   // -------------------------------------------------------------------
   // get the dof row maps of the condition node
   // -------------------------------------------------------------------
   // evaluate the surface dof row map
-  this->BuildConditionDofRowMap(discret_, ds_condname, condid_, condnum_s_, cond_dofrowmap_);
+  this->build_condition_dof_row_map(discret_, ds_condname, condid_, condnum_s_, cond_dofrowmap_);
   const Epetra_Map* drt_dofrowMap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
   // calculate the normalized  of mass of the surface condition
   // -------------------------------------------------------------------
-  this->EvalLocalNormalizedRadii(ds_condname, dl_condname);
+  this->eval_local_normalized_radii(ds_condname, dl_condname);
 
   // -------------------------------------------------------------------
   // create cond_velocities and codition traction velocity terms
@@ -384,7 +386,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     Teuchos::RCP<std::vector<double>> coords, Teuchos::RCP<std::vector<double>> normal,
     std::string ds_condname)
 {
@@ -460,7 +462,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
     std::string ds_condname, std::string dl_condname)
 // Teuchos::RCP<std::vector<double> > center_of_mass,
 // Teuchos::RCP<std::vector<double> > avg_normal,
@@ -732,7 +734,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
     Teuchos::RCP<DRT::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_noderowmap)
 {
@@ -777,7 +779,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   cond_noderowmap =
       Teuchos::rcp(new Epetra_Map(-1, nodeids.size(), nodeids.data(), 0, dis->Comm()));
 
-}  // BuildConditionNodeRowMap
+}  // build_condition_node_row_map
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -788,7 +790,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
     Teuchos::RCP<DRT::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap)
 {
@@ -836,7 +838,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   cond_dofrowmap = Teuchos::rcp(new Epetra_Map(-1, dofids.size(), dofids.data(), 0, dis->Comm()));
 
-}  // FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap
+}  // FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -858,7 +860,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Output(
 
   // write the flowrates of the previous period
   stream1 << ds_condname << "_flowrates" << condnum;
-  output.WriteRedundantDoubleVector(stream1.str(), flowrates_);
+  output.write_redundant_double_vector(stream1.str(), flowrates_);
 
   // write the time step
   stream2 << ds_condname << "_dt" << condnum;
@@ -909,7 +911,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
   stream1 << ds_condname << "_flowrates" << condnum;
 
   // read in flowrates
-  reader.ReadRedundantDoubleVector(flowrates_, stream1.str());
+  reader.read_redundant_double_vector(flowrates_, stream1.str());
 
   // read in the flowrates' position
   flowratespos_ = 0;
@@ -995,7 +997,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
 {
   cond_traction_vel_->PutScalar(0.0);
 }
@@ -1010,7 +1012,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
     Teuchos::ParameterList eleparams, std::string condname, double flowrate, int condid_,
     double time, double theta, double dta)
 {
@@ -1022,7 +1024,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
 
 
   // Export and set state
-  ExportAndSetBoundaryValues(cond_velocities_, drt_velocities_, "velaf");
+  export_and_set_boundary_values(cond_velocities_, drt_velocities_, "velaf");
 
   eleparams.set("flowrate", flowrate);
   eleparams.set("area", area_);
@@ -1300,7 +1302,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   // calculate flow rate
   // -------------------------------------------------------------------
   // Export and set state
-  ExportAndSetBoundaryValues(cond_velocities_, drt_velocities_, "velaf");
+  export_and_set_boundary_values(cond_velocities_, drt_velocities_, "velaf");
 
   double actflowrate = this->FlowRateCalculation(eleparams, time, ds_condname, action, condid_);
 
@@ -1355,7 +1357,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
       vnormal_, params);
 
   // Export and set state
-  ExportAndSetBoundaryValues(correction_velnp, drt_velocities_, "velaf");
+  export_and_set_boundary_values(correction_velnp, drt_velocities_, "velaf");
 
   double corrective_flowrate =
       this->FlowRateCalculation(eleparams, time, ds_condname, action, condid_);
@@ -2045,8 +2047,8 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
     Teuchos::ParameterList eleparams;
     mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
         eleparams, "TotalTractionCorrectionCond", FLD::calc_flowrate, time, true);
-    mapiter->second->FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp();
-    mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp();
+    mapiter->second->FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
         eleparams, "TotalTractionCorrectionCond", flowrate, mapiter->first, time, theta, dta);
   }
 
@@ -2130,7 +2132,7 @@ void FLD::UTILS::TotalTractionCorrector::ReadRestart(IO::DiscretizationReader& r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ExportAndSetBoundaryValues(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
     Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name)
 {
   // define the exporter
@@ -2154,7 +2156,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ExportAndSetBoundaryValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::ExportAndSetBoundaryValues(
+void FLD::UTILS::TotalTractionCorrector::export_and_set_boundary_values(
     Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name)
 {
   // define the exporter

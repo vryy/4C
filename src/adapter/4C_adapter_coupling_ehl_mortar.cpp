@@ -29,14 +29,14 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     : CouplingNonLinMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
       contact_regularization_(CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->ContactDynamicParams(), "REGULARIZED_NORMAL_CONTACT")),
-      regularization_thickness_(GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>(
+          GLOBAL::Problem::Instance()->contact_dynamic_params(), "REGULARIZED_NORMAL_CONTACT")),
+      regularization_thickness_(GLOBAL::Problem::Instance()->contact_dynamic_params().get<double>(
           "REGULARIZATION_THICKNESS")),
-      regularization_compliance_(GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>(
+      regularization_compliance_(GLOBAL::Problem::Instance()->contact_dynamic_params().get<double>(
           "REGULARIZATION_STIFFNESS"))
 {
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
-          GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+          GLOBAL::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION"),
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     FOUR_C_THROW(
         "EHL does not support parallel redistribution. Set \"PARALLEL_REDIST none\" in section "
@@ -46,10 +46,10 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
       FOUR_C_THROW("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
-  if (CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->ContactDynamicParams(),
+  if (CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->contact_dynamic_params(),
           "REGULARIZED_NORMAL_CONTACT") == true &&
       CORE::UTILS::IntegralValue<bool>(
-          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL") == false)
+          GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL") == false)
     FOUR_C_THROW("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
 
@@ -78,7 +78,7 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
 
   INPAR::CONTACT::FrictionType ftype = CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(
-      GLOBAL::Problem::Instance()->ContactDynamicParams(), "FRICTION");
+      GLOBAL::Problem::Instance()->contact_dynamic_params(), "FRICTION");
 
   std::vector<CORE::Conditions::Condition*> ehl_conditions(0);
   masterdis->GetCondition(couplingcond, ehl_conditions);
@@ -139,11 +139,11 @@ void ADAPTER::CouplingEhlMortar::Integrate(Teuchos::RCP<const Epetra_Vector> dis
   M_->Complete(*masterdofrowmap_, *slavedofrowmap_);
   N_->Complete(*smdofrowmap_, *slavedofrowmap_);
   AssembleRealGap();
-  AssembleRealGapDeriv();
+  assemble_real_gap_deriv();
   AssembleNormals();
-  AssembleNormalsDeriv();
+  assemble_normals_deriv();
   AssembleSurfGrad();
-  AssembleInterfaceVelocities(dt);
+  assemble_interface_velocities(dt);
 
   // save that state as the last evaluated one
   evaluated_state_ = Teuchos::rcp(new Epetra_Vector(*disp));
@@ -172,7 +172,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   EvaluateRelMov();
 
   // update active set
-  as_converged_ = interface_->UpdateActiveSetSemiSmooth();
+  as_converged_ = interface_->update_active_set_semi_smooth();
   interface_->BuildActiveSet();
 
   // assemble the constraint lines for the active contact nodes
@@ -212,14 +212,14 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 
   if (contact_regularization_)
   {
-    interface_->AssembleNormalContactRegularization(*dcsdd, *dcsdLMc, *fcsa);
+    interface_->assemble_normal_contact_regularization(*dcsdd, *dcsdLMc, *fcsa);
 
     // linearized tangential contact (friction)
     if (interface_->IsFriction())
     {
       Teuchos::RCP<Epetra_Vector> rcsa_fr =
           CORE::LINALG::CreateVector(*interface_->ActiveDofs(), true);
-      interface_->AssembleLinSlipNormalRegularization(*dcsdLMc, *dcsdd, *rcsa_fr);
+      interface_->assemble_lin_slip_normal_regularization(*dcsdLMc, *dcsdd, *rcsa_fr);
       interface_->AssembleLinStick(*dcsdLMc, *dcsdd, *rcsa_fr);
       rcsa_fr->Scale(-1.);
       CONTACT::UTILS::AddVector(*rcsa_fr, *fcsa);
@@ -442,7 +442,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   Epetra_Vector dDiag(*interface_->ActiveDofs());
   dInvA->ExtractDiagonalCopy(dDiag);
   if (dDiag.Reciprocal(dDiag)) FOUR_C_THROW("inversion of diagonal D matrix failed");
-  dInvA->ReplaceDiagonalValues(dDiag);
+  dInvA->replace_diagonal_values(dDiag);
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
@@ -473,7 +473,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   kst_a_ = kst_a;
   rs_a_ = rsa;
   // apply contact symmetry conditions
-  if (sdirichtoggle_.is_null()) FOUR_C_THROW("you didn't call StoreDirichletStatus");
+  if (sdirichtoggle_.is_null()) FOUR_C_THROW("you didn't call store_dirichlet_status");
   if (constr_direction_ == INPAR::CONTACT::constr_xyz)
   {
     double haveDBC = 0;
@@ -489,7 +489,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
       Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*interface_->ActiveDofs(), true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
-      dInvA->ReplaceDiagonalValues(*diag);
+      dInvA->replace_diagonal_values(*diag);
       dInvMa = CORE::LINALG::MLMultiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
@@ -584,9 +584,9 @@ void ADAPTER::CouplingEhlMortar::EvaluateRelMov()
     // write it to nodes
     for (int dim = 0; dim < interface_->Dim(); dim++)
     {
-      cnode->FriData().jump()[dim] = cnode->EhlData().GetWeightedRelTangVel()(dim);
-      for (auto p = cnode->EhlData().GetWeightedRelTangVelDeriv().begin();
-           p != cnode->EhlData().GetWeightedRelTangVelDeriv().end(); ++p)
+      cnode->FriData().jump()[dim] = cnode->EhlData().get_weighted_rel_tang_vel()(dim);
+      for (auto p = cnode->EhlData().get_weighted_rel_tang_vel_deriv().begin();
+           p != cnode->EhlData().get_weighted_rel_tang_vel_deriv().end(); ++p)
         cnode->FriData().GetDerivJump()[dim][p->first] = p->second(dim);
     }
   }
@@ -647,7 +647,7 @@ void ADAPTER::CouplingEhlMortar::RecoverCoupled(
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into CNode                    popp 06/09|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingEhlMortar::StoreDirichletStatus(
+void ADAPTER::CouplingEhlMortar::store_dirichlet_status(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   // loop over all slave row nodes on the current interface
@@ -751,7 +751,7 @@ void ADAPTER::CouplingEhlMortar::AssembleNormals()
 }
 
 
-void ADAPTER::CouplingEhlMortar::AssembleNormalsDeriv()
+void ADAPTER::CouplingEhlMortar::assemble_normals_deriv()
 {
   Nderiv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
@@ -798,11 +798,11 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
   }
 
   static const double offset =
-      GLOBAL::Problem::Instance()->LubricationDynamicParams().get<double>("GAP_OFFSET");
+      GLOBAL::Problem::Instance()->lubrication_dynamic_params().get<double>("GAP_OFFSET");
   for (int i = 0; i < nodal_gap_->Map().NumMyElements(); ++i) nodal_gap_->operator[](i) += offset;
 }
 
-void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
+void ADAPTER::CouplingEhlMortar::assemble_real_gap_deriv()
 {
   deriv_nodal_gap_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
@@ -856,7 +856,7 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
   deriv_nodal_gap_->Complete(*smdofrowmap_, *slavedofrowmap_);
 }
 
-void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
+void ADAPTER::CouplingEhlMortar::assemble_interface_velocities(const double dt)
 {
   relTangVel_ = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap_));
   avTangVel_ = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap_));
@@ -894,9 +894,9 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
     for (int d = 0; d < Interface()->Dim(); ++d)
     {
       relTangVel_->ReplaceGlobalValue(
-          cnode->Dofs()[d], 0, cnode->EhlData().GetWeightedRelTangVel()(d) / d_val);
+          cnode->Dofs()[d], 0, cnode->EhlData().get_weighted_rel_tang_vel()(d) / d_val);
       avTangVel_->ReplaceGlobalValue(
-          cnode->Dofs()[d], 0, cnode->EhlData().GetWeightedAvTangVel()(d) / d_val);
+          cnode->Dofs()[d], 0, cnode->EhlData().get_weighted_av_tang_vel()(d) / d_val);
     }
 
     for (auto p = cnode->Data().GetDerivD().at(cnode->Id()).begin();
@@ -907,15 +907,15 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
       {
         const int row = cnode->Dofs()[d];
         const double rel_val =
-            -cnode->EhlData().GetWeightedRelTangVel()(d) / (d_val * d_val) * p->second;
+            -cnode->EhlData().get_weighted_rel_tang_vel()(d) / (d_val * d_val) * p->second;
         const double av_val =
-            -cnode->EhlData().GetWeightedAvTangVel()(d) / (d_val * d_val) * p->second;
+            -cnode->EhlData().get_weighted_av_tang_vel()(d) / (d_val * d_val) * p->second;
         relTangVel_deriv_->Assemble(rel_val, row, col);
         avTangVel_deriv_->Assemble(av_val, row, col);
       }
     }
-    for (auto p = cnode->EhlData().GetWeightedAvTangVelDeriv().begin();
-         p != cnode->EhlData().GetWeightedAvTangVelDeriv().end(); ++p)
+    for (auto p = cnode->EhlData().get_weighted_av_tang_vel_deriv().begin();
+         p != cnode->EhlData().get_weighted_av_tang_vel_deriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < Interface()->Dim(); ++d)
@@ -925,8 +925,8 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
         avTangVel_deriv_->Assemble(val, row, col);
       }
     }
-    for (auto p = cnode->EhlData().GetWeightedRelTangVelDeriv().begin();
-         p != cnode->EhlData().GetWeightedRelTangVelDeriv().end(); ++p)
+    for (auto p = cnode->EhlData().get_weighted_rel_tang_vel_deriv().begin();
+         p != cnode->EhlData().get_weighted_rel_tang_vel_deriv().end(); ++p)
     {
       const int col = p->first;
       for (int d = 0; d < Interface()->Dim(); ++d)
@@ -984,7 +984,7 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
   SurfGrad_->Complete();
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSurfGradDeriv(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::assemble_surf_grad_deriv(
     const Teuchos::RCP<const Epetra_Vector> x)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> SurfGradDeriv =
@@ -1082,7 +1082,7 @@ void ADAPTER::CouplingEhlMortar::CreateForceVec(
   }
 }
 
-void ADAPTER::CouplingEhlMortar::CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vector>* active,
+void ADAPTER::CouplingEhlMortar::create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
     Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old)
 {
   *active = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
@@ -1120,7 +1120,7 @@ void ADAPTER::CouplingEhlMortar::WriteRestart(IO::DiscretizationWriter& output)
   output.WriteVector("contact_lm", z_);
 
   Teuchos::RCP<Epetra_Vector> active_toggle, active_old_toggle, slip_toggle;
-  CreateActiveSlipToggle(&active_toggle, &slip_toggle, &active_old_toggle);
+  create_active_slip_toggle(&active_toggle, &slip_toggle, &active_old_toggle);
 
   output.WriteVector("active_toggle", active_toggle);
   output.WriteVector("active_old_toggle", active_old_toggle);

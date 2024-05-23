@@ -127,7 +127,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
     if (slope == 0)
       gap_intersect_min = std::sqrt(hamaker_constant_ * r_eff / (6.0 * adhesionforce_pulloff));
     else
-      CalculateIntersectionGap(slope, adhesionforce_pulloff, 0.0,
+      calculate_intersection_gap(slope, adhesionforce_pulloff, 0.0,
           -(1.0 / 6.0) * hamaker_constant_ * r_eff, gap_intersect_min);
   }
 
@@ -179,7 +179,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
   }
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::CalculateIntersectionGap(
+void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
     double a, double b, double c, double d, double& gap_intersect) const
 {
   double x1 = 0.0;

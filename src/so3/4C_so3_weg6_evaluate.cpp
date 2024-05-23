@@ -39,7 +39,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
@@ -414,7 +414,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       }
 
       // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+      update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
       if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -1201,7 +1201,7 @@ void DRT::ELEMENTS::SoWeg6::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoWeg6::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();

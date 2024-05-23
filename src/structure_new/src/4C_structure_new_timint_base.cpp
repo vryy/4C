@@ -109,14 +109,14 @@ void STR::TIMINT::Base::Setup()
   int_ptr_->Setup();
   int_ptr_->PostSetup();
   // Initialize and Setup the input/output writer for every Newton iteration
-  dataio_->InitSetupEveryIterationWriter(this, DataSDyn().GetNoxParams());
+  dataio_->init_setup_every_iteration_writer(this, DataSDyn().GetNoxParams());
 
   // Initialize the output of system energy
-  if (dataio_->GetWriteEnergyEveryNStep())
+  if (dataio_->get_write_energy_every_n_step())
   {
-    SelectEnergyTypesToBeWritten();
+    select_energy_types_to_be_written();
 
-    if (dataglobalstate_->GetMyRank() == 0) InitializeEnergyFileStreamAndWriteHeaders();
+    if (dataglobalstate_->GetMyRank() == 0) initialize_energy_file_stream_and_write_headers();
   }
 
   issetup_ = true;
@@ -257,10 +257,10 @@ void STR::TIMINT::Base::Update()
 {
   CheckInitSetup();
   int_ptr_->PreUpdate();
-  int_ptr_->UpdateStructuralEnergy();
+  int_ptr_->update_structural_energy();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
-  SetNumberOfNonlinearIterations();
+  set_number_of_nonlinear_iterations();
   int_ptr_->UpdateStepElement();
   int_ptr_->PostUpdate();
 }
@@ -292,7 +292,7 @@ void STR::TIMINT::Base::UpdateStepTime()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::SetNumberOfNonlinearIterations()
+void STR::TIMINT::Base::set_number_of_nonlinear_iterations()
 {
   int nlniter = 0;
 
@@ -303,12 +303,12 @@ void STR::TIMINT::Base::SetNumberOfNonlinearIterations()
       nlniter = nox_output.get<int>("Nonlinear Iterations");
   }
 
-  dataglobalstate_->SetNlnIterationNumber(nlniter);
+  dataglobalstate_->set_nln_iteration_number(nlniter);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
+void STR::TIMINT::Base::select_energy_types_to_be_written()
 {
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
 
@@ -322,8 +322,8 @@ void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
     {
       case INPAR::STR::model_structure:
       {
-        evaldata.InsertEnergyTypeToBeConsidered(STR::internal_energy);
-        evaldata.InsertEnergyTypeToBeConsidered(STR::kinetic_energy);
+        evaldata.insert_energy_type_to_be_considered(STR::internal_energy);
+        evaldata.insert_energy_type_to_be_considered(STR::kinetic_energy);
         break;
       }
       case INPAR::STR::model_beaminteraction:
@@ -335,23 +335,23 @@ void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
         if (beaminteraction_evaluator.HaveSubModelType(
                 INPAR::BEAMINTERACTION::submodel_beamcontact))
         {
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_contact_penalty_potential);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_contact_penalty_potential);
         }
         if (beaminteraction_evaluator.HaveSubModelType(INPAR::BEAMINTERACTION::submodel_potential))
         {
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_interaction_potential);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_interaction_potential);
         }
         if (beaminteraction_evaluator.HaveSubModelType(
                 INPAR::BEAMINTERACTION::submodel_crosslinking))
         {
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_to_beam_link_internal_energy);
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_to_beam_link_kinetic_energy);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_to_beam_link_internal_energy);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_to_beam_link_kinetic_energy);
         }
         if (beaminteraction_evaluator.HaveSubModelType(
                 INPAR::BEAMINTERACTION::submodel_spherebeamlink))
         {
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_to_sphere_link_internal_energy);
-          evaldata.InsertEnergyTypeToBeConsidered(STR::beam_to_sphere_link_kinetic_energy);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_to_sphere_link_internal_energy);
+          evaldata.insert_energy_type_to_be_considered(STR::beam_to_sphere_link_kinetic_energy);
         }
         break;
       }
@@ -365,22 +365,22 @@ void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::InitializeEnergyFileStreamAndWriteHeaders()
+void STR::TIMINT::Base::initialize_energy_file_stream_and_write_headers()
 {
   auto& evaldata = int_ptr_->EvalData();
 
-  dataio_->SetupEnergyOutputFile();
+  dataio_->setup_energy_output_file();
 
   // write column headers to file
-  dataio_->GetEnergyOutputStream() << std::setw(12) << "#timestep," << std::setw(24) << "time,";
+  dataio_->get_energy_output_stream() << std::setw(12) << "#timestep," << std::setw(24) << "time,";
 
   for (const auto& energy_data : evaldata.GetEnergyData())
   {
-    dataio_->GetEnergyOutputStream()
+    dataio_->get_energy_output_stream()
         << std::setw(36) << STR::EnergyType2String(energy_data.first) + ",";
   }
 
-  dataio_->GetEnergyOutputStream() << std::setw(24) << "total_energy" << std::endl;
+  dataio_->get_energy_output_stream() << std::setw(24) << "total_energy" << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -423,34 +423,34 @@ void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
 {
   CheckInitSetup();
   // --- stress, strain and optional quantity calculation ---------------------
-  if ((dataio_->IsWriteResultsEnabled() && force_prepare_timestep) ||
-      dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepNp()))
+  if ((dataio_->is_write_results_enabled() && force_prepare_timestep) ||
+      dataio_->write_results_for_this_step(dataglobalstate_->GetStepNp()))
   {
-    int_ptr_->DetermineStressStrain();
-    int_ptr_->DetermineOptionalQuantity();
+    int_ptr_->determine_stress_strain();
+    int_ptr_->determine_optional_quantity();
 
-    if (dataio_->IsWriteCurrentEleVolume())
+    if (dataio_->is_write_current_ele_volume())
     {
       Teuchos::RCP<Epetra_Vector> elevolumes = Teuchos::null;
       Teuchos::RCP<const Epetra_Vector> disnp = dataglobalstate_->GetDisNp();
 
-      int_ptr_->DetermineElementVolumes(*disnp, elevolumes);
-      int_ptr_->EvalData().SetElementVolumeData(elevolumes);
+      int_ptr_->determine_element_volumes(*disnp, elevolumes);
+      int_ptr_->EvalData().set_element_volume_data(elevolumes);
     }
   }
-  if ((dataio_->IsRuntimeOutputEnabled() && force_prepare_timestep) ||
-      dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) ||
-      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepNp()))
+  if ((dataio_->is_runtime_output_enabled() && force_prepare_timestep) ||
+      dataio_->write_runtime_vtk_results_for_this_step(dataglobalstate_->GetStepNp()) ||
+      dataio_->write_runtime_vtp_results_for_this_step(dataglobalstate_->GetStepNp()))
   {
-    int_ptr_->RuntimePreOutputStepState();
+    int_ptr_->runtime_pre_output_step_state();
   }
   // --- energy calculation ---------------------------------------------------
-  if ((dataio_->GetWriteEnergyEveryNStep() and
+  if ((dataio_->get_write_energy_every_n_step() and
           (force_prepare_timestep ||
-              dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0)))
+              dataglobalstate_->GetStepNp() % dataio_->get_write_energy_every_n_step() == 0)))
   {
     STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
-    evaldata.ClearValuesForAllEnergyTypes();
+    evaldata.clear_values_for_all_energy_types();
 
     int_ptr_->DetermineEnergy();
 
@@ -464,7 +464,7 @@ void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
 
       dataglobalstate_->GetComm().SumAll(&energy_local, &energy_global, 1);
 
-      evaldata.SetValueForEnergyType(energy_global, energy_data.first);
+      evaldata.set_value_for_energy_type(energy_global, energy_data.first);
     }
   }
 }
@@ -476,7 +476,7 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
   CheckInitSetup();
   OutputStep(forced_writerestart);
   // write Gmsh output
-  WriteGmshStrucOutputStep();
+  write_gmsh_struc_output_step();
   int_ptr_->PostOutput();
 }
 
@@ -491,13 +491,13 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     // reset possible history data on element level
     ResetStep();
     // restart has already been written or simulation has just started
-    if (dataio_->ShouldWriteRestartForStep(dataglobalstate_->GetStepN()) or
+    if (dataio_->should_write_restart_for_step(dataglobalstate_->GetStepN()) or
         dataglobalstate_->GetStepN() == GLOBAL::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
+    if (dataio_->write_results_for_this_step(dataglobalstate_->GetStepN()))
     {
-      AddRestartToOutputState();
+      add_restart_to_output_state();
       return;
     }
   }
@@ -510,44 +510,44 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if (forced_writerestart || dataio_->ShouldWriteRestartForStep(dataglobalstate_->GetStepN()))
+  if (forced_writerestart || dataio_->should_write_restart_for_step(dataglobalstate_->GetStepN()))
   {
     OutputRestart(datawritten);
-    dataio_->SetLastWrittenResults(dataglobalstate_->GetStepN());
+    dataio_->set_last_written_results(dataglobalstate_->GetStepN());
   }
 
   // output results (not necessary if restart in same step)
-  if (dataio_->IsWriteState() and dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
-      (not datawritten))
+  if (dataio_->IsWriteState() and
+      dataio_->write_results_for_this_step(dataglobalstate_->GetStepN()) and (not datawritten))
   {
     NewIOStep(datawritten);
     OutputState();
-    dataio_->SetLastWrittenResults(dataglobalstate_->GetStepN());
+    dataio_->set_last_written_results(dataglobalstate_->GetStepN());
   }
 
   // output results during runtime ( not used for restart so far )
-  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepN()) or
-      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepN()))
+  if (dataio_->write_runtime_vtk_results_for_this_step(dataglobalstate_->GetStepN()) or
+      dataio_->write_runtime_vtp_results_for_this_step(dataglobalstate_->GetStepN()))
   {
     RuntimeOutputState();
   }
 
   // write reaction forces
-  if (dataio_->ShouldWriteReactionForcesForThisStep(dataglobalstate_->GetStepN()))
+  if (dataio_->should_write_reaction_forces_for_this_step(dataglobalstate_->GetStepN()))
   {
-    OutputReactionForces();
+    output_reaction_forces();
   }
 
   // output stress, strain and optional quantity
-  if (dataio_->ShouldWriteStressStrainForThisStep(dataglobalstate_->GetStepN()))
+  if (dataio_->should_write_stress_strain_for_this_step(dataglobalstate_->GetStepN()))
   {
     NewIOStep(datawritten);
     OutputStressStrain();
-    OutputOptionalQuantity();
+    output_optional_quantity();
   }
 
-  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
-      dataio_->IsWriteCurrentEleVolume())
+  if (dataio_->write_results_for_this_step(dataglobalstate_->GetStepN()) and
+      dataio_->is_write_current_ele_volume())
   {
     NewIOStep(datawritten);
     IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
@@ -555,7 +555,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output energy
-  if (dataio_->ShouldWriteEnergyForThisStep(dataglobalstate_->GetStepN()))
+  if (dataio_->should_write_energy_for_this_step(dataglobalstate_->GetStepN()))
   {
     OutputEnergy();
   }
@@ -563,7 +563,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   //  OutputVolumeMass();
 
   // ToDo output of nodal positions in current configuration
-  //  OutputNodalPositions();
+  //  output_nodal_positions();
 
   // ToDo write output on micro-scale (multi-scale analysis)
   //  if (HaveMicroMat())
@@ -602,7 +602,7 @@ void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, boo
   OutputState(iowriter, write_owner);
 
   // write element volumes as additional debugging information, if activated
-  if (dataio_->IsWriteCurrentEleVolume()) OutputElementVolume(iowriter);
+  if (dataio_->is_write_current_ele_volume()) OutputElementVolume(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
@@ -622,12 +622,12 @@ void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool wri
 void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
-  int_ptr_->RuntimeOutputStepState();
+  int_ptr_->runtime_output_step_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputReactionForces()
+void STR::TIMINT::Base::output_reaction_forces()
 {
   CheckInitSetup();
   IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
@@ -643,9 +643,9 @@ void STR::TIMINT::Base::OutputElementVolume(IO::DiscretizationWriter& iowriter) 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
 
   iowriter.WriteVector("current_ele_volumes",
-      Teuchos::rcpFromRef(evaldata.CurrentElementVolumeData()), IO::elementvector);
+      Teuchos::rcpFromRef(evaldata.current_element_volume_data()), IO::elementvector);
 
-  evaldata.SetElementVolumeData(Teuchos::null);
+  evaldata.set_element_volume_data(Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
@@ -684,9 +684,9 @@ void STR::TIMINT::Base::OutputStressStrain()
   // write coupling stress output
   // ---------------------------------------------------------------------------
   text.clear();
-  if (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none)
+  if (dataio_->get_coupling_stress_output_type() != INPAR::STR::stress_none)
   {
-    switch (dataio_->GetCouplingStressOutputType())
+    switch (dataio_->get_coupling_stress_output_type())
     {
       case INPAR::STR::stress_cauchy:
         text = "gauss_cauchy_coupling_stresses_xyz";
@@ -734,9 +734,9 @@ void STR::TIMINT::Base::OutputStressStrain()
   // write plastic strain output
   // ---------------------------------------------------------------------------
   text.clear();
-  if (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)
+  if (dataio_->get_plastic_strain_output_type() != INPAR::STR::strain_none)
   {
-    switch (dataio_->GetPlasticStrainOutputType())
+    switch (dataio_->get_plastic_strain_output_type())
     {
       case INPAR::STR::strain_ea:
         text = "gauss_pl_EA_strains_xyz";
@@ -752,7 +752,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text, evaldata.PlasticStrainData(), *(Discretization()->ElementRowMap()));
   }
   // we don't need this anymore
-  evaldata.PlasticStrainDataPtr() = Teuchos::null;
+  evaldata.plastic_strain_data_ptr() = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
@@ -763,7 +763,7 @@ void STR::TIMINT::Base::OutputEnergy() const
 
   if (dataglobalstate_->GetMyRank() == 0)
   {
-    std::ostream& energy_output_stream = dataio_->GetEnergyOutputStream();
+    std::ostream& energy_output_stream = dataio_->get_energy_output_stream();
 
     energy_output_stream << std::setw(11) << dataglobalstate_->GetStepN() << std::setw(1) << ","
                          << std::scientific << std::setprecision(14) << std::setw(23)
@@ -787,7 +787,7 @@ void STR::TIMINT::Base::OutputEnergy() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputOptionalQuantity()
+void STR::TIMINT::Base::output_optional_quantity()
 {
   CheckInitSetup();
 
@@ -798,9 +798,9 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
   // write optional quantity output
   // ---------------------------------------------------------------------------
   std::string text = "";
-  if (dataio_->GetOptQuantityOutputType() != INPAR::STR::optquantity_none)
+  if (dataio_->get_opt_quantity_output_type() != INPAR::STR::optquantity_none)
   {
-    switch (dataio_->GetOptQuantityOutputType())
+    switch (dataio_->get_opt_quantity_output_type())
     {
       case INPAR::STR::optquantity_membranethickness:
         text = "gauss_membrane_thickness";
@@ -840,8 +840,8 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
   int_ptr_->WriteRestart(*output_ptr);
 
   // info dedicated to user's eyes staring at standard out
-  if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->GetPrint2ScreenEveryNStep() > 0) and
-      (StepOld() % dataio_->GetPrint2ScreenEveryNStep() == 0))
+  if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
+      (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
   {
     IO::cout << "====== Restart for field 'Structure' written in step "
              << dataglobalstate_->GetStepN() << IO::endl;
@@ -850,7 +850,7 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::AddRestartToOutputState()
+void STR::TIMINT::Base::add_restart_to_output_state()
 {
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
@@ -870,8 +870,8 @@ void STR::TIMINT::Base::AddRestartToOutputState()
   output_ptr->WriteMesh(DataGlobalState().GetStepN(), DataGlobalState().GetTimeN());
 
   // info dedicated to user's eyes staring at standard out
-  if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->GetPrint2ScreenEveryNStep() > 0) and
-      (StepOld() % dataio_->GetPrint2ScreenEveryNStep() == 0))
+  if ((dataglobalstate_->GetMyRank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
+      (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
   {
     IO::cout << "====== Restart for field 'Structure' written in step "
              << dataglobalstate_->GetStepN() << IO::endl;
@@ -880,7 +880,7 @@ void STR::TIMINT::Base::AddRestartToOutputState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::WriteGmshStrucOutputStep()
+void STR::TIMINT::Base::write_gmsh_struc_output_step()
 {
   CheckInitSetup();
   if (!dataio_->IsGmsh()) return;
@@ -982,9 +982,9 @@ void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
 
 void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
 
-bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
+bool STR::TIMINT::Base::has_final_state_been_written() const
 {
-  return dataio_->GetLastWrittenResults() == dataglobalstate_->GetStepN();
+  return dataio_->get_last_written_results() == dataglobalstate_->GetStepN();
 }
 
 FOUR_C_NAMESPACE_CLOSE

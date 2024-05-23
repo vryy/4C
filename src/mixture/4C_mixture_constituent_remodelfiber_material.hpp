@@ -38,7 +38,7 @@ namespace MIXTURE
       }
 
       [[nodiscard]] virtual std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
-      CreateRemodelFiberMaterial() const = 0;
+      create_remodel_fiber_material() const = 0;
     };
   }  // namespace PAR
 
@@ -70,7 +70,7 @@ namespace MIXTURE
      * @param I4 Fourth invariant of the Cauchy-Green tensor
      * @return T
      */
-    [[nodiscard]] virtual T GetDCauchyStressDI4DI4(T I4) const = 0;
+    [[nodiscard]] virtual T get_d_cauchy_stress_d_i4_d_i4(T I4) const = 0;
   };
 
 }  // namespace MIXTURE

@@ -78,7 +78,8 @@ void ADAPTER::StructureTimeAda::Setup()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureTimeAda::SetupTimeAda()
 {
-  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // initialize the local variables
   timeinitial_ = 0.0;
@@ -201,7 +202,7 @@ int ADAPTER::StructureTimeAda::Integrate()
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
-      IntegrateStepAuxiliar();
+      integrate_step_auxiliar();
 
       // call the predictor
       PrePredict();
@@ -226,7 +227,7 @@ int ADAPTER::StructureTimeAda::Integrate()
       if (convergencestatus == INPAR::STR::conv_success)
       {
         // get local error vector on locerrdisn_
-        EvaluateLocalErrorDis();
+        evaluate_local_error_dis();
 
         // check whether step passes
         Indicate(accepted, stpsiznew);
@@ -374,15 +375,15 @@ void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
 
 /*----------------------------------------------------------------------*/
 /* Evaluate local error vector */
-void ADAPTER::StructureTimeAda::EvaluateLocalErrorDis()
+void ADAPTER::StructureTimeAda::evaluate_local_error_dis()
 {
   const STR::TIMINT::Base& sti = *stm_;
   const auto& gstate = sti.DataGlobalState();
 
   if (MethodAdaptDis() == ada_orderequal)
   {
-    const double coeffmarch = sti.MethodLinErrCoeffDis();
-    const double coeffaux = MethodLinErrCoeffDis();
+    const double coeffmarch = sti.method_lin_err_coeff_dis();
+    const double coeffaux = method_lin_err_coeff_dis();
     locerrdisn_->Update(-1.0, *(gstate.GetDisNp()), 1.0);
     locerrdisn_->Scale(coeffmarch / (coeffaux - coeffmarch));
   }
@@ -393,7 +394,7 @@ void ADAPTER::StructureTimeAda::EvaluateLocalErrorDis()
   }
 
   // blank Dirichlet DOFs since they always carry the exact solution
-  sti.GetDBC().ApplyDirichletToVector(locerrdisn_);
+  sti.GetDBC().apply_dirichlet_to_vector(locerrdisn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -436,9 +437,9 @@ double ADAPTER::StructureTimeAda::CalculateDt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
-    errorder_ = stm_->MethodOrderOfAccuracyDis();
+    errorder_ = stm_->method_order_of_accuracy_dis();
   else
-    errorder_ = MethodOrderOfAccuracyDis();
+    errorder_ = method_order_of_accuracy_dis();
 
   // optimal size ration with respect to given tolerance
   double sizrat = 1.0;

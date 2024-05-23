@@ -53,7 +53,7 @@ void XFEM::XffCouplingManager::SetCouplingStates()
   /// free the fluid-fluid interface
   mcffi_->SetInterfaceFree();
 
-  mcffi_->UpdateDisplacementIterationVectors();  // update last iteration interface displacements
+  mcffi_->update_displacement_iteration_vectors();  // update last iteration interface displacements
   CORE::LINALG::Export(*fluid_->Dispnp(), *mcffi_->IDispnp());
   CORE::LINALG::Export(*fluid_->Velnp(), *mcffi_->IVelnp());
   CORE::LINALG::Export(*fluid_->Veln(), *mcffi_->IVeln());
@@ -77,7 +77,7 @@ void XFEM::XffCouplingManager::SetCouplingStates()
   //  std::cout << "mcffi-IVelpnp()" << *mcffi_->IVelnp()   << std::endl;
 
   //  //1 update last increment, before we set new idispnp
-  //  mcffi_->UpdateDisplacementIterationVectors();
+  //  mcffi_->update_displacement_iteration_vectors();
   //
   //  //2 Set Displacement on both mesh couplings ... we get them from the embedded fluid field!
   //  InsertVector(0,fluid_->Dispnp(),0,mcffi_->IDispnp(),Coupling_Comm_Manager::full_to_partial);

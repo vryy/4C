@@ -168,7 +168,7 @@ namespace MAT
     virtual bool IsReactive() const { return false; };
 
     /// evaluate the generalized(!) pressure and saturation of all phases
-    void EvaluateGenPressureAndSaturation(
+    void evaluate_gen_pressure_and_saturation(
         std::vector<double>& genpressure, const std::vector<double>& phinp) const;
 
     /// evaluate the generalized(!) pressure of all phases
@@ -180,19 +180,19 @@ namespace MAT
         const std::vector<double>& pressure) const;
 
     //! transform generalized pressures to true pressures
-    void TransformGenPresToTruePres(
+    void transform_gen_pres_to_true_pres(
         const std::vector<double>& phi, std::vector<double>& phi_transformed) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
-    void EvaluateDerivOfDofWrtPressure(
+    void evaluate_deriv_of_dof_wrt_pressure(
         CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
-    void EvaluateDerivOfSaturationWrtPressure(
+    void evaluate_deriv_of_saturation_wrt_pressure(
         CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
 
     //! evaluate second derivative of saturation with respect to pressure
-    void EvaluateSecondDerivOfSaturationWrtPressure(
+    void evaluate_second_deriv_of_saturation_wrt_pressure(
         std::vector<CORE::LINALG::SerialDenseMatrix>& derivs,
         const std::vector<double>& pressure) const;
 

@@ -105,16 +105,16 @@ namespace LOMA
     void MonoLoop();
 
     /// set fluid values required in scatra
-    void SetFluidValuesInScaTra();
+    void set_fluid_values_in_sca_tra();
 
     /// set scatra values required in fluid
-    void SetScaTraValuesInFluid();
+    void set_sca_tra_values_in_fluid();
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void SetupMonoLomaMatrix();
 
     /// evaluate off-diagonal block with fluid weighting functions
-    void EvaluateLomaODBlockMatFluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs);
+    void evaluate_loma_od_block_mat_fluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs);
 
     /// evaluate off-diagonal block with scatra weighting functions
     // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_sf);

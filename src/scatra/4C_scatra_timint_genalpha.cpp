@@ -82,20 +82,20 @@ void SCATRA::TimIntGenAlpha::Setup()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralParameters(),
+  //       - order is important here: for safety checks in set_element_general_parameters(),
   //         we have to know the time-integration parameters
-  SetElementTimeParameter();
-  SetElementGeneralParameters();
-  SetElementTurbulenceParameters();
-  SetElementNodesetParameters();
+  set_element_time_parameter();
+  set_element_general_parameters();
+  set_element_turbulence_parameters();
+  set_element_nodeset_parameters();
 
   // for initializing phiaf_, phiam_ based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor;
   // otherwise phiaf_ is initialized with zeros instead of the initial field
-  ComputeIntermediateValues();
+  compute_intermediate_values();
 
   // setup krylov
-  PrepareKrylovProjection();
+  prepare_krylov_projection();
 
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
@@ -118,7 +118,7 @@ void SCATRA::TimIntGenAlpha::Setup()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolver) const
+void SCATRA::TimIntGenAlpha::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -145,7 +145,7 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
+void SCATRA::TimIntGenAlpha::set_element_time_parameter_backward_euler() const
 {
   Teuchos::ParameterList eleparams;
 
@@ -170,7 +170,7 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
 /*--------------------------------------------------------------------------*
  | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
+void SCATRA::TimIntGenAlpha::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_ - (1 - alphaF_) * dta_);
 }
@@ -180,10 +180,10 @@ void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(Teuchos::ParameterList&
  | set part of the residual vector belonging to the old timestep        |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
+void SCATRA::TimIntGenAlpha::set_old_part_of_righthandside()
 {
   // call base class routine
-  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+  ScaTraTimIntImpl::set_old_part_of_righthandside();
 
   // calculation of history vector only for non-incremental formulation:
   // (History vector is used in both cases, but in incremental case, it
@@ -209,7 +209,7 @@ void SCATRA::TimIntGenAlpha::ExplicitPredictor() const
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps                   vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
+void SCATRA::TimIntGenAlpha::compute_intermediate_values()
 {
   // compute phi at n+alpha_F and n+alpha_M
   phiaf_->Update(alphaF_, *phinp_, (1.0 - alphaF_), *phin_, 0.0);
@@ -217,7 +217,7 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
 
   // accelerations are not independent but rather have to be computed
   // from phinp_, phin_ and phidtn_
-  ComputeTimeDerivative();
+  compute_time_derivative();
 
   // compute time derivative of phi at n+alpha_M
   phidtam_->Update(alphaM_, *phidtnp_, (1.0 - alphaM_), *phidtn_, 0.0);
@@ -228,7 +228,7 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
  | add actual Neumann loads                                             |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
+void SCATRA::TimIntGenAlpha::add_neumann_to_residual()
 {
   residual_->Update(genalphafac_ * dta_, *neumann_loads_, 1.0);
 }
@@ -260,7 +260,7 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
 /*----------------------------------------------------------------------*
  | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
+void SCATRA::TimIntGenAlpha::dynamic_computation_of_cs()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
   {
@@ -269,7 +269,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
     if (DynSmag_ != Teuchos::null)
     {
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-      DynSmag_->ApplyFilterForDynamicComputationOfPrt(
+      DynSmag_->apply_filter_for_dynamic_computation_of_prt(
           phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
     }
     else
@@ -282,12 +282,13 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
 /*----------------------------------------------------------------------*
  | dynamic Vreman model                                krank  09/13     |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
+void SCATRA::TimIntGenAlpha::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+    Vrem_->apply_filter_for_dynamic_computation_of_dt(
+        phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
@@ -295,10 +296,10 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme   vg 11/08 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntGenAlpha::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // call base class routine
-  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
   discret_->SetState("phinp", phiaf_);
 
@@ -315,10 +316,10 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
 /*----------------------------------------------------------------------*
  | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
+void SCATRA::TimIntGenAlpha::compute_time_derivative()
 {
   // call base class routine
-  ScaTraTimIntImpl::ComputeTimeDerivative();
+  ScaTraTimIntImpl::compute_time_derivative();
 
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) + (1-(1/gamma))*phidt(n)
@@ -353,11 +354,11 @@ void SCATRA::TimIntGenAlpha::Update()
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
+    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
   }
 
   // compute time derivative at time n+1
-  ComputeTimeDerivative();
+  compute_time_derivative();
 
   // call base class routine
   ScaTraTimIntImpl::Update();
@@ -419,7 +420,7 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
   reader->ReadVector(phidtnp_, "phidtnp");
   reader->ReadVector(phidtn_, "phidtn");
 
-  ReadRestartProblemSpecific(step, *reader);
+  read_restart_problem_specific(step, *reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -431,44 +432,44 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
  | calculate consistent initial scalar time derivatives in compliance with initial scalar field fang
  09/15 |
  ------------------------------------------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::CalcInitialTimeDerivative()
+void SCATRA::TimIntGenAlpha::calc_initial_time_derivative()
 {
-  PreCalcInitialTimeDerivative();
+  pre_calc_initial_time_derivative();
 
   // call core algorithm
-  ScaTraTimIntImpl::CalcInitialTimeDerivative();
+  ScaTraTimIntImpl::calc_initial_time_derivative();
 
-  PostCalcInitialTimeDerivative();
+  post_calc_initial_time_derivative();
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::PreCalcInitialTimeDerivative()
+void SCATRA::TimIntGenAlpha::pre_calc_initial_time_derivative()
 {
   // for calculation of initial time derivative, we have to switch off all stabilization and
   // turbulence modeling terms
   // standard general element parameter without stabilization
-  SetElementGeneralParameters(true);
+  set_element_general_parameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial time derivatives,
   // but the rhs of the standard element routine is used as starting point for this special system
   // of equations. Therefore, the rhs vector has to be scaled correctly. Since the genalpha scheme
   // cannot be adapted easily, the backward Euler scheme is used instead.
-  SetElementTimeParameterBackwardEuler();
+  set_element_time_parameter_backward_euler();
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  set_element_turbulence_parameters(true);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::PostCalcInitialTimeDerivative()
+void SCATRA::TimIntGenAlpha::post_calc_initial_time_derivative()
 {
   // and finally undo our temporary settings
-  SetElementGeneralParameters();
-  SetElementTimeParameter();
-  SetElementTurbulenceParameters();
+  set_element_general_parameters();
+  set_element_time_parameter();
+  set_element_turbulence_parameters();
 }
 
 FOUR_C_NAMESPACE_CLOSE

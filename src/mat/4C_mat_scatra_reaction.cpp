@@ -320,7 +320,7 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
 {
   double reaccoeff = params_->reaccoeff_;
 
-  if (GetIsDistrFunctReacCoeff())
+  if (get_is_distr_funct_reac_coeff())
   {
     // get time and coordinates
     // Note: we get them counting from the back, since we have added them last (and in exactly this
@@ -345,8 +345,8 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
 /*----------------------------------------------------------------------/
  | calculate advanced reaction terms                        Thon 08/16 |
 /----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaBodyForceTerm(const int k,  //!< current scalar id
-    const std::vector<double>& phinp,                             //!< scalar values at t_(n+1)
+double MAT::ScatraReactionMat::calc_rea_body_force_term(const int k,  //!< current scalar id
+    const std::vector<double>& phinp,                                 //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,    //!< vector containing values which are independent of the scalars
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
@@ -356,7 +356,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(const int k,  //!< current s
 
   if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
-    return CalcReaBodyForceTerm(k, phinp, constants, reaccoeff * Stoich()->at(k),
+    return calc_rea_body_force_term(k, phinp, constants, reaccoeff * Stoich()->at(k),
         scale_phi);  // scalar at integration point np
   }
   else
@@ -366,7 +366,7 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(const int k,  //!< current s
 /*----------------------------------------------------------------------/
  | calculate advanced reaction term derivatives             Thon 08/16 |
 /----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(const int k,  //!< current scalar id
+void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix(const int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -378,7 +378,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(const int k,  //!< curr
 
   if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
-    CalcReaBodyForceDeriv(k, derivs, phinp, constants, reaccoeff * Stoich()->at(k), scale_phi);
+    calc_rea_body_force_deriv(k, derivs, phinp, constants, reaccoeff * Stoich()->at(k), scale_phi);
   }
 
   return;
@@ -388,7 +388,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(const int k,  //!< curr
  |  calculate advanced reaction term derivatives after additional variables       |
  |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
+void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix_add_variables(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -401,7 +401,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
 
   if (Stoich()->at(k) != 0 and fabs(reaccoeff) > 1.0e-14)
   {
-    CalcReaBodyForceDerivAddVariables(
+    calc_rea_body_force_deriv_add_variables(
         k, derivs, variables, constants, reaccoeff * Stoich()->at(k), scale_phi);
   }
 
@@ -411,13 +411,13 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
 /*----------------------------------------------------------------------/
  | add variables to the reaction (only by-function)    kremheller 07/17 |
 /----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::AddAdditionalVariables(const int k,  //!< current scalar id
-    const std::vector<std::pair<std::string, double>>& variables  //!< variables
+void MAT::ScatraReactionMat::add_additional_variables(const int k,  //!< current scalar id
+    const std::vector<std::pair<std::string, double>>& variables    //!< variables
 ) const
 {
   if (Stoich()->at(k) != 0)
   {
-    params_->reaction_->AddAdditionalVariables(k, variables, *Couprole());
+    params_->reaction_->add_additional_variables(k, variables, *Couprole());
   }
 
   return;
@@ -426,8 +426,8 @@ void MAT::ScatraReactionMat::AddAdditionalVariables(const int k,  //!< current s
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::CalcReaBodyForceTerm(int k,  //!< current scalar id
-    const std::vector<double>& phinp,                       //!< scalar values at t_(n+1)
+double MAT::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current scalar id
+    const std::vector<double>& phinp,                           //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,  //!< vector containing values which are independent of the scalars
     double
@@ -435,14 +435,14 @@ double MAT::ScatraReactionMat::CalcReaBodyForceTerm(int k,  //!< current scalar 
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  return params_->reaction_->CalcReaBodyForceTerm(
+  return params_->reaction_->calc_rea_body_force_term(
       k, NumScal(), phinp, constants, *Couprole(), scale_reac, scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          thon 08/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(int k,  //!< current scalar id
+void MAT::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -452,7 +452,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(int k,  //!< current scalar i
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  params_->reaction_->CalcReaBodyForceDeriv(
+  params_->reaction_->calc_rea_body_force_deriv(
       k, NumScal(), derivs, phinp, constants, *Couprole(), scale_reac, scale_phi);
 
   return;
@@ -462,7 +462,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(int k,  //!< current scalar i
  |  calculate advanced reaction term derivatives after additional variables       |
  |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::CalcReaBodyForceDerivAddVariables(int k,  //!< current scalar id
+void MAT::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
     const std::vector<std::pair<std::string, double>>&
@@ -472,7 +472,7 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivAddVariables(int k,  //!< curr
     double scale_phi  //!< scaling factor for scalar values (used for reference concentrations)
 ) const
 {
-  params_->reaction_->CalcReaBodyForceDerivAddVariables(
+  params_->reaction_->calc_rea_body_force_deriv_add_variables(
       k, derivs, variables, constants, *Couprole(), scale_reac, scale_phi);
 
   return;
@@ -499,13 +499,13 @@ double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scal
     FOUR_C_THROW("You need to specify a positive STOICH entry for scalar %i", k);
   if (fabs(ReacCoeff(constants)) > 1.0e-14) FOUR_C_THROW("You need to set REACOEFF to 0.0!");
 
-  return (CalcReaBodyForceTerm(k, phinp, constants, Stoich()->at(k), scale));
+  return (calc_rea_body_force_term(k, phinp, constants, Stoich()->at(k), scale));
 }
 
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(const int k,  //!< current scalar id
+void MAT::ScatraReactionMat::calc_perm_influence_deriv(const int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const double time,                 //!< current time
@@ -520,7 +520,7 @@ void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(const int k,  //!< current s
   constants.push_back(std::pair<std::string, double>("y", gpcoord[1]));
   constants.push_back(std::pair<std::string, double>("z", gpcoord[2]));
 
-  CalcReaBodyForceDeriv(k, derivs, phinp, constants, Stoich()->at(k), scale);
+  calc_rea_body_force_deriv(k, derivs, phinp, constants, Stoich()->at(k), scale);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -131,7 +131,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Martix of the structural tensor in stress-like Voigt notation
      */
-    const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp, int i) const override;
+    const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in tensor notation
@@ -157,7 +157,7 @@ namespace MAT
      *
      * \param tensor_flags Flags of the needed structural tensors
      */
-    void RegisterNeededTensors(std::uint_fast8_t tensor_flags) { tensor_flags_ |= tensor_flags; }
+    void register_needed_tensors(std::uint_fast8_t tensor_flags) { tensor_flags_ |= tensor_flags; }
 
     /*!
      * \brief Returns the Id of the fiber to be returned at the Gauss point. If Element fibers are
@@ -168,7 +168,7 @@ namespace MAT
      *
      * \return int
      */
-    int GetVirtualGaussPoint(int gp) const;
+    int get_virtual_gauss_point(int gp) const;
 
     /*!
      * \brief Returns the number of fibers per element. If Element fiber are used, it returns 1. In
@@ -199,7 +199,7 @@ namespace MAT
      * \brief Method that compute all structural tensors. Should be executed after a change of the
      * fibers.
      */
-    void ComputeNeededStructuralTensors();
+    void compute_needed_structural_tensors();
 
     /*!
      * \brief Method that initializes element fibers.
@@ -209,7 +209,7 @@ namespace MAT
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool DoElementFiberInitialization() { return false; }
+    virtual bool do_element_fiber_initialization() { return false; }
 
     /*!
      * \brief Method that initialized Gauss point fibers.
@@ -219,7 +219,7 @@ namespace MAT
      * \return true if the fibers are initialized
      * \return false if the fibers are not initialized
      */
-    virtual bool DoGPFiberInitialization() { return false; }
+    virtual bool do_gp_fiber_initialization() { return false; }
 
     /*!
      * \brief Method that will be called of the fibers are initialized.
@@ -247,16 +247,16 @@ namespace MAT
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
      * available
      */
-    void OnGlobalDataInitialized() override {}
+    void on_global_data_initialized() override {}
 
    private:
     /*!
      * \brief This method will be called by MAT::Anisotropy to notify that element information is
      * available.
      */
-    void OnGlobalElementDataInitialized() override
+    void on_global_element_data_initialized() override
     {
-      const bool initialized = DoElementFiberInitialization();
+      const bool initialized = do_element_fiber_initialization();
       if (initialized) OnFibersInitialized();
     }
 
@@ -264,9 +264,9 @@ namespace MAT
      * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
      * is available.
      */
-    void OnGlobalGPDataInitialized() override
+    void on_global_gp_data_initialized() override
     {
-      const bool initialized = DoGPFiberInitialization();
+      const bool initialized = do_gp_fiber_initialization();
       if (initialized) OnFibersInitialized();
     }
     /// \}
@@ -274,13 +274,13 @@ namespace MAT
     /*!
      * \brief Method that computes structural tensors from all given fibers
      */
-    void ComputeStructuralTensors();
+    void compute_structural_tensors();
 
     /*!
      * \brief Method that computes all structural tensors in stress like Voigt notation from all
      * given fibers.
      */
-    void ComputeStructuralTensors_stress();
+    void compute_structural_tensors_stress();
 
     /// Indication of the fiber location
     FiberLocation fiber_location_ = FiberLocation::None;

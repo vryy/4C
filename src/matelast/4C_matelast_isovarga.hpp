@@ -104,10 +104,10 @@ namespace MAT
       //@}
 
       /// Answer if coefficients with respect to principal stretches are provided
-      bool HaveCoefficientsStretchesModified() override { return true; }
+      bool have_coefficients_stretches_modified() override { return true; }
 
       /// Add coefficients with respect to modified principal stretches (or zeros)
-      void AddCoefficientsStretchesModified(
+      void add_coefficients_stretches_modified(
           CORE::LINALG::Matrix<3, 1>&
               modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
           CORE::LINALG::Matrix<6, 1>&

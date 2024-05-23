@@ -39,10 +39,11 @@ namespace DRT
      public:
       SolidPoroPressureBasedEleCalc();
 
-      void EvaluateNonlinearForceStiffness(const DRT::Element& ele, MAT::StructPoro& porostructmat,
-          MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
-          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+      void evaluate_nonlinear_force_stiffness(const DRT::Element& ele,
+          MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
+          const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
+          CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix);
 
       void CouplingPoroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,

@@ -240,7 +240,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     bool pbcnode = false;
     std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
-    std::map<int, std::vector<int>>* pbccolmap = discret->GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* pbccolmap = discret->get_all_pbc_coupled_col_nodes();
 
     if (pbcnode)
     {

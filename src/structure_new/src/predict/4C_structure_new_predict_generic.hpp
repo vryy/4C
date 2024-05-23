@@ -90,7 +90,7 @@ namespace STR
       void Print() const;
 
       //! Run before the external force are computed and assembled
-      virtual bool PreApplyForceExternal(Epetra_Vector& fextnp) const;
+      virtual bool pre_apply_force_external(Epetra_Vector& fextnp) const;
 
      protected:
       //! returns init state

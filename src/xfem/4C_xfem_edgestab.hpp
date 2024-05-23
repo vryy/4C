@@ -70,7 +70,7 @@ namespace XFEM
    public:
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate
     //! routine
-    void EvaluateEdgeStabGhostPenalty(
+    void evaluate_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,                      ///< element parameter list
         Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
         DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
@@ -84,7 +84,7 @@ namespace XFEM
 
     //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the
     //! XFEM
-    void AssembleEdgeStabGhostPenalty(
+    void assemble_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,       ///< element parameter list
         const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
         DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
@@ -107,8 +107,9 @@ namespace XFEM
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
     //! EOS pressure stabilizing terms to the interface-contributing embedded fluid elements
-    void EvaluateEdgeStabBoundaryGP(Teuchos::ParameterList& eleparams,  ///< element parameter list
-        Teuchos::RCP<DRT::Discretization> discret,                      ///< discretization
+    void evaluate_edge_stab_boundary_gp(
+        Teuchos::ParameterList& eleparams,          ///< element parameter list
+        Teuchos::RCP<DRT::Discretization> discret,  ///< discretization
         Teuchos::RCP<DRT::Discretization>
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
         DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element

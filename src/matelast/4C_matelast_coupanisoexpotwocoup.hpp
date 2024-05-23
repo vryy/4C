@@ -115,7 +115,7 @@ namespace MAT
        * \return const CORE::LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in
        * stress like Voigt notation
        */
-      const CORE::LINALG::Matrix<6, 1>& GetCoupledStructuralTensor_stress(int gp) const;
+      const CORE::LINALG::Matrix<6, 1>& get_coupled_structural_tensor_stress(int gp) const;
 
       /*!
        * \brief Returns the coupled scalar product at the Gauss point
@@ -123,7 +123,7 @@ namespace MAT
        * \param gp Gauss point
        * \return double Scalar product of the two fibers
        */
-      double GetCoupledScalarProduct(int gp) const;
+      double get_coupled_scalar_product(int gp) const;
 
      private:
       /// dot product fiber direction
@@ -174,7 +174,7 @@ namespace MAT
        *
        * \param anisotropy Reference to the global anisotropy manager
        */
-      void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /// @name Methods for Packing and Unpacking
       ///@{
@@ -185,7 +185,7 @@ namespace MAT
       ///@}
 
       /// Add anisotropic principal stresses
-      void AddStressAnisoPrincipal(
+      void add_stress_aniso_principal(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress

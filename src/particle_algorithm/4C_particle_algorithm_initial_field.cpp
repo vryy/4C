@@ -67,7 +67,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   for (auto& stateIt : statetotypetofunctidmap_)
   {
@@ -82,7 +82,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container =
-          particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+          particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
       // get number of particles stored in container
       const int particlestored = container->ParticlesStored();

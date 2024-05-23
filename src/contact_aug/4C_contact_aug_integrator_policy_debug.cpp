@@ -173,17 +173,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
   // non-unit normal
 #ifdef DD_NON_UNIT_NORMAL
-  Debug_Deriv1st_Non_Unit_Normal(sele, lmval, sderiv, stau);
+  debug_deriv1st_non_unit_normal(sele, lmval, sderiv, stau);
 #endif
 
   // jacobian
 #ifdef DD_JACOBIAN
-  //  Debug_Deriv1st_Jacobian( sele, lmval, sderiv, stau );
+  //  debug_deriv1st_jacobian( sele, lmval, sderiv, stau );
   Debug_Deriv1st_Jac(sele, lmval, djac);
 #endif
 
 #ifdef DD_SMOOTH_UNIT_NORMAL
-  Debug_Deriv1st_Smooth_Unit_Normal(sele);
+  debug_deriv1st_smooth_unit_normal(sele);
 #endif
 
 #if defined(DD_MXI) or defined(D_MXI)
@@ -202,15 +202,15 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 #if defined(DD_WGAP_SL) or defined(D_WGAP_SL)
 
   Deriv1stMap d_gapn_sl_complete;
-  Debug_Deriv1st_Gap_Sl(
+  debug_deriv1st_gap_sl(
       sele, lmval, sval, d_gpn, d_gap_sl, djac, gapn_sl, wgt, jac, d_gapn_sl_complete);
 
-  Debug_Deriv1st_WGap_Sl(sele, lmval, sval, d_gpn, d_gapn_sl_complete, djac, gapn_sl, wgt, jac);
+  debug_deriv1st_w_gap_sl(sele, lmval, sval, d_gpn, d_gapn_sl_complete, djac, gapn_sl, wgt, jac);
 
 #endif
 
 #ifdef D_KAPPA
-  Debug_Deriv1st_Kappa(sele, lmval, djac, wgt);
+  debug_deriv1st_kappa(sele, lmval, djac, wgt);
 #endif
 }
 
@@ -229,17 +229,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
   // non-unit normal
 #ifdef DD_NON_UNIT_NORMAL
-  Debug_Deriv2nd_Non_Unit_Normal(sele, lmval, sderiv);
+  debug_deriv2nd_non_unit_normal(sele, lmval, sderiv);
 #endif
 
   // jacobian
 #ifdef DD_JACOBIAN
-  //  Debug_Deriv2nd_Jacobian( sele, lmval, sderiv, stau );
+  //  debug_deriv2nd_jacobian( sele, lmval, sderiv, stau );
   Debug_Deriv2nd_Jac(sele, lmval, ddjac);
 #endif
 
 #ifdef DD_SMOOTH_UNIT_NORMAL
-  Debug_Deriv2nd_Smooth_Unit_Normal(sele);
+  debug_deriv2nd_smooth_unit_normal(sele);
 #endif
 
 #ifdef DD_MXI
@@ -253,10 +253,10 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 #ifdef DD_WGAP_SL
   Deriv1stMap d_gapn_sl_complete;
-  Debug_Deriv1st_Gap_Sl(
+  debug_deriv1st_gap_sl(
       sele, lmval, sval, d_n_unit, dgap_sl, djac, gapn_sl, wgt, jac, d_gapn_sl_complete);
 
-  Debug_Deriv2nd_WGap_Sl(
+  debug_deriv2nd_w_gap_sl(
       sele, lmval, sval, d_n_unit, dd_n_unit, djac, d_gapn_sl_complete, ddjac, gapn_sl, wgt, jac);
 #endif
 }
@@ -305,7 +305,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Kappa(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_kappa(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac, const double wgt) const
 {
@@ -360,7 +360,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
+    Deriv1stVecMap& d_debug = cnode.AugData().get_deriv1st_debug_vec();
     if (d_debug.size() < probdim)
     {
       d_debug.resize(probdim);
@@ -421,7 +421,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Gap_Sl(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_gap_sl(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_jac, const double gapn_sl, const double wgt,
@@ -462,7 +462,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_WGap_Sl(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap_sl(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_gpn,
     const Deriv1stMap& d_gapn_sl_complete, const Deriv1stMap& d_jac, const double gapn_sl,
@@ -503,7 +503,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_WGap_Sl(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap_sl(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
     const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac,
@@ -741,7 +741,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
+    Deriv1stVecMap& d_debug = cnode.AugData().get_deriv1st_debug_vec();
     if (d_debug.size() < my::MASTERDIM)
     {
       d_debug.resize(my::MASTERDIM);
@@ -772,7 +772,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
+    Deriv2ndVecMap& dd_debug = cnode.AugData().get_deriv2nd_debug_vec();
     if (dd_debug.size() < my::MASTERDIM)
     {
       dd_debug.resize(my::MASTERDIM);
@@ -800,7 +800,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::Debug_Deriv1st_Smooth_Unit_Normal(MORTAR::Element& sele) const
+    mastertype>::debug_deriv1st_smooth_unit_normal(MORTAR::Element& sele) const
 {
   DRT::Node* const* snodes = sele.Nodes();
 
@@ -808,7 +808,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
+    Deriv1stVecMap& d_debug = cnode.AugData().get_deriv1st_debug_vec();
     CORE::GEN::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
   }
 }
@@ -817,7 +817,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::Debug_Deriv2nd_Smooth_Unit_Normal(MORTAR::Element& sele) const
+    mastertype>::debug_deriv2nd_smooth_unit_normal(MORTAR::Element& sele) const
 {
   DRT::Node* const* snodes = sele.Nodes();
 
@@ -825,7 +825,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
+    Deriv2ndVecMap& dd_debug = cnode.AugData().get_deriv2nd_debug_vec();
     CORE::GEN::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
   }
 }
@@ -893,7 +893,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv1st_Jacobian(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_jacobian(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
@@ -905,14 +905,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   // evaluate the non-unit slave element normal and the inverse of its length
   CORE::LINALG::Matrix<probdim, 1> unit_normal;
-  this->UnitSlaveElementNormal(sele, stau, unit_normal);
+  this->unit_slave_element_normal(sele, stau, unit_normal);
 
   /*--------------------------------------------------------------------------*/
   // non-unit normal vector: 1-st order derivative
   // 1-st int: vector index corresponds to the normal component index
   // 2-nd int: paired vector key corresponds to varied dof GID
   Deriv1stVecMap d_non_unit_normal(probdim);
-  this->Deriv1st_NonUnitSlaveElementNormal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
+  this->deriv1st_non_unit_slave_element_normal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
 
   /*--------------------------------------------------------------------------*/
   // jacobian determinant: 1-st order derivative
@@ -938,7 +938,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug_Deriv2nd_Jacobian(
+void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_jacobian(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
@@ -950,17 +950,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 
   // evaluate the non-unit slave element normal and the inverse of its length
   CORE::LINALG::Matrix<probdim, 1> unit_normal;
-  const double length_n_inv = this->UnitSlaveElementNormal(sele, stau, unit_normal);
+  const double length_n_inv = this->unit_slave_element_normal(sele, stau, unit_normal);
 
   /*--------------------------------------------------------------------------*/
   // non-unit normal vector: 1-st order derivative
   // 1-st int: vector index corresponds to the normal component index
   // 2-nd int: paired vector key corresponds to varied dof GID
   Deriv1stVecMap d_non_unit_normal(probdim);
-  this->Deriv1st_NonUnitSlaveElementNormal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
+  this->deriv1st_non_unit_slave_element_normal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
 
   Deriv2ndMap deriv2nd_jac;
-  this->Get_Deriv2nd_Jacobian(
+  this->get_deriv2nd_jacobian(
       sele, nodal_dofs, sderiv, unit_normal, length_n_inv, d_non_unit_normal, deriv2nd_jac);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
@@ -990,7 +990,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::Debug_Deriv1st_Non_Unit_Normal(MORTAR::Element& sele,
+    mastertype>::debug_deriv1st_non_unit_normal(MORTAR::Element& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
     const CORE::LINALG::Matrix<3, 2>& stau) const
@@ -1005,13 +1005,13 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
   // 1-st int: vector index corresponds to the normal component index
   // 2-nd int: paired vector key corresponds to varied dof GID
   Deriv1stVecMap d_non_unit_normal(probdim);
-  this->Deriv1st_NonUnitSlaveElementNormal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
+  this->deriv1st_non_unit_slave_element_normal(sele, nodal_dofs, sderiv, stau, d_non_unit_normal);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv1stVecMap& d_debug = cnode.AugData().GetDeriv1st_DebugVec();
+    Deriv1stVecMap& d_debug = cnode.AugData().get_deriv1st_debug_vec();
     if (d_debug.size() < 3)
     {
       d_debug.resize(probdim);
@@ -1033,7 +1033,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::Debug_Deriv2nd_Non_Unit_Normal(MORTAR::Element& sele,
+    mastertype>::debug_deriv2nd_non_unit_normal(MORTAR::Element& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv) const
 {
@@ -1043,13 +1043,13 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   Deriv2ndVecMap dd_non_unit_normal(probdim);
-  this->Deriv2nd_NonUnitSlaveElementNormal(sele, nodal_dofs, sderiv, dd_non_unit_normal);
+  this->deriv2nd_non_unit_slave_element_normal(sele, nodal_dofs, sderiv, dd_non_unit_normal);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
-    Deriv2ndVecMap& dd_debug = cnode.AugData().GetDeriv2nd_DebugVec();
+    Deriv2ndVecMap& dd_debug = cnode.AugData().get_deriv2nd_debug_vec();
     if (dd_debug.size() < 3)
     {
       dd_debug.resize(probdim);

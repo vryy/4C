@@ -394,7 +394,7 @@ void MORTAR::BinaryTree::Init()
   // call initialization method of base class
   MORTAR::BaseBinaryTree::Init();
 
-  InitInternalVariables();
+  init_internal_variables();
 
   // calculate minimal element length
   SetEnlarge();
@@ -520,7 +520,7 @@ void MORTAR::BinaryTree::Init()
 /*----------------------------------------------------------------------*
  |  Initialize internal variables (private)                schmidt 01/19|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::InitInternalVariables()
+void MORTAR::BinaryTree::init_internal_variables()
 {
   // initialize sizes
   streenodesmap_.resize(1);
@@ -688,7 +688,7 @@ void MORTAR::BinaryTree::PrintTreeOfMap(
 /*----------------------------------------------------------------------*
  | Update tree topdown (public)                               popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode)
+void MORTAR::BinaryTree::evaluate_update_tree_top_down(Teuchos::RCP<BinaryTreeNode> treenode)
 {
   // if no slave element on proc-->return
   if (treenode->Elelist().size() == 0) return;
@@ -698,8 +698,8 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> 
 
   if (treenode->Type() == SLAVE_INNER || treenode->Type() == MASTER_INNER)
   {
-    EvaluateUpdateTreeTopDown(treenode->Leftchild());
-    EvaluateUpdateTreeTopDown(treenode->Rightchild());
+    evaluate_update_tree_top_down(treenode->Leftchild());
+    evaluate_update_tree_top_down(treenode->Rightchild());
   }
 
   return;
@@ -708,7 +708,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> 
 /*----------------------------------------------------------------------*
  | Update tree bottom up based on list (public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(
+void MORTAR::BinaryTree::evaluate_update_tree_bottom_up(
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap)
 {
   // update tree bottom up (for every treelayer)

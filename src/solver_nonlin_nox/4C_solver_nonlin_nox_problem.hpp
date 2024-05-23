@@ -71,7 +71,7 @@ namespace NOX
       virtual Teuchos::RCP<::NOX::Abstract::Group> CreateGroup(
           const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const;
 
-      void CreateOuterStatusTest(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
+      void create_outer_status_test(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
 
       virtual void CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
           Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTest) const;

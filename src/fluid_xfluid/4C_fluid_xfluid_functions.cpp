@@ -234,23 +234,23 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
 
   INPUT::LineDefinition movinglevelsetcylinder = INPUT::LineDefinition::Builder()
                                                      .AddTag("MOVINGLEVELSETCYLINDER")
-                                                     .AddNamedDoubleVector("ORIGIN", 3)
+                                                     .add_named_double_vector("ORIGIN", 3)
                                                      .AddNamedDouble("RADIUS")
-                                                     .AddNamedDoubleVector("DIRECTION", 3)
+                                                     .add_named_double_vector("DIRECTION", 3)
                                                      .AddNamedDouble("DISTANCE")
                                                      .AddNamedDouble("MAXSPEED")
                                                      .Build();
 
   INPUT::LineDefinition movinglevelsettorus = INPUT::LineDefinition::Builder()
                                                   .AddTag("MOVINGLEVELSETTORUS")
-                                                  .AddNamedDoubleVector("ORIGIN", 3)
-                                                  .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+                                                  .add_named_double_vector("ORIGIN", 3)
+                                                  .add_named_double_vector("ORIENTVEC_TORUS", 3)
                                                   .AddNamedDouble("RADIUS")
                                                   .AddNamedDouble("RADIUS_TUBE")
-                                                  .AddNamedDoubleVector("DIRECTION", 3)
+                                                  .add_named_double_vector("DIRECTION", 3)
                                                   .AddNamedDouble("DISTANCE")
                                                   .AddNamedDouble("MAXSPEED")
-                                                  .AddNamedDoubleVector("ROTATION_VEC", 3)
+                                                  .add_named_double_vector("ROTATION_VEC", 3)
                                                   .AddNamedDouble("ROTATION_SPEED")
                                                   .AddNamedDouble("ROTATION_RAMPTIME")
                                                   .Build();
@@ -258,14 +258,14 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
   INPUT::LineDefinition movinglevelsettorusvelocity =
       INPUT::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSVELOCITY")
-          .AddNamedDoubleVector("ORIGIN", 3)
-          .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+          .add_named_double_vector("ORIGIN", 3)
+          .add_named_double_vector("ORIENTVEC_TORUS", 3)
           .AddNamedDouble("RADIUS")
           .AddNamedDouble("RADIUS_TUBE")
-          .AddNamedDoubleVector("DIRECTION", 3)
+          .add_named_double_vector("DIRECTION", 3)
           .AddNamedDouble("DISTANCE")
           .AddNamedDouble("MAXSPEED")
-          .AddNamedDoubleVector("ROTATION_VEC", 3)
+          .add_named_double_vector("ROTATION_VEC", 3)
           .AddNamedDouble("ROTATION_SPEED")
           .AddNamedDouble("ROTATION_RAMPTIME")
           .Build();
@@ -273,14 +273,14 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
   INPUT::LineDefinition movinglevelsettorussliplength =
       INPUT::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
-          .AddNamedDoubleVector("ORIGIN", 3)
-          .AddNamedDoubleVector("ORIENTVEC_TORUS", 3)
+          .add_named_double_vector("ORIGIN", 3)
+          .add_named_double_vector("ORIENTVEC_TORUS", 3)
           .AddNamedDouble("RADIUS")
           .AddNamedDouble("RADIUS_TUBE")
-          .AddNamedDoubleVector("DIRECTION", 3)
+          .add_named_double_vector("DIRECTION", 3)
           .AddNamedDouble("DISTANCE")
           .AddNamedDouble("MAXSPEED")
-          .AddNamedDoubleVector("ROTATION_VEC", 3)
+          .add_named_double_vector("ROTATION_VEC", 3)
           .AddNamedDouble("ROTATION_SPEED")
           .AddNamedDouble("ROTATION_RAMPTIME")
           .AddNamedInt("SLIP_FUNCT")
@@ -307,30 +307,32 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                              .AddNamedDouble("VISCOSITY")
                                              .AddNamedDouble("DENSITY")
                                              .AddNamedInt("CASE")
-                                             .AddOptionalNamedDoubleVector("COMBINATION", 2)
+                                             .add_optional_named_double_vector("COMBINATION", 2)
                                              .Build();
 
-  INPUT::LineDefinition urquizaboxflowtraction = INPUT::LineDefinition::Builder()
-                                                     .AddTag("URQUIZABOXFLOW_TRACTION")
-                                                     .AddNamedDouble("LENGTHX")
-                                                     .AddNamedDouble("LENGTHY")
-                                                     .AddNamedDouble("ROTATION")
-                                                     .AddNamedDouble("VISCOSITY")
-                                                     .AddNamedDouble("DENSITY")
-                                                     .AddNamedInt("CASE")
-                                                     .AddOptionalNamedDoubleVector("COMBINATION", 2)
-                                                     .Build();
+  INPUT::LineDefinition urquizaboxflowtraction =
+      INPUT::LineDefinition::Builder()
+          .AddTag("URQUIZABOXFLOW_TRACTION")
+          .AddNamedDouble("LENGTHX")
+          .AddNamedDouble("LENGTHY")
+          .AddNamedDouble("ROTATION")
+          .AddNamedDouble("VISCOSITY")
+          .AddNamedDouble("DENSITY")
+          .AddNamedInt("CASE")
+          .add_optional_named_double_vector("COMBINATION", 2)
+          .Build();
 
-  INPUT::LineDefinition urquizaboxflowforce = INPUT::LineDefinition::Builder()
-                                                  .AddTag("URQUIZABOXFLOW_FORCE")
-                                                  .AddNamedDouble("LENGTHX")
-                                                  .AddNamedDouble("LENGTHY")
-                                                  .AddNamedDouble("ROTATION")
-                                                  .AddNamedDouble("VISCOSITY")
-                                                  .AddNamedDouble("DENSITY")
-                                                  .AddNamedInt("CASE")
-                                                  .AddOptionalNamedDoubleVector("COMBINATION", 2)
-                                                  .Build();
+  INPUT::LineDefinition urquizaboxflowforce =
+      INPUT::LineDefinition::Builder()
+          .AddTag("URQUIZABOXFLOW_FORCE")
+          .AddNamedDouble("LENGTHX")
+          .AddNamedDouble("LENGTHY")
+          .AddNamedDouble("ROTATION")
+          .AddNamedDouble("VISCOSITY")
+          .AddNamedDouble("DENSITY")
+          .AddNamedInt("CASE")
+          .add_optional_named_double_vector("COMBINATION", 2)
+          .Build();
 
   std::vector<INPUT::LineDefinition> lines;
 
@@ -344,7 +346,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
   lines.emplace_back(std::move(urquizaboxflowforce));
   lines.emplace_back(std::move(urquizaboxflowtraction));
 
-  function_manager.AddFunctionDefinition(std::move(lines), CreateXfluidFunction);
+  function_manager.add_function_definition(std::move(lines), CreateXfluidFunction);
 }
 
 
@@ -1047,7 +1049,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(
   return 1.0;
 }
 
-std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
+std::vector<double> DRT::UTILS::TaylorCouetteFlow::evaluate_spatial_derivative(
     const double* xp, const double t, const std::size_t component) const
 {
   // u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
@@ -1301,7 +1303,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(
   return 0.0;
 }
 
-std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
+std::vector<double> DRT::UTILS::UrquizaBoxFlow::evaluate_spatial_derivative(
     const double* xp, const double t, const std::size_t component) const
 {
   //  CASE 1:

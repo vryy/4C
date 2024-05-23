@@ -121,7 +121,7 @@ namespace MIXTURE
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+    virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
     {
       // do nothing in the default case
     }
@@ -280,7 +280,8 @@ namespace MIXTURE
      * \param name_and_size [out] : unordered map of names of the data with the respective vector
      * size
      */
-    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
+    virtual void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const
     {
       // do nothing for simple constituents
     }

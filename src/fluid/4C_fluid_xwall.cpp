@@ -648,7 +648,7 @@ void FLD::XWall::SetupXWallDis()
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 
     PeriodicBoundaryConditions pbc(xwdiscret_, false);
-    pbc.UpdateDofsForPeriodicBoundaryConditions();
+    pbc.update_dofs_for_periodic_boundary_conditions();
     xwdiscret_->ReplaceDofSet(newdofset);
     xwdiscret_->FillComplete(true, true, true);
   }
@@ -767,10 +767,12 @@ void FLD::XWall::SetupL2Projection()
           {  // has 3 dofs, velocity dofs
             // BUT: enriched nodes have 8 dofs, so we have to calculate our own nullspace for 3 dofs
             // store nv and np at unique location in solver parameter list
-            solver_->Params().sublist("NodalBlockInformation").set("number of momentum dofs", 3);
-            solver_->Params().sublist("NodalBlockInformation").set("number of constraint dofs", 0);
-            solver_->Params().sublist("NodalBlockInformation").set("number of dofs per node", 3);
-            solver_->Params().sublist("NodalBlockInformation").set("nullspace dimension", 3);
+            solver_->Params().sublist("nodal_block_information").set("number of momentum dofs", 3);
+            solver_->Params()
+                .sublist("nodal_block_information")
+                .set("number of constraint dofs", 0);
+            solver_->Params().sublist("nodal_block_information").set("number of dofs per node", 3);
+            solver_->Params().sublist("nodal_block_information").set("nullspace dimension", 3);
 
             Teuchos::ParameterList* mllist_ptr = nullptr;
             mllist_ptr = &((solver_->Params()).sublist("ML Parameters"));
@@ -871,7 +873,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   {
     if (mystressmanager_ == Teuchos::null) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
-    wss = mystressmanager_->GetPreCalcWallShearStresses(FixDirichletInflow(trueresidual));
+    wss = mystressmanager_->get_pre_calc_wall_shear_stresses(FixDirichletInflow(trueresidual));
   }
   switch (tauwtype_)
   {
@@ -1103,7 +1105,7 @@ void FLD::XWall::CalcTauW(
 
   tauw_->Update(1.0, *inctauw_, 1.0);
 
-  OverwriteTransferredValues();
+  overwrite_transferred_values();
 
   CORE::LINALG::Export(*inctauw_, *newtauw2);
   CORE::LINALG::Export(*newtauw2, *inctauwxwdis_);
@@ -1377,7 +1379,7 @@ void FLD::XWall::TransferAndSaveTauw()
 /*----------------------------------------------------------------------*
  |  transfer tauw for turbulent inflow channel                 bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::OverwriteTransferredValues()
+void FLD::XWall::overwrite_transferred_values()
 {
   if (turbulent_inflow_condition_->IsActive())
   {

@@ -157,10 +157,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
-    virtual Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const = 0;
+    virtual Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const = 0;
 
     /// Force vector acting on the structure side \f$f_s\f$
-    virtual Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const = 0;
+    virtual Teuchos::RCP<const Epetra_FEVector> get_structure_coupling_residual() const = 0;
 
    protected:
     /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory

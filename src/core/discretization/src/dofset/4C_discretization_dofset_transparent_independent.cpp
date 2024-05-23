@@ -26,19 +26,19 @@ CORE::Dofsets::TransparentIndependentDofSet::TransparentIndependentDofSet(
   return;
 }
 
-int CORE::Dofsets::TransparentIndependentDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::TransparentIndependentDofSet::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
-  // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = IndependentDofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  // first, we call the standard assign_degrees_of_freedom from the base class
+  int count = IndependentDofSet::assign_degrees_of_freedom(dis, dspos, start);
 
   if (!parallel_)
   {
-    TransferDegreesOfFreedom(*sourcedis_, dis, start);
+    transfer_degrees_of_freedom(*sourcedis_, dis, start);
   }
   else
   {
-    ParallelTransferDegreesOfFreedom(*sourcedis_, dis, start);
+    parallel_transfer_degrees_of_freedom(*sourcedis_, dis, start);
   }
 
   // tell all proxies (again!)

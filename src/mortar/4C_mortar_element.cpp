@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> MORTAR::ElementType::Create(const int id, const int o
 }
 
 
-void MORTAR::ElementType::NodalBlockInformation(
+void MORTAR::ElementType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
@@ -323,7 +323,7 @@ int MORTAR::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretizatio
 /*----------------------------------------------------------------------*
  |  Get local coordinates for local node id                   popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::LocalCoordinatesOfNode(int lid, double* xi) const
+bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 {
   // 2D linear case (2noded line element)
   // 2D quadratic case (3noded line element)
@@ -344,8 +344,8 @@ bool MORTAR::Element::LocalCoordinatesOfNode(int lid, double* xi) const
           xi[0] = 0.0;
           break;
         default:
-          FOUR_C_THROW(
-              "ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range", lid, Id());
+          FOUR_C_THROW("ERROR: local_coordinates_of_node: Node number % in segment % out of range",
+              lid, Id());
       }
       // we are in the 2D case here!
       xi[1] = 0.0;
@@ -483,7 +483,7 @@ bool MORTAR::Element::LocalCoordinatesOfNode(int lid, double* xi) const
         xi[0] = 1.0;
       else
         FOUR_C_THROW(
-            "ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range", lid, Id());
+            "ERROR: local_coordinates_of_node: Node number % in segment % out of range", lid, Id());
 
       // we are in the 2D case here!
       xi[1] = 0.0;
@@ -500,7 +500,7 @@ bool MORTAR::Element::LocalCoordinatesOfNode(int lid, double* xi) const
         xi[0] = 1.0;
       else
         FOUR_C_THROW(
-            "ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range", lid, Id());
+            "ERROR: local_coordinates_of_node: Node number % in segment % out of range", lid, Id());
 
       // we are in the 2D case here!
       xi[1] = 0.0;
@@ -573,7 +573,7 @@ bool MORTAR::Element::LocalCoordinatesOfNode(int lid, double* xi) const
     }
     // unknown case
     default:
-      FOUR_C_THROW("LocalCoordinatesOfNode called for unknown element type");
+      FOUR_C_THROW("local_coordinates_of_node called for unknown element type");
       exit(EXIT_FAILURE);
   }
   return true;
@@ -609,7 +609,7 @@ void MORTAR::Element::BuildNormalAtNode(int nid, int& i, CORE::LINALG::SerialDen
 
   // get local coordinates for this node
   double xi[2];
-  LocalCoordinatesOfNode(lid, xi);
+  local_coordinates_of_node(lid, xi);
 
   // build an outward unit normal at xi and return it
   ComputeNormalAtXi(xi, i, elens);
@@ -648,11 +648,11 @@ void MORTAR::Element::ComputeNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::ComputeUnitNormalAtXi(const double* xi, double* n)
+double MORTAR::Element::compute_unit_normal_at_xi(const double* xi, double* n)
 {
   // check input
-  if (!xi) FOUR_C_THROW("ComputeUnitNormalAtXi called with xi=nullptr");
-  if (!n) FOUR_C_THROW("ComputeUnitNormalAtXi called with n=nullptr");
+  if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
+  if (!n) FOUR_C_THROW("compute_unit_normal_at_xi called with n=nullptr");
 
   // empty local basis vectors
   double gxi[3];
@@ -678,11 +678,11 @@ double MORTAR::Element::ComputeUnitNormalAtXi(const double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute nodal averaged normal at xi                      farah 06/16|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::ComputeAveragedUnitNormalAtXi(const double* xi, double* n)
+double MORTAR::Element::compute_averaged_unit_normal_at_xi(const double* xi, double* n)
 {
   // check input
-  if (!xi) FOUR_C_THROW("ComputeUnitNormalAtXi called with xi=nullptr");
-  if (!n) FOUR_C_THROW("ComputeUnitNormalAtXi called with n=nullptr");
+  if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
+  if (!n) FOUR_C_THROW("compute_unit_normal_at_xi called with n=nullptr");
 
   int nnodes = NumPoint();
   CORE::LINALG::SerialDenseVector val(nnodes);
@@ -1596,7 +1596,7 @@ double MORTAR::Element::MaxEdgeSize()
 /*----------------------------------------------------------------------*
  |  Initialize data container                                 popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::InitializeDataContainer()
+void MORTAR::Element::initialize_data_container()
 {
   // only initialize if not yet done
   if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
@@ -1638,10 +1638,10 @@ bool MORTAR::Element::AddSearchElements(const int& gid)
 /*----------------------------------------------------------------------*
  |  reset found search elements                              farah 10/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::DeleteSearchElements()
+void MORTAR::Element::delete_search_elements()
 {
   // check calling element type
-  if (!IsSlave()) FOUR_C_THROW("DeleteSearchElements called for infeasible MORTAR::Element!");
+  if (!IsSlave()) FOUR_C_THROW("delete_search_elements called for infeasible MORTAR::Element!");
 
   // add new gid to vector of search candidates
   MoData().SearchElements().clear();
@@ -1669,7 +1669,7 @@ void MORTAR::Element::NodeLinearization(
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::EstimateNitscheTraceMaxEigenvalueCombined()
+void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
 {
   if (Dim() != 3)
     FOUR_C_THROW(
@@ -1680,11 +1680,11 @@ void MORTAR::Element::EstimateNitscheTraceMaxEigenvalueCombined()
   DRT::ELEMENTS::StructuralSurface* surf =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
 
-  traceHE_ = 1. / surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
+  traceHE_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_combined(MoData().ParentDisp());
 
   if (ParentElement()->NumMaterial() > 1)
     if (ParentElement()->Material(1)->MaterialType() == CORE::Materials::m_th_fourier_iso)
-      traceHCond_ = 1. / surf->EstimateNitscheTraceMaxEigenvalueTSI(MoData().ParentDisp());
+      traceHCond_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_tsi(MoData().ParentDisp());
 }
 
 

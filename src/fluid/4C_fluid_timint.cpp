@@ -82,7 +82,7 @@ Teuchos::RCP<const Epetra_Map> FLD::TimInt::DofRowMap(unsigned nds)
 }
 
 
-void FLD::TimInt::IncrementTimeAndStep()
+void FLD::TimInt::increment_time_and_step()
 {
   step_ += 1;
   time_ += dta_;

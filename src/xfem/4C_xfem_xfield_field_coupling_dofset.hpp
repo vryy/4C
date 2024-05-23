@@ -52,7 +52,7 @@ namespace XFEM
        *  Ask the current DofSet for the gids of the dofs of this node. The
        *  required vector is created and filled on the fly. So better keep it
        *  if you need more than one dof gid.
-       *  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+       *  - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
        *
        *  Additional input nodal_dof_set_id: If the node contains more than one set of dofs, which
        * can be evaluated, the ID of the set needs to be given. Currently only the case for XFEM.
@@ -71,7 +71,7 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 10/16 */
-      int NumStandardDofPerNode() const;
+      int num_standard_dof_per_node() const;
 
      protected:
       int NumDofPerNode(const DRT::Node& node) const override;

@@ -67,11 +67,11 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! add rigid particle contact contribution to force field
-    virtual void AddForceContribution() = 0;
+    virtual void add_force_contribution() = 0;
 
    private:
     //! setup particle interaction writer
-    void SetupParticleInteractionWriter();
+    void setup_particle_interaction_writer();
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -113,14 +113,14 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! add rigid particle contact contribution to force field
-    void AddForceContribution() override;
+    void add_force_contribution() override;
 
    private:
     //! elastic contact (particle contribution)
-    void ElasticContactParticleContribution();
+    void elastic_contact_particle_contribution();
 
     //! elastic contact (particle-wall contribution)
-    void ElasticContactParticleWallContribution();
+    void elastic_contact_particle_wall_contribution();
 
     //! contact stiffness
     const double stiff_;

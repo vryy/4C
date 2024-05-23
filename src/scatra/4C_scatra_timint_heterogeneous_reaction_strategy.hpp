@@ -107,7 +107,7 @@ namespace SCATRA
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);
 
     //! check assumptions and conventions for heterogeneous reaction simulations
-    void HeterogeneousReactionSanityCheck();
+    void heterogeneous_reaction_sanity_check();
 
    private:
     //! flag indicating if class is setup

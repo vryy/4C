@@ -192,7 +192,7 @@ STR::TIMINT::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInO
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamInteractionDataState&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 {
   CheckInit();
   return *beaminteractiondatastate_;
@@ -201,7 +201,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataStatePtr()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 {
   CheckInit();
   return beaminteractiondatastate_;
@@ -210,7 +210,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataStatePtr()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamInteractionDataState const&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState() const
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state() const
 {
   CheckInit();
   return *beaminteractiondatastate_;
@@ -219,7 +219,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamCrosslinkerHandler&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler()
 {
   CheckInit();
   return *beam_crosslinker_handler_;
@@ -228,7 +228,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandlerPtr()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler_ptr()
 {
   CheckInit();
   return beam_crosslinker_handler_;
@@ -262,7 +262,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamCrosslinkerHandler const&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler() const
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler() const
 {
   CheckInit();
   return *beam_crosslinker_handler_;
@@ -279,7 +279,7 @@ CORE::GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::P
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBoxPtr()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box_ptr()
 {
   CheckInit();
   return periodic_boundingbox_;
@@ -300,17 +300,17 @@ BEAMINTERACTION::UTILS::MapExtractor&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
 {
   CheckInit();
-  eletypeextractor_->CheckForValidMapExtractor();
+  eletypeextractor_->check_for_valid_map_extractor();
   return *eletypeextractor_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractorPtr()
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 {
   CheckInit();
-  eletypeextractor_->CheckForValidMapExtractor();
+  eletypeextractor_->check_for_valid_map_extractor();
   return eletypeextractor_;
 }
 
@@ -320,7 +320,7 @@ BEAMINTERACTION::UTILS::MapExtractor const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
 {
   CheckInit();
-  eletypeextractor_->CheckForValidMapExtractor();
+  eletypeextractor_->check_for_valid_map_extractor();
   return *eletypeextractor_;
 }
 

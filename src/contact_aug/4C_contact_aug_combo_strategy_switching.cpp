@@ -205,22 +205,22 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
 bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckResidual(
     CONTACT::ParamsInterface& cparams, std::ostream& os)
 {
-  Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr = GetStructuralForceWithoutDbcDofs(cparams);
+  Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr = get_structural_force_without_dbc_dofs(cparams);
 
   Teuchos::RCP<Epetra_Vector> str_slmaforce = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> constr_slmaforce = Teuchos::null;
   GetActiveSlMaForces(*force_no_dbc_ptr, str_slmaforce, constr_slmaforce);
 
   const bool angle_check =
-      CheckAngleBetweenStrForceAndContactForce(*str_slmaforce, *constr_slmaforce, os);
-  const bool res_check = CheckContactResidualNorm(*str_slmaforce, *constr_slmaforce, os);
+      check_angle_between_str_force_and_contact_force(*str_slmaforce, *constr_slmaforce, os);
+  const bool res_check = check_contact_residual_norm(*str_slmaforce, *constr_slmaforce, os);
 
   return (res_check and angle_check);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckContactResidualNorm(
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_contact_residual_norm(
     const Epetra_Vector& str_slmaforce, const Epetra_Vector& constr_slmaforce,
     std::ostream& os) const
 {
@@ -252,9 +252,9 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckContactResidualNo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckAngleBetweenStrForceAndContactForce(
-    const Epetra_Vector& str_slmaforce, const Epetra_Vector& constr_slmaforce,
-    std::ostream& os) const
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::
+    check_angle_between_str_force_and_contact_force(const Epetra_Vector& str_slmaforce,
+        const Epetra_Vector& constr_slmaforce, std::ostream& os) const
 {
   double constr_slmaforce_nrm = 0.0;
   constr_slmaforce.Norm2(&constr_slmaforce_nrm);
@@ -331,7 +331,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
 
   Teuchos::RCP<Epetra_Map> gSlActiveForceMap = Teuchos::null;
   Teuchos::RCP<Epetra_Map> gMaActiveForceMap = Teuchos::null;
-  GetGlobalSlMaActiveForceMaps(slforce, maforce, gSlActiveForceMap, gMaActiveForceMap);
+  get_global_sl_ma_active_force_maps(slforce, maforce, gSlActiveForceMap, gMaActiveForceMap);
   Teuchos::RCP<Epetra_Map> gSlMaActiveForceMap =
       CORE::LINALG::MergeMap(*gSlActiveForceMap, *gMaActiveForceMap);
 
@@ -352,7 +352,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetGlobalSlMaActiveForceMaps(
+void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_active_force_maps(
     const Epetra_Vector& slforce, const Epetra_Vector& maforce,
     Teuchos::RCP<Epetra_Map>& gSlActiveForceMap, Teuchos::RCP<Epetra_Map>& gMaActiveForceMap) const
 {
@@ -379,7 +379,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetGlobalSlMaActiveFor
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetStructuralForceWithoutDbcDofs(
+CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_structural_force_without_dbc_dofs(
     const CONTACT::ParamsInterface& cparams)
 {
   Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr =
@@ -389,7 +389,7 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetStructuralForceWithoutDb
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
 
   const std::vector<INPAR::STR::ModelType> without_contact_model(1, cmodel.Type());
-  Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.AssembleForceOfModels(&without_contact_model);
+  Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.assemble_force_of_models(&without_contact_model);
 
   CORE::LINALG::Export(*force_ptr, *force_no_dbc_ptr);
 

@@ -49,7 +49,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4Type::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(id, owner));
     return ele;
@@ -67,7 +67,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4Type::Create(const int id, const
 
 
 //------------------------------------------------------------------------
-void DRT::ELEMENTS::SoTet4Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoTet4Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -83,22 +83,22 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet4Type::ComputeNullSpace(
 }
 
 //------------------------------------------------------------------------
-void DRT::ELEMENTS::SoTet4Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TET4", 4)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
-                     .AddOptionalNamedDoubleVector("RAD", 3)
-                     .AddOptionalNamedDoubleVector("AXI", 3)
-                     .AddOptionalNamedDoubleVector("CIR", 3)
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
-                     .AddOptionalNamedDouble("GROWTHTRIG")
+                     .add_optional_named_double_vector("RAD", 3)
+                     .add_optional_named_double_vector("AXI", 3)
+                     .add_optional_named_double_vector("CIR", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
+                     .add_optional_named_double("GROWTHTRIG")
                      .Build();
 }
 
@@ -122,7 +122,7 @@ DRT::ELEMENTS::SoTet4::SoTet4(int id, int owner)
     pstime_ = PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
@@ -285,7 +285,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoTet4::Surfaces()
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-std::vector<double> DRT::ELEMENTS::SoTet4::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoTet4::element_center_refe_coords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

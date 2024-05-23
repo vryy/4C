@@ -68,7 +68,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void IncreaseContainerSize();
+    void increase_container_size();
 
     /*!
      * \brief decrease the container size
@@ -77,14 +77,14 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void DecreaseContainerSize();
+    void decrease_container_size();
 
     /*!
      * \brief check and decrease the container size
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    inline void CheckAndDecreaseContainerSize()
+    inline void check_and_decrease_container_size()
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (particlestored_ > containersize_)
@@ -93,7 +93,7 @@ namespace PARTICLEENGINE
             particlestored_, containersize_);
 #endif
 
-      if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
+      if (particlestored_ < 0.45 * containersize_) decrease_container_size();
     };
 
     //! @}

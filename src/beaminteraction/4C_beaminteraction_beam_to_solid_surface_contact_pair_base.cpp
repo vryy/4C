@@ -92,7 +92,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
           face_element, true);
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
-  face_element_->SetNumberOfDofOtherElement(
+  face_element_->set_number_of_dof_other_element(
       UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
 
   // The second element in the pair has to be the face element.

@@ -94,7 +94,7 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
     FOUR_C_THROW("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::XFEMDofSet!");
 
   int numdofspernode = 0;
-  fsds->GetReservedMaxNumDofperNode(numdofspernode);
+  fsds->get_reserved_max_num_dofper_node(numdofspernode);
 
   if (NumMyColNodes() == 0) FOUR_C_THROW("no column node on this proc available!");
   int numdofspernodedofset = fsds->NumDof(lColNode(0));
@@ -119,7 +119,7 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
  * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
+void DRT::DiscretizationXFEM::export_initialto_active_vector(
     Teuchos::RCP<const Epetra_Vector>& initialvec, Teuchos::RCP<Epetra_Vector>& activevec)
 {
   // Is the discretization initialized?
@@ -151,7 +151,7 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
  * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::ExportActivetoInitialVector(
+void DRT::DiscretizationXFEM::export_activeto_initial_vector(
     Teuchos::RCP<const Epetra_Vector> activevec, Teuchos::RCP<Epetra_Vector> initialvec)
 {
   // Is the discretization initialized?

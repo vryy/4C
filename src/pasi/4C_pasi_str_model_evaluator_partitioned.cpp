@@ -39,21 +39,22 @@ void STR::MODELEVALUATOR::PartitionedPASI::Setup()
   issetup_ = true;
 }
 
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::get_block_dof_row_map_ptr()
+    const
 {
   CheckInitSetup();
   return GState().DofRowMap();
 }
 
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetCurrentSolutionPtr()
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::get_current_solution_ptr()
     const
 {
   CheckInit();
   return GState().GetDisNp();
 }
 
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetLastTimeStepSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::PartitionedPASI::get_last_time_step_solution_ptr() const
 {
   CheckInit();
   return GState().GetDisN();

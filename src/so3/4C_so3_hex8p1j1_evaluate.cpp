@@ -33,10 +33,10 @@ int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   // get parameter interface
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);

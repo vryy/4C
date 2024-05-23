@@ -130,7 +130,7 @@ void FLD::TDSEleData::ActivateTDS(
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid-scales (public)           gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::UpdateSvelnpInOneDirection(const double fac1, const double fac2,
+void FLD::TDSEleData::update_svelnp_in_one_direction(const double fac1, const double fac2,
     const double fac3, const double resM, const double alphaF, const int dim, const int iquad,
     double& svelaf)
 {
@@ -158,11 +158,11 @@ void FLD::TDSEleData::UpdateSvelnpInOneDirection(const double fac1, const double
 /*----------------------------------------------------------------------*
  |  activate time dependend subgrid scales (public)           gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::UpdateSvelnpInOneDirection(const double fac1, const double fac2,
+void FLD::TDSEleData::update_svelnp_in_one_direction(const double fac1, const double fac2,
     const double fac3, const double resM, const double alphaF, const int dim, const int iquad,
     double& svelnp, double& svelaf)
 {
-  UpdateSvelnpInOneDirection(fac1, fac2, fac3, resM, alphaF, dim, iquad, svelaf);
+  update_svelnp_in_one_direction(fac1, fac2, fac3, resM, alphaF, dim, iquad, svelaf);
 
   svelnp = svelnp_(dim, iquad);
 

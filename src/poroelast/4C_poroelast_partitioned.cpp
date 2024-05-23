@@ -24,7 +24,7 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
 {
-  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
   // Get the parameters for the ConvergenceCheck
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
@@ -94,7 +94,7 @@ void POROELAST::Partitioned::Solve()
     // set fluid- and structure-based scalar transport values required in FSI
     SetFluidSolution();
 
-    if (itnum != 1) StructureField()->PreparePartitionStep();
+    if (itnum != 1) StructureField()->prepare_partition_step();
     // solve structural system
     DoStructStep();
 
@@ -135,7 +135,7 @@ void POROELAST::Partitioned::DoFluidStep()
 
 void POROELAST::Partitioned::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
 
   StructureField()->PrepareTimeStep();

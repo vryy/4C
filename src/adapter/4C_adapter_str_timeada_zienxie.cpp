@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaZienXie::IntegrateStepAuxiliar()
+void ADAPTER::StructureTimeAdaZienXie::integrate_step_auxiliar()
 {
   const STR::TIMINT::Base& stm = *stm_;
   const STR::TIMINT::BaseDataGlobalState& gstate = stm.DataGlobalState();

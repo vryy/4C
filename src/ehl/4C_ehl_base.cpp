@@ -42,9 +42,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
       fieldcoupling_(CORE::UTILS::IntegralValue<INPAR::EHL::FieldCoupling>(
-          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "FIELDCOUPLING")),
+          GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params(), "FIELDCOUPLING")),
       dry_contact_(CORE::UTILS::IntegralValue<bool>(
-          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL"))
+          GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL"))
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
@@ -52,7 +52,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   const int linsolvernumber = lubricationparams.get<int>("LINEAR_SOLVER");
 
   // 2.- Setup discretizations and coupling.
-  SetupDiscretizations(comm, struct_disname, lubrication_disname);
+  setup_discretizations(comm, struct_disname, lubrication_disname);
 
   SetupFieldCoupling(struct_disname, lubrication_disname);
 
@@ -70,7 +70,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
   if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DIFFTIMESTEPSIZE"))
+          GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params(), "DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
     lubricationtimeparams = &lubricationparams;
@@ -84,7 +84,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   lubrication_ = Teuchos::rcp(new ADAPTER::LubricationBaseAlgorithm());
   lubrication_->Setup(*lubricationtimeparams, lubricationparams,
       problem->SolverParams(linsolvernumber), lubrication_disname, isale);
-  mortaradapter_->StoreDirichletStatus(StructureField()->GetDBCMapExtractor());
+  mortaradapter_->store_dirichlet_status(StructureField()->GetDBCMapExtractor());
 
   // Structure displacement at the lubricated interface
   Teuchos::RCP<Epetra_Vector> disp = CORE::LINALG::CreateVector(*(structdis->DofRowMap()), true);
@@ -107,7 +107,7 @@ void EHL::Base::ReadRestart(int restart)
 
     mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement, *structure_->Dispn());
     mortaradapter_->Interface()->SetState(MORTAR::state_new_displacement, *structure_->Dispn());
-    mortaradapter_->Interface()->EvaluateNodalNormals();
+    mortaradapter_->Interface()->evaluate_nodal_normals();
     mortaradapter_->Interface()->ExportNodalNormals();
     mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
     mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::dm);
@@ -143,14 +143,14 @@ void EHL::Base::TestResults(const Epetra_Comm& comm)
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->AddFieldTest(lubrication_->CreateLubricationFieldTest());
+  problem->AddFieldTest(lubrication_->create_lubrication_field_test());
   problem->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                        wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname,
+void EHL::Base::setup_discretizations(const Epetra_Comm& comm, const std::string struct_disname,
     const std::string lubrication_disname)
 {
   // Scheme   : the structure discretization is received from the input. Then, an ale-lubrication
@@ -187,7 +187,7 @@ void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string 
   if (lubricationdis->AddDofSet(dofsetaux_struct) != 1)
     FOUR_C_THROW("unexpected dof sets in lubrication field");
 
-  // call AssignDegreesOfFreedom also for auxiliary dofsets
+  // call assign_degrees_of_freedom also for auxiliary dofsets
   // note: the order of FillComplete() calls determines the gid numbering!
   // 1. structure dofs
   // 2. lubrication dofs
@@ -218,11 +218,11 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
 
   // Calculate the average tangential fractions of the structure velocities at the interface and
   // provide them to the lubrication field
-  SetAverageVelocityField();
+  set_average_velocity_field();
 
   // Calculate the relative tangential fractions of the structure velocities at the interface and
   // provide them to the lubrication field
-  SetRelativeVelocityField();
+  set_relative_velocity_field();
 
   // Provide the gap at the interface
   SetHeightField();
@@ -231,7 +231,7 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
   SetHeightDot();
 
   // Create DBC map for unprojectable nodes
-  SetupUnprojectableDBC();
+  setup_unprojectable_dbc();
 
   return;
 }
@@ -282,11 +282,11 @@ Teuchos::RCP<Epetra_Vector> EHL::Base::EvaluateFluidForce(
 /*----------------------------------------------------------------------*
  | set tractions, resulting from lubrication pressure       seitz 01/18 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetLubricationSolution(Teuchos::RCP<const Epetra_Vector> pressure)
+void EHL::Base::set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> pressure)
 {
   // Provide the structure field with the force vector
   // Note that the mid-point values (gen-alpha) of the interface forces are evaluated in
-  // STR::TimIntGenAlpha::EvaluateForceResidual()
+  // STR::TimIntGenAlpha::evaluate_force_residual()
   structure_->SetForceInterface(EvaluateFluidForce(pressure));
 }
 
@@ -428,21 +428,21 @@ void EHL::Base::AddCouetteForce(
 /*----------------------------------------------------------------------*
  | set structure velocity fields on lubrication field       seitz 12/17 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetAverageVelocityField()
+void EHL::Base::set_average_velocity_field()
 {
   Teuchos::RCP<Epetra_Vector> avVelLub =
       ada_strDisp_to_lubDisp_->MasterToSlave(mortaradapter_->AvTangVel());
-  lubrication_->LubricationField()->SetAverageVelocityField(1, avVelLub);
+  lubrication_->LubricationField()->set_average_velocity_field(1, avVelLub);
 }
 
 /*----------------------------------------------------------------------*
  | set structure relative velocity fields on lub. field     faraji 02/19 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetRelativeVelocityField()
+void EHL::Base::set_relative_velocity_field()
 {
   Teuchos::RCP<Epetra_Vector> relVelLub =
       ada_strDisp_to_lubDisp_->MasterToSlave(mortaradapter_->RelTangVel());
-  lubrication_->LubricationField()->SetRelativeVelocityField(1, relVelLub);
+  lubrication_->LubricationField()->set_relative_velocity_field(1, relVelLub);
 }
 
 /*----------------------------------------------------------------------*
@@ -511,10 +511,10 @@ void EHL::Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 /*----------------------------------------------------------------------*
  | Create DBC toggle for unprojectable nodes                seitz 01/18 |
  *----------------------------------------------------------------------*/
-void EHL::Base::SetupUnprojectableDBC()
+void EHL::Base::setup_unprojectable_dbc()
 {
   if (not CORE::UTILS::IntegralValue<int>(
-          ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams())), "UNPROJ_ZERO_DBC"))
+          ((GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params())), "UNPROJ_ZERO_DBC"))
     return;
 
   Teuchos::RCP<Epetra_FEVector> inf_gap_toggle =
@@ -608,9 +608,9 @@ void EHL::Base::SetupFieldCoupling(
 
   std::vector<int> coupleddof(ndim, 1);
   mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
@@ -623,7 +623,7 @@ void EHL::Base::SetupFieldCoupling(
   mortaradapter_->Interface()->Initialize();
   mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement, *idisp);
   mortaradapter_->Interface()->SetState(MORTAR::state_new_displacement, *idisp);
-  mortaradapter_->Interface()->EvaluateNodalNormals();
+  mortaradapter_->Interface()->evaluate_nodal_normals();
   mortaradapter_->Interface()->ExportNodalNormals();
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::dm);
@@ -735,7 +735,7 @@ void EHL::Base::Output(bool forced_writerestart)
   if (dry_contact_)
   {
     Teuchos::RCP<Epetra_Vector> active_toggle, slip_toggle;
-    mortaradapter_->CreateActiveSlipToggle(&active_toggle, &slip_toggle);
+    mortaradapter_->create_active_slip_toggle(&active_toggle, &slip_toggle);
     for (int i = 0; i < active_toggle->Map().NumMyElements(); ++i)
       slip_toggle->operator[](i) += active_toggle->operator[](i);
     Teuchos::RCP<Epetra_Vector> active =

@@ -46,7 +46,7 @@ namespace DRT
        * @param type Type of the fiber
        * @param fiber Vector of the coordinate system direction at the Gauss-points
        */
-      void SetCoordinateSystemDirection(
+      void set_coordinate_system_direction(
           CoordinateSystemDirection type, const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber);
 
       /*!
@@ -56,7 +56,7 @@ namespace DRT
        * @param type Type of the coordinate system direction
        * @return Reference to the coordinate system direction
        */
-      const std::vector<CORE::LINALG::Matrix<3, 1>>& GetCoordinateSystemDirection(
+      const std::vector<CORE::LINALG::Matrix<3, 1>>& get_coordinate_system_direction(
           CoordinateSystemDirection type) const;
 
       /*!
@@ -66,7 +66,7 @@ namespace DRT
        * @param type Type of the coordinate system direction
        * @return Reference to the coordinate system direction
        */
-      std::vector<CORE::LINALG::Matrix<3, 1>>& GetCoordinateSystemDirectionMutual(
+      std::vector<CORE::LINALG::Matrix<3, 1>>& get_coordinate_system_direction_mutual(
           CoordinateSystemDirection type);
       /*!
        * \brief Inserts a fiber
@@ -124,13 +124,13 @@ namespace DRT
        * \return true type is contained in the holder
        * \return false type is not contained in the holder
        */
-      bool ContainsCoordinateSystemDirection(CoordinateSystemDirection type) const;
+      bool contains_coordinate_system_direction(CoordinateSystemDirection type) const;
 
       /**
        * Returns the number of coordinate system directions stored in the fiber holder
        * @return number of coordinate system directions
        */
-      std::size_t CoordinateSystemSize() const;
+      std::size_t coordinate_system_size() const;
 
       /**
        * Returns the number of fibers stored in the fiber holder
@@ -155,7 +155,7 @@ namespace DRT
        */
       friend std::ostream& operator<<(std::ostream& os, const NodalFiberHolder& holder)
       {
-        os << "NodalFiberHolder {Cosy count=" << holder.CoordinateSystemSize()
+        os << "NodalFiberHolder {Cosy count=" << holder.coordinate_system_size()
            << ", Fibers count=" << holder.FibersSize() << " Angles count = " << holder.AnglesSize()
            << "}";
         return os;

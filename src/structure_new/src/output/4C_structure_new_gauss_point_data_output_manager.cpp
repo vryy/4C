@@ -32,7 +32,7 @@ STR::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
 {
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::AddQuantityIfNotExistant(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::add_quantity_if_not_existant(
     const std::string& name, int size)
 {
   const auto item = quantities_.find(name);
@@ -67,11 +67,11 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::MergeQuantities(
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
-    AddQuantityIfNotExistant(name, size);
+    add_quantity_if_not_existant(name, size);
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::AddElementNumberOfGaussPoints(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::add_element_number_of_gauss_points(
     const int numgp)
 {
   if (numgp > max_num_gp_)
@@ -86,13 +86,13 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
   switch (output_type_)
   {
     case INPAR::STR::GaussPointDataOutputType::nodes:
-      PrepareNodalDataVectors(node_col_map);
+      prepare_nodal_data_vectors(node_col_map);
       break;
     case INPAR::STR::GaussPointDataOutputType::element_center:
-      PrepareElementCenterDataVectors(element_row_map);
+      prepare_element_center_data_vectors(element_row_map);
       break;
     case INPAR::STR::GaussPointDataOutputType::gauss_points:
-      PrepareGaussPointDataVectors(element_row_map);
+      prepare_gauss_point_data_vectors(element_row_map);
       break;
     case INPAR::STR::GaussPointDataOutputType::none:
       FOUR_C_THROW("Your Gauss point data output type is none, so you don't need to prepare data!");
@@ -101,7 +101,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareNodalDataVectors(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_nodal_data_vectors(
     const Epetra_Map& node_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -114,7 +114,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareNodalDataVectors(
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareElementCenterDataVectors(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_element_center_data_vectors(
     const Epetra_Map& element_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -126,7 +126,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareElementCenterDataV
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareGaussPointDataVectors(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_gauss_point_data_vectors(
     const Epetra_Map& element_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -173,7 +173,8 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PostEvaluate()
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::DistributeQuantities(const Epetra_Comm& comm)
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
+    const Epetra_Comm& comm)
 {
   const CORE::COMM::Exporter exporter(comm);
 
@@ -196,21 +197,21 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::DistributeQuantities(cons
     for (int i = 1; i < comm.NumProc(); ++i)
     {
       std::unique_ptr<std::unordered_map<std::string, int>> received_quantities =
-          ReceiveQuantitiesFromProc(exporter, i);
+          receive_quantities_from_proc(exporter, i);
 
       MergeQuantities(*received_quantities);
     }
   }
   else
   {
-    SendMyQuantitiesToProc(exporter, 0);
+    send_my_quantities_to_proc(exporter, 0);
   }
 
   // Broadcast merged quantities to every proc
-  BroadcastMyQuantitites(exporter);
+  broadcast_my_quantitites(exporter);
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::SendMyQuantitiesToProc(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_proc(
     const CORE::COMM::Exporter& exporter, int to_proc) const
 {
   // Pack quantities
@@ -223,7 +224,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::SendMyQuantitiesToProc(
 }
 
 std::unique_ptr<std::unordered_map<std::string, int>>
-STR::MODELEVALUATOR::GaussPointDataOutputManager::ReceiveQuantitiesFromProc(
+STR::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc(
     const CORE::COMM::Exporter& exporter, int from_proc) const
 {
   std::vector<char> rdata(0);
@@ -239,7 +240,7 @@ STR::MODELEVALUATOR::GaussPointDataOutputManager::ReceiveQuantitiesFromProc(
   return quantities;
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::BroadcastMyQuantitites(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
     const CORE::COMM::Exporter& exporter)
 {
   std::vector<char> data(0);

@@ -96,7 +96,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
   if (DRT::ELEMENTS::ScaTraHDG* hdgele =
           dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele)))
   {
-    usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
+    usescompletepoly_ = hdgele->uses_complete_polynomial_space();
 
     if (shapes_ == Teuchos::null)
       shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
       shapes_->Evaluate(*ele);
       ReadGlobalVectors(ele, discretization, la);
 
-      return UpdateInteriorVariables(hdgele, params, elevec1_epetra);
+      return update_interior_variables(hdgele, params, elevec1_epetra);
       break;
     }
 
@@ -223,7 +223,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     case SCATRA::Action::set_initial_field:
     {
       ElementInit(ele);
-      PrepareMaterialParams(ele);
+      prepare_material_params(ele);
       // set initial field
       return SetInitialField(ele, params, elevec1_epetra, elevec2_epetra);
 
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
         shapes_->Evaluate(*ele);
         ElementInit(ele);
         ReadGlobalVectors(ele, discretization, la);
-        PrepareMaterialParams(ele);
+        prepare_material_params(ele);
         local_solver_->ComputeMatrices(ele);
         local_solver_->CondenseLocalPart(hdgele);
       }
@@ -247,7 +247,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     }
     case SCATRA::Action::project_material_field:
     {
-      ProjectMaterialField(ele);
+      project_material_field(ele);
       break;
     }
     case SCATRA::Action::project_field:
@@ -263,12 +263,12 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     }
     case SCATRA::Action::get_material_internal_state:
     {
-      GetMaterialInternalState(ele, params, discretization);
+      get_material_internal_state(ele, params, discretization);
       break;
     }
     case SCATRA::Action::set_material_internal_state:
     {
-      SetMaterialInternalState(ele, params, discretization);
+      set_material_internal_state(ele, params, discretization);
       break;
     }
     case SCATRA::Action::project_dirich_field:
@@ -569,12 +569,12 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
   hdgele->Xmat_.putScalar(0.0);
 
 
-  bool usescompletepoly = hdgele->UsesCompletePolynomialSpace();
+  bool usescompletepoly = hdgele->uses_complete_polynomial_space();
 
   shapes_ = Teuchos::rcp(
       new CORE::FE::ShapeValues<distype>(hdgele->Degree(), usescompletepoly, 2 * ele->Degree()));
   shapes_->Evaluate(*ele);
-  ComputeInteriorMatrices(hdgele);
+  compute_interior_matrices(hdgele);
 
   int sumindex = 0;
   for (unsigned int nface = 0; nface < nfaces_; ++nface)
@@ -743,10 +743,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFace
 }  // ComputeFaceMatrices
 
 /*----------------------------------------------------------------------*
- * ComputeInteriorMatricesTet                             hoermann 01/17|
+ * compute_interior_matrices_tet                             hoermann 01/17|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesTet(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute_interior_matrices_tet(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   CORE::LINALG::SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
@@ -858,28 +858,28 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
     }
 
   return;
-}  // ComputeInteriorMatricesTet
+}  // compute_interior_matrices_tet
 
 /*----------------------------------------------------------------------*
- * ComputeInteriorMatrices                                hoermann 01/17|
+ * compute_interior_matrices                                hoermann 01/17|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatrices(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute_interior_matrices(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
-    ComputeInteriorMatricesTet(hdgele);
+    compute_interior_matrices_tet(hdgele);
   else
-    ComputeInteriorMatricesAll(hdgele);
+    compute_interior_matrices_all(hdgele);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- * ComputeInteriorMatrices                                hoermann 09/15|
+ * compute_interior_matrices                                hoermann 09/15|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesAll(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute_interior_matrices_all(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   CORE::LINALG::SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
@@ -955,7 +955,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
     }
 
   return;
-}  // ComputeInteriorMatrices
+}  // compute_interior_matrices
 
 /*----------------------------------------------------------------------*
  * ComputeResidual
@@ -1374,7 +1374,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
  |  prepare material parameter                            hoermann 11/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::prepare_material_params(
     DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -1404,7 +1404,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
   for (unsigned int i = 0; i < (*difftensor).size(); ++i)
-    local_solver_->PrepareMaterialParameter(hdgele, (*difftensor)[i]);
+    local_solver_->prepare_material_parameter(hdgele, (*difftensor)[i]);
 
 
 
@@ -1446,7 +1446,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
     Materials(material, 0, difftensor, ivecn, ivecnp, ivecnpderiv);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
-  local_solver_->SetMaterialParameter(hdgele, ivecn, ivecnp, ivecnpderiv);
+  local_solver_->set_material_parameter(hdgele, ivecn, ivecnp, ivecnpderiv);
 
 
 
@@ -1455,10 +1455,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
 
 
 /*----------------------------------------------------------------------*
- * UpdateInteriorVariables
+ * update_interior_variables
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
+int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::update_interior_variables(
     DRT::ELEMENTS::ScaTraHDG* hdgele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec
     //    double dt
@@ -1614,7 +1614,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
 
   return 0;
-}  // UpdateInteriorVariables
+}  // update_interior_variables
 
 
 /*----------------------------------------------------------------------*
@@ -1791,7 +1791,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
  |  Set material parameter                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterialParameter(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::set_material_parameter(
     DRT::ELEMENTS::ScaTraHDG* hdgele,             //!< hdg element
     CORE::LINALG::SerialDenseVector& ivecn,       //!< reaction term at time n
     CORE::LINALG::SerialDenseVector& ivecnp,      //!< reaction term at time n+1
@@ -1813,7 +1813,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterial
  |  Prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::PrepareMaterialParameter(
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::prepare_material_parameter(
     DRT::ELEMENTS::ScaTraHDG* hdgele,            //!< hdg element
     CORE::LINALG::SerialDenseMatrix& difftensor  //!< diffusion tensor
 )
@@ -2209,7 +2209,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
                        .Evaluate(xsi.A(), time, 0);
     std::vector<double> deriv = GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
-                                    .EvaluateSpatialDerivative(xsi.A(), time, 0);
+                                    .evaluate_spatial_derivative(xsi.A(), time, 0);
 
     error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
     exact_phi += std::pow(funct, 2) * highshapes.jfac(q);

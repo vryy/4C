@@ -79,7 +79,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
 /*----------------------------------------------------------------------*
  | Complete coupling matrices and rhs vectors              schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluidState::CompleteCouplingMatricesAndRhs()
+void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
 {
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat_block =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(xffluidsysmat_, false);
@@ -89,18 +89,18 @@ void FLD::XFluidFluidState::CompleteCouplingMatricesAndRhs()
 
   if (sysmat_block == Teuchos::null)  // merged matrix
   {
-    XFluidState::CompleteCouplingMatricesAndRhs(xffluiddofrowmap_);
+    XFluidState::complete_coupling_matrices_and_rhs(xffluiddofrowmap_);
   }
   else  // block matrix
   {
-    XFluidState::CompleteCouplingMatricesAndRhs(xfluiddofrowmap_);
+    XFluidState::complete_coupling_matrices_and_rhs(xfluiddofrowmap_);
   }
 }
 
 /*----------------------------------------------------------------------*
  |  Create merged DBC map extractor                         kruse 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluidState::CreateMergedDBCMapExtractor(
+void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> embfluiddbcmaps)
 {
   // create merged dbc map from both fluids

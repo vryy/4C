@@ -74,7 +74,7 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
   }
 }
 
-void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllContainers(
+void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all_containers(
     std::shared_ptr<std::vector<char>>& particlebuffer) const
 {
   // iterate over particle types
@@ -102,7 +102,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
   }
 }
 
-void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllContainers(
+void PARTICLEENGINE::ParticleContainerBundle::get_vector_of_particle_objects_of_all_containers(
     std::vector<ParticleObjShrdPtr>& particlesstored) const
 {
   // iterate over particle types

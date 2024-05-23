@@ -1878,14 +1878,14 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   // check for boundary nodes
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -2075,14 +2075,14 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
 /*----------------------------------------------------------------------*
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
-    CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv, const int valdim,
-    bool boundtrafo)
+bool MORTAR::Element::evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmtype,
+    const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
+    const int valdim, bool boundtrafo)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) FOUR_C_THROW("EvaluateShapeLagMult called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult called with xi=nullptr");
 
   // dual LM shape functions or not
   bool dual = false;
@@ -2091,7 +2091,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   switch (Shape())
   {
@@ -2340,7 +2340,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       // unknown case
     default:
     {
-      FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
+      FOUR_C_THROW("evaluate_shape_lag_mult called for unknown element type");
       break;
     }
   }
@@ -2507,7 +2507,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
  |  Evaluate Lagrange multiplier shape functions             seitz 09/17|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype,
+bool MORTAR::Element::evaluate_shape_lag_mult_const(const INPAR::MORTAR::ShapeFcn& lmtype,
     const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
@@ -2521,15 +2521,15 @@ bool MORTAR::Element::EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& l
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
+bool MORTAR::Element::evaluate_shape_lag_mult_lin(const INPAR::MORTAR::ShapeFcn& lmtype,
     const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) FOUR_C_THROW("EvaluateShapeLagMultLin called with xi=nullptr");
-  if (!IsSlave()) FOUR_C_THROW("EvaluateShapeLagMultLin called for master element");
+  if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult_lin called with xi=nullptr");
+  if (!IsSlave()) FOUR_C_THROW("evaluate_shape_lag_mult_lin called for master element");
 
   // check for feasible element types (line3,tri6, quad8 or quad9)
   if (Shape() != CORE::FE::CellType::line3 && Shape() != CORE::FE::CellType::tri6 &&
@@ -2543,14 +2543,14 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
   // check for boundary nodes
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -2610,7 +2610,7 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
       // unknown case
     default:
     {
-      FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
+      FOUR_C_THROW("evaluate_shape_lag_mult called for unknown element type");
       break;
     }
   }
@@ -2620,7 +2620,7 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
 /*----------------------------------------------------------------------*
  |  1D/2D shape function linearizations repository            popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType shape,
+void MORTAR::Element::shape_function_linearizations(MORTAR::Element::ShapeType shape,
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   switch (shape)
@@ -4360,10 +4360,10 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
 /*----------------------------------------------------------------------*
  |  Evaluate 2nd derivative of shape functions                popp 05/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::Evaluate2ndDerivShape(
+bool MORTAR::Element::evaluate2nd_deriv_shape(
     const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim)
 {
-  if (!xi) FOUR_C_THROW("Evaluate2ndDerivShape called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("evaluate2nd_deriv_shape called with xi=nullptr");
 
   //**********************************************************************
   // IMPORTANT NOTE: In 3D the ordering of the 2nd derivatives is:
@@ -4655,7 +4655,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
     }
       // unknown case
     default:
-      FOUR_C_THROW("Evaluate2ndDerivShape called for unknown element type");
+      FOUR_C_THROW("evaluate2nd_deriv_shape called for unknown element type");
       break;
   }
 
@@ -4703,10 +4703,11 @@ bool MORTAR::Element::DerivShapeDual(
       bool isonbound2 = mycnode2->IsOnBound();
 
       // locally linear Lagrange multipliers
-      if (isonbound2) ShapeFunctionLinearizations(MORTAR::Element::quaddual1D_only_lin, derivdual);
+      if (isonbound2)
+        shape_function_linearizations(MORTAR::Element::quaddual1D_only_lin, derivdual);
       // use unmodified dual shape functions
       else
-        ShapeFunctionLinearizations(MORTAR::Element::quaddual1D, derivdual);
+        shape_function_linearizations(MORTAR::Element::quaddual1D, derivdual);
 
       break;
     }
@@ -4718,13 +4719,13 @@ bool MORTAR::Element::DerivShapeDual(
     case CORE::FE::CellType::quad9:
     {
       if (Shape() == CORE::FE::CellType::quad4)
-        ShapeFunctionLinearizations(MORTAR::Element::bilindual2D, derivdual);
+        shape_function_linearizations(MORTAR::Element::bilindual2D, derivdual);
       else if (Shape() == CORE::FE::CellType::tri6)
-        ShapeFunctionLinearizations(MORTAR::Element::quaddual2D, derivdual);
+        shape_function_linearizations(MORTAR::Element::quaddual2D, derivdual);
       else if (Shape() == CORE::FE::CellType::quad8)
-        ShapeFunctionLinearizations(MORTAR::Element::serendipitydual2D, derivdual);
+        shape_function_linearizations(MORTAR::Element::serendipitydual2D, derivdual);
       else
-        /*Shape()==quad9*/ ShapeFunctionLinearizations(MORTAR::Element::biquaddual2D, derivdual);
+        /*Shape()==quad9*/ shape_function_linearizations(MORTAR::Element::biquaddual2D, derivdual);
 
       break;
     }
@@ -4734,12 +4735,12 @@ bool MORTAR::Element::DerivShapeDual(
     //==================================================
     case CORE::FE::CellType::nurbs3:
     {
-      ShapeFunctionLinearizations(MORTAR::Element::quaddual1D, derivdual);
+      shape_function_linearizations(MORTAR::Element::quaddual1D, derivdual);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      ShapeFunctionLinearizations(MORTAR::Element::biquaddual2D, derivdual);
+      shape_function_linearizations(MORTAR::Element::biquaddual2D, derivdual);
       break;
     }
       // unknown case

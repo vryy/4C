@@ -53,7 +53,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
 
   // build structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase =
-      ADAPTER::BuildStructureAlgorithm(structparams);
+      ADAPTER::build_structure_algorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
   structure_ = adapterbase->StructureField();
@@ -164,7 +164,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
   else
   {
     // Inform user that structure field has been disabled
-    PrintStructureDisabledInfo();
+    print_structure_disabled_info();
     // just set displacements and velocities to zero
     SetStructSolution(struct_zeros_, struct_zeros_);
   }
@@ -178,7 +178,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   StructureField()->Discretization()->SetState(1, "porofluid", FluidField()->Phinp());
 
@@ -255,7 +255,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
   FluidField()->Update();
 
   // evaluate error if desired
-  FluidField()->EvaluateErrorComparedToAnalyticalSol();
+  FluidField()->evaluate_error_compared_to_analytical_sol();
 
   // set structure on fluid (necessary for possible domain integrals)
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
@@ -285,9 +285,9 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMa
  | coupled artery-porofluid system matrix                kremheller 05/18 |
  *------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
-POROMULTIPHASE::PoroMultiPhaseBase::ArteryPorofluidSysmat() const
+POROMULTIPHASE::PoroMultiPhaseBase::artery_porofluid_sysmat() const
 {
-  return fluid_->ArteryPorofluidSysmat();
+  return fluid_->artery_porofluid_sysmat();
 }
 
 /*------------------------------------------------------------------------*
@@ -357,7 +357,7 @@ Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::SolidPress
 /*----------------------------------------------------------------------*
  | inform user that structure is not solved            kremheller 04/17 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::PrintStructureDisabledInfo()
+void POROMULTIPHASE::PoroMultiPhaseBase::print_structure_disabled_info()
 {
   // print out Info
   if (Comm().MyPID() == 0)

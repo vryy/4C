@@ -132,7 +132,7 @@ double MAT::NewmanMultiScale::electronic_cond(const int gp) const
   {
     return GLOBAL::Problem::Instance()
                ->FunctionById<CORE::UTILS::FunctionOfAnything>(func_num - 1)
-               .Evaluate({{"c", EvaluateMeanConcentration(gp)}}, {}, 0) *
+               .Evaluate({{"c", evaluate_mean_concentration(gp)}}, {}, 0) *
            params_->electronic_cond();
   }
   else

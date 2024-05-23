@@ -138,7 +138,7 @@ namespace MAT
     /// how much of blood satisfies this rule
     double PerVolumeBlood() const { return params_->per_volume_blood_; }
 
-    double O2SaturationPerVolumeBlood() const { return params_->o2_sat_per_vol_blood_; }
+    double o2_saturation_per_volume_blood() const { return params_->o2_sat_per_vol_blood_; }
     double ReferencePressure() const { return params_->p_half_; }
     double SigmoidalPower() const { return params_->power_; }
 

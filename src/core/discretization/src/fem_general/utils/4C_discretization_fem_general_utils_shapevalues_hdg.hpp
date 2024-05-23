@@ -209,7 +209,7 @@ namespace CORE::FE
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void AdjustFaceOrientation(const DRT::Element &ele, const unsigned int face);
+    void adjust_face_orientation(const DRT::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -277,7 +277,7 @@ namespace CORE::FE
 
     \Author: Berardocco
      */
-    void ComputeFaceReferenceSystem(const DRT::Element &ele, const unsigned int face);
+    void compute_face_reference_system(const DRT::Element &ele, const unsigned int face);
   };
 
   /*!

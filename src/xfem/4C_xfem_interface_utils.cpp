@@ -55,7 +55,7 @@ void XFEM::UTILS::GetStdAverageWeights(
 /*--------------------------------------------------------------------------------
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
-void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
+void XFEM::UTILS::nit_compute_visc_penalty_stabfac(
     const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t which
                                            ///< the stabilization factor is computed
     const double &penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
@@ -124,7 +124,7 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
   {
     // get an estimate of the hp-depending constant C_T satisfying the trace inequality w.r.t the
     // corresponding element (compare different weightings)
-    double C_T = NIT_getTraceEstimateConstant(ele_distype, is_pseudo_2D);
+    double C_T = nit_get_trace_estimate_constant(ele_distype, is_pseudo_2D);
 
     // build the final viscous scaling
     NIT_visc_stab_fac *= C_T;
@@ -141,7 +141,7 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
  * get the constant which satisfies the trace inequality depending on the spatial dimension and
  *polynomial order of the element
  *--------------------------------------------------------------------------------*/
-double XFEM::UTILS::NIT_getTraceEstimateConstant(
+double XFEM::UTILS::nit_get_trace_estimate_constant(
     const CORE::FE::CellType ele_distype, bool is_pseudo_2D)
 {
   /*
@@ -678,7 +678,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
   CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
   const INPAR::XFEM::AveragingStrategy averaging_strategy =
-      cond_manager->GetAveragingStrategy(coup_sid, ele->Id());
+      cond_manager->get_averaging_strategy(coup_sid, ele->Id());
   if (emb == Teuchos::null and averaging_strategy == INPAR::XFEM::Embedded_Sided)
     FOUR_C_THROW("no coupling interface available, however Embedded_Sided coupling is activated!");
 
@@ -848,10 +848,10 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     const double densaf_master,                  ///< master density
     const double densaf_slave,                   ///< slave density
     INPAR::XFEM::MassConservationScaling
-        MassConservationScaling,  ///< kind of mass conservation scaling
+        mass_conservation_scaling,  ///< kind of mass conservation scaling
     INPAR::XFEM::MassConservationCombination
-        MassConservationCombination,  ///< kind of mass conservation combination
-    const double NITStabScaling,      ///< scaling of nit stab fac
+        mass_conservation_combination,  ///< kind of mass conservation combination
+    const double NITStabScaling,        ///< scaling of nit stab fac
     INPAR::XFEM::ConvStabScaling
         ConvStabScaling,  ///< which convective stab. scaling of inflow stab
     INPAR::XFEM::XffConvStabScaling
@@ -868,7 +868,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   /*
    * Depending on the flow regime, the factor alpha of Nitsches penalty term
    * (\alpha * [v],[u]) can take various forms.
-   * Based on INPAR::XFEM::MassConservationCombination, we choose:
+   * Based on INPAR::XFEM::mass_conservation_combination, we choose:
    *
    *                       (1)           (2)          (3)
    *                    /  \mu    \rho             h * \rho         \
@@ -899,7 +899,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   // (1)
   NIT_full_stab_fac = NIT_visc_stab_fac;
 
-  if (MassConservationScaling == INPAR::XFEM::MassConservationScaling_full)
+  if (mass_conservation_scaling == INPAR::XFEM::MassConservationScaling_full)
   {
     // TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective
     // velocity or the velint?
@@ -907,7 +907,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     double velnorminf_s = velint_s.NormInf();
 
     // take the maximum of viscous & convective contribution or the sum?
-    if (MassConservationCombination == INPAR::XFEM::MassConservationCombination_max)
+    if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_max)
     {
       NIT_full_stab_fac =
           std::max(NIT_full_stab_fac, NITStabScaling *
@@ -934,7 +934,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                              (kappa_m * densaf_master + kappa_s * densaf_slave) / (12.0 * timefac);
     }
   }
-  else if (MassConservationScaling != INPAR::XFEM::MassConservationScaling_only_visc)
+  else if (mass_conservation_scaling != INPAR::XFEM::MassConservationScaling_only_visc)
     FOUR_C_THROW("Unknown scaling choice in calculation of Nitsche's penalty parameter");
 
   if (IsConservative and (XFF_ConvStabScaling != INPAR::XFEM::XFF_ConvStabScaling_none or
@@ -981,11 +981,11 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
 
   // Todo (kruse): it is planned to add the inflow contributions independent from the max. option!
   // This version is only kept to shift the adaption of test results to a single commit.
-  if (MassConservationCombination == INPAR::XFEM::MassConservationCombination_max)
+  if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_max)
   {
     NIT_full_stab_fac = std::max(NIT_full_stab_fac, NIT_inflow_stab);
   }
-  else if (MassConservationCombination == INPAR::XFEM::MassConservationCombination_sum)
+  else if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_sum)
   {
     NIT_full_stab_fac += NIT_inflow_stab;
   }

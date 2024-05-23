@@ -60,7 +60,7 @@ namespace CONTACT
       DataContainer();
 
       //! initialize optional sub-data container
-      void InitSubDataContainer(const INPAR::CONTACT::SolvingStrategy strat_type);
+      void init_sub_data_container(const INPAR::CONTACT::SolvingStrategy strat_type);
 
       //! @}
 
@@ -89,27 +89,30 @@ namespace CONTACT
       //! @name Booleans accessors
       //! @{
 
-      //! Return WasInContactLastIter indicator
-      bool& WasInContactLastIter() { return wasincontactlastiter_; }
-      bool WasInContactLastIter() const { return wasincontactlastiter_; }
+      //! Return was_in_contact_last_iter indicator
+      bool& was_in_contact_last_iter() { return wasincontactlastiter_; }
+      bool was_in_contact_last_iter() const { return wasincontactlastiter_; }
 
       //! Return TRUE if the active set is converged, otherwise false
-      bool& IsActiveSetConverged() { return isactivesetconverged_; };
-      bool IsActiveSetConverged() const { return isactivesetconverged_; }
+      bool& is_active_set_converged() { return isactivesetconverged_; };
+      bool is_active_set_converged() const { return isactivesetconverged_; }
 
       //! print the linear conservation check results if TRUE
-      bool& PrintLinearMomConservation() { return printlinearconservation_; };
-      bool PrintLinearMomConservation() const { return printlinearconservation_; };
+      bool& print_linear_mom_conservation() { return printlinearconservation_; };
+      bool print_linear_mom_conservation() const { return printlinearconservation_; };
 
       //! print the angular conservation check results if TRUE
-      bool& PrintAngularMomConservation() { return printangularconservation_; };
-      bool PrintAngularMomConservation() const { return printangularconservation_; };
+      bool& print_angular_mom_conservation() { return printangularconservation_; };
+      bool print_angular_mom_conservation() const { return printangularconservation_; };
 
-      bool& AddInactivForceContributions() { return add_inactive_force_; };
-      bool AddInactivForceContributions() const { return add_inactive_force_; };
+      bool& add_inactiv_force_contributions() { return add_inactive_force_; };
+      bool add_inactiv_force_contributions() const { return add_inactive_force_; };
 
       //! set the the semi smooth newton flag
-      void SetIsSemiSmoothNewton(bool is_semi_smooth) { is_semi_smooth_newton_ = is_semi_smooth; }
+      void set_is_semi_smooth_newton(bool is_semi_smooth)
+      {
+        is_semi_smooth_newton_ = is_semi_smooth;
+      }
 
       //! get the semi smooth newton flag
       bool IsSemiSmoothNewton() const { return is_semi_smooth_newton_; }
@@ -151,12 +154,15 @@ namespace CONTACT
       //! get the parallel strategy enumerator
       INPAR::MORTAR::ExtendGhosting GhostingStrategy() const { return ghosting_strategy_; }
 
-      void SetVariationalApproachType(const enum INPAR::CONTACT::VariationalApproach var_type)
+      void set_variational_approach_type(const enum INPAR::CONTACT::VariationalApproach var_type)
       {
         var_type_ = var_type;
       }
 
-      enum INPAR::CONTACT::VariationalApproach VariationalApproachType() const { return var_type_; }
+      enum INPAR::CONTACT::VariationalApproach variational_approach_type() const
+      {
+        return var_type_;
+      }
 
       void SetPotential(const Teuchos::RCP<Potential>& potential) { potentialPtr_ = potential; }
 
@@ -178,15 +184,15 @@ namespace CONTACT
         return *pd_control_;
       }
 
-      void SetMatrixRowColTransformer(
+      void set_matrix_row_col_transformer(
           const Teuchos::RCP<MORTAR::MatrixRowColTransformer>& transformer)
       {
         mat_row_col_transformer_ = transformer;
       }
 
-      void InitMatrixRowColTransformer();
+      void init_matrix_row_col_transformer();
 
-      MORTAR::MatrixRowColTransformer& MatrixRowColTransformer() const
+      MORTAR::MatrixRowColTransformer& matrix_row_col_transformer() const
       {
         if (mat_row_col_transformer_.is_null())
           FOUR_C_THROW("The mat_row_col_transformer was not initialized correctly!");
@@ -198,22 +204,22 @@ namespace CONTACT
 
       double& TotalGradientError() { return grad_error_.total_; }
 
-      const std::vector<std::pair<int, double>>& NodalGradientError_MaProj() const
+      const std::vector<std::pair<int, double>>& nodal_gradient_error_ma_proj() const
       {
         return grad_error_.master_;
       }
 
-      std::vector<std::pair<int, double>>& NodalGradientError_MaProj()
+      std::vector<std::pair<int, double>>& nodal_gradient_error_ma_proj()
       {
         return grad_error_.master_;
       }
 
-      const std::vector<std::pair<int, double>>& NodalGradientError_Jacobian() const
+      const std::vector<std::pair<int, double>>& nodal_gradient_error_jacobian() const
       {
         return grad_error_.jacobian_;
       }
 
-      std::vector<std::pair<int, double>>& NodalGradientError_Jacobian()
+      std::vector<std::pair<int, double>>& nodal_gradient_error_jacobian()
       {
         return grad_error_.jacobian_;
       }
@@ -262,11 +268,11 @@ namespace CONTACT
       }
 
       //! Return dLmNWGapLinMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmNWGapLinMatrixPtr()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& d_lm_nw_gap_lin_matrix_ptr()
       {
         return dLmNWGapLinMatrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmNWGapLinMatrixPtr() const
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> d_lm_nw_gap_lin_matrix_ptr() const
       {
         return dLmNWGapLinMatrixPtr_;
       }
@@ -305,11 +311,11 @@ namespace CONTACT
         return *dLmTLmTLinMatrixPtr_;
       }
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& InactiveLinMatrixPtr()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& inactive_lin_matrix_ptr()
       {
         return inactiveLinMatrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> InactiveLinMatrixPtr() const
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inactive_lin_matrix_ptr() const
       {
         return inactiveLinMatrixPtr_;
       }
@@ -351,8 +357,8 @@ namespace CONTACT
       }
 
       //! This vector contributes as diagonal inactive matrix to the kzz block
-      Teuchos::RCP<Epetra_Vector>& InactiveDiagMatrixPtr() { return inactiveDiagMatrixPtr_; }
-      Teuchos::RCP<const Epetra_Vector> InactiveDiagMatrixPtr() const
+      Teuchos::RCP<Epetra_Vector>& inactive_diag_matrix_ptr() { return inactiveDiagMatrixPtr_; }
+      Teuchos::RCP<const Epetra_Vector> inactive_diag_matrix_ptr() const
       {
         return inactiveDiagMatrixPtr_;
       }
@@ -423,8 +429,8 @@ namespace CONTACT
       }
 
       /*! \brief Return the slave force due to inactive Lagrange multiplier values */
-      Teuchos::RCP<Epetra_Vector>& SlForceLmInactivePtr() { return slForceLmInactivePtr_; }
-      Teuchos::RCP<const Epetra_Vector> SlForceLmInactivePtr() const
+      Teuchos::RCP<Epetra_Vector>& sl_force_lm_inactive_ptr() { return slForceLmInactivePtr_; }
+      Teuchos::RCP<const Epetra_Vector> sl_force_lm_inactive_ptr() const
       {
         return slForceLmInactivePtr_.getConst();
       }
@@ -480,28 +486,34 @@ namespace CONTACT
 
       //! @name Global map accessors
       //! @{
-      Teuchos::RCP<Epetra_Map>& GSlNormalDofRowMapPtr() { return gsndofrowmapPtr_; }
-      Teuchos::RCP<const Epetra_Map> GSlNormalDofRowMapPtr() const { return gsndofrowmapPtr_; }
+      Teuchos::RCP<Epetra_Map>& g_sl_normal_dof_row_map_ptr() { return gsndofrowmapPtr_; }
+      Teuchos::RCP<const Epetra_Map> g_sl_normal_dof_row_map_ptr() const
+      {
+        return gsndofrowmapPtr_;
+      }
       Epetra_Map& GSlNormalDofRowMap()
       {
         if (gsndofrowmapPtr_.is_null()) FOUR_C_THROW("The gsndofrowmapPtr_ is not initialized!");
         return *gsndofrowmapPtr_;
       }
 
-      Teuchos::RCP<Epetra_Map>& GSlTangentialDofRowMapPtr() { return gstdofrowmapPtr_; }
-      Teuchos::RCP<const Epetra_Map> GSlTangentialDofRowMapPtr() const { return gstdofrowmapPtr_; }
-      Epetra_Map& GSlTangentialDofRowMap()
+      Teuchos::RCP<Epetra_Map>& g_sl_tangential_dof_row_map_ptr() { return gstdofrowmapPtr_; }
+      Teuchos::RCP<const Epetra_Map> g_sl_tangential_dof_row_map_ptr() const
+      {
+        return gstdofrowmapPtr_;
+      }
+      Epetra_Map& g_sl_tangential_dof_row_map()
       {
         if (gstdofrowmapPtr_.is_null()) FOUR_C_THROW("The gstdofrowmapPtr_ is not initialized!");
         return *gstdofrowmapPtr_;
       }
 
-      Teuchos::RCP<Epetra_Map>& GOldActiveSlaveNodesPtr() { return gOldActiveSlaveNodesPtr_; }
-      Teuchos::RCP<const Epetra_Map> GOldActiveSlaveNodesPtr() const
+      Teuchos::RCP<Epetra_Map>& g_old_active_slave_nodes_ptr() { return gOldActiveSlaveNodesPtr_; }
+      Teuchos::RCP<const Epetra_Map> g_old_active_slave_nodes_ptr() const
       {
         return gOldActiveSlaveNodesPtr_;
       }
-      Epetra_Map& GOldActiveSlaveNodes()
+      Epetra_Map& g_old_active_slave_nodes()
       {
         if (gOldActiveSlaveNodesPtr_.is_null())
           FOUR_C_THROW("The gAugOldActiveSlaveNodesPtr_ is not initialized!");
@@ -740,7 +752,7 @@ namespace CONTACT
       bool IsSaddlePointSystem() const override;
 
       //! reset active set convergence flags
-      void ResetActiveSet() override { Data().IsActiveSetConverged() = false; };
+      void ResetActiveSet() override { Data().is_active_set_converged() = false; };
 
       //! Return the L2-norm of the constraint right-hand-side [deprecated]
       double ConstraintNorm() const override;
@@ -765,12 +777,15 @@ namespace CONTACT
        *
        *  The augmented Lagrangian strategy supports only the semi-smooth Newton
        *  check at the moment, so no difference is made! */
-      bool ActiveSetSemiSmoothConverged() const override { return Data().IsActiveSetConverged(); }
+      bool active_set_semi_smooth_converged() const override
+      {
+        return Data().is_active_set_converged();
+      }
 
       //! Return the active node row map of the previous Newton step
-      Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override
+      Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
       {
-        return Data().GOldActiveSlaveNodesPtr();
+        return Data().g_old_active_slave_nodes_ptr();
       };
 
       //! Return the slip node row map of the previous Newton step
@@ -787,16 +802,16 @@ namespace CONTACT
        *
        *  \date 04/2016
        *  \author hiermeier */
-      Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const override
+      Teuchos::RCP<const Epetra_Map> sl_normal_do_f_row_map_ptr(const bool& redist) const override
       {
         if ((not redist) and ParRedist())
           FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
-        return Data().GSlNormalDofRowMapPtr();
+        return Data().g_sl_normal_dof_row_map_ptr();
       };
       const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
       {
-        return *SlNormalDoFRowMapPtr(redist);
+        return *sl_normal_do_f_row_map_ptr(redist);
       }
 
       /*! \brief Return the slave dof row map in the tangential directions
@@ -806,17 +821,18 @@ namespace CONTACT
        *
        *  \date 04/2016
        *  \author hiermeier */
-      Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const override
+      Teuchos::RCP<const Epetra_Map> sl_tangential_do_f_row_map_ptr(
+          const bool& redist) const override
       {
         if ((not redist) and ParRedist())
           FOUR_C_THROW(
               "The original / not redistributed slave tangential row map is not available!");
 
-        return Data().GSlTangentialDofRowMapPtr();
+        return Data().g_sl_tangential_dof_row_map_ptr();
       };
-      const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const override
+      const Epetra_Map& sl_tangential_do_f_row_map(const bool& redist) const override
       {
-        return *SlTangentialDoFRowMapPtr(redist);
+        return *sl_tangential_do_f_row_map_ptr(redist);
       }
 
       //! derived
@@ -837,7 +853,7 @@ namespace CONTACT
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_condensed_matrix_block_ptr(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override
       {
         FOUR_C_THROW("There is no condensed matrix block in the augmented Lagrangian case!");
@@ -845,7 +861,7 @@ namespace CONTACT
       };
 
       //! Return the contact status of the last nonlinear solver iteration
-      bool WasInContactLastIter() const { return Data().WasInContactLastIter(); }
+      bool was_in_contact_last_iter() const { return Data().was_in_contact_last_iter(); }
 
       //! Return augmented constraint rhs vector
       Teuchos::RCP<Epetra_Vector> ConstrRhs() override { return Data().ConstrRhsPtr(); }
@@ -878,25 +894,25 @@ namespace CONTACT
        *                        will contain zero values.
        *
        *  \author hiermeier \date 09/17 */
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetWeightedGapGradient(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_weighted_gap_gradient(
           const enum WGapGradientType grad_type, const enum MapType map_type) const;
 
-      void EvalWeightedGapGradientError(CONTACT::ParamsInterface& cparams) override;
+      void eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams) override;
 
       //! @}
 
-      double CharacteristicInterfaceElementLength(const enum CONTACT::AUG::SideType stype) const;
+      double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
 
-      inline double GetTotalGradientError() const { return Data().TotalGradientError(); }
+      inline double get_total_gradient_error() const { return Data().TotalGradientError(); }
 
-      const std::vector<std::pair<int, double>>& GetNodalGradientError_Jacobian() const
+      const std::vector<std::pair<int, double>>& get_nodal_gradient_error_jacobian() const
       {
-        return Data().NodalGradientError_Jacobian();
+        return Data().nodal_gradient_error_jacobian();
       }
 
-      const std::vector<std::pair<int, double>>& GetNodalGradientError_MaProj() const
+      const std::vector<std::pair<int, double>>& get_nodal_gradient_error_ma_proj() const
       {
-        return Data().NodalGradientError_MaProj();
+        return Data().nodal_gradient_error_ma_proj();
       }
 
       //! @name Evaluate routines
@@ -916,7 +932,7 @@ namespace CONTACT
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const override;
 
       /// return the desired contributions to the linear model of the potential function
-      double GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
+      double get_linearized_potential_value_terms(const Epetra_Vector& dir,
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const override;
@@ -944,18 +960,18 @@ namespace CONTACT
 
      protected:
       /// helper function to access the right model terms
-      double GetLinearizedPotentialModelTerms(const Epetra_Vector& dir,
+      double get_linearized_potential_model_terms(const Epetra_Vector& dir,
           const enum POTENTIAL::Type pottype, const enum POTENTIAL::SetType potset,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const;
 
       /// helper function to access the correct 1st order derivative model terms
-      void GetLinearizedPotentialModelTerms_1stOrder(const enum POTENTIAL::Type pottype,
+      void get_linearized_potential_model_terms_1st_order(const enum POTENTIAL::Type pottype,
           const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
           double& linval) const;
 
       // helper function to access the correct 2nd order derivative model terms
-      void GetLinearizedPotentialModelTerms_2ndOrder(const enum POTENTIAL::Type pottype,
+      void get_linearized_potential_model_terms_2nd_order(const enum POTENTIAL::Type pottype,
           const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
           double& linval) const;
       //! @}
@@ -964,21 +980,21 @@ namespace CONTACT
       virtual double InactiveScaleFactor() const { return 0.5; }
 
       /// derived
-      void EvaluateReferenceState() override;
+      void evaluate_reference_state() override;
 
       /// set current evaluation state in the \c cparams object
       void SetCurrentEvalState(const CONTACT::ParamsInterface& cparams);
 
       /// perform parallel distribution check
-      void CheckParallelDistribution(const GlobalTimeMonitor& global_timer);
+      void check_parallel_distribution(const GlobalTimeMonitor& global_timer);
 
       /// handle dynamic redistribution of the contact interface elements
-      bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+      bool dyn_redistribute_contact(const Teuchos::RCP<const Epetra_Vector>& dis,
           Teuchos::RCP<const Epetra_Vector> vel, const int nlniter) override;
 
       /** spread the global evaluation times of the slave elements to the different
        *  contact interfaces */
-      void SpreadGlobalSeleEvalTimesToInterfaces();
+      void spread_global_sele_eval_times_to_interfaces();
 
       /*! \brief Update routine called at the end of a load/time step [derived]
        *
@@ -997,10 +1013,10 @@ namespace CONTACT
        *
        *   These maps contain all slave dofs in normal and tangential direction,
        *   assembled over all interfaces. */
-      void AssembleGlobalSlNTDofRowMaps();
+      void assemble_global_sl_nt_dof_row_maps();
 
       /// assemble global element maps
-      void AssembleGlobalEleMaps();
+      void assemble_global_ele_maps();
 
       /*! \brief Setup the cn-vector
        *
@@ -1058,7 +1074,7 @@ namespace CONTACT
        *  another Newton step has to be performed.
        *
        *  \author hiermeier */
-      void UpdateActiveSetSemiSmooth(const CONTACT::ParamsInterface& cparams);
+      void update_active_set_semi_smooth(const CONTACT::ParamsInterface& cparams);
 
       //! Initialize all matrices
       void Initialize() override { Initialize(MORTAR::eval_force_stiff); }
@@ -1073,7 +1089,7 @@ namespace CONTACT
        *  A better and more realistic visualization is the corresponding contact force.
        *
        *  Function overwrites the basic function in the abstract lagrange strategy. */
-      void ComputeContactStresses() final;
+      void compute_contact_stresses() final;
 
       /*! \brief Write contact force output
        *
@@ -1085,7 +1101,7 @@ namespace CONTACT
       //! @{
 
       //! Check linear and angular momentum conservation
-      void CheckConservationLaws(CONTACT::ParamsInterface& cparams);
+      void check_conservation_laws(CONTACT::ParamsInterface& cparams);
 
       //! Finite Difference check of the augmented Lagrange terms at global level
       void AugFDCheckGlobal(CONTACT::ParamsInterface& cparams);
@@ -1173,7 +1189,7 @@ namespace CONTACT
       void EvalAugmentedForces();
 
       /// evaluate only the forces originating from the weight gap values
-      void EvalConstraintForces();
+      void eval_constraint_forces();
 
       /// set all lm forces to zero
       void ZeroizeLMForces();
@@ -1188,7 +1204,7 @@ namespace CONTACT
       void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
       /// evaluate only all contributions corresponding to the weighted gap
-      void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams) override;
+      void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
 
       /*! \brief Run in the end of a call to EvalForceStiff
        *
@@ -1216,7 +1232,7 @@ namespace CONTACT
        *
        *  \date 07/2016
        *  \author hiermeier */
-      void ResetLagrangeMultipliers(
+      void reset_lagrange_multipliers(
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
       //! \brief Derived function
@@ -1238,7 +1254,7 @@ namespace CONTACT
       void EvalConstrRHS() override;
 
       //! All necessary contributions are added to the constraint right-hand side.
-      virtual void AddContributionsToConstrRHS(Epetra_Vector& augConstrRhs) const;
+      virtual void add_contributions_to_constr_rhs(Epetra_Vector& augConstrRhs) const;
 
       //! @}
 
@@ -1249,12 +1265,12 @@ namespace CONTACT
       bool AssembleContactRHS();
 
       //! Evaluate contact contributions to stiff matrix (frictionless)
-      void AssembleContactStiff();
+      void assemble_contact_stiff();
 
       /*! \brief Create new stiffness state
        *
        *  \author hiermeier \date 03/17 */
-      void CreateStiffnessState(const Epetra_Map& gAugInactiveSlaveDofs);
+      void create_stiffness_state(const Epetra_Map& gAugInactiveSlaveDofs);
 
       /*! \brief Create new rhs state
        *
@@ -1268,7 +1284,7 @@ namespace CONTACT
        *  vectors representing diagonal matrices.
        *
        *  \author hiermeier \date 03/17 */
-      void ZeroizeStiffnessState();
+      void zeroize_stiffness_state();
 
       /*! \brief Zeroize existing rhs state
        *
@@ -1279,26 +1295,26 @@ namespace CONTACT
        *  ROW => Displacement, COLUMN => Displacement
        *
        *  \author hiermeier \date 03/17 */
-      virtual void AddContributionsToMatrixBlockDisplDispl(
+      virtual void add_contributions_to_matrix_block_displ_displ(
           CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = nullptr) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Displacement, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      void AddContributionsToMatrixBlockDisplLm(CORE::LINALG::SparseMatrix& kdz) const;
+      void add_contributions_to_matrix_block_displ_lm(CORE::LINALG::SparseMatrix& kdz) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Displacement
        *
        *  \author hiermeier \date 03/17 */
-      void AddContributionsToMatrixBlockLmDispl(CORE::LINALG::SparseMatrix& kzd) const;
+      void add_contributions_to_matrix_block_lm_displ(CORE::LINALG::SparseMatrix& kzd) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      virtual void AddContributionsToMatrixBlockLmLm(CORE::LINALG::SparseMatrix& kzz) const;
+      virtual void add_contributions_to_matrix_block_lm_lm(CORE::LINALG::SparseMatrix& kzz) const;
 
      protected:
       /*! \brief Get access to the internal data container of the strategy (mutable)
@@ -1338,14 +1354,14 @@ namespace CONTACT
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+      void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
           Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void UpdateDisplacementsAndLMincrements(
+      void update_displacements_and_l_mincrements(
           Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
       {
         FOUR_C_THROW("Deprecated function call!");
@@ -1354,17 +1370,17 @@ namespace CONTACT
       {
         FOUR_C_THROW("Deprecated function call! Replaced by RunPostComputeX().");
       };
-      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override
+      void update_active_set_semi_smooth(const bool firstStepPredictor = false) override
       {
         FOUR_C_THROW(
             "Deprecated function call! Replaced by "
-            "UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& ).");
+            "update_active_set_semi_smooth( const CONTACT::ParamsInterface& ).");
       };
       //! @}
 
       //! @name No frictional support at the moment
       //! @{
-      void EvaluateRelMovPredict() override
+      void evaluate_rel_mov_predict() override
       {
         if (Data().IsFriction()) FOUR_C_THROW("No frictional contact support at the moment!");
         return;
@@ -1389,8 +1405,8 @@ namespace CONTACT
       };
       void ResetPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
       void ModifyPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
-      void UpdateUzawaAugmentedLagrange() override { FOUR_C_THROW("Wrong strategy!"); };
-      void UpdateConstraintNorm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
+      void update_uzawa_augmented_lagrange() override { FOUR_C_THROW("Wrong strategy!"); };
+      void update_constraint_norm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
       bool IsPenalty() const override { return false; };
       //! @}
       //! @}

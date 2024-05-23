@@ -44,40 +44,41 @@ void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall handler
   particlewallinterface_ = particlewallinterface;
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs()
 {
   // evaluate particle pairs
-  EvaluateParticlePairs();
+  evaluate_particle_pairs();
 
   // evaluate particle-wall pairs
-  if (particlewallinterface_) EvaluateParticleWallPairs();
+  if (particlewallinterface_) evaluate_particle_wall_pairs();
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairsAdhesion(
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs_adhesion(
     const double& adhesion_distance)
 {
   // evaluate adhesion particle pairs
-  EvaluateParticlePairsAdhesion(adhesion_distance);
+  evaluate_particle_pairs_adhesion(adhesion_distance);
 
   // evaluate adhesion particle-wall pairs
-  if (particlewallinterface_) EvaluateParticleWallPairsAdhesion(adhesion_distance);
+  if (particlewallinterface_) evaluate_particle_wall_pairs_adhesion(adhesion_distance);
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs");
 
   // clear particle pair data
   particlepairdata_.clear();
 
   // iterate over potential particle neighbors
-  for (const auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
+  for (const auto& potentialneighbors :
+      particleengineinterface_->get_potential_particle_neighbors())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -92,10 +93,10 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
@@ -110,7 +111,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
     double r_ji[3];
 
     // distance between particles considering periodic boundaries
-    particleengineinterface_->DistanceBetweenParticles(pos_i, pos_j, r_ji);
+    particleengineinterface_->distance_between_particles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
@@ -148,9 +149,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs");
 
   // clear particle-wall pair data
   particlewallpairdata_.clear();
@@ -163,7 +164,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
   int particlewallpairindex = 0;
 
   // iterate over potential wall neighbors
-  for (const auto& potentialneighbors : particlewallinterface_->GetPotentialWallNeighbors())
+  for (const auto& potentialneighbors : particlewallinterface_->get_potential_wall_neighbors())
   {
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -173,7 +174,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle i
     const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
@@ -190,7 +191,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
 
     // determine nodal positions of column wall element
     std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
-    particlewallinterface_->DetermineColWallEleNodalPos(ele, colelenodalpos);
+    particlewallinterface_->determine_col_wall_ele_nodal_pos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
     CORE::LINALG::Matrix<3, 1> closestpos;
@@ -277,7 +278,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
@@ -357,16 +358,18 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
     const double& adhesion_distance)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs_adhesion");
 
   // clear adhesion particle pair data
   particlepairadhesiondata_.clear();
 
   // iterate over potential particle neighbors
-  for (const auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
+  for (const auto& potentialneighbors :
+      particleengineinterface_->get_potential_particle_neighbors())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -381,10 +384,10 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
@@ -399,7 +402,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
     double r_ji[3];
 
     // distance between particles considering periodic boundaries
-    particleengineinterface_->DistanceBetweenParticles(pos_i, pos_j, r_ji);
+    particleengineinterface_->distance_between_particles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
@@ -437,11 +440,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
+void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion(
     const double& adhesion_distance)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion");
+      "PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion");
 
   // clear particle-wall pair data
   particlewallpairadhesiondata_.clear();
@@ -454,7 +457,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
   int particlewallpairindex = 0;
 
   // iterate over potential wall neighbors
-  for (const auto& potentialneighbors : particlewallinterface_->GetPotentialWallNeighbors())
+  for (const auto& potentialneighbors : particlewallinterface_->get_potential_wall_neighbors())
   {
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -464,7 +467,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle i
     const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
@@ -491,7 +494,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
         FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
-      surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
+      surface_energy = particlewallmaterial->adhesion_surface_energy();
     }
 
     // no evaluation of adhesion contribution
@@ -499,7 +502,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
 
     // determine nodal positions of column wall element
     std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
-    particlewallinterface_->DetermineColWallEleNodalPos(ele, colelenodalpos);
+    particlewallinterface_->determine_col_wall_ele_nodal_pos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
     CORE::LINALG::Matrix<3, 1> closestpos;
@@ -586,7 +589,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);

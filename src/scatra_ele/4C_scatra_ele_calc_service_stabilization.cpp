@@ -39,19 +39,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     case INPAR::SCATRA::tau_taylor_hughes_zarins:
     case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
     {
-      CalcTauTaylorHughesZarins(tau, diffus, reacoeff, densnp, convelint);
+      calc_tau_taylor_hughes_zarins(tau, diffus, reacoeff, densnp, convelint);
       break;
     }
     case INPAR::SCATRA::tau_franca_valentin:
     case INPAR::SCATRA::tau_franca_valentin_wo_dt:
     {
-      CalcTauFrancaValentin(tau, diffus, reacoeff, densnp, convelint, vol);
+      calc_tau_franca_valentin(tau, diffus, reacoeff, densnp, convelint, vol);
       break;
     }
     case INPAR::SCATRA::tau_shakib_hughes_codina:
     case INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt:
     {
-      CalcTauFrancaShakibCodina(tau, diffus, reacoeff, densnp, convelint, vol);
+      calc_tau_franca_shakib_codina(tau, diffus, reacoeff, densnp, convelint, vol);
       break;
     }
     case INPAR::SCATRA::tau_codina:
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     case INPAR::SCATRA::tau_franca_madureira_valentin:
     case INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt:
     {
-      CalcTauFrancaMadureiraValentin(tau, diffus, reacoeff, densnp, vol);
+      calc_tau_franca_madureira_valentin(tau, diffus, reacoeff, densnp, vol);
       break;
     }
     case INPAR::SCATRA::tau_exact_1d:
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
  |  calculation of tau according to Taylor, Hughes and Zarins  vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_zarins(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
  |  calculation of tau according to Franca and Valentin        vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
  |  calculation of tau according to Franca, Shakib and Codina  vg 01/11 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_codina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -402,7 +402,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
  |  calculation of tau according to Franca, Madureira and Valentin  vg 01/11 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaMadureiraValentin(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madureira_valentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -833,7 +833,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
 
   //  if (artdiff>1e-8)
   //    std::cout<<__FILE__<<__LINE__<<"\t artdiff=\t"<<artdiff<<std::endl;
-  diffmanager_->SetIsotropicSubGridDiff(artdiff, k);
+  diffmanager_->set_isotropic_sub_grid_diff(artdiff, k);
 
   return;
 }  // ScaTraEleCalc::CalcSubgrDiff
@@ -871,7 +871,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
   if (use2ndderiv_)
   {
     // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-    GetLaplacianStrongForm(diff);
+    get_laplacian_strong_form(diff);
     diff.Scale(diffmanager_->GetIsotropicDiff(k));
     diff_phi = diff.Dot(ephinp_[k]);
   }
@@ -1060,7 +1060,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
 
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
-    CalcSubgrVelocityVisc(epsilonvel);
+    calc_subgr_velocity_visc(epsilonvel);
   else
     epsilonvel.Clear();
 
@@ -1100,7 +1100,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
  | calculate viscous part of subgrid-scale velocity   fang 02/15 |
  *---------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity_visc(
     CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
   if (nsd_ == 3)
@@ -1130,7 +1130,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
     FOUR_C_THROW("Epsilon(u) is not implemented for the 1D case!");
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc
+}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_subgr_velocity_visc
 
 FOUR_C_NAMESPACE_CLOSE
 

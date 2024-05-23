@@ -156,7 +156,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
     if (!mc_coupl->CutGeometry()) continue;  // If don't cut the background mesh.
 
     wizard->AddCutterState(mc_idx, mc_coupl->GetCutterDis(), mc_coupl->GetCutterDispCol(),
-        condition_manager_->GetMeshCouplingStartGID(mc_idx));
+        condition_manager_->get_mesh_coupling_start_gid(mc_idx));
   }
 
   //--------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
       back_disp_col,  //!< col vector holding background ALE displacements for backdis
       condition_manager_
           ->GetLevelSetFieldCol(),  //!< col vector holding nodal level-set values based on backdis
-      condition_manager_->GetLevelSetCouplingGid()  //!< global side id for level-set coupling
+      condition_manager_->get_level_set_coupling_gid()  //!< global side id for level-set coupling
   );
 
   //--------------------------------------------------------------------------------------
@@ -181,8 +181,8 @@ void FLD::XFluidStateCreator::CreateNewCutState(
 
     if (mc_coupl->IsMarkedGeometry())
     {
-      wizard->SetMarkedConditionSides(
-          mc_coupl->GetCutterDis(), condition_manager_->GetMeshCouplingStartGID(mc_idx));
+      wizard->set_marked_condition_sides(
+          mc_coupl->GetCutterDis(), condition_manager_->get_mesh_coupling_start_gid(mc_idx));
     }
   }
 
@@ -211,7 +211,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   //--------------------------------------------------------------------------------------
   // recompute nullspace based on new number of dofs per node
   // REMARK: this has to be done after replacing the discret' dofset (via discret_->ReplaceDofSet)
-  xdiscret->ComputeNullSpaceIfNecessary(solver_params, true);
+  xdiscret->compute_null_space_if_necessary(solver_params, true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -106,10 +106,11 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
+    void postprocess_quantities(IO::DiscretizationWriter& output) final;
 
     //! [derived]
-    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+    void postprocess_quantities_per_interface(
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
 
     /*!
     \brief Reconnect Contact Element -- Parent Element Pointers
@@ -117,7 +118,7 @@ namespace CONTACT
     As during the Restart the initial created structural elements are destructed and created again,
     the pointer of these elements changes and therefore needs to be reconnected
     */
-    void ReconnectParentElements();
+    void reconnect_parent_elements();
 
     /*!
     \brief Set Parent Elements for Poro Face Elements
@@ -128,8 +129,8 @@ namespace CONTACT
     \param[out] ele Reference to pointer of contact parent element
 
     */
-    void SetPoroParentElement(int& slavetype, int& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
-        Teuchos::RCP<DRT::Element>& ele);
+    void set_poro_parent_element(int& slavetype, int& mastertype,
+        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface
@@ -141,7 +142,7 @@ namespace CONTACT
     \param slavetype ??
     \param mastertype ??
     */
-    void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
+    void find_poro_interface_types(bool& poromaster, bool& poroslave, bool& structmaster,
         bool& structslave, int& slavetype, int& mastertype);
 
     //! @}

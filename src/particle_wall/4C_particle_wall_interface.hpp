@@ -68,7 +68,7 @@ namespace PARTICLEWALL
      *
      * \return wall discretization
      */
-    virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const = 0;
+    virtual Teuchos::RCP<const DRT::Discretization> get_wall_discretization() const = 0;
 
     /*!
      * \brief get wall data state container
@@ -86,7 +86,7 @@ namespace PARTICLEWALL
      *
      * \return potential particle wall neighbor pairs
      */
-    virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;
+    virtual const PARTICLEENGINE::PotentialWallNeighbors& get_potential_wall_neighbors() const = 0;
 
     /*!
      * \brief determine nodal positions of column wall element
@@ -96,7 +96,7 @@ namespace PARTICLEWALL
      * \param ele[in]             column wall element
      * \param colelenodalpos[out] current nodal position
      */
-    virtual void DetermineColWallEleNodalPos(
+    virtual void determine_col_wall_ele_nodal_pos(
         DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const = 0;
   };
 

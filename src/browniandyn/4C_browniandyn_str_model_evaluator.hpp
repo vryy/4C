@@ -110,25 +110,25 @@ namespace STR
       void UpdateStepElement() override;
 
       //! derived
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       //! derived
       void DetermineEnergy() override;
 
       //! derived
-      void DetermineOptionalQuantity() override;
+      void determine_optional_quantity() override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! derived
       void PostOutput() override;
@@ -149,13 +149,13 @@ namespace STR
       bool ApplyForceExternal();
 
       //! apply brownian (stochastic and damping forces)
-      bool ApplyForceStiffBrownian();
+      bool apply_force_stiff_brownian();
 
       //! apply brownian specific neumann conditions
-      bool ApplyForceStiffExternal();
+      bool apply_force_stiff_external();
 
       //! evaluate brownian specific neumann conditions
-      void EvaluateNeumannBrownianDyn(Teuchos::RCP<Epetra_Vector> eval_vec,
+      void evaluate_neumann_brownian_dyn(Teuchos::RCP<Epetra_Vector> eval_vec,
           Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
@@ -168,14 +168,14 @@ namespace STR
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! \brief retrieve random numbers per element
-      void RandomNumbersPerElement();
+      void random_numbers_per_element();
 
       //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation
       //! "standarddeviation" for parallel use
-      void GenerateGaussianRandomNumbers();
+      void generate_gaussian_random_numbers();
 
       //! \brief safety check whether this condition is fulfilled
-      bool IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength() const;
+      bool is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const;
 
      private:
       //! struct containing all information for random number generator

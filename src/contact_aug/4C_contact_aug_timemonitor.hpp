@@ -29,10 +29,10 @@ namespace CONTACT
      *  which can be found in the respective policy */
     enum class TimeID : unsigned
     {
-      Deriv2nd_NonUnitSlaveElementNormal,
-      Deriv2nd_UnitSlaveElementNormal,
+      deriv2nd_non_unit_slave_element_normal,
+      deriv2nd_unit_slave_element_normal,
       Deriv2nd_Jacobian,
-      Deriv1st_NonUnitSlaveElementNormal,
+      deriv1st_non_unit_slave_element_normal,
       Deriv1st_MXiGP,
       INCOMPLETE_Add_Jac_Deriv2nd_GapN,
       INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac,
@@ -44,11 +44,11 @@ namespace CONTACT
      *  or other element specific time consuming functions. */
     enum class GlobalTimeID : unsigned
     {
-      IntegrateDerivSlaveElement,
+      integrate_deriv_slave_element,
       IntegrateDerivEle2D,
-      IntegrateDerivSegment2D,
+      integrate_deriv_segment2_d,
       IntegrateDerivEle3D,
-      IntegrateDerivCell3DAuxPlane,
+      integrate_deriv_cell3_d_aux_plane,
       /*--- MAX_VALUE: Must stay at the end ------------*/
       MAX_TIME_ID
     };
@@ -75,14 +75,14 @@ namespace CONTACT
     {
       switch (id)
       {
-        case TimeID::Deriv2nd_NonUnitSlaveElementNormal:
-          return "Deriv2nd_NonUnitSlaveElementNormal";
-        case TimeID::Deriv2nd_UnitSlaveElementNormal:
-          return "Deriv2nd_UnitSlaveElementNormal";
+        case TimeID::deriv2nd_non_unit_slave_element_normal:
+          return "deriv2nd_non_unit_slave_element_normal";
+        case TimeID::deriv2nd_unit_slave_element_normal:
+          return "deriv2nd_unit_slave_element_normal";
         case TimeID::Deriv2nd_Jacobian:
           return "Deriv2nd_Jacobian";
-        case TimeID::Deriv1st_NonUnitSlaveElementNormal:
-          return "Deriv1st_NonUnitSlaveElementNormal";
+        case TimeID::deriv1st_non_unit_slave_element_normal:
+          return "deriv1st_non_unit_slave_element_normal";
         case TimeID::Deriv1st_MXiGP:
           return "Deriv1st_MXiGP";
         case TimeID::INCOMPLETE_Add_Jac_Deriv2nd_GapN:

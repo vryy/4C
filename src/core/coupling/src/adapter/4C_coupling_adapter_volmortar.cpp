@@ -114,7 +114,7 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
   // consistent interpolation (NO CORE::VOLMORTAR)
   else if (CORE::UTILS::IntegralValue<CORE::VOLMORTAR::CouplingType>(params, "COUPLINGTYPE") ==
            CORE::VOLMORTAR::couplingtype_coninter)
-    coupdis->EvaluateConsistentInterpolation();
+    coupdis->evaluate_consistent_interpolation();
   //-----------------------
   else
     FOUR_C_THROW("ERROR: Chosen coupling not implemented!!!");
@@ -174,7 +174,7 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretiz
       Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
   if (dis1->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
-  // call AssignDegreesOfFreedom also for auxiliary dofsets
+  // call assign_degrees_of_freedom also for auxiliary dofsets
   // note: the order of FillComplete() calls determines the gid numbering!
   // 1. dofs 1
   // 2. dofs 2
@@ -205,7 +205,7 @@ void CORE::ADAPTER::MortarVolCoupl::AssignMaterials(Teuchos::RCP<DRT::Discretiza
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_2 --> Omega_1                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapping12(
+Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::apply_vector_mapping12(
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
   // safety check
@@ -222,7 +222,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_1 --> Omega_2                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapping21(
+Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::apply_vector_mapping21(
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
   // safety check
@@ -239,7 +239,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_2 --> Omega_1                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping12(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::apply_matrix_mapping12(
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check
@@ -252,7 +252,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMat
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_1 --> Omega_2                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping21(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::apply_matrix_mapping21(
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check

@@ -58,31 +58,31 @@ namespace MAT
       double GetYieldStressM() const override { return yield_stress_m_; }
 
       //! hardening rigidity axial direction
-      double GetHardeningAxialRigidity() const override
+      double get_hardening_axial_rigidity() const override
       {
         return isohard_modulus_n_ * GetCrossSectionArea();
       };
 
       //! hardening rigidity shear one direction
-      double GetHardeningShearRigidity2() const override
+      double get_hardening_shear_rigidity2() const override
       {
-        return GetShearModulus() * GetCrossSectionArea() * GetShearCorrectionFactor();
+        return GetShearModulus() * GetCrossSectionArea() * get_shear_correction_factor();
       };
 
       //! hardening rigidity shear other direction
-      double GetHardeningShearRigidity3() const override
+      double get_hardening_shear_rigidity3() const override
       {
-        return GetShearModulus() * GetCrossSectionArea() * GetShearCorrectionFactor();
+        return GetShearModulus() * GetCrossSectionArea() * get_shear_correction_factor();
       };
 
       //! hardening rigidity for momentum
-      double GetHardeningMomentalRigidity() const override
+      double get_hardening_momental_rigidity() const override
       {
         return isohard_modulus_m_ * GetMomentInertia2();
       }
 
       //! consider torsion plasticity
-      bool GetTorsionPlasticity() const override { return torsion_plasticity_; }
+      bool get_torsion_plasticity() const override { return torsion_plasticity_; }
       //@}
 
      private:
@@ -185,7 +185,7 @@ namespace MAT
      *\param[in] CN constitutive matrix
      *\param[in] Gamma strain
      */
-    void EvaluateForceContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressN,
+    void evaluate_force_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressN,
         const CORE::LINALG::Matrix<3, 3, T>& CN, const CORE::LINALG::Matrix<3, 1, T>& Gamma,
         const unsigned int gp) override;
 
@@ -196,7 +196,7 @@ namespace MAT
      *\param[in] CM constitutive matrix
      *\param[in] Cur curvature
      */
-    void EvaluateMomentContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressM,
+    void evaluate_moment_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressM,
         const CORE::LINALG::Matrix<3, 3, T>& CM, const CORE::LINALG::Matrix<3, 1, T>& Cur,
         const unsigned int gp) override;
 
@@ -215,36 +215,36 @@ namespace MAT
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
      */
-    void GetConstitutiveMatrixOfForcesMaterialFrame(
+    void get_constitutive_matrix_of_forces_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& C_N) const override;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
      */
-    void GetConstitutiveMatrixOfMomentsMaterialFrame(
+    void get_constitutive_matrix_of_moments_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
      *
      */
-    double GetTranslationalMassInertiaFactor() const override;
+    double get_translational_mass_inertia_factor() const override;
 
     /** \brief get the radius of a circular cross-section that is ONLY to be used for evaluation of
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
      *
      */
-    double GetInteractionRadius() const override;
+    double get_interaction_radius() const override;
 
     /** \brief compute stiffness matrix of moments for plastic regime
      */
-    void GetStiffnessMatrixOfMoments(CORE::LINALG::Matrix<3, 3, T>& stiffM,
+    void get_stiffness_matrix_of_moments(CORE::LINALG::Matrix<3, 3, T>& stiffM,
         const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
 
     /** \brief compute stiffness matrix of forces for plastic regime
      */
-    void GetStiffnessMatrixOfForces(CORE::LINALG::Matrix<3, 3, T>& stiffN,
+    void get_stiffness_matrix_of_forces(CORE::LINALG::Matrix<3, 3, T>& stiffN,
         const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
 
     /** \brief update the plastic strain and curvature vectors
@@ -257,29 +257,29 @@ namespace MAT
 
     /** \brief get hardening constitutive parameters depending on the type of plasticity
      */
-    void ComputeConstitutiveParameter(
+    void compute_constitutive_parameter(
         CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M) override;
 
    protected:
     /** \brief get the constitutive matrix of forces during kinematic hardening
      *
      */
-    void GetHardeningConstitutiveMatrixOfForcesMaterialFrame(
+    void get_hardening_constitutive_matrix_of_forces_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& CN_eff) const;
 
     /** \brief get the constitutive matrix of moments during kinematic hardening
      */
-    void GetHardeningConstitutiveMatrixOfMomentsMaterialFrame(
+    void get_hardening_constitutive_matrix_of_moments_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& CM_eff) const;
 
     /** \brief returns current effective yield stress of forces depending on plastic deformation
      */
-    void GetEffectiveYieldStressN(
+    void get_effective_yield_stress_n(
         T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0, const unsigned int gp) const;
 
     /** \brief returns current effective yield stress of moments depending on plastic deformation
      */
-    void GetEffectiveYieldStressM(
+    void get_effective_yield_stress_m(
         T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1, const unsigned int gp) const;
 
    private:

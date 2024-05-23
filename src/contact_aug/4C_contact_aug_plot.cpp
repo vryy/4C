@@ -54,7 +54,7 @@ void CONTACT::AUG::Plot::Direction::ReadInput(const Teuchos::ParameterList& pp)
     const std::string& input_filepath = pp.get<std::string>("INPUT_FILE_NAME");
     const std::string& dir_file = pp.get<std::string>("DIRECTION_FILE");
     const std::string full_dir_file(GetFullFilePath(input_filepath, dir_file));
-    from_file_ = ReadSparseVectorFromMatlab(full_dir_file);
+    from_file_ = read_sparse_vector_from_matlab(full_dir_file);
   }
 
   split_ = Teuchos::getIntegralValue<INPAR::CONTACT::PlotDirectionSplit>(pp, "DIRECTION_SPLIT");
@@ -83,7 +83,7 @@ std::string CONTACT::AUG::Plot::Direction::GetFullFilePath(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromMatlab(
+Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::read_sparse_vector_from_matlab(
     const std::string& dir_file) const
 {
   Teuchos::RCP<const Epetra_Map> prbdofs = plot_.strat_->ProblemDofs();
@@ -153,7 +153,7 @@ bool CONTACT::AUG::Plot::Direction::ExtendFileName(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector& dir,
+void CONTACT::AUG::Plot::Direction::split_into_slave_master_body(const Epetra_Vector& dir,
     Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const
 {
   if (plot_.strat_->ParRedist()) FOUR_C_THROW("Parallel redistribution is not supported!");
@@ -544,7 +544,8 @@ void CONTACT::AUG::Plot::AddFileNameToPath()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::MeritFunction::MeritFctName CONTACT::AUG::Plot::ConvertPlotFuncName2MeritFuncName(
+enum NOX::NLN::MeritFunction::MeritFctName
+CONTACT::AUG::Plot::convert_plot_func_name2_merit_func_name(
     const enum INPAR::CONTACT::PlotFuncName pfunc_name) const
 {
   switch (pfunc_name)
@@ -564,7 +565,7 @@ enum NOX::NLN::MeritFunction::MeritFctName CONTACT::AUG::Plot::ConvertPlotFuncNa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::WGapGradientType CONTACT::AUG::Plot::ConvertPlotFuncName2WGapGradientType(
+enum CONTACT::AUG::WGapGradientType CONTACT::AUG::Plot::convert_plot_func_name2_w_gap_gradient_type(
     const enum INPAR::CONTACT::PlotFuncName pfunc_name) const
 {
   switch (pfunc_name)
@@ -721,13 +722,13 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       std::fill(support_mat.values(),
           support_mat.values() + (support_mat.numRows() * support_mat.numCols()),
-          CharacteristicInterfaceElementLength(SideType::slave));
+          characteristic_interface_element_length(SideType::slave));
 
       break;
     }
     case INPAR::CONTACT::PlotSupportType::position_angle:
     {
-      ComputeAnglePosition();
+      compute_angle_position();
 
       x_.reshape(position_node_id_map_.size(), x_.numCols());
       unsigned i = 0;
@@ -741,7 +742,7 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     }
     case INPAR::CONTACT::PlotSupportType::position_distance:
     {
-      ComputeDistancePosition();
+      compute_distance_position();
 
       x_.reshape(position_node_id_map_.size(), x_.numCols());
       unsigned i = 0;
@@ -761,7 +762,7 @@ void CONTACT::AUG::Plot::GetSupportPoints(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::ComputeDistancePosition()
+void CONTACT::AUG::Plot::compute_distance_position()
 {
   const CORE::LINALG::Matrix<3, 1> ref_pos(ref_points_[0].A(), true);
 
@@ -786,7 +787,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::ComputeAnglePosition()
+void CONTACT::AUG::Plot::compute_angle_position()
 {
   CORE::LINALG::Matrix<3, 1> ref12(ref_points_[0], false);
   ref12.Update(1.0, ref_points_[1], -1.0);
@@ -876,7 +877,7 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
   Teuchos::RCP<Epetra_Vector> x_dir_ptr = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> y_dir_ptr = Teuchos::null;
 
-  dir_.SplitIntoSurfaceDirections(dir, x_dir_ptr, y_dir_ptr);
+  dir_.split_into_surface_directions(dir, x_dir_ptr, y_dir_ptr);
 
   Epetra_Vector step(dir.Map(), true);
 
@@ -895,7 +896,7 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     }
   }
 
-  WriteSurfaceDataToFile();
+  write_surface_data_to_file();
 }
 
 /*----------------------------------------------------------------------------*
@@ -912,7 +913,7 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
   Teuchos::RCP<Epetra_Vector> x_dir_ptr = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> y_dir_ptr = Teuchos::null;
 
-  dir_.SplitIntoSurfaceDirections(dir, x_dir_ptr, y_dir_ptr);
+  dir_.split_into_surface_directions(dir, x_dir_ptr, y_dir_ptr);
 
   Epetra_Vector step(dir.Map(), true);
   std::vector<const Epetra_Vector*> dirs(2, nullptr);
@@ -942,7 +943,7 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
     }
   }
 
-  WriteVectorFieldToFile();
+  write_vector_field_to_file();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1011,7 +1012,7 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
+void CONTACT::AUG::Plot::write_vector_field_to_file() const
 {
   if (strat_->Comm().MyPID() != 0) return;
 
@@ -1084,7 +1085,7 @@ void CONTACT::AUG::WriteColumnDataToFile(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
+void CONTACT::AUG::Plot::write_surface_data_to_file() const
 {
   if (strat_->Comm().MyPID() != 0) return;
 
@@ -1152,7 +1153,7 @@ const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::GetReferenceGroup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Direction::SplitIntoSurfaceDirections(const Epetra_Vector& dir,
+void CONTACT::AUG::Plot::Direction::split_into_surface_directions(const Epetra_Vector& dir,
     Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const
 {
   switch (split_)
@@ -1169,7 +1170,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSurfaceDirections(const Epetra_Vect
     }
     case INPAR::CONTACT::PlotDirectionSplit::slave_master_displacements:
     {
-      SplitIntoSlaveMasterBody(dir, x_dir_ptr, y_dir_ptr);
+      split_into_slave_master_body(dir, x_dir_ptr, y_dir_ptr);
 
       break;
     }
@@ -1186,7 +1187,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
 {
   // try to convert the function type into a merit function type
   const NOX::NLN::MeritFunction::MeritFctName mrt_func_type =
-      ConvertPlotFuncName2MeritFuncName(functype);
+      convert_plot_func_name2_merit_func_name(functype);
 
   if (mrt_func_type != NOX::NLN::MeritFunction::mrtfct_vague)
     return plot_grp.GetModelValue(mrt_func_type);
@@ -1197,7 +1198,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
       case INPAR::CONTACT::PlotFuncName::weighted_gap:
       {
         const Epetra_Vector& wgap = strat_->GetWeightedGap(CONTACT::AUG::MapType::all_slave_nodes);
-        const int dof_gid = MapSlNodeGID2NDofGID(wgap_node_gid_);
+        const int dof_gid = map_sl_node_gi_d2_n_dof_gid(wgap_node_gid_);
 
         const int dof_lid = wgap.Map().LID(dof_gid);
         if (dof_lid == -1) FOUR_C_THROW("Couldn't find the DoF with GID %d.", dof_gid);
@@ -1218,24 +1219,24 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
       }
       case INPAR::CONTACT::PlotFuncName::weighted_gap_gradient_error:
       {
-        model_->EvaluateWeightedGapGradientError();
-        return strat_->GetTotalGradientError();
+        model_->evaluate_weighted_gap_gradient_error();
+        return strat_->get_total_gradient_error();
       }
       case INPAR::CONTACT::PlotFuncName::weighted_gap_gradient_nodal_jacobian_error:
       {
-        model_->EvaluateWeightedGapGradientError();
+        model_->evaluate_weighted_gap_gradient_error();
         const std::vector<std::pair<int, double>>& nodal_jac_error =
-            strat_->GetNodalGradientError_Jacobian();
+            strat_->get_nodal_gradient_error_jacobian();
 
-        return GetNodalErrorAtPosition(curr_xy, nodal_jac_error);
+        return get_nodal_error_at_position(curr_xy, nodal_jac_error);
       }
       case INPAR::CONTACT::PlotFuncName::weighted_gap_gradient_nodal_ma_proj_error:
       {
-        model_->EvaluateWeightedGapGradientError();
+        model_->evaluate_weighted_gap_gradient_error();
         const std::vector<std::pair<int, double>>& nodal_ma_error =
-            strat_->GetNodalGradientError_MaProj();
+            strat_->get_nodal_gradient_error_ma_proj();
 
-        return GetNodalErrorAtPosition(curr_xy, nodal_ma_error);
+        return get_nodal_error_at_position(curr_xy, nodal_ma_error);
       }
       default:
       {
@@ -1250,7 +1251,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Plot::GetNodalErrorAtPosition(
+double CONTACT::AUG::Plot::get_nodal_error_at_position(
     const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const
 {
   if (not pos)
@@ -1282,14 +1283,14 @@ void CONTACT::AUG::Plot::GetVectorValues(const enum INPAR::CONTACT::PlotFuncName
       plot_grp.computeFandJacobian();
 
       const enum CONTACT::AUG::WGapGradientType wgap_type =
-          ConvertPlotFuncName2WGapGradientType(functype);
-      GetWGapDirectionGradients(wgap_type, dirs, vec_vals);
+          convert_plot_func_name2_w_gap_gradient_type(functype);
+      get_w_gap_direction_gradients(wgap_type, dirs, vec_vals);
 
       break;
     }
     case INPAR::CONTACT::PlotFuncName::energy_gradient:
     {
-      GetEnergyDirectionGradients(dirs, vec_vals);
+      get_energy_direction_gradients(dirs, vec_vals);
 
       break;
     }
@@ -1306,12 +1307,12 @@ void CONTACT::AUG::Plot::GetVectorValues(const enum INPAR::CONTACT::PlotFuncName
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::GetEnergyDirectionGradients(
+void CONTACT::AUG::Plot::get_energy_direction_gradients(
     const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const
 {
   const std::vector<INPAR::STR::ModelType> without_contact_model(1, model_->Type());
   Teuchos::RCP<Epetra_Vector> str_gradient =
-      model_->AssembleForceOfModels(&without_contact_model, true);
+      model_->assemble_force_of_models(&without_contact_model, true);
 
   Epetra_Vector curr_dir(str_gradient->Map());
 
@@ -1333,7 +1334,7 @@ void CONTACT::AUG::Plot::GetEnergyDirectionGradients(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::GetWGapDirectionGradients(
+void CONTACT::AUG::Plot::get_w_gap_direction_gradients(
     const enum CONTACT::AUG::WGapGradientType wgap_type,
     const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const
 {
@@ -1342,7 +1343,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
   const unsigned num_vecs = dirs.size();
 
   Teuchos::RCP<const CORE::LINALG::SparseMatrix> wgap_grad_ptr =
-      strat_->GetWeightedGapGradient(wgap_type, MapType::all_slave_nodes);
+      strat_->get_weighted_gap_gradient(wgap_type, MapType::all_slave_nodes);
   const CORE::LINALG::SparseMatrix& wgap_grad = *wgap_grad_ptr;
 
   std::vector<Epetra_Vector> wgap_dir_grads(num_vecs, Epetra_Vector(wgap_grad.RangeMap()));
@@ -1362,7 +1363,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
     wgap_grad.Multiply(false, curr_dir, wgap_dir_grads[i]);
   }
 
-  const int dof_gid = MapSlNodeGID2NDofGID(wgap_node_gid_);
+  const int dof_gid = map_sl_node_gi_d2_n_dof_gid(wgap_node_gid_);
   const int rlid = wgap_grad.RangeMap().LID(dof_gid);
   if (rlid == -1) FOUR_C_THROW("Node to NDof mapping failed! ( %d --> %d )", dof_gid, rlid);
 
@@ -1371,7 +1372,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::AUG::Plot::MapSlNodeGID2NDofGID(int node_gid) const
+int CONTACT::AUG::Plot::map_sl_node_gi_d2_n_dof_gid(int node_gid) const
 {
   if (!strat_->SlRowNodes().PointSameAs(strat_->SlNormalDoFRowMap(false)))
     FOUR_C_THROW("Mapping is not possible!");
@@ -1382,10 +1383,10 @@ int CONTACT::AUG::Plot::MapSlNodeGID2NDofGID(int node_gid) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Plot::CharacteristicInterfaceElementLength(
+double CONTACT::AUG::Plot::characteristic_interface_element_length(
     const enum CONTACT::AUG::SideType stype) const
 {
-  return strat_->CharacteristicInterfaceElementLength(stype);
+  return strat_->characteristic_interface_element_length(stype);
 }
 
 /*----------------------------------------------------------------------------*

@@ -110,11 +110,12 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la);
 
       /// Setup element evaluation
-      virtual void PrepareGaussPointLoop(
+      virtual void prepare_gauss_point_loop(
           DRT::Element* ele  ///< the element whose matrix is calculated
       );
 
@@ -128,7 +129,7 @@ namespace DRT
           DRT::Element::LocationArray& la       //!< location array
       );
 
-      void GaussPointLoopODStruct(
+      void gauss_point_loop_od_struct(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
           DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
@@ -138,7 +139,7 @@ namespace DRT
           DRT::Element::LocationArray& la       //!< location array
       );
 
-      void GaussPointLoopODScatra(
+      void gauss_point_loop_od_scatra(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
           DRT::Element* ele,                                      //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
@@ -158,7 +159,7 @@ namespace DRT
       );
 
       //! evaluate at all Gauss points and average
-      void GaussPointLoopAverage(DRT::Element* ele,               //!< current element
+      void gauss_point_loop_average(DRT::Element* ele,            //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrices to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -167,7 +168,7 @@ namespace DRT
       );
 
       //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
-      void GaussPointLoopODStruct(DRT::Element* ele,              //!< current element
+      void gauss_point_loop_od_struct(DRT::Element* ele,          //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -176,7 +177,7 @@ namespace DRT
       );
 
       //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
-      void GaussPointLoopODScatra(DRT::Element* ele,              //!< current element
+      void gauss_point_loop_od_scatra(DRT::Element* ele,          //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<CORE::LINALG::SerialDenseVector*>&
               elevec,                           //!< element rhs vectors to calculate
@@ -185,16 +186,16 @@ namespace DRT
       );
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsAtIntPoint(
+      double eval_shape_func_and_derivs_at_int_point(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
           const int iquad                                        //!< id of current Gauss point
       );
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsInParameterSpace();
+      double eval_shape_func_and_derivs_in_parameter_space();
 
       // Compute Jacobian (determinant of deformation gradient) at node 'inode'
-      void ComputeJacobianAtNode(const int inode  //!< local node number
+      void compute_jacobian_at_node(const int inode  //!< local node number
       );
 
       /*========================================================================*/

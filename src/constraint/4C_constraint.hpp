@@ -156,7 +156,7 @@ namespace CONSTRAINTS
     );
 
     //! Compute and assemble initial constraint values (depending on user specific activation times)
-    void InitializeConstraint(
+    void initialize_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by

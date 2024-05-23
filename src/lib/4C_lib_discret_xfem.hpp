@@ -86,10 +86,10 @@ namespace DRT
 
     /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active
     /// dofs
-    void ExportInitialtoActiveVector(
+    void export_initialto_active_vector(
         Teuchos::RCP<const Epetra_Vector>& initialvec, Teuchos::RCP<Epetra_Vector>& activevec);
 
-    void ExportActivetoInitialVector(
+    void export_activeto_initial_vector(
         Teuchos::RCP<const Epetra_Vector> activevec, Teuchos::RCP<Epetra_Vector> initialvec);
 
 
@@ -100,7 +100,7 @@ namespace DRT
     Ask the initial DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
@@ -117,7 +117,7 @@ namespace DRT
     Ask the initial DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
     virtual std::vector<int> InitialDof(const Node* node) const
@@ -133,7 +133,7 @@ namespace DRT
     Ask the initial DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
@@ -152,7 +152,7 @@ namespace DRT
     Ask the initial DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
@@ -172,7 +172,7 @@ namespace DRT
     }
 
 
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> GetInitialDofSetProxy(int nds)
+    Teuchos::RCP<CORE::Dofsets::DofSetInterface> get_initial_dof_set_proxy(int nds)
     {
       FOUR_C_ASSERT(nds < (int)initialdofsets_.size(), "undefined dof set");
       return Teuchos::rcp(new CORE::Dofsets::DofSetProxy(&*initialdofsets_[nds]));

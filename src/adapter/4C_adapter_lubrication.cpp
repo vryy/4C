@@ -57,7 +57,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // list? -> no default paramter possible any more
   Teuchos::RCP<CORE::LINALG::Solver> solver =
       Teuchos::rcp(new CORE::LINALG::Solver(solverparams, actdis->Comm()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -102,7 +102,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::UTILS::ResultTest>
-ADAPTER::LubricationBaseAlgorithm::CreateLubricationFieldTest()
+ADAPTER::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }

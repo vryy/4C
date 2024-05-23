@@ -43,10 +43,10 @@ namespace PARTICLEINTERACTION
     virtual void Setup(const double& dens_max);
 
     //! get normal contact stiffness
-    virtual double GetNormalContactStiffness() const final { return k_normal_; };
+    virtual double get_normal_contact_stiffness() const final { return k_normal_; };
 
     //! get critical normal contact stiffness
-    virtual double GetCriticalNormalContactStiffness() const final { return k_normal_crit_; };
+    virtual double get_critical_normal_contact_stiffness() const final { return k_normal_crit_; };
 
     //! evaluate normal contact force
     virtual void NormalContactForce(const double& gap, const double* radius_i,
@@ -54,7 +54,8 @@ namespace PARTICLEINTERACTION
         double& normalcontactforce) const = 0;
 
     //! evaluate normal potential energy
-    virtual void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const = 0;
+    virtual void normal_potential_energy(
+        const double& gap, double& normalpotentialenergy) const = 0;
 
    protected:
     //! discrete element method parameter list
@@ -90,7 +91,7 @@ namespace PARTICLEINTERACTION
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
 
     //! evaluate normal potential energy
-    void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const override;
+    void normal_potential_energy(const double& gap, double& normalpotentialenergy) const override;
   };
 
   class DEMContactNormalLinearSpringDamp : public DEMContactNormalLinearSpring
@@ -135,7 +136,7 @@ namespace PARTICLEINTERACTION
         double& normalcontactforce) const override = 0;
 
     //! evaluate normal potential energy
-    void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const override;
+    void normal_potential_energy(const double& gap, double& normalpotentialenergy) const override;
   };
 
   class DEMContactNormalHertz : public DEMContactNormalNonlinearBase

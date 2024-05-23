@@ -39,7 +39,7 @@ int CORE::Dofsets::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
 int CORE::Dofsets::PBCDofSet::MinAllGID() const { return myMinGID_; }
 
 
-int CORE::Dofsets::PBCDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::PBCDofSet::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
@@ -48,7 +48,7 @@ int CORE::Dofsets::PBCDofSet::AssignDegreesOfFreedom(
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
-  DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  DofSet::assign_degrees_of_freedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
@@ -60,7 +60,7 @@ int CORE::Dofsets::PBCDofSet::AssignDegreesOfFreedom(
 
   // assign dofs for the standard dofset, that is without periodic boundary
   // conditions and with the slave node set back in place
-  int count = DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  int count = DofSet::assign_degrees_of_freedom(dis, dspos, start);
 
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
@@ -120,7 +120,7 @@ void CORE::Dofsets::PBCDofSet::SetCoupledNodes(
   }
 
   /// Build the connectivity between slave node and its master node
-  BuildSlaveToMasterNodeConnectivity();
+  build_slave_to_master_node_connectivity();
 
   return;
 }
@@ -129,7 +129,7 @@ void CORE::Dofsets::PBCDofSet::SetCoupledNodes(
  |  Build the connectivity between slave node and its master node       |
  |                                                       schott 05/15   |
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
+void CORE::Dofsets::PBCDofSet::build_slave_to_master_node_connectivity()
 {
   perbnd_slavetomaster_ = Teuchos::rcp(new std::map<int, int>);
 

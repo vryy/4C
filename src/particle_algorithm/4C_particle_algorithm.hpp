@@ -160,7 +160,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void PostEvaluateTimeStep();
+    void post_evaluate_time_step();
 
     /*!
      * \brief write output
@@ -197,7 +197,7 @@ namespace PARTICLEALGORITHM
      *
      * \return interface to particle engine
      */
-    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface() const
+    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> get_particle_engine_interface() const
     {
       return particleengine_;
     }
@@ -209,7 +209,7 @@ namespace PARTICLEALGORITHM
      *
      * \return interface to particle wall handler
      */
-    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> GetParticleWallHandlerInterface() const
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> get_particle_wall_handler_interface() const
     {
       return particlewall_;
     }
@@ -237,21 +237,21 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void InitParticleRigidBody();
+    void init_particle_rigid_body();
 
     /*!
      * \brief init particle time integration
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void InitParticleTimeIntegration();
+    void init_particle_time_integration();
 
     /*!
      * \brief init particle interaction handler
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void InitParticleInteraction();
+    void init_particle_interaction();
 
     /*!
      * \brief init particle gravity handler
@@ -272,35 +272,35 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void GenerateInitialParticles();
+    void generate_initial_particles();
 
     /*!
      * \brief determine all particle types
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void DetermineParticleTypes();
+    void determine_particle_types();
 
     /*!
      * \brief determine particle states of all particle types
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void DetermineParticleStatesOfParticleTypes();
+    void determine_particle_states_of_particle_types();
 
     /*!
      * \brief setup initial particles
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void SetupInitialParticles();
+    void setup_initial_particles();
 
     /*!
      * \brief setup initial rigid bodies
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetupInitialRigidBodies();
+    void setup_initial_rigid_bodies();
 
     /*!
      * \brief setup initial states
@@ -339,7 +339,7 @@ namespace PARTICLEALGORITHM
      *
      * \return flag indicating load transfer is needed
      */
-    bool CheckLoadTransferNeeded();
+    bool check_load_transfer_needed();
 
     /*!
      * \brief check maximum position increment
@@ -348,7 +348,7 @@ namespace PARTICLEALGORITHM
      *
      * \return flag indicating load transfer is needed due to maximum position increment
      */
-    bool CheckMaxPositionIncrement();
+    bool check_max_position_increment();
 
     /*!
      * \brief get maximum particle position increment since last transfer
@@ -357,14 +357,14 @@ namespace PARTICLEALGORITHM
      *
      * \param allprocmaxpositionincrement maximum particle position increment
      */
-    void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
+    void get_max_particle_position_increment(double& allprocmaxpositionincrement);
 
     /*!
      * \brief transfer load between processors
      *
      * \author Sebastian Fuchs \date 08/2019
      */
-    void TransferLoadBetweenProcs();
+    void transfer_load_between_procs();
 
     /*!
      * \brief check load redistribution
@@ -376,28 +376,28 @@ namespace PARTICLEALGORITHM
      *
      * \return flag indicating load redistribution is needed
      */
-    bool CheckLoadRedistributionNeeded();
+    bool check_load_redistribution_needed();
 
     /*!
      * \brief distribute load among processors
      *
      * \author Sebastian Fuchs \date 08/2019
      */
-    void DistributeLoadAmongProcs();
+    void distribute_load_among_procs();
 
     /*!
      * \brief build potential neighbor relation
      *
      * \author Sebastian Fuchs \date 08/2019
      */
-    void BuildPotentialNeighborRelation();
+    void build_potential_neighbor_relation();
 
     /*!
      * \brief set initial conditions
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void SetInitialConditions();
+    void set_initial_conditions();
 
     /*!
      * \brief set current time
@@ -418,7 +418,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 08/2019
      */
-    void SetCurrentWriteResultFlag();
+    void set_current_write_result_flag();
 
     /*!
      * \brief evaluate time step
@@ -432,7 +432,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 06/2018
      */
-    void SetGravityAcceleration();
+    void set_gravity_acceleration();
 
     //! processor id
     const int myrank_;

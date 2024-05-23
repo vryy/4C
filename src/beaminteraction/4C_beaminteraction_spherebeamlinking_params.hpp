@@ -120,21 +120,21 @@ namespace BEAMINTERACTION
     };
 
     // distance between two binding spots on a filament
-    double FilamentBspotIntervalGlobal(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+    double filament_bspot_interval_global(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
       return filamentbspotintervalglobal_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
-    double FilamentBspotIntervalLocal(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+    double filament_bspot_interval_local(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
       return filamentbspotintervallocal_.at(linkertype);
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::pair<double, double> const& FilamentBspotRangeLocal(
+    std::pair<double, double> const& filament_bspot_range_local(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
@@ -142,7 +142,7 @@ namespace BEAMINTERACTION
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::pair<double, double> const& FilamentBspotRangeGlobal(
+    std::pair<double, double> const& filament_bspot_range_global(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();

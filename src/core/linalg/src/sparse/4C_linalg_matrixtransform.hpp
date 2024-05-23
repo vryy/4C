@@ -69,7 +69,7 @@ namespace CORE::LINALG
   by the CORE::LINALG::SparseMatrix object.
 
 
-  \sa MatrixColTransform, MatrixRowTransform, MatrixRowColTransform
+  \sa MatrixColTransform, MatrixRowTransform, matrix_row_col_transform
   \author kronbichler
   \date 11/15
    */
@@ -168,7 +168,7 @@ namespace CORE::LINALG
   matrix row map.
 
     The operator is meant to be usable on its own or as part of the composed
-    MatrixRowColTransform operator.
+    matrix_row_col_transform operator.
 
     \note The implementation is done by MatrixLogicalSplitAndTransform
 
@@ -179,7 +179,7 @@ namespace CORE::LINALG
     and this can reset the filled state if the matrix graph is not preserved
     by the CORE::LINALG::SparseMatrix object.
 
-    \sa MatrixLogicalSplitAndTransform, MatrixColTransform, MatrixRowColTransform
+    \sa MatrixLogicalSplitAndTransform, MatrixColTransform, matrix_row_col_transform
     \author u.kue
     \date 05/08
    */
@@ -232,7 +232,7 @@ namespace CORE::LINALG
     by the CORE::LINALG::SparseMatrix object.
 
 
-    \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, MatrixRowColTransform
+    \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, matrix_row_col_transform
     \author u.kue
     \date 05/08
    */

@@ -99,7 +99,7 @@ void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_mana
                          .AddNamedInt("MAT_STRUC")
                          .Build());
 
-  function_manager.AddFunctionDefinition(std::move(lines), CreateStructureFunction);
+  function_manager.add_function_definition(std::move(lines), CreateStructureFunction);
 }
 
 
@@ -141,7 +141,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::EvaluateTimeDerivative(
+std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate_time_derivative(
     const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
@@ -253,7 +253,8 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::EvaluateTimeDerivative(
+std::vector<double>
+STR::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate_time_derivative(
     const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding

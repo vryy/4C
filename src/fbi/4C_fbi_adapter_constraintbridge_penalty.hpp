@@ -68,7 +68,7 @@ namespace ADAPTER
     /// resets the matrices and vectors to zero
     void ResetBridge() override;
 
-    void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
+    void PrepareFluidSolve() override { set_weak_dirichlet_flag(); };
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const override { return css_; };
@@ -83,10 +83,13 @@ namespace ADAPTER
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const override { return csf_; };
 
     /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
-    Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const override { return ff_; };
+    Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const override
+    {
+      return ff_;
+    };
 
     /// Force vector acting on the structure side \f$f_s\f$
-    Teuchos::RCP<const Epetra_FEVector> GetStructureCouplingResidual() const override
+    Teuchos::RCP<const Epetra_FEVector> get_structure_coupling_residual() const override
     {
       return fs_;
     };
@@ -112,16 +115,16 @@ namespace ADAPTER
      * contributions to the fluid field, since it avoids a global multiplication of the stiffness
      * $\f C_sf \f$ matrix with the structure velocity
      */
-    void SetWeakDirichletFlag();
+    void set_weak_dirichlet_flag();
 
     /// Sets the flag to compute force contributions from beam and fluid
-    void UnsetWeakDirichletFlag();
+    void unset_weak_dirichlet_flag();
 
     /// Scales all structure vectors and martrices with penalty
-    void ScalePenaltyStructureContributions();
+    void scale_penalty_structure_contributions();
 
     /// Scales all fluid vectors and martrices with penalty
-    void ScalePenaltyFluidContributions();
+    void scale_penalty_fluid_contributions();
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$

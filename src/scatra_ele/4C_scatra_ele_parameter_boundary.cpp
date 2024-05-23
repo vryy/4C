@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
           SetAlpha(parameters);
-          SetChargeTransferConstant(parameters);
+          set_charge_transfer_constant(parameters);
           SetIsPseudoContact(parameters);
           SetNumElectrons(parameters);
           SetNumScal(parameters);
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           }
           if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
-            SetEnergySubstanceRatio(parameters);
+            set_energy_substance_ratio(parameters);
             SetThermoPerm(parameters);
           }
           break;
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
           SetAlpha(parameters);
-          SetChargeTransferConstant(parameters);
+          set_charge_transfer_constant(parameters);
           SetDensityMolarMass(parameters);
           SetNumElectrons(parameters);
           SetNumScal(parameters);
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetAlpha(Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetChargeTransferConstant(
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::set_charge_transfer_constant(
     Teuchos::ParameterList& parameters)
 {
   kr_ = parameters.get<double>("k_r", -1.0);
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetDensityMolarMass(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetEnergySubstanceRatio(
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::set_energy_substance_ratio(
     Teuchos::ParameterList& parameters)
 {
   molar_heat_capacity_ =

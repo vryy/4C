@@ -25,7 +25,7 @@ namespace MIXTURE
      public:
       explicit StiffnessGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> CreateGrowthStrategy() override;
+      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
 
       const double kappa_;
     };
@@ -49,13 +49,13 @@ namespace MIXTURE
    public:
     explicit StiffnessGrowthStrategy(MIXTURE::PAR::StiffnessGrowthStrategy* params);
 
-    [[nodiscard]] bool HasInelasticGrowthDeformationGradient() const override { return false; };
+    [[nodiscard]] bool has_inelastic_growth_deformation_gradient() const override { return false; };
 
-    void EvaluateInverseGrowthDeformationGradient(CORE::LINALG::Matrix<3, 3>& iFgM,
+    void evaluate_inverse_growth_deformation_gradient(CORE::LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
-    void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
+    void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
         const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
         const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

@@ -57,7 +57,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create(const int id, co
  |                                                             (public) |
  |                                                           roth 10/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition(
+void DRT::ELEMENTS::RedAirwayType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
@@ -76,13 +76,13 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition(
                       .AddNamedDouble("WallThickness")
                       .AddNamedDouble("Area")
                       .AddNamedInt("Generation")
-                      .AddOptionalNamedDouble("AirwayColl")
-                      .AddOptionalNamedDouble("S_Close")
-                      .AddOptionalNamedDouble("S_Open")
-                      .AddOptionalNamedDouble("Pcrit_Open")
-                      .AddOptionalNamedDouble("Pcrit_Close")
-                      .AddOptionalNamedDouble("Open_Init")
-                      .AddOptionalNamedDouble("BranchLength")
+                      .add_optional_named_double("AirwayColl")
+                      .add_optional_named_double("S_Close")
+                      .add_optional_named_double("S_Open")
+                      .add_optional_named_double("Pcrit_Open")
+                      .add_optional_named_double("Pcrit_Close")
+                      .add_optional_named_double("Open_Init")
+                      .add_optional_named_double("BranchLength")
                       .Build();
 }
 

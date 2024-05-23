@@ -47,10 +47,10 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 06/16 */
-      void ReadDirichletCondition(const DRT::Discretization& discret,
+      void read_dirichlet_condition(const DRT::Discretization& discret,
           const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const override;
-      void ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
+      void read_dirichlet_condition(const DRT::DiscretizationFaces& discret,
           const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
 
@@ -67,11 +67,11 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      void DoDirichletCondition(const DRT::Discretization& discret,
+      void do_dirichlet_condition(const DRT::Discretization& discret,
           const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
-      void DoDirichletCondition(const DRT::DiscretizationFaces& discret,
+      void do_dirichlet_condition(const DRT::DiscretizationFaces& discret,
           const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const;
     };  // class DbcHDG_Fluid

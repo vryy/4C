@@ -45,7 +45,7 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
 void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->thermal_dynamic_params();
 
   // major switch to different time integrators
   INPAR::THR::DynamicType timinttype =
@@ -90,8 +90,8 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->IOParams()));
-  const Teuchos::RCP<Teuchos::ParameterList> tdyn =
-      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->ThermalDynamicParams()));
+  const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::rcp(
+      new Teuchos::ParameterList(GLOBAL::Problem::Instance()->thermal_dynamic_params()));
   //  //const Teuchos::ParameterList& size
   //  //  = GLOBAL::Problem::Instance()->ProblemSizeParams();
 
@@ -128,7 +128,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
   Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   // create marching time integrator
   Teuchos::RCP<Thermo> tmpthr;

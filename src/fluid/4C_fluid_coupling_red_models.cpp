@@ -274,7 +274,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::PressureCalculation(double time, doub
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
+void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
     double time, double dta, double theta)
 {
   // get an iterator to my map

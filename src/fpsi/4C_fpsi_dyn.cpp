@@ -77,13 +77,13 @@ void fpsi_drt()
 
   // 2.- Parameter reading
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
-  const Teuchos::ParameterList& poroelastdynparams = problem->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdynparams = problem->poroelast_dynamic_params();
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   // 3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
   Teuchos::RCP<FPSI::FpsiBase> fpsi = Teuchos::null;
-  fpsi = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams, poroelastdynparams);
+  fpsi = FPSI_UTILS->setup_discretizations(comm, fpsidynparams, poroelastdynparams);
 
   // 3.1- Read restart if needed.
   const int restartstep = problem->Restart();
@@ -93,7 +93,7 @@ void fpsi_drt()
   }
 
   // 3.2.- redistribute the FPSI interface
-  fpsi->RedistributeInterface();
+  fpsi->redistribute_interface();
 
   //////////////////////////////////
   // 4.- Run of the actual problem.//

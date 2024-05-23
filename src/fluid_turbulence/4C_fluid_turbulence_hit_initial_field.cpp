@@ -194,7 +194,7 @@ namespace FLD
 
     if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
       // of Comte-Bellot-Corrsin experiment
-      PrepareExparimentalData();
+      prepare_exparimental_data();
 
     return;
   }
@@ -203,7 +203,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialField::CalculateInitialField()
+  void HomIsoTurbInitialField::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
 
@@ -313,9 +313,9 @@ namespace FLD
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
               if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
-                energy = InterpolateEnergyFromSpectrum(k);
+                energy = interpolate_energy_from_spectrum(k);
               else
-                energy = CalculateEnergyFromSpectrum(k);
+                energy = calculate_energy_from_spectrum(k);
 
               if (energy < 0.0)
               {
@@ -559,7 +559,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | set and non-dimensionalize experimental data rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialField::PrepareExparimentalData()
+  void HomIsoTurbInitialField::prepare_exparimental_data()
   {
     //----------------------------------------
     // set-up wave numbers
@@ -641,7 +641,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialField::InterpolateEnergyFromSpectrum(double k)
+  double HomIsoTurbInitialField::interpolate_energy_from_spectrum(double k)
   {
     double energy = 0.0;
 
@@ -684,7 +684,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialField::CalculateEnergyFromSpectrum(double k)
+  double HomIsoTurbInitialField::calculate_energy_from_spectrum(double k)
   {
     // remark: k>0 here!
 
@@ -890,7 +890,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate initial field using fft                   bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialFieldHDG::CalculateInitialField()
+  void HomIsoTurbInitialFieldHDG::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
 
@@ -1000,9 +1000,9 @@ namespace FLD
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
               if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
-                energy = InterpolateEnergyFromSpectrum(k);
+                energy = interpolate_energy_from_spectrum(k);
               else
-                energy = CalculateEnergyFromSpectrum(k);
+                energy = calculate_energy_from_spectrum(k);
 
               if (energy < 0.0)
               {

@@ -122,7 +122,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
       // (2) innerDofMap
       // (3) activeDofMap
       std::vector<Teuchos::RCP<Epetra_Map>> prec_maps(4, Teuchos::null);
-      i_constr_prec_.begin()->second->FillMapsForPreconditioner(prec_maps);
+      i_constr_prec_.begin()->second->fill_maps_for_preconditioner(prec_maps);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
@@ -147,19 +147,20 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
-    CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const
+void NOX::NLN::CONTACT::LinearSystem::set_linear_problem_for_solve(
+    Epetra_LinearProblem& linear_problem, CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs,
+    Epetra_Vector& rhs) const
 {
   switch (jacType_)
   {
     case NOX::NLN::LinSystem::LinalgSparseMatrix:
-      NOX::NLN::LinearSystem::SetLinearProblemForSolve(linear_problem, jac, lhs, rhs);
+      NOX::NLN::LinearSystem::set_linear_problem_for_solve(linear_problem, jac, lhs, rhs);
 
       break;
     case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
     {
       p_lin_prob_.ExtractActiveBlocks(jac, lhs, rhs);
-      NOX::NLN::LinearSystem::SetLinearProblemForSolve(
+      NOX::NLN::LinearSystem::set_linear_problem_for_solve(
           linear_problem, *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
 
       break;
@@ -176,7 +177,7 @@ void NOX::NLN::CONTACT::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProb
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::CompleteSolutionAfterSolve(
+void NOX::NLN::CONTACT::LinearSystem::complete_solution_after_solve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
   p_lin_prob_.InsertIntoGlobalLhs(lhs);
@@ -221,7 +222,7 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
 
   if (issaddlepoint or iscondensed)
   {
-    currSolver = GetLinearContactSolver(solvers);
+    currSolver = get_linear_contact_solver(solvers);
     return NOX::NLN::sol_contact;
   }
   // ----------------------------------------------------------------------
@@ -235,13 +236,13 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
   }
 
   // default return
-  currSolver = GetLinearContactSolver(solvers);
+  currSolver = get_linear_contact_solver(solvers);
   return NOX::NLN::sol_contact;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::GetLinearContactSolver(
+Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::get_linear_contact_solver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers) const
 {
   auto cs_iter = solvers.find(NOX::NLN::sol_contact);
@@ -349,7 +350,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   // solve sub-systems if possible
   for (std::vector<unsigned>::const_iterator it = skip_row_col_index.begin();
        it != skip_row_col_index.end(); ++it)
-    linsys_.applyDiagonalInverse(block_mat(*it, *it), lhs, rhs);
+    linsys_.apply_diagonal_inverse(block_mat(*it, *it), lhs, rhs);
 
   // build remaining active linear problem
   const unsigned num_remaining_row_col = keep_row_col_index.size();
@@ -408,7 +409,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::applyDiagonalInverse(
+void NOX::NLN::CONTACT::LinearSystem::apply_diagonal_inverse(
     CORE::LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
 {
   if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())

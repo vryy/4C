@@ -52,7 +52,7 @@ void STR::EXPLICIT::CentrDiff::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  SetInitialDisplacement(
+  set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the PostSetup() routine is called!
@@ -64,7 +64,7 @@ void STR::EXPLICIT::CentrDiff::Setup()
 void STR::EXPLICIT::CentrDiff::PostSetup()
 {
   CheckInitSetup();
-  EquilibrateInitialState();
+  equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -105,7 +105,7 @@ void STR::EXPLICIT::CentrDiff::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::AddViscoMassContributions(Epetra_Vector& f) const
+void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -113,7 +113,7 @@ void STR::EXPLICIT::CentrDiff::AddViscoMassContributions(Epetra_Vector& f) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
+void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   // set mass matrix
@@ -142,7 +142,7 @@ void STR::EXPLICIT::CentrDiff::ReadRestart(IO::DiscretizationReader& ioreader)
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
   ModelEval().ReadRestart(ioreader);
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 }
 
 /*----------------------------------------------------------------------------*

@@ -34,7 +34,7 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
 /*----------------------------------------------------------------------*
  |  set parameter for element evaluation                    vuong 06/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetElementTimeStepParameter() const
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_element_time_step_parameter() const
 {
   Teuchos::ParameterList eleparams;
 
@@ -55,7 +55,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetElementTimeStepParameter() cons
 /*-----------------------------------------------------------------------------*
  | set time for evaluation of POINT -Neumann boundary conditions   vuong 08/16 |
  *----------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_time_for_neumann_evaluation(
     Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
@@ -84,7 +84,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::PrintTimeStepInfo()
  | set part of the residual vector belonging to the old timestep        |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetOldPartOfRighthandside()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_old_part_of_righthandside()
 {
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dt_ * (1.0 - theta_), *phidtn_, 0.0);
@@ -104,7 +104,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ExplicitPredictor()
  | add actual Neumann loads                                             |
  | scaled with a factor resulting from time discretization  vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddNeumannToResidual()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::add_neumann_to_residual()
 {
   residual_->Update(theta_ * dt_, *neumann_loads_, 1.0);
 }
@@ -113,7 +113,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddNeumannToResidual()
 /*----------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  vuong 08/16 |
  *---------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::add_time_integration_specific_vectors()
 {
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp_fluid", phinp_);
@@ -125,7 +125,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(
 /*----------------------------------------------------------------------*
  | compute time derivative                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ComputeTimeDerivative()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::compute_time_derivative()
 {
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
@@ -146,7 +146,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
   POROFLUIDMULTIPHASE::TimIntImpl::Update();
 
   // compute time derivative at time n+1
-  ComputeTimeDerivative();
+  compute_time_derivative();
 
   // solution of this step becomes most recent solution of the last step
   phin_->Update(1.0, *phinp_, 0.0);
@@ -196,23 +196,23 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
 /*--------------------------------------------------------------------*
  | calculate init time derivatives of state variables kremheller 03/17 |
  *--------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::calc_initial_time_derivative()
 {
   // standard general element parameter without stabilization
-  SetElementGeneralParameters();
+  set_element_general_parameters();
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial time derivatives,
   // but the rhs of the standard element routine is used as starting point for this special system
   // of equations. Therefore, the rhs vector has to be scaled correctly.
-  SetElementTimeStepParameter();
+  set_element_time_step_parameter();
 
   // call core algorithm
-  TimIntImpl::CalcInitialTimeDerivative();
+  TimIntImpl::calc_initial_time_derivative();
 
   // and finally undo our temporary settings
-  SetElementGeneralParameters();
-  SetElementTimeStepParameter();
+  set_element_general_parameters();
+  set_element_time_step_parameter();
 }
 
 FOUR_C_NAMESPACE_CLOSE

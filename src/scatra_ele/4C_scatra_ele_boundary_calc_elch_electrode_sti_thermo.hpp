@@ -76,7 +76,7 @@ namespace DRT
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void EvaluateS2ICouplingODAtIntegrationPoint(
+      static void evaluate_s2_i_coupling_od_at_integration_point(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
@@ -101,11 +101,11 @@ namespace DRT
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                      ///< parameter list
-          DRT::Discretization& discretization,                 ///< discretization
-          DRT::Element::LocationArray& la,                     ///< location array
-          CORE::LINALG::SerialDenseMatrix& eslavematrix        ///< element matrix for slave side
+      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                          ///< parameter list
+          DRT::Discretization& discretization,                     ///< discretization
+          DRT::Element::LocationArray& la,                         ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
           ) override;
 
       //! evaluate action

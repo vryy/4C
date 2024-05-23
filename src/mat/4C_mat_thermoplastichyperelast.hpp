@@ -243,11 +243,11 @@ namespace MAT
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_TT
-    double ThermoPlastHeating_kTT(int gp) const { return (thrplheat_k_tt_->at(gp)); }
+    double thermo_plast_heating_k_tt(int gp) const { return (thrplheat_k_tt_->at(gp)); }
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_Td
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> ThermoPlastHeating_kTd(int gp) const
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> thermo_plast_heating_k_td(int gp) const
     {
       return (thrplheat_k_td_->at(gp));
     }
@@ -290,9 +290,9 @@ namespace MAT
         int eleGID) override;
 
     //! evaluate the elasto-plastic tangent
-    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                    cmat,  //!< elasto-plastic tangent modulus (out)
-        double Dgamma,                     //!< plastic multiplier
+    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                       cmat,  //!< elasto-plastic tangent modulus (out)
+        double Dgamma,                        //!< plastic multiplier
         double Hiso_temp,           //!< temperature-dependent linear isotropic hardening modulus
         double sigma_y0infty_temp,  //!< temperature-dependent saturation hardening stress
         double sigma_y0_temp,       //!< temperature-dependent flow/yield stress
@@ -306,10 +306,10 @@ namespace MAT
     );
 
     //! calculate updated value of bebar_{n+1}
-    void CalculateCurrentBebar(const CORE::LINALG::Matrix<3, 3>& devtau,  //!< s_{n+1}
-        double G,                                                         //!< shear modulus
-        const CORE::LINALG::Matrix<3, 3>& id2,                            //!< second-order identity
-        int gp                                                            //!< current Gauss-point
+    void calculate_current_bebar(const CORE::LINALG::Matrix<3, 3>& devtau,  //!< s_{n+1}
+        double G,                                                           //!< shear modulus
+        const CORE::LINALG::Matrix<3, 3>& id2,  //!< second-order identity
+        int gp                                  //!< current Gauss-point
     );
 
 

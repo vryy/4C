@@ -36,10 +36,10 @@ int DRT::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   // get parameter interface
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
@@ -1298,7 +1298,7 @@ void DRT::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
   if (StrParamsInterface().IsDefaultStep())
   {
     // first, store the eas state of the previous accepted Newton step
-    StrParamsInterface().SumIntoMyPreviousSolNorm(
+    StrParamsInterface().sum_into_my_previous_sol_norm(
         NOX::NLN::StatusTest::quantity_eas, soshw6_easpoisthick, (*alpha)[0], Owner());
 
     // add Kda . res_d to feas

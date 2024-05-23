@@ -141,7 +141,7 @@ namespace DRT
     prescribing an initial pressure in a 3D fluid dynamics simulation, where locids would have to
     contain only the local pressure DOF id, namely {3}.
     */
-    void EvaluateInitialField(const DRT::Discretization& discret, const std::string& fieldstring,
+    void evaluate_initial_field(const DRT::Discretization& discret, const std::string& fieldstring,
         Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
 
@@ -310,10 +310,10 @@ namespace DRT
        *  set the toggle vector for a dof to 1 if an entity prescribes a
        *  dirichlet BC and we have to set it to 0 again if a higher entity
        *  does NOT prescribe a dirichlet BC for the same dof. This is done
-       *  in ReadDirichletCondition(...). We do this for each type of entity,
+       *  in read_dirichlet_condition(...). We do this for each type of entity,
        *  starting with volume DBCs.
        *
-       *  Only then we call DoDirichletCondition(...) for each type of entity,
+       *  Only then we call do_dirichlet_condition(...) for each type of entity,
        *  starting with volume DBCs.
        *
        *  This way, it is guaranteed, that the highest entity defined in
@@ -321,12 +321,12 @@ namespace DRT
        *  dofs is actually touched, or not, irrespective of the dirichlet BC
        *  definition of a lower entity.
        */
-      void ReadDirichletCondition(const DRT::Discretization& discret,
+      void read_dirichlet_condition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
-      void ReadDirichletCondition(const DRT::Discretization& discret,
+      void read_dirichlet_condition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum CORE::Conditions::ConditionType& type) const;
@@ -357,7 +357,7 @@ namespace DRT
        *  No matter what is defined in a condition line of lower priority. The
        *  corresponding entries in the systemvectors remain untouched.
        */
-      virtual void ReadDirichletCondition(const DRT::Discretization& discret,
+      virtual void read_dirichlet_condition(const DRT::Discretization& discret,
           const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
 
@@ -368,13 +368,13 @@ namespace DRT
        *  (3) Assign LineDirichlet DBC GIDs
        *  (4) Assign PointDirichlet DBC GIDs
        */
-      void DoDirichletCondition(const DRT::Discretization& discret,
+      void do_dirichlet_condition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
-      void DoDirichletCondition(const DRT::Discretization& discret,
+      void do_dirichlet_condition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -413,19 +413,19 @@ namespace DRT
        *
        *  \version rauch 06/2016
        *  Shifted and rearranged parts of the former implementation to
-       *  ReadDirichletCondition(...). This fixes inconsistency in hierarchy
+       *  read_dirichlet_condition(...). This fixes inconsistency in hierarchy
        *  handling. Now, the Dirichlet conditions are first read by
-       *  ReadDirichletCondition(...). Then, they are applied by
-       *  DoDirichletCondition(...).
+       *  read_dirichlet_condition(...). Then, they are applied by
+       *  do_dirichlet_condition(...).
        */
-      virtual void DoDirichletCondition(const DRT::Discretization& discret,
+      virtual void do_dirichlet_condition(const DRT::Discretization& discret,
           const CORE::Conditions::Condition& cond, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */
-      void BuildDbcMapExtractor(const DRT::Discretization& discret,
+      void build_dbc_map_extractor(const DRT::Discretization& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
           const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
 

@@ -186,7 +186,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   }
 
   // Set matrix
-  block_sparse_matrix_ = matrix.GetBlockSparseMatrix(CORE::LINALG::View);
+  block_sparse_matrix_ = matrix.get_block_sparse_matrix(CORE::LINALG::View);
   sparse_matrix_ = block_sparse_matrix_->Merge();
   a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
@@ -915,7 +915,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetNullSpace()
 /*------------------------------------------------------------------------------*/
 
 std::vector<CORE::LINEAR_SOLVER::AMGNXN::NullSpaceInfo>
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetNullSpaceAllBlocks()
+CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::get_null_space_all_blocks()
 {
   return null_space_all_blocks_;
 }
@@ -1023,7 +1023,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetNullSpace(const NullSpaceI
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetNullSpaceAllBlocks(
+void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_null_space_all_blocks(
     const std::vector<NullSpaceInfo>& in)
 {
   set_null_space_all_blocks_ = true;
@@ -1094,7 +1094,7 @@ bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetNullSpace() { return set
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetNullSpaceAllBlocks()
+bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::is_set_null_space_all_blocks()
 {
   return set_null_space_all_blocks_;
 }
@@ -1172,7 +1172,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
     mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
     mySmootherFactory->SetHierarchies(GetHierarchies());
     mySmootherFactory->SetBlocks(GetBlocks());
-    mySmootherFactory->SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+    mySmootherFactory->set_null_space_all_blocks(get_null_space_all_blocks());
   }
   else if (GetType() == "BLOCK_AMG")
   {
@@ -1181,7 +1181,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
     mySmootherFactory->SetParams(GetParams());
     mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
     mySmootherFactory->SetBlocks(GetBlocks());
-    mySmootherFactory->SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+    mySmootherFactory->set_null_space_all_blocks(get_null_space_all_blocks());
   }
   else if (GetType() == "SIMPLE")
   {
@@ -1191,7 +1191,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
     mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
     mySmootherFactory->SetHierarchies(GetHierarchies());
     mySmootherFactory->SetBlocks(GetBlocks());
-    mySmootherFactory->SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+    mySmootherFactory->set_null_space_all_blocks(get_null_space_all_blocks());
   }
   else if (GetType() == "MERGE_AND_SOLVE")
   {
@@ -1684,9 +1684,9 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmgFactory::Create()
   for (unsigned i = 0; i < nBlocks; i++)
   {
     b = Blocks[i];
-    num_pdes[i] = GetNullSpaceAllBlocks()[b].GetNumPDEs();
-    null_spaces_dim[i] = GetNullSpaceAllBlocks()[b].GetNullSpaceDim();
-    null_spaces_data[i] = GetNullSpaceAllBlocks()[b].GetNullSpaceData();
+    num_pdes[i] = get_null_space_all_blocks()[b].GetNumPDEs();
+    null_spaces_dim[i] = get_null_space_all_blocks()[b].GetNullSpaceDim();
+    null_spaces_data[i] = get_null_space_all_blocks()[b].GetNullSpaceData();
   }
 
   // Recover the lists
@@ -1849,12 +1849,12 @@ CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::Create()
     {
       int thisblock = SuperBlocks2Blocks[scol][0];
       mySmootherCreator.SetBlock(thisblock);
-      mySmootherCreator.SetNullSpace(GetNullSpaceAllBlocks()[thisblock]);
+      mySmootherCreator.SetNullSpace(get_null_space_all_blocks()[thisblock]);
     }
     else
     {
       mySmootherCreator.SetBlocks(SuperBlocks2Blocks[scol]);
-      mySmootherCreator.SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+      mySmootherCreator.set_null_space_all_blocks(get_null_space_all_blocks());
     }
 
     SubSmoothers[scol] = mySmootherCreator.Create();
@@ -2079,7 +2079,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
   }
 
   // Compute the schur complement
-  Teuchos::RCP<BlockedMatrix> S = ComputeSchurComplement(*invApp, *Aps, *Asp, *Ass);
+  Teuchos::RCP<BlockedMatrix> S = compute_schur_complement(*invApp, *Aps, *Asp, *Ass);
 
   // =============================================================
   // Construct smoothers for diagonal superblocks
@@ -2096,12 +2096,12 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
   {
     int thisblock = SuperBlocks2Blocks[pred][0];
     mySmootherCreator.SetBlock(thisblock);
-    mySmootherCreator.SetNullSpace(GetNullSpaceAllBlocks()[thisblock]);
+    mySmootherCreator.SetNullSpace(get_null_space_all_blocks()[thisblock]);
   }
   else
   {
     mySmootherCreator.SetBlocks(SuperBlocks2Blocks[pred]);
-    mySmootherCreator.SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+    mySmootherCreator.set_null_space_all_blocks(get_null_space_all_blocks());
   }
   mySmootherCreator.SetSmootherName(predictor_smoother);
   mySmootherCreator.SetOperator(App);
@@ -2112,12 +2112,12 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
   {
     int thisblock = SuperBlocks2Blocks[schur][0];
     mySmootherCreator.SetBlock(thisblock);
-    mySmootherCreator.SetNullSpace(GetNullSpaceAllBlocks()[thisblock]);
+    mySmootherCreator.SetNullSpace(get_null_space_all_blocks()[thisblock]);
   }
   else
   {
     mySmootherCreator.SetBlocks(SuperBlocks2Blocks[schur]);
-    mySmootherCreator.SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+    mySmootherCreator.set_null_space_all_blocks(get_null_space_all_blocks());
   }
 
   mySmootherCreator.SetSmootherName(schur_smoother);
@@ -2137,7 +2137,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix>
-CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ComputeSchurComplement(
+CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
     const BlockedMatrix& invApp, const BlockedMatrix& Aps, const BlockedMatrix& Asp,
     const BlockedMatrix& Ass)
 {

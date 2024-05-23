@@ -36,7 +36,10 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   ADAPTER::FBIConstraintenforcer::Setup(structure, fluid);
   std::ofstream log;
   if ((GetDiscretizations()[1]->Comm().MyPID() == 0) &&
-      (Bridge()->GetParams()->GetVisualizationOuputParamsPtr()->GetConstraintViolationOutputFlag()))
+      (Bridge()
+              ->GetParams()
+              ->get_visualization_ouput_params_ptr()
+              ->get_constraint_violation_output_flag()))
   {
     std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
@@ -49,7 +52,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseOperator>
-ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
+ADAPTER::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_matrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix
 
@@ -58,7 +61,7 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix>
-ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
+ADAPTER::FBIPenaltyConstraintenforcer::assemble_structure_coupling_matrix() const
 {
   // For the classical partitioned algorithm we do not have any contributions to the stiffness
   // matrix of the structure field
@@ -66,30 +69,30 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingResidual()
-    const
+Teuchos::RCP<Epetra_Vector>
+ADAPTER::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_residual() const
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-      ->ScalePenaltyFluidContributions();
+      ->scale_penalty_fluid_contributions();
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f =
-      Teuchos::rcp(new Epetra_Vector((Bridge()->GetFluidCouplingResidual())->Map()));
-  f->Update(-1.0, *(Bridge()->GetFluidCouplingResidual()), 0.0);
+      Teuchos::rcp(new Epetra_Vector((Bridge()->get_fluid_coupling_residual())->Map()));
+  f->Update(-1.0, *(Bridge()->get_fluid_coupling_residual()), 0.0);
   return f;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingResidual() const
+ADAPTER::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() const
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(Bridge(), true)
-      ->ScalePenaltyStructureContributions();
+      ->scale_penalty_structure_contributions();
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
   Teuchos::RCP<Epetra_Vector> f =
-      Teuchos::rcp(new Epetra_Vector(Bridge()->GetStructureCouplingResidual()->Map()));
-  f->Update(-1.0, *(Bridge()->GetStructureCouplingResidual()), 0.0);
+      Teuchos::rcp(new Epetra_Vector(Bridge()->get_structure_coupling_residual()->Map()));
+  f->Update(-1.0, *(Bridge()->get_structure_coupling_residual()), 0.0);
 
   return f;
 }
@@ -106,7 +109,10 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Output(double time, int step)
 
 void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step)
 {
-  if (Bridge()->GetParams()->GetVisualizationOuputParamsPtr()->GetConstraintViolationOutputFlag())
+  if (Bridge()
+          ->GetParams()
+          ->get_visualization_ouput_params_ptr()
+          ->get_constraint_violation_output_flag())
   {
     double penalty_parameter = Bridge()->GetParams()->GetPenaltyParameter();
 
@@ -122,12 +128,12 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
 
     if (err != 0) FOUR_C_THROW(" Matrix vector product threw error code %i ", err);
 
-    err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
+    err = violation->Update(1.0, *assemble_fluid_coupling_residual(), -1.0);
     if (err != 0) FOUR_C_THROW(" Epetra_Vector update threw error code %i ", err);
 
     double norm = 0.0, normf = 0.0, norms = 0.0, norm_vel = 0.0;
 
-    GetVelocityPressureSplitter()
+    get_velocity_pressure_splitter()
         ->ExtractOtherVector(
             Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp())
         ->MaxValue(&norm_vel);

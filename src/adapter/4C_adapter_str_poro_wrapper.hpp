@@ -74,37 +74,37 @@ namespace ADAPTER
     }
 
     /// get constraint manager defined in the structure
-    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager()
+    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager()
     {
-      return structure_->GetConstraintManager();
+      return structure_->get_constraint_manager();
     }
 
     // access to contact/meshtying bridge
-    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
+    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge()
     {
-      return structure_->MeshtyingContactBridge();
+      return structure_->meshtying_contact_bridge();
     }
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn()
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispn()
     {
-      return structure_->ExtractInterfaceDispn();
+      return structure_->extract_interface_dispn();
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp()
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp()
     {
-      return structure_->ExtractInterfaceDispnp();
+      return structure_->extract_interface_dispnp();
     }
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFPSIInterfaceDispn()
+    virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispn()
     {
       return structure_->Interface()->ExtractFPSICondVector(structure_->Dispn());
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFPSIInterfaceDispnp()
+    virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispnp()
     {
       return structure_->Interface()->ExtractFPSICondVector(structure_->Dispnp());
     }
@@ -128,7 +128,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond);
 
     //! Recover Lagrange Multiplier during iteration (does nothing for structure)
-    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<Epetra_Vector> iterinc);
+    void recover_lagrange_multiplier_after_newton_step(Teuchos::RCP<Epetra_Vector> iterinc);
 
     bool isPoro() { return (type_ == FieldWrapper::type_PoroField); }
 

@@ -161,8 +161,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
   // special case are applied:
   if (nonSmoothContact_)
   {
-    // AddLineToLinContributions(kteff,feff);
-    AddLineToLinContributionsFriction(kteff, feff);
+    // add_line_to_lin_contributions(kteff,feff);
+    add_line_to_lin_contributions_friction(kteff, feff);
 
     // FD check of weighted gap g derivatives + jump for LTL case
 #ifdef CONTACTFDJUMPLTL
@@ -175,7 +175,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -349,12 +349,12 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
-      err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invdV->replace_diagonal_values(*diagV);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdE->replace_diagonal_values(*diagE);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdS->replace_diagonal_values(*diagS);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -428,8 +428,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
       diag->Update(-1., *tmp, 1.);
 
       // re-insert inverted diagonal into invd
-      err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invd->replace_diagonal_values(*diag);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -476,7 +476,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
       // split and transform to redistributed maps
       CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
           gndofrowmap_, ksmsm, ksmn, knsm, knn);
-      ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+      ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
       ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
       knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
     }
@@ -1299,7 +1299,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
       // Check linear and angular momentum conservation
 #ifdef CHECKCONSERVATIONLAWS
-      CheckConservationLaws(*fs, *fm);
+      check_conservation_laws(*fs, *fm);
 #endif
     }
   }
@@ -1323,8 +1323,8 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
   // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->FDCheckSlipIncrDerivTXI();
-    if (Dim() == 3) interface_[i]->FDCheckSlipIncrDerivTETA();
+    interface_[i]->fd_check_slip_incr_deriv_txi();
+    if (Dim() == 3) interface_[i]->fd_check_slip_incr_deriv_teta();
   }
 #endif  // #ifdef CONTACTFDGAP
 
@@ -1384,11 +1384,11 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 /*----------------------------------------------------------------------*
  |  pp stresses                                              farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::ComputeContactStresses()
+void CONTACT::LagrangeStrategy::compute_contact_stresses()
 {
   static int step = 0;
   // call abstract function
-  CONTACT::AbstractStrategy::ComputeContactStresses();
+  CONTACT::AbstractStrategy::compute_contact_stresses();
 
   // further scaling for nonsmooth contact
   if (nonSmoothContact_)
@@ -1638,13 +1638,13 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // create integrator
           CONTACT::Integrator integrator(Params(), lineEle->Shape(), Comm());
 
           // integrate kappe penalty
-          integrator.IntegrateKappaPenaltyLTS(*lineEle);
+          integrator.integrate_kappa_penalty_lts(*lineEle);
         }
       }  // end edge loop
     }
@@ -1684,7 +1684,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
 /*----------------------------------------------------------------------*
  |  add penalty terms for ltl contact                        farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AddMasterContributions(
+void CONTACT::LagrangeStrategy::add_master_contributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1701,10 +1701,10 @@ void CONTACT::LagrangeStrategy::AddMasterContributions(
   {
     // line to segment
     interface_[i]->AddLTSforcesMaster(fc);
-    interface_[i]->AddLTSstiffnessMaster(kc);
+    interface_[i]->add_lt_sstiffness_master(kc);
     // node to segment
     interface_[i]->AddNTSforcesMaster(fc);
-    interface_[i]->AddNTSstiffnessMaster(kc);
+    interface_[i]->add_nt_sstiffness_master(kc);
   }
 
   // force
@@ -1739,7 +1739,7 @@ void CONTACT::LagrangeStrategy::AddMasterContributions(
 /*----------------------------------------------------------------------*
  |  add penalty terms for ltl contact                        farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AddLineToLinContributions(
+void CONTACT::LagrangeStrategy::add_line_to_lin_contributions(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1794,7 +1794,7 @@ void CONTACT::LagrangeStrategy::AddLineToLinContributions(
 /*----------------------------------------------------------------------*
  |  add frictional penalty terms for ltl contact             farah 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AddLineToLinContributionsFriction(
+void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     bool add_time_integration)
 {
@@ -1880,10 +1880,10 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
   if (nonSmoothContact_)
   {
     // LTL contributions:
-    AddLineToLinContributions(kteff, feff);
+    add_line_to_lin_contributions(kteff, feff);
 
     // penalty support for master side quantities:
-    AddMasterContributions(kteff, feff);
+    add_master_contributions(kteff, feff);
 
 #ifdef CONTACTFDGAPLTL
     // FD check of weighted gap g derivatives (non-penetr. condition)
@@ -1897,7 +1897,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -2016,7 +2016,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
   }
 
   // do reagularization scaling
-  if (regularized_) EvaluateRegularizationScaling(gact);
+  if (regularized_) evaluate_regularization_scaling(gact);
 
   //**********************************************************************
   //**********************************************************************
@@ -2099,12 +2099,12 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
-      err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invdV->replace_diagonal_values(*diagV);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdE->replace_diagonal_values(*diagE);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdS->replace_diagonal_values(*diagS);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -2177,8 +2177,8 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
       diag->Update(-1., *tmp, 1.);
 
       // re-insert inverted diagonal into invd
-      err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invd->replace_diagonal_values(*diag);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -2199,7 +2199,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
 
@@ -2245,7 +2245,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
       // split and transform to redistributed maps
       CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
           gndofrowmap_, ksmsm, ksmn, knsm, knn);
-      ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+      ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
       ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
       knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
     }
@@ -2404,7 +2404,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     invda->Scale(1 / (1 - alphaf_));
     dai->Scale(1 - alphaf_);
 
-    SaveCouplingMatrices(dhat, mhataam, invda);
+    save_coupling_matrices(dhat, mhataam, invda);
     /**********************************************************************/
     /* (7) Build the final K blocks                                       */
     /**********************************************************************/
@@ -2513,7 +2513,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     }
 
     //---------------------------------------------------------- FOURTH LINE
-    // nothing to do - execpt its regularized contact see --> DoRegularizationScaling()
+    // nothing to do - execpt its regularized contact see --> do_regularization_scaling()
 
     //----------------------------------------------------------- FIFTH LINE
     // kan: multiply tmatrix with invda and kan
@@ -2624,7 +2624,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     fimod->Update(1.0, *fi, -1.0);
 
     //---------------------------------------------------------- FOURTH LINE
-    // gactive: nothing to do  - execpt its regularized contact see --> DoRegularizationScaling()
+    // gactive: nothing to do  - execpt its regularized contact see --> do_regularization_scaling()
 
     //----------------------------------------------------------- FIFTH LINE
     // fa: multiply tmatrix with invda and fa
@@ -2694,7 +2694,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
     // Add all additional contributions from regularized contact to kteffnew and feffnew!
     if (regularized_)
-      DoRegularizationScaling(aset, iset, invda, kan, kam, kai, kaa, fa, kteffnew, feffnew);
+      do_regularization_scaling(aset, iset, invda, kan, kam, kai, kaa, fa, kteffnew, feffnew);
 
     //----------------------------------------------------------- FIRST LINE
     // add n submatrices to kteffnew
@@ -2809,7 +2809,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
         systrafo->Add(*eye, false, 1.0, 1.0);
         if (ParRedist())
-          trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+          trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
         systrafo->Add(*trafo_, false, 1.0, 1.0);
         systrafo->Complete();
 
@@ -2893,7 +2893,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
       // Check linear and angular momentum conservation
 #ifdef CHECKCONSERVATIONLAWS
-      CheckConservationLaws(*fs, *fm);
+      check_conservation_laws(*fs, *fm);
 //      double normlambda = 0.0;
 //      z_->Norm1(&normlambda);
 //      std::cout << "normlambda =  " << normlambda << std::endl;
@@ -2943,7 +2943,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
+void CONTACT::LagrangeStrategy::build_saddle_point_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
@@ -3073,7 +3073,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = MORTAR::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
 
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
@@ -3088,9 +3088,9 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
    */
   if (ParRedist())
   {
-    trkzd = MORTAR::MatrixRowColTransform(trkzd, pglmdofrowmap_, ProblemDofs());
-    trkzz = MORTAR::MatrixRowColTransform(trkzz, pglmdofrowmap_, pglmdofrowmap_);
-    trkdz = MORTAR::MatrixRowColTransform(trkdz, ProblemDofs(), pglmdofrowmap_);
+    trkzd = MORTAR::matrix_row_col_transform(trkzd, pglmdofrowmap_, ProblemDofs());
+    trkzz = MORTAR::matrix_row_col_transform(trkzz, pglmdofrowmap_, pglmdofrowmap_);
+    trkdz = MORTAR::matrix_row_col_transform(trkdz, ProblemDofs(), pglmdofrowmap_);
   }
 
   // Assemble the saddle point system
@@ -3139,7 +3139,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
       // apply Dirichlet conditions to (0,0) and (0,1) blocks
       Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
       Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-      CORE::LINALG::ApplyDirichletToSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+      CORE::LINALG::apply_dirichlet_to_system(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
       trkdz->ApplyDirichlet(*dirichtoggle, false);
     }
 
@@ -3184,7 +3184,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
-    CORE::LINALG::ApplyDirichletToSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
+    CORE::LINALG::apply_dirichlet_to_system(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     blocksol = mergedsol;
     blockrhs = mergedrhs;
@@ -3195,7 +3195,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::UpdateDisplacementsAndLMincrements(
+void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   // Extract results for displacement and LM increments
@@ -3251,7 +3251,7 @@ void CONTACT::LagrangeStrategy::EvalConstrRHS()
 {
   if (SystemType() == INPAR::CONTACT::system_condensed) return;
 
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step())
   {
     // (re)setup the vector
     constrrhs_ = Teuchos::null;
@@ -3362,18 +3362,18 @@ void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
   // evaluate relative movement for friction
   if (cparams.IsPredictor())
-    EvaluateRelMovPredict();
+    evaluate_rel_mov_predict();
   else
     EvaluateRelMov();
 
   // update active set
   const bool firstTimeStepAndPredictor =
       (cparams.IsPredictor() and (cparams.GetStepNp() == cparams.GetRestartStep() + 1));
-  UpdateActiveSetSemiSmooth(firstTimeStepAndPredictor);
+  update_active_set_semi_smooth(firstTimeStepAndPredictor);
 
   // apply contact forces and stiffness
   Initialize();  // init lin-matrices
-  AssembleAllContactTerms();
+  assemble_all_contact_terms();
 
   if (SystemType() != INPAR::CONTACT::system_condensed)
   {
@@ -3393,14 +3393,15 @@ void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
     systrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
     Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
     systrafo_->Add(*eye, false, 1.0, 1.0);
-    if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+    if (ParRedist())
+      trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
     systrafo_->Add(*trafo_, false, 1.0, 1.0);
     systrafo_->Complete();
 
     invsystrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
     invsystrafo_->Add(*eye, false, 1.0, 1.0);
     if (ParRedist())
-      invtrafo_ = MORTAR::MatrixRowColTransform(invtrafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+      invtrafo_ = MORTAR::matrix_row_col_transform(invtrafo_, pgsmdofrowmap_, pgsmdofrowmap_);
     invsystrafo_->Add(*invtrafo_, false, 1.0, 1.0);
     invsystrafo_->Complete();
   }
@@ -3412,7 +3413,7 @@ void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AssembleAllContactTerms()
+void CONTACT::LagrangeStrategy::assemble_all_contact_terms()
 {
   if (nonSmoothContact_)
   {
@@ -3424,15 +3425,15 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTerms()
     if (!friction_)
     {
       // LTL contributions:
-      AddLineToLinContributions(k, nonsmooth_Penalty_force_, false);
+      add_line_to_lin_contributions(k, nonsmooth_Penalty_force_, false);
 
       // penalty support for master side quantities:
-      AddMasterContributions(k, nonsmooth_Penalty_force_, false);
+      add_master_contributions(k, nonsmooth_Penalty_force_, false);
     }
     else
     {
-      // AddLineToLinContributions(kteff,feff);
-      AddLineToLinContributionsFriction(k, nonsmooth_Penalty_force_, false);
+      // add_line_to_lin_contributions(kteff,feff);
+      add_line_to_lin_contributions_friction(k, nonsmooth_Penalty_force_, false);
     }
 
     nonsmooth_Penalty_stiff_->Complete();
@@ -3441,18 +3442,18 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTerms()
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   if (friction_)
-    AssembleAllContactTermsFriction();
+    assemble_all_contact_terms_friction();
   else
-    AssembleAllContactTermsFrictionless();
+    assemble_all_contact_terms_frictionless();
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
+void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
 {
   /**********************************************************************/
   /* build global matrix t with tangent vectors of active nodes         */
@@ -3592,12 +3593,12 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
-      err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invdV->replace_diagonal_values(*diagV);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdE->replace_diagonal_values(*diagE);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdS->replace_diagonal_values(*diagS);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3671,8 +3672,8 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
       diag->Update(-1., *tmp, 1.);
 
       // re-insert inverted diagonal into invd
-      err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invd->replace_diagonal_values(*diag);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -3703,7 +3704,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
+void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
 {
   /**********************************************************************/
   /* calculate                                                          */
@@ -3854,12 +3855,12 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
-      err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
-      err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invdV->replace_diagonal_values(*diagV);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdE->replace_diagonal_values(*diagE);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
+      err = invdS->replace_diagonal_values(*diagS);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3932,8 +3933,8 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
       diag->Update(-1., *tmp, 1.);
 
       // re-insert inverted diagonal into invd
-      err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+      err = invd->replace_diagonal_values(*diag);
+      if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -3968,7 +3969,7 @@ void CONTACT::LagrangeStrategy::AssembleContactRHS()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
@@ -3987,7 +3988,7 @@ void CONTACT::LagrangeStrategy::AssembleContactRHS()
  *----------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategy::EvalStrContactRHS()
 {
-  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
     strcontactrhs_ = Teuchos::null;
     return;
@@ -4034,7 +4035,7 @@ void CONTACT::LagrangeStrategy::EvalStrContactRHS()
 
     // Check linear and angular momentum conservation
 #ifdef CHECKCONSERVATIONLAWS
-    CheckConservationLaws(*fs, *fm);
+    check_conservation_laws(*fs, *fm);
 #endif
   }
 
@@ -4128,7 +4129,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active LM contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step())
   {
     if (nonSmoothContact_ && bt == CONTACT::MatBlockType::displ_displ)
       return nonsmooth_Penalty_stiff_;
@@ -4155,7 +4156,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       // transform parallel row/column distribution of matrix kdd
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
-        mat_ptr = MORTAR::MatrixRowColTransform(
+        mat_ptr = MORTAR::matrix_row_col_transform(
             mat_ptr, SlMaDoFRowMapPtr(false), SlMaDoFRowMapPtr(false));
 
       Teuchos::RCP<CORE::LINALG::SparseMatrix> full_mat_ptr =
@@ -4186,7 +4187,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       // transform parallel row/column distribution of matrix kdz
       // (only necessary in the parallel redistribution case)
       if (ParRedist() or IsSelfContact())
-        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, ProblemDofs(), LinSystemLMDoFRowMapPtr());
+        mat_ptr = MORTAR::matrix_row_col_transform(
+            mat_ptr, ProblemDofs(), lin_system_lm_do_f_row_map_ptr());
 
       break;
     }
@@ -4221,7 +4223,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       // transform parallel row/column distribution of matrix kzd
       // (only necessary in the parallel redistribution case)
       if (ParRedist() or IsSelfContact())
-        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, LinSystemLMDoFRowMapPtr(), ProblemDofs());
+        mat_ptr = MORTAR::matrix_row_col_transform(
+            mat_ptr, lin_system_lm_do_f_row_map_ptr(), ProblemDofs());
       break;
     }
     case CONTACT::MatBlockType::lm_lm:
@@ -4269,7 +4272,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       {
         kzz_ptr->Complete(*gsmdofrowmap_, *gsmdofrowmap_);
         mat_ptr = MORTAR::MatrixRowColTransformGIDs(
-            kzz_ptr, LinSystemLMDoFRowMapPtr(), LinSystemLMDoFRowMapPtr());
+            kzz_ptr, lin_system_lm_do_f_row_map_ptr(), lin_system_lm_do_f_row_map_ptr());
       }
       else
       {
@@ -4281,8 +4284,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       // transform parallel row/column distribution of matrix kzz
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
-        mat_ptr = MORTAR::MatrixRowColTransform(
-            mat_ptr, LinSystemLMDoFRowMapPtr(), LinSystemLMDoFRowMapPtr());
+        mat_ptr = MORTAR::matrix_row_col_transform(
+            mat_ptr, lin_system_lm_do_f_row_map_ptr(), lin_system_lm_do_f_row_map_ptr());
 
       break;
     }
@@ -4329,7 +4332,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active LM contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step())
   {
     if (nonSmoothContact_ && bt == CONTACT::VecBlockType::displ)
     {
@@ -4370,7 +4373,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
       if (IsSelfContact() && !IsCondensedSystem())
       {
         static Teuchos::RCP<Epetra_Vector> tmp_ptr =
-            Teuchos::rcp(new Epetra_Vector(LinSystemLMDoFRowMap(), false));
+            Teuchos::rcp(new Epetra_Vector(lin_system_lm_do_f_row_map(), false));
         tmp_ptr->PutScalar(0.0);
         CORE::LINALG::Export(*vec_ptr, *tmp_ptr);
         vec_ptr = tmp_ptr;
@@ -4390,7 +4393,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::ResetLagrangeMultipliers(
+void CONTACT::LagrangeStrategy::reset_lagrange_multipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed)
@@ -4409,7 +4412,7 @@ void CONTACT::LagrangeStrategy::ResetLagrangeMultipliers(
     // ---------------------------------------------------------------------
     // store the new Lagrange multiplier in the nodes
     // ---------------------------------------------------------------------
-    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+    store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
   }
   return;
 }
@@ -4424,7 +4427,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn =
@@ -4484,7 +4487,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
       systrafo->Multiply(false, *disi, *disi);
@@ -4565,7 +4568,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = CORE::LINALG::Eye(*gndofrowmap_);
       systrafo->Add(*eye, false, 1.0, 1.0);
       if (ParRedist())
-        trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = MORTAR::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
       systrafo->Add(*trafo_, false, 1.0, 1.0);
       systrafo->Complete();
       systrafo->Multiply(false, *disi, *disi);
@@ -4573,7 +4576,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   }
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
 
   return;
 }
@@ -4883,7 +4886,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
+void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstStepPredictor)
 {
   // FIXME: Here we do not consider zig-zagging yet!
   //  PrintActiveSet();
@@ -4929,7 +4932,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    bool my_check = interface_[i]->UpdateActiveSetSemiSmooth();
+    bool my_check = interface_[i]->update_active_set_semi_smooth();
     activesetconv_ = activesetconv_ and my_check;
   }  // loop over all interfaces
 
@@ -4939,7 +4942,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
     // loop over all interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
     {
-      interface_[i]->UpdateActiveSetInitialStatus();
+      interface_[i]->update_active_set_initial_status();
     }  // loop over all interfaces
   }
 
@@ -5193,7 +5196,7 @@ void CONTACT::LagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  Check conservation laws                              hiermeier 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::CheckConservationLaws(
+void CONTACT::LagrangeStrategy::check_conservation_laws(
     const Epetra_Vector& fs, const Epetra_Vector& fm)
 {
   // change sign (adapt sign convention from the augmented Lagrange formulation)
@@ -5252,7 +5255,7 @@ void CONTACT::LagrangeStrategy::CheckConservationLaws(
 /*-----------------------------------------------------------------------------*
  | do additional matrix manipulations for regularization scaling     ager 07/15|
  *----------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::DoRegularizationScaling(bool aset, bool iset,
+void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& invda, Teuchos::RCP<CORE::LINALG::SparseMatrix>& kan,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kam, Teuchos::RCP<CORE::LINALG::SparseMatrix>& kai,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kaa, Teuchos::RCP<Epetra_Vector>& fa,
@@ -5343,7 +5346,7 @@ void CONTACT::LagrangeStrategy::DoRegularizationScaling(bool aset, bool iset,
 /*----------------------------------------------------------------------*
  | calculate regularization scaling and apply it to matrixes   ager 06/15|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetra_Vector> gact)
+void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(Teuchos::RCP<Epetra_Vector> gact)
 {
   /********************************************************************/
   /* (0) Get Nodal Gap Scaling                                        */
@@ -5361,7 +5364,7 @@ void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetr
   {
     // setting of the parameters is still under investigation Ager Chr.
     // GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-    // const Teuchos::ParameterList& structdyn   = problem->StructuralDynamicParams(); //just for
+    // const Teuchos::ParameterList& structdyn   = problem->structural_dynamic_params(); //just for
     // now!
 
     double scaling = 1e6;  // structdyn.get<double>("TOLRES"); //1e6
@@ -5473,8 +5476,8 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   // special case are applied:
   if (nonSmoothContact_)
   {
-    // AddLineToLinContributions(kteff,feff);
-    AddLineToLinContributionsFriction(kteff_op, feff);
+    // add_line_to_lin_contributions(kteff,feff);
+    add_line_to_lin_contributions_friction(kteff_op, feff);
 
     // FD check of weighted gap g derivatives + jump for LTL case
 #ifdef CONTACTFDJUMPLTL
@@ -5554,7 +5557,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
     // split and transform to redistributed maps
     CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
         gndofrowmap_, ksmsm, ksmn, knsm, knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
     knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
   }
@@ -6220,8 +6223,8 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->FDCheckSlipIncrDerivTXI();
-    if (Dim() == 3) interface_[i]->FDCheckSlipIncrDerivTETA();
+    interface_[i]->fd_check_slip_incr_deriv_txi();
+    if (Dim() == 3) interface_[i]->fd_check_slip_incr_deriv_teta();
   }
 #endif  // #ifdef CONTACTFDGAP
 
@@ -6279,7 +6282,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   return;
 }
 
-void CONTACT::LagrangeStrategy::CondenseFrictionless(
+void CONTACT::LagrangeStrategy::condense_frictionless(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   Teuchos::RCP<Epetra_Vector> feff = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
@@ -6299,10 +6302,10 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   if (nonSmoothContact_)
   {
     // LTL contributions:
-    AddLineToLinContributions(kteff_op, feff);
+    add_line_to_lin_contributions(kteff_op, feff);
 
     // penalty support for master side quantities:
-    AddMasterContributions(kteff_op, feff);
+    add_master_contributions(kteff_op, feff);
 
 #ifdef CONTACTFDGAPLTL
     // FD check of weighted gap g derivatives (non-penetr. condition)
@@ -6340,7 +6343,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   }
 
   // do reagularization scaling
-  if (regularized_) EvaluateRegularizationScaling(gact);
+  if (regularized_) evaluate_regularization_scaling(gact);
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
@@ -6382,7 +6385,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
     // split and transform to redistributed maps
     CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
         gndofrowmap_, ksmsm, ksmn, knsm, knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
     knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
   }
@@ -6515,7 +6518,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   invda->Scale(1 / (1 - alphaf_));
   dai->Scale(1 - alphaf_);
 
-  SaveCouplingMatrices(dhat, mhataam, invda);
+  save_coupling_matrices(dhat, mhataam, invda);
   /**********************************************************************/
   /* (7) Build the final K blocks                                       */
   /**********************************************************************/
@@ -6624,7 +6627,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   }
 
   //---------------------------------------------------------- FOURTH LINE
-  // nothing to do - execpt its regularized contact see --> DoRegularizationScaling()
+  // nothing to do - execpt its regularized contact see --> do_regularization_scaling()
 
   //----------------------------------------------------------- FIFTH LINE
   // kan: multiply tmatrix with invda and kan
@@ -6680,7 +6683,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   fimod->Update(1.0, *fi, -1.0);
 
   //---------------------------------------------------------- FOURTH LINE
-  // gactive: nothing to do  - execpt its regularized contact see --> DoRegularizationScaling()
+  // gactive: nothing to do  - execpt its regularized contact see --> do_regularization_scaling()
 
   //----------------------------------------------------------- FIFTH LINE
   // fa: multiply tmatrix with invda and fa
@@ -6750,7 +6753,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
 
   // Add all additional contributions from regularized contact to kteffnew and feffnew!
   if (regularized_)
-    DoRegularizationScaling(aset, iset, invda, kan, kam, kai, kaa, fa, kteffnew, feffnew);
+    do_regularization_scaling(aset, iset, invda, kan, kam, kai, kaa, fa, kteffnew, feffnew);
 
   //----------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
@@ -6866,12 +6869,12 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   feff->Scale(-1.);
 }
 
-void CONTACT::LagrangeStrategy::RunPreApplyJacobianInverse(
+void CONTACT::LagrangeStrategy::run_pre_apply_jacobian_inverse(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
@@ -6894,20 +6897,20 @@ void CONTACT::LagrangeStrategy::RunPreApplyJacobianInverse(
   if (friction_)
     CondenseFriction(kteff, rhs);
   else
-    CondenseFrictionless(kteff, rhs);
+    condense_frictionless(kteff, rhs);
 
   return;
 }
 
-void CONTACT::LagrangeStrategy::RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
-    const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-    const NOX::NLN::Group& grp)
+void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
+    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
+    const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
   if (SystemType() != INPAR::CONTACT::system_condensed) return;
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcpFromRef<Epetra_Vector>(result);
   disi->Scale(-1.);
@@ -6987,7 +6990,7 @@ void CONTACT::LagrangeStrategy::RunPostApplyJacobianInverse(const CONTACT::Param
     }
 
     // store updated LM into nodes
-    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+    store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
   }
   disi->Scale(-1.);
 }

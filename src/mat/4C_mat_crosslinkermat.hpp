@@ -159,7 +159,7 @@ namespace MAT
     }
 
     /// number of beam elasthyper material
-    virtual double BeamElastHyperMatNum() const { return params_->link_element_matnum_; }
+    virtual double beam_elast_hyper_mat_num() const { return params_->link_element_matnum_; }
 
     /// force depedent off rate according to bells equation
     virtual INPAR::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };
@@ -168,13 +168,13 @@ namespace MAT
     virtual double LinkingLength() const { return params_->linkinglength_; }
 
     /// tolerance for linker length in the sense: length +- tolerance
-    virtual double LinkingLengthTolerance() const { return params_->linkinglengthtol_; }
+    virtual double linking_length_tolerance() const { return params_->linkinglengthtol_; }
 
     /// preferred binding angle enclosed by two filaments' axes in radians
     virtual double LinkingAngle() const { return params_->linkingangle_; }
 
     /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
-    virtual double LinkingAngleTolerance() const { return params_->linkingangletol_; }
+    virtual double linking_angle_tolerance() const { return params_->linkingangletol_; }
 
     /// chemical association rate
     virtual double const& KOn() const { return params_->k_on_; }

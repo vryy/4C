@@ -57,7 +57,7 @@ namespace
     using namespace FourC;
     IO::Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
-    EXPECT_EQ(ps.RequestedOutputLevel(), IO::minimal);
+    EXPECT_EQ(ps.requested_output_level(), IO::minimal);
     IO::Level &lvl = ps(IO::debug);
     EXPECT_NO_THROW(lvl << 4);
   }

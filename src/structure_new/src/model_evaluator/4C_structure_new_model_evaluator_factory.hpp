@@ -42,21 +42,21 @@ namespace STR
       virtual ~Factory() = default;
 
 
-      Teuchos::RCP<STR::ModelEvaluator::Map> BuildModelEvaluators(
+      Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
           const std::set<enum INPAR::STR::ModelType>& modeltypes,
           const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
 
      private:
       //! return the proper type for the contact model evaluator
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> BuildContactModelEvaluator() const;
+      Teuchos::RCP<STR::MODELEVALUATOR::Generic> build_contact_model_evaluator() const;
 
       //! return the proper type for the standard structural model evaluator
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> BuildStructureModelEvaluator() const;
+      Teuchos::RCP<STR::MODELEVALUATOR::Generic> build_structure_model_evaluator() const;
 
     };  // class Factory
 
     //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
-    Teuchos::RCP<STR::ModelEvaluator::Map> BuildModelEvaluators(
+    Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
         const std::set<enum INPAR::STR::ModelType>& modeltypes,
         const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr);
 

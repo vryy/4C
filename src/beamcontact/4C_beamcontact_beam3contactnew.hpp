@@ -241,12 +241,12 @@ namespace CONTACT
     /*!
       Not needed for beam3contactnew variables
     */
-    double GetUnscaledPerpEnergy() override { return 0.0; };
+    double get_unscaled_perp_energy() override { return 0.0; };
 
     /*!
       Not needed for beam3contactnew variables
     */
-    double GetUnscaledParallelEnergy() override { return 0.0; };
+    double get_unscaled_parallel_energy() override { return 0.0; };
 
     /*!
     \brief Get normal vector of last time step
@@ -301,7 +301,7 @@ namespace CONTACT
     /*!
       \brief Update of class variables at the end of a time step
     */
-    void UpdateClassVariablesStep() override;
+    void update_class_variables_step() override;
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -312,7 +312,7 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    void UpdateEleSmoothTangents(
+    void update_ele_smooth_tangents(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) override;
 
 
@@ -499,7 +499,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact stiffness
     */
-    void EvaluateStiffcContact(const double& pp, const TYPE& norm_delta_r,
+    void evaluate_stiffc_contact(const double& pp, const TYPE& norm_delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, CORE::LINALG::SparseMatrix& stiffmatrix,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1, const CORE::LINALG::Matrix<3, 1, TYPE>& r2,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
@@ -516,7 +516,7 @@ namespace CONTACT
     /*!
     \brief Evaluate algorithmic forces that make convergence more robust / faster
     */
-    void EvaluateAlgorithmicForce(const double& pp, Epetra_Vector* fint,
+    void evaluate_algorithmic_force(const double& pp, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
@@ -525,7 +525,7 @@ namespace CONTACT
     /*!
     \brief Evaluate algorithmic stiffnesses that make convergence more robust / faster
     */
-    void EvaluateAlgorithmicStiff(const double& pp, const TYPE& norm_delta_r,
+    void evaluate_algorithmic_stiff(const double& pp, const TYPE& norm_delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, CORE::LINALG::SparseMatrix& stiffmatrix,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1, const CORE::LINALG::Matrix<3, 1, TYPE>& r2,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
@@ -542,7 +542,7 @@ namespace CONTACT
     /*!
     \brief Compute linearizations of contact point parameter coordinates xi and eta
     */
-    void ComputeLinXiAndLinEta(
+    void compute_lin_xi_and_lin_eta(
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
@@ -599,7 +599,7 @@ namespace CONTACT
     /*!
     \brief Find contact point via closest point projection
     */
-    void ClosestPointProjection();
+    void closest_point_projection();
 
     /*!
     \brief Calculate scalar contact force and linearization according to chosen penalty law
@@ -625,7 +625,8 @@ namespace CONTACT
     /*!
     \brief Assemble the shape functions into corresponding matrices
     */
-    void AssembleShapefunctions(const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
+    void assemble_shapefunctions(
+        const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xi,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xixi,
         CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
@@ -635,7 +636,7 @@ namespace CONTACT
     /*!
     \brief Compute coordinates and their derivatives from the discretization
     */
-    void ComputeCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1,
+    void compute_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1,
         CORE::LINALG::Matrix<3, 1, TYPE>& r2, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
         CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
@@ -649,7 +650,7 @@ namespace CONTACT
     /*!
     \brief Compute coordinates of contact points of last time step from the discretization
     */
-    void ComputeOldCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1_old,
+    void compute_old_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1_old,
         CORE::LINALG::Matrix<3, 1, TYPE>& r2_old, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi_old,
         CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi_old,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
@@ -660,7 +661,7 @@ namespace CONTACT
     /*!
     \brief Utility method for CPP (evaluate nonlinear function f)
     */
-    void EvaluateOrthogonalityCondition(CORE::LINALG::Matrix<2, 1, TYPE>& f,
+    void evaluate_orthogonality_condition(CORE::LINALG::Matrix<2, 1, TYPE>& f,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& t1,
@@ -669,7 +670,7 @@ namespace CONTACT
     /*!
     \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
     */
-    void EvaluateLinOrthogonalityCondition(CORE::LINALG::Matrix<2, 2, TYPE>& df,
+    void evaluate_lin_orthogonality_condition(CORE::LINALG::Matrix<2, 2, TYPE>& df,
         CORE::LINALG::Matrix<2, 2, TYPE>& dfinv, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const double norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
@@ -709,10 +710,10 @@ namespace CONTACT
     /*!
       \brief Get the vector normal_old_ from the neighbor element
     */
-    void GetNeighborNormalOld(
+    void get_neighbor_normal_old(
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
 
-    void FADCheckLinXiAndLinEta(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+    void fad_check_lin_xi_and_lin_eta(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
@@ -722,14 +723,14 @@ namespace CONTACT
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
 
-    void FADCheckLinOrthogonalityCondition(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+    void fad_check_lin_orthogonality_condition(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi);
 
     /*!
       \brief Check, if the current contact point is at one of the two ends of a physical beam
     */
-    void CheckBoundaryContact();
+    void check_boundary_contact();
 
     /*!
       \brief Get jacobi factor of beam element
@@ -740,7 +741,7 @@ namespace CONTACT
     /*!
       \brief Update of class variables at the end of a Newton step
     */
-    void UpdateClassVariablesIter();
+    void update_class_variables_iter();
 
     /*!
       \brief Set class variables at the beginning of a Newton step

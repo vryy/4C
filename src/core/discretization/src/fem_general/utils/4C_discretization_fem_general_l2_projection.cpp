@@ -133,7 +133,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_nodal_l2_projection(
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
 
-  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->get_all_pbc_coupled_col_nodes();
   if (allcoupledcolnodes)
   {
     for (auto [master_gid, slave_gids] : *allcoupledcolnodes)

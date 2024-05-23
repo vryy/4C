@@ -112,8 +112,8 @@ namespace MAT
       //@}
 
       /// Read material parameters
-      void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
-          double& beta,                              ///< emphasis of viscous to elastic part
+      void read_material_parameters_visco(double& tau,  ///< relaxation parameter tau
+          double& beta,                                 ///< emphasis of viscous to elastic part
           double& alpha,  ///< fractional order derivative (just for visoc_fract)
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
@@ -133,7 +133,7 @@ namespace MAT
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      void SpecifyViscoFormulation(
+      void specify_visco_formulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution

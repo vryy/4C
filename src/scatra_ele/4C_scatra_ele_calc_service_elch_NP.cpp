@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
     DRT::Element* ele  //!< current element
 )
 {
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
  | evaluate an electrode boundary kinetics point condition   fang 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
 )
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKineticsPoint(
+  myelch::evaluate_elch_boundary_kinetics_point(
       ele, emat, erhs, ephinp, ehist, timefac, cond, nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
@@ -155,7 +155,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
   }  // switch(myelch::elchparams_->EquPot())
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint
+}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point
 
 
 /*----------------------------------------------------------------------*
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   |  calculate error compared to analytical solution           gjb 10/08|
   *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSolution(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_solution(
     const DRT::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
   double visc(0.0);
 
   // get material parameter (constants values)
-  SetInternalVariablesForMatAndRHS();
+  set_internal_variables_for_mat_and_rhs();
   GetMaterialParams(ele, densn, densnp, densam, visc);
 
   // integration points and weights
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // get values of all transported scalars at integration point
         for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.Dot(my::ephinp_[k]);
@@ -424,7 +424,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // get values of all transported scalars at integration point
         for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.Dot(my::ephinp_[k]);
@@ -476,7 +476,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // get values of transported scalars at integration point
         // and compute electroneutrality
@@ -498,17 +498,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
   }  // switch(errortype)
 
   return;
-}  // CalErrorComparedToAnalytSolution
+}  // cal_error_compared_to_analyt_solution
 
 
 /*------------------------------------------------------------------------------*
  | set internal variables for Nernst-Planck formulation              fang 02/15 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchNP(
+  VarManager()->set_internal_variables_elch_np(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
   return;

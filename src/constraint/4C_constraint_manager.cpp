@@ -113,7 +113,7 @@ void CONSTRAINTS::ConstrManager::Setup(
   {
     num_constr_id_ = std::max(max_constr_id_ - offset_id_ + 1, 0);
     constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
-    constrdofset_->AssignDegreesOfFreedom(actdisc_, num_constr_id_, 0);
+    constrdofset_->assign_degrees_of_freedom(actdisc_, num_constr_id_, 0);
     offset_id_ -= constrdofset_->FirstGID();
     Teuchos::ParameterList p;
     uzawaparam_ = params.get<double>("uzawa parameter", 1);
@@ -399,7 +399,7 @@ void CONSTRAINTS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> v
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
@@ -419,7 +419,7 @@ void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
+void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<const Epetra_Vector> disp)
 {
   std::vector<CORE::Conditions::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);

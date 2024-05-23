@@ -393,7 +393,7 @@ int CORE::GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis
       {
         pointFound = false;
         min_distance = distance;
-        nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
+        nearestObject.set_surface_object_type(*eleIter, labelIter->first, x_surface);
         surfid = element->Id();
       }
 
@@ -462,7 +462,7 @@ CORE::GEO::ObjectType CORE::GEO::nearest3DObjectOnElement(DRT::Element* surfacee
   {
     pointFound = false;
     min_distance = distance;
-    nearestObject.setSurfaceObjectType(surfaceelement->Id(), -1, x_surface);
+    nearestObject.set_surface_object_type(surfaceelement->Id(), -1, x_surface);
   }
 
   // run over all line elements

@@ -59,7 +59,7 @@ namespace FSI
 
     The structural interface displacements are computed based on the
     fluid interface velocities. The conversion is done by
-    ADAPTER::FluidFSI::VelocityToDisplacement().
+    ADAPTER::FluidFSI::velocity_to_displacement().
 
     \sa SlidingMonolithicStructureSplit
     \author wirtz
@@ -130,7 +130,7 @@ namespace FSI
      *  for rhs in next time step in order to guarantee temporal consistent
      *  exchange of coupling traction
      */
-    void RecoverLagrangeMultiplier() override;
+    void recover_lagrange_multiplier() override;
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
@@ -144,7 +144,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    void CalculateInterfaceEnergyIncrement() override;
+    void calculate_interface_energy_increment() override;
 
     /*! \brief Additional safety check of kinematic constraint during a single time step:
      *
@@ -162,7 +162,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 10/2012
      */
-    virtual void CheckKinematicConstraint();
+    virtual void check_kinematic_constraint();
 
     /*! \brief Additional safety check of dynamic equilibrium during a single time step:
      *
@@ -175,7 +175,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 10/2012
      */
-    virtual void CheckDynamicEquilibrium();
+    virtual void check_dynamic_equilibrium();
 
     //! @name Time Adaptivity
     //@{
@@ -211,7 +211,7 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
         std::map<int, DRT::Node*>* structurenodesPtr, std::map<int, DRT::Node*>* fluidgnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -262,7 +262,7 @@ namespace FSI
      *  We are dealing with NOX here, so we get absolute values. x is the sum of
      *  all increments up to this point.
      *
-     *  \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
+     *  \sa  ADAPTER::FluidFSI::velocity_to_displacement()
      */
     void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
@@ -279,7 +279,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    void CreateCombinedDofRowMap() override;
+    void create_combined_dof_row_map() override;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -290,7 +290,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    void SetupDBCMapExtractor() override;
+    void setup_dbc_map_extractor() override;
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f) override;

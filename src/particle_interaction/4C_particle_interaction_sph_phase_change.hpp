@@ -66,14 +66,14 @@ namespace PARTICLEINTERACTION
 
    protected:
     //! evaluate phase change from below to above phase
-    virtual void EvaluatePhaseChangeFromBelowToAbovePhase(
+    virtual void evaluate_phase_change_from_below_to_above_phase(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
         std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>&
             particlestoinsert) const final;
 
     //! evaluate phase change from above to below phase
-    virtual void EvaluatePhaseChangeFromAboveToBelowPhase(
+    virtual void evaluate_phase_change_from_above_to_below_phase(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
         std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>&

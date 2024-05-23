@@ -98,7 +98,7 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
+void PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
 {
   if (numpbcpairs_ > 0)
   {
@@ -112,7 +112,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     }
 
     // fetch all slaves to the proc of the master
-    PutAllSlavesToMastersProc();
+    put_all_slaves_to_masters_proc();
 
 
     if (discret_->Comm().NumProc() > 1)
@@ -216,7 +216,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
   }  // end if numpbcpairs_>0
   return;
 
-}  // UpdateDofsForPeriodicBoundaryConditions()
+}  // update_dofs_for_periodic_boundary_conditions()
 
 
 
@@ -238,7 +238,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
+void PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
 {
   if (numpbcpairs_ > 0)
   {
@@ -510,7 +510,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
           }
 
           // get map master on this proc -> slave on some proc
-          CreateNodeCouplingForSinglePBC(
+          create_node_coupling_for_single_pbc(
               midtosid, masternodeids, slavenodeids, dofsforpbcplane, rotangles[0], abs_tol);
           // time measurement --- this causes the TimeMonitor tm1 to stop here
           tm1_ref_ = Teuchos::null;
@@ -591,7 +591,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       fflush(stdout);
     }
 
-    RedistributeAndCreateDofCoupling();
+    redistribute_and_create_dof_coupling();
 
     if (discret_->Comm().MyPID() == 0 && verbose_)
     {
@@ -603,7 +603,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     tm5_ref_ = Teuchos::null;
   }  // if (numpbcpairs_ > 2)
   return;
-}  // PutAllSlavesToMastersProc()
+}  // put_all_slaves_to_masters_proc()
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -615,7 +615,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
+void PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
     std::map<int, std::vector<int>>& midtosid, const std::vector<int> masternodeids,
     const std::vector<int> slavenodeids, const std::vector<int> dofsforpbcplane,
     const double rotangle, const double abstol)
@@ -647,7 +647,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   // create connectivity for this condition in this direction
   {
     // create map from gid masternode -> gid corresponding slavenode
-    nodematchingoctree.CreateGlobalEntityMatching(
+    nodematchingoctree.create_global_entity_matching(
         slavenodeids, dofsforpbcplane, rotangle, midtosid);
   }
 
@@ -655,7 +655,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   tm3_ref_ = Teuchos::null;
 
   return;
-}  // PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC
+}  // PeriodicBoundaryConditions::create_node_coupling_for_single_pbc
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -930,7 +930,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
+void PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
@@ -1336,7 +1336,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
   }
 
   return;
-}  // PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling
+}  // PeriodicBoundaryConditions::redistribute_and_create_dof_coupling
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1601,7 +1601,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
       // assign the new dofs, make absolutely sure that we always
       // have all slaves to a master
       // the finite edge weights are not a 100% warranty for that...
-      PutAllSlavesToMastersProc();
+      put_all_slaves_to_masters_proc();
     }
   }
 }

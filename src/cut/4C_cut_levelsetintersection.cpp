@@ -193,12 +193,12 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
   {
     const double t_start = Teuchos::Time::wallTime();
     if (myrank_ == 0 and screenoutput)
-      std::cout << "\n\t * 5/6 CreateIntegrationCells ..." << std::flush;
+      std::cout << "\n\t * 5/6 create_integration_cells ..." << std::flush;
 
     if (VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
-      m.CreateIntegrationCells(0);
+      m.create_integration_cells(0);
     else
-      m.DirectDivergenceGaussRule(true, INPAR::CUT::BCellGaussPts_Tessellation);
+      m.direct_divergence_gauss_rule(true, INPAR::CUT::BCellGaussPts_Tessellation);
 
     if (myrank_ == 0 and screenoutput)
     {

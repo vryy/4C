@@ -64,7 +64,7 @@ void STR::EXPLICIT::AdamsBashforth2::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  SetInitialDisplacement(
+  set_initial_displacement(
       TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the PostSetup() routine is called!
@@ -76,7 +76,7 @@ void STR::EXPLICIT::AdamsBashforth2::Setup()
 void STR::EXPLICIT::AdamsBashforth2::PostSetup()
 {
   CheckInitSetup();
-  EquilibrateInitialState();
+  equilibrate_initial_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -119,7 +119,7 @@ void STR::EXPLICIT::AdamsBashforth2::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::AddViscoMassContributions(Epetra_Vector& f) const
+void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -127,7 +127,7 @@ void STR::EXPLICIT::AdamsBashforth2::AddViscoMassContributions(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::AddViscoMassContributions(
+void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
     CORE::LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
@@ -157,7 +157,7 @@ void STR::EXPLICIT::AdamsBashforth2::ReadRestart(IO::DiscretizationReader& iorea
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
   ModelEval().ReadRestart(ioreader);
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 }
 
 /*----------------------------------------------------------------------------*
@@ -184,7 +184,7 @@ void STR::EXPLICIT::AdamsBashforth2::UpdateStepState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::EXPLICIT::AdamsBashforth2::MethodLinErrCoeffDis() const
+double STR::EXPLICIT::AdamsBashforth2::method_lin_err_coeff_dis() const
 {
   const double dt = (*GlobalState().GetDeltaTime())[0];
   const double dto = (*GlobalState().GetDeltaTime())[-1];

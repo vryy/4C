@@ -52,7 +52,7 @@ void CORE::GEO::CUT::SimpleFacetGraph1D::CreateVolumeCells(
   // a pair of two consecutive facets forms a pseudo volume cell in 1D
   std::vector<plain_facet_set> volumes;
   volumes.reserve(all_facets_.size() - 1);
-  CombineFacetsToLineVolumes(sorted_facets, volumes);
+  combine_facets_to_line_volumes(sorted_facets, volumes);
 
   // no volume lines in 1-D
   std::map<std::pair<Point*, Point*>, plain_facet_set> volume_lines;
@@ -89,7 +89,7 @@ void CORE::GEO::CUT::SimpleFacetGraph1D::SortFacets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::SimpleFacetGraph1D::CombineFacetsToLineVolumes(
+void CORE::GEO::CUT::SimpleFacetGraph1D::combine_facets_to_line_volumes(
     const std::map<double, Facet*>& sorted_facets, std::vector<plain_facet_set>& volumes) const
 {
   std::map<double, Facet*>::const_iterator end_cit = sorted_facets.end();

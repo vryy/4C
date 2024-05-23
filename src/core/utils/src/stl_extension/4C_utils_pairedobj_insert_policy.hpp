@@ -576,7 +576,7 @@ namespace CORE::GEN
     T& operator()(const Key k, pairedvector_type& data, size_t& entries)
     {
       if (non_unique_entries_ == dyn_max_allowed_capacity_ and
-          (not setDynamicMaxAllowedCapacity(2 * entries)))
+          (not set_dynamic_max_allowed_capacity(2 * entries)))
       {
         entries = midComplete(data, entries);
       }
@@ -594,7 +594,7 @@ namespace CORE::GEN
 
       /* If reasonable values have been inserted, we check the capacity and go
        * to the next entry. Otherwise, we stick to the current entry. */
-      if (std::abs(pair_ptr->second) > getRelativeMachinePrecision())
+      if (std::abs(pair_ptr->second) > get_relative_machine_precision())
       {
         increaseCapacity();
         ++non_unique_entries_;
@@ -918,7 +918,7 @@ namespace CORE::GEN
           if (sbegin == slast) break;
 
           // erase/overwrite zero entries
-          if (std::abs(result->second) > getRelativeMachinePrecision()) ++result;
+          if (std::abs(result->second) > get_relative_machine_precision()) ++result;
 
           *result = val;
         }
@@ -926,7 +926,7 @@ namespace CORE::GEN
 
       // Kick the last element out if the absolute value of the last result is
       // less than the relative machine precision.
-      return (std::abs(result->second) > getRelativeMachinePrecision() ? ++result : result);
+      return (std::abs(result->second) > get_relative_machine_precision() ? ++result : result);
     }
 
     /// Return the local id of the last element
@@ -941,7 +941,7 @@ namespace CORE::GEN
      *  @return If the threshold is modified, TRUE is returned, otherwise FALSE.
      *
      *  @author hiermeier @date 07/17 */
-    bool setDynamicMaxAllowedCapacity(const size_t dyn_bound)
+    bool set_dynamic_max_allowed_capacity(const size_t dyn_bound)
     {
       if (dyn_bound > dyn_max_allowed_capacity_)
       {
@@ -969,7 +969,7 @@ namespace CORE::GEN
      *  interval. See setMaxValue for more information.
      *
      *  @author hiermeier @date 07/17 */
-    inline double getRelativeMachinePrecision() const { return max_value_ * MACHINE_PRECISION; }
+    inline double get_relative_machine_precision() const { return max_value_ * MACHINE_PRECISION; }
 
     inline void initCapacity()
     {
@@ -1025,7 +1025,7 @@ namespace CORE::GEN
      *  If the unique vector exceeds the constant capacity, the upper capacity
      *  bound must be increased to stay meaningful.
      *
-     *  See the method %setDynamicMaxAllowedCapacity() for more information. */
+     *  See the method %set_dynamic_max_allowed_capacity() for more information. */
     size_t dyn_max_allowed_capacity_;
 
     bool isfilled_;

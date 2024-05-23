@@ -46,13 +46,13 @@ namespace PARTICLEINTERACTION
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 
     //! calculate tangential contact force
-    virtual void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
+    virtual void tangential_contact_force(double* gap_tangential, bool& stick_tangential,
         const double* normal, const double* v_rel_tangential, const double& m_eff,
         const double& mu_tangential, const double& normalcontactforce,
         double* tangentialcontactforce) const = 0;
 
     //! evaluate tangential potential energy
-    virtual void TangentialPotentialEnergy(
+    virtual void tangential_potential_energy(
         const double* gap_tangential, double& tangentialpotentialenergy) const = 0;
 
    protected:
@@ -76,13 +76,13 @@ namespace PARTICLEINTERACTION
     void Setup(const double& k_normal) override;
 
     //! calculate tangential contact force
-    void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
+    void tangential_contact_force(double* gap_tangential, bool& stick_tangential,
         const double* normal, const double* v_rel_tangential, const double& m_eff,
         const double& mu_tangential, const double& normalcontactforce,
         double* tangentialcontactforce) const override;
 
     //! evaluate tangential potential energy
-    void TangentialPotentialEnergy(
+    void tangential_potential_energy(
         const double* gap_tangential, double& tangentialpotentialenergy) const override;
 
    private:

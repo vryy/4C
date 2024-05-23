@@ -188,7 +188,7 @@ namespace SCATRA
   /*--------------------------------------------------------------*
    | calculate initial field using fft            rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbInitialScalarField::CalculateInitialField()
+  void HomIsoTurbInitialScalarField::calculate_initial_field()
   {
 #ifdef FOUR_C_WITH_FFTW
     // set and initialize working arrays
@@ -269,7 +269,7 @@ namespace SCATRA
               discret_->Comm().Broadcast(&random_theta, 1, 0);
 
               // estimate energy at wave number from energy spectrum
-              const double energy = CalculateEnergyFromSpectrum(k);
+              const double energy = calculate_energy_from_spectrum(k);
 
               if (energy < 0.0)
               {
@@ -460,7 +460,7 @@ namespace SCATRA
   /*--------------------------------------------------------------*
    | get energy for given wave number             rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  double HomIsoTurbInitialScalarField::CalculateEnergyFromSpectrum(double k)
+  double HomIsoTurbInitialScalarField::calculate_energy_from_spectrum(double k)
   {
     // remark: k > 0 here
     double energy = 0.0;

@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
-        my::EvalShapeFuncAndDerivsAtEleCenter();
+        my::eval_shape_func_and_derivs_at_ele_center();
 
         for (unsigned i = 0; i < updatemat.size(); i++)
         {

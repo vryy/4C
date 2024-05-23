@@ -97,7 +97,7 @@ namespace NOX
       virtual double getTrueTolerance() const;
 
       //! Returns the specified tolerance set in the constructor.
-      virtual double getSpecifiedTolerance() const;
+      virtual double get_specified_tolerance() const;
 
       //! Returns the initial tolerance.
       virtual double getInitialTolerance() const;

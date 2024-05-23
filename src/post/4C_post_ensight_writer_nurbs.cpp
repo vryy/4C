@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
     knot values are mapped to.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
+void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
     const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
@@ -58,7 +58,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   }
 
   // get dimension
-  int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
+  int dim = (nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
   Teuchos::RCP<DRT::NURBS::Knotvector> knotvec = nurbsdis->GetKnotVector();
@@ -75,7 +75,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   for (int np = 1; np < npatches; ++np)
   {
     // get nurbs dis' knotvector sizes
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np - 1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np - 1));
 
     int numvisp = 1;
 
@@ -105,7 +105,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
     std::vector<int> ele_cart_id(dim);
     int np = -1;
 
-    knotvec->ConvertEleGidToKnotIds(gid, np, ele_cart_id);
+    knotvec->convert_ele_gid_to_knot_ids(gid, np, ele_cart_id);
 
     // zero sized elements in knot span cannot be visualised
     if (zero_size)
@@ -120,14 +120,14 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
       //       boundries has to be applied)
       // Note: The following element will be plotted twice
 
-      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      actele = nurbsdis->gElement(knotvec->return_next_nonzero_ele_gid(actele->Id()));
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
     DRT::Node** nodes = actele->Nodes();
 
     // get nurbs dis' element numbers
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np));
 
     // want to loop all control points of the element,
     // so get the number of points
@@ -514,10 +514,10 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
         int idw;
 
         // number of visualisation points in u direction
-        int nvpu = 2 * (nurbsdis->Return_nele_x_mele_x_lele(np))[0] + 1;
+        int nvpu = 2 * (nurbsdis->return_nele_x_mele_x_lele(np))[0] + 1;
 
         // number of visualisation points in v direction
-        int nvpv = 2 * (nurbsdis->Return_nele_x_mele_x_lele(np))[1] + 1;
+        int nvpv = 2 * (nurbsdis->return_nele_x_mele_x_lele(np))[1] + 1;
 
         {
           // standard
@@ -1333,7 +1333,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   for (int np = 0; np < npatches; ++np)
   {
     // get nurbs dis' knotvector sizes
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np));
 
     int numvisp = 1;
 
@@ -1435,7 +1435,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
   for (int np = 1; np < npatches; ++np)
   {
     // get nurbs dis' knotvector sizes
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np - 1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np - 1));
 
     int numvisp = 1;
 
@@ -1460,10 +1460,10 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       // get location in the patch and the number of the patch
       int npatch = -1;
       std::vector<int> ele_cart_id(dim);
-      knots->ConvertEleGidToKnotIds(gid, npatch, ele_cart_id);
+      knots->convert_ele_gid_to_knot_ids(gid, npatch, ele_cart_id);
 
       // number of visualisation points in u direction
-      int nvpu = (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
+      int nvpu = (nurbsdis->return_nele_x_mele_x_lele(npatch))[0] + 1;
 
       // 3           4
       //  X---------X
@@ -1500,10 +1500,10 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       // get location in the patch from gid
       int npatch = -1;
       std::vector<int> ele_cart_id(dim);
-      knots->ConvertEleGidToKnotIds(gid, npatch, ele_cart_id);
+      knots->convert_ele_gid_to_knot_ids(gid, npatch, ele_cart_id);
 
       // number of visualisation points in u direction
-      int nvpu = 2 * (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
+      int nvpu = 2 * (nurbsdis->return_nele_x_mele_x_lele(npatch))[0] + 1;
 
       //
       //  X----X----X
@@ -1633,13 +1633,13 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
       // get location in the patch
       int npatch = -1;
       std::vector<int> ele_cart_id(dim);
-      knots->ConvertEleGidToKnotIds(gid, npatch, ele_cart_id);
+      knots->convert_ele_gid_to_knot_ids(gid, npatch, ele_cart_id);
 
       // number of visualisation points in u direction
-      int nvpu = 2 * (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
+      int nvpu = 2 * (nurbsdis->return_nele_x_mele_x_lele(npatch))[0] + 1;
 
       // number of visualisation points in v direction
-      int nvpv = 2 * (nurbsdis->Return_nele_x_mele_x_lele(npatch))[1] + 1;
+      int nvpv = 2 * (nurbsdis->return_nele_x_mele_x_lele(npatch))[1] + 1;
 
       // vector containing node connectivity for all sub hexes (in blocks of 8)
       std::vector<int> cellnodes(0);
@@ -1714,7 +1714,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
     gammi
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int numdf,
+void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_Vector> data, const std::string name, const int offset) const
 {
   using namespace FourC;
@@ -1736,7 +1736,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
 
   // assuming that dimension of the manifold is
   // equal to spatial dimension
-  int dim = (int)(nurbsdis->Return_nele_x_mele_x_lele(0)).size();
+  int dim = (int)(nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
   // the number of vizualisation points
   int numvispoints = 0;
@@ -1770,7 +1770,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
   for (int np = 1; np < npatches; ++np)
   {
     // get nurbs dis' knotvector sizes
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np - 1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np - 1));
 
     int numvisp = 1;
 
@@ -1934,7 +1934,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
     bool zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
-    knotvec->ConvertEleGidToKnotIds(gid, np, ele_cart_id);
+    knotvec->convert_ele_gid_to_knot_ids(gid, np, ele_cart_id);
 
     // zero sized elements in knot span cannot be visualised
     if (zero_size)
@@ -1949,7 +1949,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       //       boundries has to be applied)
       // Note: The following element will be plotted twice
 
-      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      actele = nurbsdis->gElement(knotvec->return_next_nonzero_ele_gid(actele->Id()));
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
@@ -2110,7 +2110,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
     }
 
-    InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
+    interpolate_nurbs_result_to_viz_points(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
         eleknots, weights, numdf, my_data);
 
   }  // loop over available elements
@@ -2146,7 +2146,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       }
     }
   }
-}  // EnsightWriter::WriteDofResultStepForNurbs
+}  // EnsightWriter::write_dof_result_step_for_nurbs
 
 
 /*----------------------------------------------------------------------*/
@@ -2157,7 +2157,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     my_data acoordingly.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata,
+void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim, const int npatch, const std::vector<int>& vpoff,
     const std::vector<int>& ele_cart_id, const DRT::Element* actele,
     DRT::NURBS::NurbsDiscretization* nurbsdis,
@@ -2177,14 +2177,14 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
   CORE::LINALG::SerialDenseVector uv(dim);
 
   // get nele_x_mele_x_lele array
-  std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
+  std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(npatch));
 
   switch (actele->Shape())
   {
     case CORE::FE::CellType::nurbs4:
     {
       // number of visualisation points in u direction
-      int nvpu = (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
+      int nvpu = (nurbsdis->return_nele_x_mele_x_lele(npatch))[0] + 1;
 
       {
         // standard
@@ -2272,7 +2272,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       int idv;
 
       // number of visualisation points in u direction
-      int nvpu = 2 * (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
+      int nvpu = 2 * (nurbsdis->return_nele_x_mele_x_lele(npatch))[0] + 1;
 
       {
         // standard
@@ -3337,7 +3337,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,
+void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const
 {
   using namespace FourC;
@@ -3359,7 +3359,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
 
   // assuming that dimension of the manifold is
   // equal to spatial dimension
-  int dim = (int)(nurbsdis->Return_nele_x_mele_x_lele(0)).size();
+  int dim = (int)(nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
   for (int np = 0; np < npatches; ++np)
   {
@@ -3383,7 +3383,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   for (int np = 1; np < npatches; ++np)
   {
     // get nurbs dis' knotvector sizes
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np - 1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np - 1));
 
     int numvisp = 1;
 
@@ -3456,7 +3456,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
     bool zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
-    knotvec->ConvertEleGidToKnotIds(gid, np, ele_cart_id);
+    knotvec->convert_ele_gid_to_knot_ids(gid, np, ele_cart_id);
 
     // zero sized elements in knot span cannot be visualised
     if (zero_size)
@@ -3471,7 +3471,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
       //       boundries has to be applied)
       // Note: The following element will be plotted twice
 
-      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      actele = nurbsdis->gElement(knotvec->return_next_nonzero_ele_gid(actele->Id()));
       (*knotvec).GetEleKnots(knots, actele->Id());
     }
 
@@ -3510,7 +3510,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     }
 
     // intoplate solution to desired visualization points
-    InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
+    interpolate_nurbs_result_to_viz_points(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
         eleknots, weights, numdf, my_data);
 
   }  // loop over available elements
@@ -3542,7 +3542,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     }
   }  // if (myrank_==0)
 
-}  // EnsightWriter::WriteNodalResultStepForNurbs
+}  // EnsightWriter::write_nodal_result_step_for_nurbs
 
 
 FOUR_C_NAMESPACE_CLOSE

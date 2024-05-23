@@ -45,14 +45,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8THERMO"; }
+      std::string get_element_type_string() const { return "SOLIDH8THERMO"; }
     };  // class So_hex8ThermoType
 
 
@@ -75,14 +75,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8fbarThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8FBARTHERMO"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBARTHERMO"; }
     };  // class So_hex8fbarThermoType
 
 
@@ -105,14 +105,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4THERMO"; }
+      std::string get_element_type_string() const { return "SOLIDT4THERMO"; }
     };  // class So_tet4ThermoType
 
     /*----------------------------------------------------------------------------*
@@ -134,14 +134,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet10ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT10THERMO"; }
+      std::string get_element_type_string() const { return "SOLIDT10THERMO"; }
     };  // class So_tet10ThermoType
 
     /*----------------------------------------------------------------------*
@@ -163,14 +163,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex27ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH27THERMO"; }
+      std::string get_element_type_string() const { return "SOLIDH27THERMO"; }
     };  // class So_hex27ThermoType
 
     /*----------------------------------------------------------------------*
@@ -192,14 +192,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex20ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH20THERMO"; }
+      std::string get_element_type_string() const { return "SOLIDH20THERMO"; }
     };  // class So_hex20ThermoType
 
     /*----------------------------------------------------------------------*
@@ -221,14 +221,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoNurbs27ThermoType instance_;
 
-      std::string GetElementTypeString() const { return "SONURBS27THERMO"; }
+      std::string get_element_type_string() const { return "SONURBS27THERMO"; }
     };  // class So_hex20ThermoType
 
   }  // namespace ELEMENTS

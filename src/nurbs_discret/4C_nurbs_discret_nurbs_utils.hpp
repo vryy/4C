@@ -116,7 +116,7 @@ namespace DRT
 
       Teuchos::RCP<const DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parenteleid, localsurfaceid);
 
       // if we have a zero sized element due to a interpolated
@@ -170,7 +170,7 @@ namespace DRT
 
       Teuchos::RCP<const DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parentele->Id(), localsurfaceid);
 
       // if we have a zero sized element due to a interpolated

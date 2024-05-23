@@ -76,7 +76,7 @@ namespace CONTACT
 
       /// return the relative solution tolerance, i.e. the maximal deviation of
       /// the calculated solution point to the analytical solution
-      virtual double getRelativeSolutionTolerance() const = 0;
+      virtual double get_relative_solution_tolerance() const = 0;
 
     };  // class ProjectorBase
 
@@ -100,7 +100,7 @@ namespace CONTACT
           double* target_xi, double& alpha) override;
 
       /// derived
-      inline double getRelativeSolutionTolerance() const override { return rel_sol_tolerance_; }
+      inline double get_relative_solution_tolerance() const override { return rel_sol_tolerance_; }
 
      private:
       /// constructor

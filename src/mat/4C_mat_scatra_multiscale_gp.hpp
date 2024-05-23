@@ -67,10 +67,10 @@ namespace MAT
         std::vector<double>& dq_dphi_micro, double detF, const bool solve = true);
 
     //! evaluate mean concentration on micro scale
-    double EvaluateMeanConcentration() const;
+    double evaluate_mean_concentration() const;
 
     //! evaluate mean concentration time derivative on micro scale
-    double EvaluateMeanConcentrationTimeDerivative() const;
+    double evaluate_mean_concentration_time_derivative() const;
 
     //! update micro-scale time integrator at the end of each time step
     void Update();

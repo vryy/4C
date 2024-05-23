@@ -37,7 +37,7 @@ namespace IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterNodes::SetGeometryFromDiscretization()
+  void DiscretizationVisualizationWriterNodes::set_geometry_from_discretization()
   {
     // Todo assume 3D for now
     const unsigned int num_spatial_dimensions = 3;
@@ -48,7 +48,7 @@ namespace IO
 
     // get and prepare storage for point coordinate values
     std::vector<double>& point_coordinates =
-        visualization_manager_->GetVisualizationData().GetPointCoordinates();
+        visualization_manager_->get_visualization_data().GetPointCoordinates();
     point_coordinates.clear();
     point_coordinates.reserve(num_spatial_dimensions * num_row_nodes);
 
@@ -74,7 +74,7 @@ namespace IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterNodes::AppendDofBasedResultDataVector(
+  void DiscretizationVisualizationWriterNodes::append_dof_based_result_data_vector(
       const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int result_num_dofs_per_node, const std::string& resultname)
   {
@@ -87,13 +87,13 @@ namespace IO
     for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
       point_result_data.push_back((*result_data_dofbased)[lid]);
 
-    visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
         resultname, point_result_data, result_num_dofs_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterNodes::AppendNodeBasedResultDataVector(
+  void DiscretizationVisualizationWriterNodes::append_node_based_result_data_vector(
       const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
       unsigned int result_num_components_per_node, const std::string& resultname)
   {
@@ -124,7 +124,7 @@ namespace IO
       }
     }
 
-    visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
         resultname, point_result_data, result_num_components_per_node);
   }
 

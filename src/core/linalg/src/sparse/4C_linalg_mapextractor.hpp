@@ -72,7 +72,7 @@ namespace CORE::LINALG
       \note hidden calls to Redistribute may render maps in maps_ obsolete.
       This function is intendend to simplify debugging for these cases.
     */
-    void CheckForValidMapExtractor() const;
+    void check_for_valid_map_extractor() const;
 
     /// merge set of unique maps
     /*!

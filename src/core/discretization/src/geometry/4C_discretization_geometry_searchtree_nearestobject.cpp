@@ -84,7 +84,7 @@ void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int sur
 }
 
 
-void CORE::GEO::NearestObject::setSurfaceObjectType(
+void CORE::GEO::NearestObject::set_surface_object_type(
     const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
   object_type_ = SURFACE_OBJECT;

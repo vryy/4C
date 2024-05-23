@@ -47,23 +47,24 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(
+void ADAPTER::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
     Teuchos::RCP<Epetra_Vector> iforce_fsi, Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
-  FSIModelEvaluator()->GetInterfaceForceNpPtr()->PutScalar(0.0);
+  FSIModelEvaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
   if (iforce_fsi != Teuchos::null)
-    interface_->AddFSICondVector(iforce_fsi, FSIModelEvaluator()->GetInterfaceForceNpPtr());
+    interface_->AddFSICondVector(iforce_fsi, FSIModelEvaluator()->get_interface_force_np_ptr());
   if (iforce_immersed != Teuchos::null)
     interface_->AddIMMERSEDCondVector(
-        iforce_immersed, FSIModelEvaluator()->GetInterfaceForceNpPtr());
+        iforce_immersed, FSIModelEvaluator()->get_interface_force_np_ptr());
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractImmersedInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector>
+ADAPTER::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
@@ -73,7 +74,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractImmerse
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractFullInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::extract_full_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
@@ -91,7 +92,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractFullInt
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictImmersedInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector>
+ADAPTER::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
 {
   Teuchos::RCP<Epetra_Vector> idis;
 
@@ -145,7 +147,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictImmerse
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::predict_full_interface_dispnp()
 {
   Teuchos::RCP<Epetra_Vector> idis =
       Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));

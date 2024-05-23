@@ -35,7 +35,7 @@ namespace CORE::LINALG
 
 namespace SCATRA
 {
-  class MeshtyingStrategyS2I;
+  class meshtying_strategy_s2_i;
 }
 
 namespace STI
@@ -126,7 +126,7 @@ namespace SSTI
     Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    std::vector<CORE::LINALG::EquilibrationMethod> GetBlockEquilibration();
+    std::vector<CORE::LINALG::EquilibrationMethod> get_block_equilibration();
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();

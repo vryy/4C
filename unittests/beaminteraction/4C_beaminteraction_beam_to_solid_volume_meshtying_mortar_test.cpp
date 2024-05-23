@@ -47,7 +47,7 @@ namespace
      * \brief Set up the contact pair so it can be evaluated and compare the results.
      */
     template <typename beam_type, typename solid_type, typename lambda_type>
-    void PerformMortarPairUnitTest(
+    void perform_mortar_pair_unit_test(
         BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
             contact_pair,
         const GEOMETRYPAIR::ElementData<beam_type, double>& q_beam,
@@ -75,8 +75,8 @@ namespace
       // Cast beam element and set the hermitian interpolation.
       Teuchos::RCP<DRT::ELEMENTS::Beam3r> beam_element_cast =
           Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>(beam_element, true);
-      beam_element_cast->SetCenterlineHermite(true);
-      beam_element_cast->SetUpReferenceGeometry<3, 2, 2>(xrefe, rotrefe);
+      beam_element_cast->set_centerline_hermite(true);
+      beam_element_cast->set_up_reference_geometry<3, 2, 2>(xrefe, rotrefe);
 
       // Call Init on the beam contact pair.
       std::vector<const DRT::Element*> pair_elements;
@@ -286,7 +286,7 @@ namespace
     result_local_kappa(5) = 0.3247553228731228;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -493,7 +493,7 @@ namespace
     result_local_kappa(8) = 0.4262245939684383;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -739,7 +739,7 @@ namespace
     result_local_kappa(11) = 0.2685308094273101;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -1015,7 +1015,7 @@ namespace
     result_local_kappa(5) = 0.3247553228731228;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -1366,7 +1366,7 @@ namespace
     result_local_kappa(8) = 0.4262245939684383;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -1792,7 +1792,7 @@ namespace
     result_local_kappa(11) = 0.2685308094273101;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -2131,7 +2131,7 @@ namespace
     result_local_kappa(5) = 0.3247553228731228;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -2566,7 +2566,7 @@ namespace
     result_local_kappa(8) = 0.4262245939684383;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3097,7 +3097,7 @@ namespace
     result_local_kappa(11) = 0.2685308094273101;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3229,7 +3229,7 @@ namespace
     result_local_kappa(5) = 0.3247553228731228;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3388,7 +3388,7 @@ namespace
     result_local_kappa(8) = 0.4262245939684383;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3574,7 +3574,7 @@ namespace
     result_local_kappa(11) = 0.2685308094273101;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3760,7 +3760,7 @@ namespace
     result_local_kappa(5) = 0.3247553228731228;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -3991,7 +3991,7 @@ namespace
     result_local_kappa(8) = 0.4262245939684383;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 
@@ -4267,7 +4267,7 @@ namespace
     result_local_kappa(11) = 0.2685308094273101;
 
     // Perform the unit tests.
-    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+    perform_mortar_pair_unit_test(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
         result_local_M, result_local_kappa);
   }
 

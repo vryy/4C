@@ -77,14 +77,15 @@ namespace SSI
      *
      * @param[in,out] system_matrix  system matrix
      */
-    void ApplyDBCToSystemMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
+    void apply_dbc_to_system_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
 
     /*!
      * @brief apply structure Dirichlet boundary conditions to system matrix
      *
      * @param[in,out] system_matrix  system matrix
      */
-    void ApplyStructureDBCToSystemMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
+    void apply_structure_dbc_to_system_matrix(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
 
    protected:
     //! solve additional scatra field on manifolds
@@ -112,7 +113,7 @@ namespace SSI
      * @param[in] locsysmanager_structure  manager of the local coordinate system for the structure
      *                                     problem
      */
-    virtual void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+    virtual void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) = 0;
@@ -146,7 +147,7 @@ namespace SSI
         Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
    private:
-    void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+    void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
@@ -164,7 +165,7 @@ namespace SSI
         Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
    private:
-    void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+    void apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;

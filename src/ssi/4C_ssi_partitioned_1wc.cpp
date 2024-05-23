@@ -137,12 +137,12 @@ void SSI::SSIPart1WC::DoScatraStep()
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 
   // cleanup
   ScaTraField()->Discretization()->ClearState();
@@ -153,13 +153,13 @@ void SSI::SSIPart1WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   if (printheader) PrintHeader();
 
   // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
   // to structure
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_structure();
 
   StructureField()->PrepareTimeStep();
 
@@ -167,9 +167,9 @@ void SSI::SSIPart1WCSolidToScatra::PrepareTimeStep(bool printheader)
 
   if (StructureField()->Step() % diffsteps == 0)
   {
-    if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
-    SetStructSolution(
-        StructureField()->Dispn(), StructureField()->Veln(), IsS2IKineticsWithPseudoContact());
+    if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
+    SetStructSolution(StructureField()->Dispn(), StructureField()->Veln(),
+        is_s2_i_kinetics_with_pseudo_contact());
     ScaTraField()->PrepareTimeStep();
   }
 }
@@ -237,9 +237,9 @@ void SSI::SSIPart1WCSolidToScatra::Timeloop()
                      // itself.
     if (StructureField()->Step() % diffsteps == 0)
     {
-      if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
-      SetStructSolution(
-          StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
+      if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
+      SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+          is_s2_i_kinetics_with_pseudo_contact());
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by
                        // itself.
     }
@@ -304,10 +304,10 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
       SetScatraSolution(ScaTraField()->Phinp());
 
       // set micro scale value (projected to macro scale) to structure field
-      if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
+      if (MacroScale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
 
       // evaluate temperature from function and set to structural discretization
-      EvaluateAndSetTemperatureField();
+      evaluate_and_set_temperature_field();
 
       // PrepareTimeStep() is called after solving the scalar transport, because then the predictor
       // will include the new scalar solution
@@ -323,14 +323,14 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WCScatraToSolid::PrepareTimeStep(bool printheader)
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   // PrintHeader();
 
   ScaTraField()->PrepareTimeStep();
   // PrepareTimeStep of structure field is called later
 
   // copy time step to SSI problem, in case it was modified in ScaTra
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
+  if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
 }
 
 /*----------------------------------------------------------------------*/

@@ -37,7 +37,7 @@ CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 
   BuildMatrixAndRhs(N, A, b);
   SolveLinearSystem(A, c, b);
-  SetupInternalVectors(c);
+  setup_internal_vectors(c);
 }
 
 /*----------------------------------------------------------------------*/
@@ -137,7 +137,7 @@ void CORE::UTILS::CubicSplineInterpolation::SolveLinearSystem(CORE::LINALG::Seri
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::SetupInternalVectors(
+void CORE::UTILS::CubicSplineInterpolation::setup_internal_vectors(
     const CORE::LINALG::SerialDenseVector &c)
 {
   const std::size_t system_size = x_.size();

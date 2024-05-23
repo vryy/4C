@@ -96,7 +96,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   extractor.Setup(*dofrowmap_, alemaps);
 
   // check, if extractor maps are valid
-  extractor.CheckForValidMapExtractor();
+  extractor.check_for_valid_map_extractor();
 
   // allocate 3x3 block sparse matrix with the interface split strategy
   // the interface split strategy speeds up the assembling process,
@@ -111,7 +111,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
       extractor, extractor, 108, false, true));
   // nodes on the interface
-  Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->ConditionedElementMap(*discret_);
+  Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
 
   mat->SetCondElements(condelements);
 
@@ -151,7 +151,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::MshtSplit()
   extractor.Setup(*dofrowmap_, alemaps);
 
   // check, if extractor maps are valid
-  extractor.CheckForValidMapExtractor();
+  extractor.check_for_valid_map_extractor();
 
   // allocate 3x3 block sparse matrix with the interface split strategy
   // the interface split strategy speeds up the assembling process,
@@ -166,7 +166,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::MshtSplit()
   mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
       extractor, extractor, 108, false, true));
   // nodes on the interface
-  Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->ConditionedElementMap(*discret_);
+  Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
   mat->SetCondElements(condelements);
 
   return mat;
@@ -184,11 +184,11 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   // (a)  Apply DC on both master and slave side of the internal interface (->disabled)
   //      -> over-constraint system, but nevertheless, result is correct and no solver issues
   // (b)  DC are projected from the master to the slave side during PrepareTimeStep
-  //      (in ProjectMasterToSlaveForOverlappingBC()) (-> disabled)
+  //      (in project_master_to_slave_for_overlapping_bc()) (-> disabled)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
   //      if(msht_ != INPAR::ALE::no_meshtying)
-  //        meshtying_->ProjectMasterToSlaveForOverlappingBC(dispnp_, dbcmaps_->CondMap());
+  //        meshtying_->project_master_to_slave_for_overlapping_bc(dispnp_, dbcmaps_->CondMap());
   //
   // (c)  DC are included in the condensation process (-> actual strategy)
 
@@ -219,12 +219,12 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
 /*---------------------------------------------------*/
 /*  Prepare Meshtying system             wirtz 01/16 */
 /*---------------------------------------------------*/
-void ALE::Meshtying::PrepareMeshtyingSystem(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
+void ALE::Meshtying::prepare_meshtying_system(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
     Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation block matrix");
 
-  CondensationOperationBlockMatrix(sysmat, residual, dispnp);
+  condensation_operation_block_matrix(sysmat, residual, dispnp);
   return;
 }
 
@@ -270,7 +270,7 @@ void ALE::Meshtying::SplitVector(
 
 /*-------------------------------------------------------*/
 /*-------------------------------------------------------*/
-void ALE::Meshtying::SplitVectorBasedOn3x3(
+void ALE::Meshtying::split_vector_based_on3x3(
     Teuchos::RCP<Epetra_Vector> orgvector, Teuchos::RCP<Epetra_Vector> vectorbasedon2x2)
 {
   // container for split residual vector
@@ -320,7 +320,7 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysma
     extractor.Setup(*dofrowmap_, alemaps);
 
     // check, if extractor maps are valid
-    extractor.CheckForValidMapExtractor();
+    extractor.check_for_valid_map_extractor();
 
     // allocate 3x3 block sparse matrix with the interface split strategy
     // the interface split strategy speeds up the assembling process,
@@ -335,7 +335,7 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysma
     mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
         extractor, extractor, 108, false, true));
     // nodes on the interface
-    Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->ConditionedElementMap(*discret_);
+    Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
     mat->SetCondElements(condelements);
 
     sysmat = mat;
@@ -401,9 +401,9 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>&
 void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
 {
   adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
@@ -454,7 +454,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ALE::Meshtying::GetMortarMatrixP()
 /*  Condensation operation block matrix      wirtz 01/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-void ALE::Meshtying::CondensationOperationBlockMatrix(
+void ALE::Meshtying::condensation_operation_block_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat, Teuchos::RCP<Epetra_Vector>& residual,
     Teuchos::RCP<Epetra_Vector>& dispnp)
 {
@@ -700,7 +700,7 @@ int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
 
   {
     TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
-    SplitVectorBasedOn3x3(residual, res);
+    split_vector_based_on3x3(residual, res);
 
     // assign blocks to the solution matrix
     sysmatsolve->Assign(0, 0, CORE::LINALG::View, sysmatnew->Matrix(0, 0));

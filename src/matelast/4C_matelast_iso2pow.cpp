@@ -34,7 +34,7 @@ void MAT::ELASTIC::Iso2Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Mat
   psi += c * pow((modinv(1) - 3.), d);
 }
 
-void MAT::ELASTIC::Iso2Pow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+void MAT::ELASTIC::Iso2Pow::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
     CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {

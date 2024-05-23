@@ -67,7 +67,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -160,7 +160,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
 {
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
 
@@ -361,7 +361,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
     DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -463,7 +463,7 @@ void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars)
 {
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // number of scalars
   const int numscalars = scalars->length();
@@ -518,7 +518,8 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
 {
   // safety checks
   if (!Filled()) FOUR_C_THROW("FillComplete() has not been called on discretization!");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() has not been called on discretization!");
+  if (!HaveDofs())
+    FOUR_C_THROW("assign_degrees_of_freedom() has not been called on discretization!");
 
   // determine number of scalar quantities to be computed
   const int numscalars = scalars->length();
@@ -596,7 +597,7 @@ void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
 {
   if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   Epetra_MultiVector& sca = *(scalars.get());
 
@@ -648,10 +649,10 @@ void DRT::Discretization::EvaluateScalars(
 /*----------------------------------------------------------------------*
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateInitialField(const std::string& fieldstring,
+void DRT::Discretization::evaluate_initial_field(const std::string& fieldstring,
     Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const
 {
-  DRT::UTILS::EvaluateInitialField(*this, fieldstring, fieldvector, locids);
+  DRT::UTILS::evaluate_initial_field(*this, fieldstring, fieldvector, locids);
 }  // DRT::Discretization::EvaluateIntialField
 
 FOUR_C_NAMESPACE_CLOSE

@@ -41,11 +41,11 @@ namespace CORE::GEO
      public:
       QuadratureCompression();
 
-      bool PerformCompressionOfQuadrature(
+      bool perform_compression_of_quadrature(
           CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      // CORE::FE::GaussIntegration GetCompressedQuadrature(){ return *gout_; }
-      Teuchos::RCP<CORE::FE::GaussPoints> GetCompressedQuadrature() { return gout_; }
+      // CORE::FE::GaussIntegration get_compressed_quadrature(){ return *gout_; }
+      Teuchos::RCP<CORE::FE::GaussPoints> get_compressed_quadrature() { return gout_; }
 
      private:
       void FormMatrixSystem(CORE::FE::GaussPointsComposite& gin,
@@ -60,7 +60,7 @@ namespace CORE::GEO
       \brief Solve the under/over determined system by performing QR decomposition, achived using
       Teuchos framework
        */
-      void QR_decomposition_Teuchos(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+      void qr_decomposition_teuchos(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
@@ -68,33 +68,34 @@ namespace CORE::GEO
       \brief Solve the under/over determined system by performing QR decomposition, achived using
       LAPACK
        */
-      void QR_decomposition_LAPACK(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+      void qr_decomposition_lapack(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
-      bool Compress_Leja_points(CORE::FE::GaussPointsComposite& gin,
+      bool compress_leja_points(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
-      void ComputeAndPrintError(CORE::FE::GaussPointsComposite& gin,
+      void compute_and_print_error(CORE::FE::GaussPointsComposite& gin,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
           Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
 
       void GetPivotalRows(
           Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work);
 
-      bool isThisValueAlreadyInDenseVector(
+      bool is_this_value_already_in_dense_vector(
           int& input, std::vector<int>& vec, int upper_range, int& index);
 
-      Teuchos::RCP<CORE::FE::GaussPoints> FormNewQuadratureRule(CORE::FE::GaussPointsComposite& gin,
-          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
+      Teuchos::RCP<CORE::FE::GaussPoints> form_new_quadrature_rule(
+          CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
+          std::vector<int>& work, int& na);
       int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
 
-      void WriteCompressedQuadratureGMSH(
+      void write_compressed_quadrature_gmsh(
           CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 
-      void IntegratePredefinedPolynomials(CORE::FE::GaussPointsComposite& gin);
+      void integrate_predefined_polynomials(CORE::FE::GaussPointsComposite& gin);
 
       Teuchos::RCP<CORE::FE::GaussPoints> gout_;
     };

@@ -73,7 +73,7 @@ namespace MIXTURE
        *
        * @param lambda_pre
        */
-      void UpdateDepositionStretch(T lambda_pre);
+      void update_deposition_stretch(T lambda_pre);
 
       /*!
        * @brief Set deformation state of the fiber
@@ -85,40 +85,40 @@ namespace MIXTURE
        */
       void SetState(T lambda_f, T lambda_ext);
 
-      [[nodiscard]] T EvaluateGrowthEvolutionEquationDt(
+      [[nodiscard]] T evaluate_growth_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
-      [[nodiscard]] T EvaluateDGrowthEvolutionEquationDtDSig(
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_sig(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
-      [[nodiscard]] T EvaluateDGrowthEvolutionEquationDtPartialDgrowth(
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_partial_dgrowth(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
-      [[nodiscard]] T EvaluateDGrowthEvolutionEquationDtPartialDRemodel(
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_partial_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
-      [[nodiscard]] T EvaluateDGrowthEvolutionEquationDtDGrowth(
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_growth(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
-      [[nodiscard]] T EvaluateDGrowthEvolutionEquationDtDRemodel(
+      [[nodiscard]] T evaluate_d_growth_evolution_equation_dt_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext, T growth_scalar) const;
 
-      [[nodiscard]] T EvaluateRemodelEvolutionEquationDt(
+      [[nodiscard]] T evaluate_remodel_evolution_equation_dt(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtDSig(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_sig(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtDI4(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_i4(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtPartialDGrowth(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_partial_d_growth(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtPartialDRemodel(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_partial_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtDGrowth(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_growth(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDRemodelEvolutionEquationDtDRemodel(
+      [[nodiscard]] T evaluate_d_remodel_evolution_equation_dt_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext) const;
 
-      [[nodiscard]] T EvaluateFiberCauchyStress(T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDFiberCauchyStressPartialDI4(
+      [[nodiscard]] T evaluate_fiber_cauchy_stress(T lambda_f, T lambda_r, T lambda_ext) const;
+      [[nodiscard]] T evaluate_d_fiber_cauchy_stress_partial_d_i4(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDFiberCauchyStressPartialDI4DI4(
+      [[nodiscard]] T evaluate_d_fiber_cauchy_stress_partial_d_i4_d_i4(
           T lambda_f, T lambda_r, T lambda_ext) const;
-      [[nodiscard]] T EvaluateDFiberCauchyStressDRemodel(
+      [[nodiscard]] T evaluate_d_fiber_cauchy_stress_d_remodel(
           T lambda_f, T lambda_r, T lambda_ext) const;
 
       /// @name Methods for doing explicit or implicit time integration
@@ -131,31 +131,33 @@ namespace MIXTURE
        * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
        * lambda_r
        */
-      CORE::LINALG::Matrix<2, 2, T> IntegrateLocalEvolutionEquationsImplicit(T dt);
+      CORE::LINALG::Matrix<2, 2, T> integrate_local_evolution_equations_implicit(T dt);
 
       /*!
        * @brief Integrate the local evolution equation with an explicit time integration scheme.
        *
        * @param dt (in) : timestep
        */
-      void IntegrateLocalEvolutionEquationsExplicit(T dt);
+      void integrate_local_evolution_equations_explicit(T dt);
       /// @}
       /// @brief Evaluation methods
       ///
       /// @note It is important to call #SetState(#T) first.
       ///
       /// @{
-      [[nodiscard]] T EvaluateCurrentHomeostaticFiberCauchyStress() const;
-      [[nodiscard]] T EvaluateCurrentFiberCauchyStress() const;
-      [[nodiscard]] T EvaluateCurrentFiberPK2Stress() const;
-      [[nodiscard]] T EvaluateDCurrentFiberPK2StressDLambdafsq() const;
-      [[nodiscard]] T EvaluateDCurrentFiberPK2StressDLambdar() const;
-      [[nodiscard]] T EvaluateDCurrentGrowthEvolutionImplicitTimeIntegrationResiduumDLambdafsq(
+      [[nodiscard]] T evaluate_current_homeostatic_fiber_cauchy_stress() const;
+      [[nodiscard]] T evaluate_current_fiber_cauchy_stress() const;
+      [[nodiscard]] T evaluate_current_fiber_p_k2_stress() const;
+      [[nodiscard]] T evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
+      [[nodiscard]] T evaluate_d_current_fiber_p_k2_stress_d_lambdar() const;
+      [[nodiscard]] T
+      evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
           T dt) const;
-      [[nodiscard]] T EvaluateDCurrentRemodelEvolutionImplicitTimeIntegrationResiduumDLambdafsq(
+      [[nodiscard]] T
+      evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
           T dt) const;
-      [[nodiscard]] T EvaluateCurrentGrowthScalar() const;
-      [[nodiscard]] T EvaluateCurrentLambdar() const;
+      [[nodiscard]] T evaluate_current_growth_scalar() const;
+      [[nodiscard]] T evaluate_current_lambdar() const;
       /// @}
 
       /// array of G&R states (the last state in the array is the current state)

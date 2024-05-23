@@ -139,7 +139,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   EvaluateRelMov();
 
   // update active set
-  UpdateActiveSetSemiSmooth();
+  update_active_set_semi_smooth();
 
   // init lin-matrices
   Initialize();
@@ -598,7 +598,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   Epetra_Vector dDiag(*gactivedofs_);
   dInvA->ExtractDiagonalCopy(dDiag);
   if (dDiag.Reciprocal(dDiag)) FOUR_C_THROW("inversion of diagonal D matrix failed");
-  dInvA->ReplaceDiagonalValues(dDiag);
+  dInvA->replace_diagonal_values(dDiag);
 
   // get dinv on thermal dofs
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dInvaThr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
@@ -644,7 +644,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
       Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*gactivedofs_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
-      dInvA->ReplaceDiagonalValues(*diag);
+      dInvA->replace_diagonal_values(*diag);
       dInvMa = CORE::LINALG::MLMultiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
@@ -869,13 +869,13 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
   }
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate, Teuchos::null);
-  StoreNodalQuantities(MORTAR::StrategyBase::lmThermo, coupST);
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate, Teuchos::null);
+  store_nodal_quantities(MORTAR::StrategyBase::lmThermo, coupST);
 
   return;
 };
 
-void CONTACT::LagrangeStrategyTsi::StoreNodalQuantities(
+void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
     MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
@@ -914,7 +914,7 @@ void CONTACT::LagrangeStrategyTsi::StoreNodalQuantities(
       break;
     }
     default:
-      CONTACT::AbstractStrategy::StoreNodalQuantities(type);
+      CONTACT::AbstractStrategy::store_nodal_quantities(type);
       break;
   }
 }

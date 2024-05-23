@@ -61,7 +61,7 @@ namespace CORE::Dofsets
     void AddDofSettoList() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset) override;
+    void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) override;
 
     //@}
 

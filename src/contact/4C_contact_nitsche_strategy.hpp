@@ -94,7 +94,7 @@ namespace CONTACT
       */
     void Setup(bool redistributed, bool init) override;
 
-    virtual void UpdateTraceIneqEtimates();
+    virtual void update_trace_ineq_etimates();
 
     /*! \brief Get dirichlet B.C. status and store into Nodes
 
@@ -102,15 +102,15 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override{
+    void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */};
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
-    void EvaluateReferenceState() override;
+    void evaluate_reference_state() override;
     void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart) const override{
         /* nothing stored in nitsche strategy that would need to be written */};
-    void ComputeContactStresses() final{/* nothing stress output in nitsche strategy yet */};
-    virtual void ReconnectParentElements();
+    void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
+    virtual void reconnect_parent_elements();
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     /*!
@@ -138,16 +138,19 @@ namespace CONTACT
     // thus they are defined empty here in the case of Penalty contact.
 
     //! Get the active node row map of the previous Newton step
-    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
+    {
+      return Teuchos::null;
+    };
     Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return Teuchos::null; };
     bool IsNitsche() const override { return true; }
     void PrintActiveSet() const override{};
-    bool ActiveSetSemiSmoothConverged() const override { return true; }
+    bool active_set_semi_smooth_converged() const override { return true; }
     bool ActiveSetConverged() override { return true; }
     int ActiveSetSteps() override { return 0; }
     void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override {}
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
@@ -156,7 +159,7 @@ namespace CONTACT
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
           "here.");
     }
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
       FOUR_C_THROW(
@@ -165,11 +168,11 @@ namespace CONTACT
     }
     void EvalConstrRHS() override {}
     void UpdateActiveSet() override {}
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor) override {}
-    void EvaluateRelMovPredict() override {}
+    void update_active_set_semi_smooth(const bool firstStepPredictor) override {}
+    void evaluate_rel_mov_predict() override {}
     void ModifyPenalty() override {}
-    void UpdateUzawaAugmentedLagrange() override {}
-    void UpdateConstraintNorm(int uzawaiter) override {}
+    void update_uzawa_augmented_lagrange() override {}
+    void update_constraint_norm(int uzawaiter) override {}
     void Initialize() override{};
     void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
@@ -242,7 +245,7 @@ namespace CONTACT
      * @param[in] bt      matrix block type
      * @param[in,out] kc  matrix block of given matrix block type that has to be completed
      */
-    virtual void CompleteMatrixBlockPtr(
+    virtual void complete_matrix_block_ptr(
         const enum MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
 
     /*!
@@ -251,7 +254,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return the filled block matrix of given matrix block type
      */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> CreateMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> create_matrix_block_ptr(
         const enum MatBlockType& bt);
 
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface_;

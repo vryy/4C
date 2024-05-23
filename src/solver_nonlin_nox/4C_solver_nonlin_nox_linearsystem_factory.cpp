@@ -52,11 +52,11 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLin
   // extract some stuff from the NOX::NLN::GlobalData object
   const NOX::NLN::LinearSystem::SolverMap& linSolvers = noxNlnGlobalData.GetLinSolvers();
   const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq =
-      noxNlnGlobalData.GetRequiredInterface();
+      noxNlnGlobalData.get_required_interface();
   const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac =
-      noxNlnGlobalData.GetJacobianInterface();
+      noxNlnGlobalData.get_jacobian_interface();
   const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec =
-      noxNlnGlobalData.GetPreconditionerInterface();
+      noxNlnGlobalData.get_preconditioner_interface();
 
   Teuchos::ParameterList& params = noxNlnGlobalData.GetNlnParameterList();
   // printing parameters
@@ -78,9 +78,9 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLin
     case NOX::NLN::LinSystem::linear_system_structure_contact:
     {
       const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
-          noxNlnGlobalData.GetConstraintInterfaces();
+          noxNlnGlobalData.get_constraint_interfaces();
       const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
-          noxNlnGlobalData.GetConstraintPrecInterfaces();
+          noxNlnGlobalData.get_constraint_prec_interfaces();
 
       linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(printParams, lsParams, linSolvers,
           iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject));
@@ -89,9 +89,9 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLin
     case NOX::NLN::LinSystem::linear_system_structure_meshtying:
     {
       const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
-          noxNlnGlobalData.GetConstraintInterfaces();
+          noxNlnGlobalData.get_constraint_interfaces();
       const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
-          noxNlnGlobalData.GetConstraintPrecInterfaces();
+          noxNlnGlobalData.get_constraint_prec_interfaces();
 
       linSys = Teuchos::rcp(new NOX::NLN::MESHTYING::LinearSystem(printParams, lsParams, linSolvers,
           iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject));
@@ -108,9 +108,9 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLin
     case NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint:
     {
       const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
-          noxNlnGlobalData.GetConstraintInterfaces();
+          noxNlnGlobalData.get_constraint_interfaces();
       const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
-          noxNlnGlobalData.GetConstraintPrecInterfaces();
+          noxNlnGlobalData.get_constraint_prec_interfaces();
 
       linSys = Teuchos::rcp(
           new NOX::NLN::LAGPENCONSTRAINT::LinearSystem(printParams, lsParams, linSolvers, iReq,

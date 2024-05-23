@@ -231,7 +231,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!
 
-  linkele_->SetCenterlineHermite(false);
+  linkele_->set_centerline_hermite(false);
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
@@ -255,7 +255,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Setup(const int matnum)
     refrotvec[3 + i] = linkelerotvec(i);
   }
 
-  linkele_->SetUpReferenceGeometry<2, 2, 1>(refpos, refrotvec);
+  linkele_->set_up_reference_geometry<2, 2, 1>(refpos, refrotvec);
 
   issetup_ = true;
 }
@@ -321,11 +321,11 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForce(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseVector force(12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, nullptr, nullptr, &force, nullptr);
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
@@ -350,11 +350,11 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateStiff(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, nullptr, nullptr, nullptr);
 
   // Todo the linearization is incomplete yet. fix this or delete related code and
@@ -393,12 +393,12 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForceStiff(
   CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
   std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
-  FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
+  fill_state_variables_for_element_evaluation(disp_totlag_centerline, Qnode);
 
   CORE::LINALG::SerialDenseVector force(12, true);
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
-  linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
+  linkele_->calc_internal_and_inertia_forces_and_stiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, nullptr, &force, nullptr);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
@@ -575,7 +575,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::FillStateVariablesForElementEvaluation(
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_element_evaluation(
     CORE::LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
     std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode) const
 {

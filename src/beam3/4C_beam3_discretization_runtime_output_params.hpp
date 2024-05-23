@@ -48,14 +48,14 @@ namespace DRT
 
 
       /// whether to write displacements
-      bool OutputDisplacementState() const
+      bool output_displacement_state() const
       {
         CheckInitSetup();
         return output_displacement_state_;
       };
 
       /// whether to write triads at the Gauss points
-      bool IsWriteTriadVisualizationPoints() const
+      bool is_write_triad_visualization_points() const
       {
         CheckInitSetup();
         return write_triads_visualizationpoints_;
@@ -63,77 +63,77 @@ namespace DRT
 
       /// whether to use abolute positions or initial positions for the vtu geometry definition
       /// (i.e. for the visualization point coordinates)
-      bool UseAbsolutePositions() const
+      bool use_absolute_positions() const
       {
         CheckInitSetup();
         return use_absolute_positions_visualizationpoint_coordinates_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
-      bool IsWriteInternalEnergyElement() const
+      bool is_write_internal_energy_element() const
       {
         CheckInitSetup();
         return write_internal_energy_element_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
-      bool IsWriteKineticEnergyElement() const
+      bool is_write_kinetic_energy_element() const
       {
         CheckInitSetup();
         return write_kinetic_energy_element_;
       };
 
       /// whether to write material cross-section strains at the Gauss points
-      bool IsWriteMaterialStrainsGaussPoints() const
+      bool is_write_material_strains_gauss_points() const
       {
         CheckInitSetup();
         return write_material_crosssection_strains_gausspoints_;
       };
 
       /// whether to write material cross-section strains at the visualization points
-      bool IsWriteMaterialStrainsContinuous() const
+      bool is_write_material_strains_continuous() const
       {
         CheckInitSetup();
         return write_material_crosssection_strains_continuous_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
-      bool IsWriteMaterialStressesGaussPoints() const
+      bool is_write_material_stresses_gauss_points() const
       {
         CheckInitSetup();
         return write_material_crosssection_stresses_gausspoints_;
       };
 
       /// whether to write material cross-section stresses at the visualization points
-      bool IsWriteMaterialStressContinuous() const
+      bool is_write_material_stress_continuous() const
       {
         CheckInitSetup();
         return write_material_crosssection_strains_continuous_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
-      bool IsWriteSpatialStressesGaussPoints() const
+      bool is_write_spatial_stresses_gauss_points() const
       {
         CheckInitSetup();
         return write_spatial_crosssection_stresses_gausspoints_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
-      bool IsWriteElementFilamentCondition() const
+      bool is_write_element_filament_condition() const
       {
         CheckInitSetup();
         return write_filament_condition_;
       };
 
       /// whether to write element and network orientation parameter
-      bool IsWriteOrientationParamter() const
+      bool is_write_orientation_paramter() const
       {
         CheckInitSetup();
         return write_orientation_parameter_;
       };
 
       /// whether to write crosssection forces of periodic rve in x, y, and z direction
-      bool IsWriteRVECrosssectionForces() const
+      bool is_write_rve_crosssection_forces() const
       {
         CheckInitSetup();
         return write_rve_crosssection_forces_;
@@ -154,14 +154,14 @@ namespace DRT
       };
 
       /// write ghosting information
-      bool IsWriteElementGhosting() const
+      bool is_write_element_ghosting() const
       {
         CheckInitSetup();
         return write_element_ghosting_;
       };
 
       /// number of visualization subsegments.
-      unsigned int GetNumberVisualizationSubsegments() const
+      unsigned int get_number_visualization_subsegments() const
       {
         CheckInitSetup();
         return n_subsegments_;

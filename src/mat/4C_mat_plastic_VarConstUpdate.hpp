@@ -177,8 +177,8 @@ namespace MAT
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateThermalStress(const CORE::LINALG::Matrix<3, 3>* defgrd, const double temp,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* pk2,
+    virtual void evaluate_thermal_stress(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const double temp, Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* pk2,
         CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
@@ -346,12 +346,13 @@ namespace MAT
         const CORE::LINALG::Matrix<3, 3> fpi, const CORE::LINALG::Matrix<3, 3> MatExp,
         CORE::LINALG::Matrix<3, 3>* cetrial, CORE::LINALG::Matrix<6, 1>* Ee);
 
-    virtual void MatrixExponentialSecondDerivativeSym3x3x6(
+    virtual void matrix_exponential_second_derivative_sym3x3x6(
         const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<3, 3>& exp,
         CORE::LINALG::Matrix<6, 6>& dexp_mat, CORE::LINALG::Matrix<6, 6>* MatrixExp2ndDerivVoigt);
 
-    virtual void MatrixExponentialSecondDerivativeSym3x3(const CORE::LINALG::Matrix<3, 3> MatrixIn,
-        CORE::LINALG::Matrix<3, 3>& exp, std::vector<CORE::LINALG::Matrix<3, 3>>& MatrixExp1stDeriv,
+    virtual void matrix_exponential_second_derivative_sym3x3(
+        const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<3, 3>& exp,
+        std::vector<CORE::LINALG::Matrix<3, 3>>& MatrixExp1stDeriv,
         std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& MatrixExp2ndDeriv);
 
     virtual void EvaluatePlast(CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
@@ -362,13 +363,14 @@ namespace MAT
         const CORE::LINALG::Matrix<6, 1>& ircg, const CORE::LINALG::Matrix<3, 3>& FpiCe,
         const CORE::LINALG::Matrix<9, 1>& CFpiCe, const CORE::LINALG::Matrix<6, 1>& CpiCCpi);
 
-    virtual void EvaluateKinQuantPlast(int gp, int eleGID, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<3, 3>* fpi, CORE::LINALG::Matrix<3, 1>& gamma,
-        CORE::LINALG::Matrix<8, 1>& delta, CORE::LINALG::Matrix<3, 3>& id2,
-        CORE::LINALG::Matrix<6, 1>& Cpi, CORE::LINALG::Matrix<3, 3>& CpiC,
-        CORE::LINALG::Matrix<9, 1>& CFpi, CORE::LINALG::Matrix<9, 1>& CFpiCei,
-        CORE::LINALG::Matrix<6, 1>& ircg, CORE::LINALG::Matrix<3, 3>& FpiCe,
-        CORE::LINALG::Matrix<9, 1>& CFpiCe, CORE::LINALG::Matrix<6, 1>& CpiCCpi);
+    virtual void evaluate_kin_quant_plast(int gp, int eleGID,
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>* fpi,
+        CORE::LINALG::Matrix<3, 1>& gamma, CORE::LINALG::Matrix<8, 1>& delta,
+        CORE::LINALG::Matrix<3, 3>& id2, CORE::LINALG::Matrix<6, 1>& Cpi,
+        CORE::LINALG::Matrix<3, 3>& CpiC, CORE::LINALG::Matrix<9, 1>& CFpi,
+        CORE::LINALG::Matrix<9, 1>& CFpiCei, CORE::LINALG::Matrix<6, 1>& ircg,
+        CORE::LINALG::Matrix<3, 3>& FpiCe, CORE::LINALG::Matrix<9, 1>& CFpiCe,
+        CORE::LINALG::Matrix<6, 1>& CpiCCpi);
 
     virtual void Dpk2dFpi(int gp, int eleGID, const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3>* fpi, CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc);

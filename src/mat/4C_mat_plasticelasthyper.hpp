@@ -295,8 +295,9 @@ namespace MAT
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateThermalStress(const CORE::LINALG::Matrix<3, 3>* defgrd, const double temp,
-        CORE::LINALG::Matrix<6, 1>* pk2, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    virtual void evaluate_thermal_stress(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const double temp, CORE::LINALG::Matrix<6, 1>* pk2, CORE::LINALG::Matrix<6, 6>* cmat,
+        const int gp,
         const int eleGID);  ///< global ID of element
 
     /// evaluate stresses and stiffness contribution
@@ -467,7 +468,7 @@ namespace MAT
     //! return visualization data
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
@@ -478,22 +479,22 @@ namespace MAT
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual int EvaluateKinQuantPlast(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    virtual int evaluate_kin_quant_plast(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params);
 
-    virtual void EvaluateKinQuantElast(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    virtual void evaluate_kin_quant_elast(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<3, 3>* deltaLp, const int gp);
 
     virtual double NormStressLike(const CORE::LINALG::Matrix<6, 1>& stress);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrincPlast(CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
+    virtual void evaluate_isotropic_princ_plast(CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
         CORE::LINALG::Matrix<3, 3>& MandelStressIsoprinc, CORE::LINALG::Matrix<6, 6>& dMdCisoprinc,
         CORE::LINALG::Matrix<6, 9>& dMdFpinvIsoprinc, const CORE::LINALG::Matrix<3, 1>& gamma,
         const CORE::LINALG::Matrix<8, 1>& delta);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrincElast(CORE::LINALG::Matrix<6, 1>& stressisoprinc,
+    virtual void evaluate_isotropic_princ_elast(CORE::LINALG::Matrix<6, 1>& stressisoprinc,
         CORE::LINALG::Matrix<6, 6>& cmatisoprinc, CORE::LINALG::Matrix<3, 1> dPI,
         CORE::LINALG::Matrix<6, 1> ddPII);
 
@@ -528,7 +529,7 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    void EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID,
+    void evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID,
         CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
         CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp = nullptr) override;
 
@@ -560,26 +561,26 @@ namespace MAT
                              \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d}
      \mathbf{F} \mathrm{d} T } \f])
      */
-    void EvaluateCauchyTempDeriv(const CORE::LINALG::Matrix<3, 1>& prinv, const double ndt,
+    void evaluate_cauchy_temp_deriv(const CORE::LINALG::Matrix<3, 1>& prinv, const double ndt,
         const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
         const CORE::LINALG::Matrix<9, 1>& iFTV, const CORE::LINALG::Matrix<9, 1>& DbdndtDFV,
         const CORE::LINALG::Matrix<9, 1>& DibdndtDFV, const CORE::LINALG::Matrix<9, 1>& DI1DF,
         const CORE::LINALG::Matrix<9, 1>& DI2DF, const CORE::LINALG::Matrix<9, 1>& DI3DF,
         CORE::LINALG::Matrix<9, 1>* D2sntDFDT) override;
 
-    virtual void AddThermalExpansionDerivs(const CORE::LINALG::Matrix<3, 1>& prinv,
+    virtual void add_thermal_expansion_derivs(const CORE::LINALG::Matrix<3, 1>& prinv,
         CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII, int gp, int eleGID,
         const double& temp);
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
-    virtual void MatrixExponential3x3(CORE::LINALG::Matrix<3, 3>& MatrixInOut);
+    virtual void matrix_exponential3x3(CORE::LINALG::Matrix<3, 3>& MatrixInOut);
 
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivativeSym3x3(
+    virtual void matrix_exponential_derivative_sym3x3(
         const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<6, 6>& MatrixExpDeriv);
 
     //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivative3x3(
+    virtual void matrix_exponential_derivative3x3(
         const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<9, 9>& MatrixExpDeriv);
 
     /// my material parameters

@@ -55,10 +55,10 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcMatAndRhsMultiScale(
-    const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
-    CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
-    const double rhsfac)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
+    probdim>::calc_mat_and_rhs_multi_scale(const DRT::Element* const ele,
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
+    const int iquad, const double timefacfac, const double rhsfac)
 {
   // extract multi-scale Newman material
   const auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
 
   // evaluate multi-scale Newman material
   newmanmultiscale->Evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
-      not DRT::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->PartitionedMultiScale());
+      not DRT::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->partitioned_multi_scale());
 
   // calculate gradient of electric potential inside electrode
   CORE::LINALG::Matrix<nsd_, 1> gradpot_ed(true);
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   //                           = i_ed
   //
   const double specific_micro_scale_surface_area =
-      newmanmultiscale->SpecificMicroScaleSurfaceArea(detF);
+      newmanmultiscale->specific_micro_scale_surface_area(detF);
   const double dq_dc_el = timefacfac * dq_dphi_micro[0] * specific_micro_scale_surface_area;
   const double dq_dpot_el = timefacfac * dq_dphi_micro[1] * specific_micro_scale_surface_area;
   const double dq_dpot_ed = timefacfac * dq_dphi_micro[2] * specific_micro_scale_surface_area;
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
       emat(fvi + 1, fui + 2) += vi_dq_dpot_ed_ui;
 
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi + 2, fui) += -vi_dq_dc_el_ui;
       emat(fvi + 2, fui + 1) += -vi_dq_dpot_el_ui;
       emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::VarManager()->InvF() *
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
     erhs[fvi + 1] -= vi_rhsterm;
 
     double laplawfrhs_gradpot(0.0);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot_ed, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot_ed, vi);
     erhs[fvi + 2] -= rhsfac * mydiffcond::VarManager()->InvF() *
                          DiffManager()->GetPhasePoroTort(0) *
                          newmanmultiscale->electronic_cond(iquad) * laplawfrhs_gradpot -
@@ -179,12 +179,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysma
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // preparations
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
-    this->SetInternalVariablesForMatAndRHS();
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
+    this->set_internal_variables_for_mat_and_rhs();
     std::vector<double> dummy(1, 0.);
     this->GetMaterialParams(ele, dummy, dummy, dummy, dummy[0], iquad);
 
-    CalcMatAndRhsMultiScale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->TimeFac() * fac,
+    calc_mat_and_rhs_multi_scale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->TimeFac() * fac,
         my::scatraparatimint_->TimeFacRhs() * fac);
   }
 }

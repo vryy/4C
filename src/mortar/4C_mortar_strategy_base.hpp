@@ -166,7 +166,7 @@ namespace MORTAR
    public:
     //! @name Enums and Friends
     //! @{
-    // can be called by StoreNodalQuantities() or StoreDMtoNodes()
+    // can be called by store_nodal_quantities() or StoreDMtoNodes()
     enum QuantityType
     {
       lmcurrent,  //!< current lagr. mult.
@@ -236,7 +236,7 @@ namespace MORTAR
     //@}
 
     /// Set the time integration information
-    void SetTimeIntegrationInfo(const double time_fac, const INPAR::STR::DynamicType dyntype);
+    void set_time_integration_info(const double time_fac, const INPAR::STR::DynamicType dyntype);
 
     //! @name Purely virtual functions
 
@@ -248,15 +248,15 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
     virtual Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
     virtual Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
-    virtual Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
-    virtual Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> not_re_dist_slave_row_dofs() = 0;
+    virtual Teuchos::RCP<Epetra_Map> not_re_dist_master_row_dofs() = 0;
     virtual bool ActiveSetConverged() = 0;
-    virtual bool ActiveSetSemiSmoothConverged() const = 0;
+    virtual bool active_set_semi_smooth_converged() const = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor = false) = 0;
     virtual void AssembleMortar() = 0;
-    virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
+    virtual void collect_maps_for_preconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double ConstraintNorm() const = 0;
@@ -275,9 +275,9 @@ namespace MORTAR
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(
         Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateReferenceState() = 0;
+    virtual void evaluate_reference_state() = 0;
     virtual void EvaluateRelMov() = 0;
-    virtual void EvaluateRelMovPredict() = 0;
+    virtual void evaluate_rel_mov_predict() = 0;
     virtual bool Friction() const = 0;
     virtual void InitEvalInterface() = 0;
     virtual void InitMortar() = 0;
@@ -298,7 +298,7 @@ namespace MORTAR
     virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) = 0;
     virtual int NumberOfActiveNodes() const = 0;
     virtual int NumberOfSlipNodes() const = 0;
-    virtual void ComputeContactStresses() = 0;
+    virtual void compute_contact_stresses() = 0;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -307,7 +307,7 @@ namespace MORTAR
 
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
-    virtual void PostprocessQuantitiesPerInterface(
+    virtual void postprocess_quantities_per_interface(
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     virtual void Print(std::ostream& os) const = 0;
@@ -315,33 +315,33 @@ namespace MORTAR
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual bool RedistributeContact(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) = 0;
-    virtual void RedistributeMeshtying() = 0;
+    virtual void redistribute_meshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
-    virtual void RestrictMeshtyingZone() = 0;
-    virtual void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    virtual void restrict_meshtying_zone() = 0;
+    virtual void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
-    virtual void UpdateDisplacementsAndLMincrements(
+    virtual void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
     virtual Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
-    virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
-    virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
+    virtual void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
+    virtual void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
-    virtual void UpdateUzawaAugmentedLagrange() = 0;
-    virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
+    virtual void update_active_set_semi_smooth(const bool firstStepPredictor = false) = 0;
+    virtual void update_uzawa_augmented_lagrange() = 0;
+    virtual void update_constraint_norm(int uzawaiter = 0) = 0;
     virtual void VisualizeGmsh(const int step, const int iter) = 0;
     virtual bool WasInContact() const = 0;
-    virtual bool WasInContactLastTimeStep() const = 0;
+    virtual bool was_in_contact_last_time_step() const = 0;
 
     // Flag for Poro No Penetration Condition (overloaded by LagrangeStrategyPoro)
-    virtual bool HasPoroNoPenetration() const { return false; }
+    virtual bool has_poro_no_penetration() const { return false; }
 
     // Nitsche stuff
     virtual bool IsNitsche() const { return false; }
@@ -363,7 +363,8 @@ namespace MORTAR
     bool IsSaddlePointSystem() const override = 0;
     bool IsCondensedSystem() const override = 0;
     virtual bool IsPenalty() const = 0;
-    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override = 0;
+    void fill_maps_for_preconditioner(
+        std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override = 0;
     //@}
 
    private:

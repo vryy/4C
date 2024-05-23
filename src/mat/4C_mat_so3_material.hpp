@@ -132,7 +132,7 @@ namespace MAT
      *                                   \mathbf{\sigma} \cdot \mathbf{n} \cdot
      *                                   \mathbf{v}}{\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    virtual void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
         CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
@@ -142,7 +142,7 @@ namespace MAT
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
         CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
-      FOUR_C_THROW("EvaluateCauchyNDirAndDerivatives not implemented for material of type %d",
+      FOUR_C_THROW("evaluate_cauchy_n_dir_and_derivatives not implemented for material of type %d",
           this->MaterialType());
     }
 
@@ -153,11 +153,11 @@ namespace MAT
      * @param[in] concentration Concentration at Gauss point
      * @param[out] d_F_dx       Derivative of deformation gradient w.r.t. degree of freedom x
      */
-    virtual void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    virtual void evaluate_linearization_od(const CORE::LINALG::Matrix<3, 3>& defgrd,
         double concentration, CORE::LINALG::Matrix<9, 1>* d_F_dx)
     {
-      FOUR_C_THROW(
-          "EvaluateLinearizationOD not implemented for material of type %d", this->MaterialType());
+      FOUR_C_THROW("evaluate_linearization_od not implemented for material of type %d",
+          this->MaterialType());
     }
     //@}
 
@@ -283,7 +283,8 @@ namespace MAT
      *
      * @param[out] name_and_size Unordered map of names of the data with the respective vector size
      */
-    virtual void RegisterOutputDataNames(std::unordered_map<std::string, int>& names_and_size) const
+    virtual void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const
     {
     }
 

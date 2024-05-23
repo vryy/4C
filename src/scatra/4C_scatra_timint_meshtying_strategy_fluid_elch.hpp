@@ -57,7 +57,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
   };  // class MeshtyingStrategyFluidElch
 }  // namespace SCATRA
 FOUR_C_NAMESPACE_CLOSE

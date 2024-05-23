@@ -117,7 +117,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double t
   }
 
   DRT::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
-  ReadDirichletCondition(discret, conds, time, info2, dbcgids);
+  read_dirichlet_condition(discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
   conds.clear();
@@ -134,15 +134,15 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double t
 
   // build dummy column toggle vector and auxiliary vectors
   DRT::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
-  ReadDirichletCondition(discret, conds, time, info_col, dbcgids_nurbs);
+  read_dirichlet_condition(discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
-  DoDirichletCondition(discret, conds, time, systemvectors, info_col.toggle, dbcgids_nurbs);
+  do_dirichlet_condition(discret, conds, time, systemvectors, info_col.toggle, dbcgids_nurbs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::DbcNurbs::do_dirichlet_condition(const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -150,7 +150,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   // default call
   if (dbcgids[set_col].is_null())
   {
-    DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, dbcgids);
+    DRT::UTILS::Dbc::do_dirichlet_condition(discret, cond, time, systemvectors, toggle, dbcgids);
     return;
   }
 
@@ -278,7 +278,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   {
     // call elements and assemble
     if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
-    if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+    if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
     // see what we have for input
     bool assemblemat = massmatrix != Teuchos::null;
@@ -377,27 +377,27 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       if (isboundary) switch (distype)
         {
           case CORE::FE::CellType::nurbs2:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs2>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs3:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs3>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs4:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs4>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs9:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs9>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs8:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs8>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs27:
-            FillMatrixAndRHSForLSDirichletBoundary<CORE::FE::CellType::nurbs27>(
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
@@ -409,27 +409,27 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
         switch (distype)
         {
           case CORE::FE::CellType::nurbs2:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs2>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs3:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs3>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs4:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs4>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs9:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs9>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs8:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs8>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           case CORE::FE::CellType::nurbs27:
-            FillMatrixAndRHSForLSDirichletDomain<CORE::FE::CellType::nurbs27>(
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
@@ -468,7 +468,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       Teuchos::rcp(new CORE::LINALG::Solver(p, discret.Comm()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
-  const_cast<DRT::Discretization&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
+  const_cast<DRT::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
 
   // solve for control point values
   // always refactor and reset the matrix before a single new solver call
@@ -501,10 +501,10 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> actele,
-    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
-    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
+    Teuchos::RCP<DRT::Element> actele, const std::vector<CORE::LINALG::SerialDenseVector>* knots,
+    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
+    const unsigned deg, const double time, CORE::LINALG::SerialDenseMatrix& elemass,
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
@@ -602,7 +602,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
         // important: position has to have always three components!!
         functimederivfac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
+                               .evaluate_time_derivative(position.values(), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -642,10 +642,10 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> actele,
-    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
-    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
+    Teuchos::RCP<DRT::Element> actele, const std::vector<CORE::LINALG::SerialDenseVector>* knots,
+    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
+    const unsigned deg, const double time, CORE::LINALG::SerialDenseMatrix& elemass,
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
@@ -753,7 +753,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
         // important: position has to have always three components!!
         functimederivfac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
+                               .evaluate_time_derivative(position.values(), time, deg, rr);
 
         functfac = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)

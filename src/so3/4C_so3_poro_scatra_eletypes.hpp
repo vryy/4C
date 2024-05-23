@@ -40,14 +40,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8PoroScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8POROSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -67,14 +67,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4PoroScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4POROSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT4POROSCATRA"; }
     };
 
 
@@ -95,14 +95,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex27PoroScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH27POROSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH27POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -122,14 +122,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet10PoroScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT10POROSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT10POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -149,14 +149,14 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoNurbs27PoroScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SONURBS27POROSCATRA"; }
+      std::string get_element_type_string() const { return "SONURBS27POROSCATRA"; }
     };
 
 

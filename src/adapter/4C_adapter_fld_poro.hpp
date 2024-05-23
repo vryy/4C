@@ -39,14 +39,14 @@ namespace ADAPTER
     /*!
      \param Cond_RHS                  (o) condition part of rhs
      \param ConstraintMatrix          (o) static part of Fluid matrix associated with constraints
-     \param StructVelConstraintMatrix (o) transient part of Fluid matrix associated with constraints
-     \param condIDs                   (o) vector containing constraint dofs
-     \param coupltype                 (i) coupling type, determines which matrix is to be evaluated
-                                         (0== fluid-fluid, 1== fluid -structure)
+     \param struct_vel_constraint_matrix (o) transient part of Fluid matrix associated with
+     constraints \param condIDs                   (o) vector containing constraint dofs \param
+     coupltype                 (i) coupling type, determines which matrix is to be evaluated (0==
+     fluid-fluid, 1== fluid -structure)
      */
-    void EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
+    void evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_vel_constraint_matrix,
         Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
         POROELAST::Coupltype coupltype = POROELAST::fluidfluid);
 

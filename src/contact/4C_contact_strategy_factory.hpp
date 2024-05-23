@@ -134,20 +134,20 @@ namespace CONTACT
       /*! \brief Set Parent Elements for Poro Face Elements
        *
        *  \author Ager */
-      void SetPoroParentElement(enum MORTAR::Element::PhysicalType& slavetype,
+      void set_poro_parent_element(enum MORTAR::Element::PhysicalType& slavetype,
           enum MORTAR::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
           Teuchos::RCP<DRT::Element>& ele, const DRT::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
        *
        *  \author Ager */
-      void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
+      void find_poro_interface_types(bool& poromaster, bool& poroslave, bool& structmaster,
           bool& structslave, enum MORTAR::Element::PhysicalType& slavetype,
           enum MORTAR::Element::PhysicalType& mastertype) const;
 
       //!@}
 
-      void FullyOverlappingInterfaces(
+      void fully_overlapping_interfaces(
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
 
       int IdentifyFullSubset(const Epetra_Map& map_0, const Epetra_Map& map_1,
@@ -160,7 +160,7 @@ namespace CONTACT
        * @param[in/out] contactinterfaceparameters:  the sublist 'ContactS2ICoupling' containing
        *                   the scatra-scatra interface parameters is added to this list if needed
        */
-      void SetParametersForContactCondition(
+      void set_parameters_for_contact_condition(
           int conditiongroupid, Teuchos::ParameterList& contactinterfaceparameters) const;
     };
   }  // namespace STRATEGY

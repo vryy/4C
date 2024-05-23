@@ -603,7 +603,7 @@ void PostProblem::read_meshes()
           (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
       {
         PeriodicBoundaryConditions pbc(currfield.discretization());
-        pbc.UpdateDofsForPeriodicBoundaryConditions();
+        pbc.update_dofs_for_periodic_boundary_conditions();
       }
 
       fields_.push_back(currfield);
@@ -910,7 +910,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char>> data =
-      file_.ReadResultDataVecChar(id_path, value_path, columns, *comm, elemap);
+      file_.read_result_data_vec_char(id_path, value_path, columns, *comm, elemap);
 
   Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata =
       Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);

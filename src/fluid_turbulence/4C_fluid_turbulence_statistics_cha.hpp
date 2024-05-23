@@ -112,7 +112,7 @@ namespace FLD
     to caculate mean values of multifractal subgrid-scales modeling
     parameters
     */
-    void StoreScatraDiscretAndParams(Teuchos::RCP<DRT::Discretization> scatradis,
+    void store_scatra_discret_and_params(Teuchos::RCP<DRT::Discretization> scatradis,
         Teuchos::RCP<Teuchos::ParameterList> scatraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatratimeparams);
@@ -157,17 +157,17 @@ namespace FLD
 
     Further documentation is provided in the element subroutines
     */
-    void EvaluateIntegralMeanValuesInPlanes();
+    void evaluate_integral_mean_values_in_planes();
 
     /*!
     \brief Compute in-plane means (integral version) for low-Mach-number flow
     */
-    void EvaluateLomaIntegralMeanValuesInPlanes(const double eosfac);
+    void evaluate_loma_integral_mean_values_in_planes(const double eosfac);
 
     /*!
     \brief Compute in-plane means (integral version) for turbulent passive scalar transport
     */
-    void EvaluateScatraIntegralMeanValuesInPlanes();
+    void evaluate_scatra_integral_mean_values_in_planes();
 
     /*!
     \brief Compute in plane means of u,u^2 etc. (nodal quantities)
@@ -193,7 +193,7 @@ namespace FLD
     velnp is the solution vector provided by the time integration
     algorithm
     */
-    void EvaluatePointwiseMeanValuesInPlanes();
+    void evaluate_pointwise_mean_values_in_planes();
 
     /*!
       \brief Add computed dynamic Smagorinsky quantities (Smagorinsky
@@ -208,14 +208,14 @@ namespace FLD
       the time sample.
     */
 
-    void AddDynamicSmagorinskyQuantities();
+    void add_dynamic_smagorinsky_quantities();
 
     /*!
       \brief Add parameters of multifractal
              subgrid-scales model
     */
 
-    void AddModelParamsMultifractal(const Teuchos::RCP<const Epetra_Vector> velnp,
+    void add_model_params_multifractal(const Teuchos::RCP<const Epetra_Vector> velnp,
         const Teuchos::RCP<const Epetra_Vector> fsvelnp, const bool withscatra);
 
     /*!
@@ -244,7 +244,7 @@ namespace FLD
 
     */
 
-    void TimeAverageMeansAndOutputOfStatistics(const int step);
+    void time_average_means_and_output_of_statistics(const int step);
 
     /*!
     \brief Compute a time average of the mean values over all steps
@@ -270,7 +270,7 @@ namespace FLD
 
     */
 
-    void DumpScatraStatistics(const int step);
+    void dump_scatra_statistics(const int step);
 
     /*!
     \brief Reset sums and number of samples to 0
@@ -284,7 +284,7 @@ namespace FLD
     turbulent channel flow
 
     */
-    std::vector<double> ReturnNodePlaneCoords() { return (*nodeplanes_); };
+    std::vector<double> return_node_plane_coords() { return (*nodeplanes_); };
 
     //@}
 

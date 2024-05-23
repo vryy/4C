@@ -262,7 +262,7 @@ namespace CORE::GEO
       void SelfCutPosition(Point::PointPosition p);
 
       /// Changes the selfcutposition of this node and spreads the positional information
-      void ChangeSelfCutPosition(Point::PointPosition p);
+      void change_self_cut_position(Point::PointPosition p);
 
       /// Erase the cutsideedge from this node because it is deleted in the selfcut
       void EraseCutSideEdge(Edge* cutsideedge) { edges_.erase(cutsideedge); }
@@ -285,10 +285,10 @@ namespace CORE::GEO
       NodalDofSet* GetNodalDofSet(const int nds) const { return &*nodaldofsets_[nds]; }
 
       /// remove non-standard nodal dofsets
-      void RemoveNonStandardNodalDofSets();
+      void remove_non_standard_nodal_dof_sets();
 
       /// get the unique standard NodalDofSet for a given nodal dofset position
-      int GetStandardNodalDofSet(Point::PointPosition pos);
+      int get_standard_nodal_dof_set(Point::PointPosition pos);
 
 
       /*========================================================================*/

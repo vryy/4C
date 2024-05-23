@@ -397,7 +397,7 @@ void MORTAR::Node::AddMmodValue(const int& colnode, const double& val)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::Node::InitializeDataContainer()
+void MORTAR::Node::initialize_data_container()
 {
   // get maximum size of nodal D-entries
   dentries_ = 0;

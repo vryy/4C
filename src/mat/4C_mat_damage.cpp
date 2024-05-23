@@ -372,18 +372,18 @@ void MAT::Damage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // in case kinematic hardening is ignored, use implementation according to de
   // Souza Neto, Computational Methods for Plasticity
   if ((params_->kinhard_ == 0.0) and (params_->kinhard_rec_ == 0.0) and (params_->hardexpo_ == 0.0))
-    EvaluateSimplifiedLemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
+    evaluate_simplified_lemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
   // in case full Lemaitre material model is considered, i.e. including
   // kinematic hardening, use implementation according to Doghri
   else
-    EvaluateFullLemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
+    evaluate_full_lemaitre(defgrd, linstrain, params, stress, cmat, gp, eleGID);
 }  // Evaluate
 
 
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::Damage::evaluate_simplified_lemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  // linear strain vector
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
@@ -558,15 +558,15 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
 
     // calculate the isotropic hardening modulus with old plastic strains
     // Hiso = dsigma_y / d astrain^p
-    Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+    Hiso = get_iso_hard_at_strainbarnp(strainbar_p);
 
     // calculate the uniaxial yield stress out of samples
-    sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+    sigma_y = get_sigma_y_at_strainbarnp(strainbar_p);
   }
   else  // current strainbar_p > strainbar_p_D
   {
     // calculate the uniaxial yield stress out of samples
-    sigma_y = GetSigmaYAtStrainbarnp(Rplast);
+    sigma_y = get_sigma_y_at_strainbarnp(Rplast);
   }
 
   // calculate the yield function
@@ -696,10 +696,10 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
         Rplast = isohardvarlast_->at(gp) + Dgamma;
 
         // Hiso = dsigma_y / d astrain^p_{n+1}
-        Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+        Hiso = get_iso_hard_at_strainbarnp(strainbar_p);
 
         // sigma_y = sigma_y(astrain^p_{n+1})
-        sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+        sigma_y = get_sigma_y_at_strainbarnp(strainbar_p);
 
 #ifdef DEBUGMATERIAL
         if (gp == 0)
@@ -875,10 +875,10 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
         // if m=0: sigma_y = sigma_y(R^{p,m}_{n+1}(Dgamma^{m=0}))
         // if m>0: R^{p,m} was updated at end of last local Newton loop
         // sigma_y = sigma_y(R^{p,m}_{n+1})
-        sigma_y = GetSigmaYAtStrainbarnp(Rplast);
+        sigma_y = get_sigma_y_at_strainbarnp(Rplast);
         // slope of hardening function
         // Hiso = dsigma_y / d Rplast^m_{n+1}
-        Hiso = GetIsoHardAtStrainbarnp(Rplast);
+        Hiso = get_iso_hard_at_strainbarnp(Rplast);
         // plasticity with nonlinear (piecewise linear) isotropic hardening
 
         // get derivative of energy release rate w.r.t. Dgamma
@@ -1132,7 +1132,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
 
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
-  SetupCmatElastoPlastic(*cmat, eleGID, Dgamma, G, bulk, p_tilde, q_tilde, energyrelrate, Ytan,
+  setup_cmat_elasto_plastic(*cmat, eleGID, Dgamma, G, bulk, p_tilde, q_tilde, energyrelrate, Ytan,
       sigma_y, Hiso, Nbar, gp, damevolution, heaviside);
 
 #ifdef DEBUGMATERIAL
@@ -1150,13 +1150,13 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
 
   return;
 
-}  // EvaluateSimplifiedLemaitre()
+}  // evaluate_simplified_lemaitre()
 
 
 /*----------------------------------------------------------------------*
  | evaluate full Lemaitre material model (public)            dano 11/13 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::Damage::evaluate_full_lemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  // linear strain vector
     Teuchos::ParameterList& params,                  // parameter list for communication & HISTORY
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  // 2nd PK-stress
@@ -1426,7 +1426,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
     omegaold = omega = 1.0;
 
     // calculate the uniaxial yield stress out of samples
-    double sigma_y0 = GetSigmaYAtStrainbarnp(strainbar_p);
+    double sigma_y0 = get_sigma_y_at_strainbarnp(strainbar_p);
 
     // kappa = sigma_yinfty . (1 - exp (-delta . astrain))
     kappa = sigma_yinfty * (1.0 - exp(-hardexpo * strainbar_p));
@@ -1443,7 +1443,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
   else  // current strainbar_p > strainbar_p_D
   {
     // calculate the uniaxial yield stress out of samples
-    double sigma_y0 = GetSigmaYAtStrainbarnp(Rplast);
+    double sigma_y0 = get_sigma_y_at_strainbarnp(Rplast);
 
     // kappa = sigma_yinfty . (1 - exp (-delta . astrain))
     kappa = sigma_yinfty * (1.0 - exp(-hardexpo * Rplast));
@@ -1759,7 +1759,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
       // sigma_y = sigma_y0 + kappa(R^p)
       // kappa(R^p) = sigma_infty . (1 - exp(-delta . R^p) )
       // initial yield stress sigma_y0 for R^p == 0;
-      double sigma_y0 = GetSigmaYAtStrainbarnp(0);
+      double sigma_y0 = get_sigma_y_at_strainbarnp(0);
       kappa = sigma_yinfty * (1.0 - exp(-hardexpo * Rplast));
       sigma_y = sigma_y0 + kappa;
 
@@ -2244,8 +2244,9 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
-  SetupCmatElastoPlasticFullLemaitre(*cmat, N_tilde, *stress, heaviside, Dgamma, s_N, g, h_alg, G,
-      dkappa_dR, bulk, Hkin, Hkin_rec, Nbetaold, gp, qbar_tilde, y, dy_dsigma_tilde, b_NbetaoldN);
+  setup_cmat_elasto_plastic_full_lemaitre(*cmat, N_tilde, *stress, heaviside, Dgamma, s_N, g, h_alg,
+      G, dkappa_dR, bulk, Hkin, Hkin_rec, Nbetaold, gp, qbar_tilde, y, dy_dsigma_tilde,
+      b_NbetaoldN);
 
 #ifdef DEBUGMATERIAL
   std::cout << "Nach Setup Cep\n" << std::endl;
@@ -2262,7 +2263,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   return;
 
-}  // EvaluateFullLemaitre()
+}  // evaluate_full_lemaitre()
 
 
 /*----------------------------------------------------------------------*
@@ -2348,18 +2349,18 @@ void MAT::Damage::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& 
  | computes isotropic damaged elastoplastic tensor in        dano 05/11 |
  | matrix notion for 3d                                                 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                             cmat,  // elasto-plastic tangent modulus (out)
-    int eleID,                                      // current element ID
-    double Dgamma,                                  // plastic multiplier
-    double G,                                       // shear modulus
-    double bulk_modulus,                            // bulk modulus
-    double p_tilde,                                 // undamaged pressure
-    double q_tilde,                                 // undamaged trial von Mises equivalent stress
-    double energyrelrate,                           // damage energy release rate
-    double Ytan,     // derivative of engergy release rate Ytan w.r.t. Dgamma
-    double sigma_y,  // current yield stress
-    double Hiso,     // isotropic hardening modulus
+void MAT::Damage::setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                                cmat,  // elasto-plastic tangent modulus (out)
+    int eleID,                                         // current element ID
+    double Dgamma,                                     // plastic multiplier
+    double G,                                          // shear modulus
+    double bulk_modulus,                               // bulk modulus
+    double p_tilde,                                    // undamaged pressure
+    double q_tilde,        // undamaged trial von Mises equivalent stress
+    double energyrelrate,  // damage energy release rate
+    double Ytan,           // derivative of engergy release rate Ytan w.r.t. Dgamma
+    double sigma_y,        // current yield stress
+    double Hiso,           // isotropic hardening modulus
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,  // unit flow vector
     int gp,                                       // current Gauss point
     bool damevolution,                            // flag indicating if damage evolves or not
@@ -2661,14 +2662,14 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
 
   }  // damage evolves: (damevolution == true)
 
-}  // SetupCmatElastoPlastic()
+}  // setup_cmat_elasto_plastic()
 
 
 /*----------------------------------------------------------------------*
  | computes isotropic elastoplastic tensor for full Lemaitre dano 11/13 |
  | model in matrix notion for 3d including ductile damage               |
  *----------------------------------------------------------------------*/
-void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
+void MAT::Damage::setup_cmat_elasto_plastic_full_lemaitre(
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,                                        // elasto-plastic tangent modulus (out)
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> N_tilde,  // flow vector
@@ -2908,7 +2909,7 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
 
   }  // (heaviside == 1)
 
-}  // SetupCmatElastoPlasticFullLemaitre()
+}  // setup_cmat_elasto_plastic_full_lemaitre()
 
 
 /*----------------------------------------------------------------------*
@@ -2916,7 +2917,8 @@ void MAT::Damage::SetupCmatElastoPlasticFullLemaitre(
  | yield stress, i.e. isotropic hardening modulus at current            |
  | accumulated plastic strain                                           |
  *----------------------------------------------------------------------*/
-double MAT::Damage::GetIsoHardAtStrainbarnp(const double strainbar_p  // current accumulated strain
+double MAT::Damage::get_iso_hard_at_strainbarnp(
+    const double strainbar_p  // current accumulated strain
 )
 {
   // Hiso = d sigma_y / d astrain^p_{n+1}
@@ -2973,7 +2975,7 @@ double MAT::Damage::GetIsoHardAtStrainbarnp(const double strainbar_p  // current
  | compute current yield stress sigma_y(astrain^p)           dano 09/13 |
  | calculate yield stress from (sigma_y-astrain^p)-samples              |
  *----------------------------------------------------------------------*/
-double MAT::Damage::GetSigmaYAtStrainbarnp(
+double MAT::Damage::get_sigma_y_at_strainbarnp(
     const double strainbar_p  // current accumulated strain, in case of dependent hardening
                               // if damage!=0: isotropic hardening internal variable
 )
@@ -3034,7 +3036,7 @@ double MAT::Damage::GetSigmaYAtStrainbarnp(
   // return current yield stress
   return sigma_y_interpol;
 
-}  // GetSigmaYAtStrainbarnp()
+}  // get_sigma_y_at_strainbarnp()
 
 
 /*---------------------------------------------------------------------*
@@ -3071,7 +3073,7 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += IsotropicHardeningVariable(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += isotropic_hardening_variable(iter);
     data[0] = temp / numgp;
   }
 

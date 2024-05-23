@@ -64,8 +64,9 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la);
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -79,7 +80,7 @@ namespace DRT
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point
-      double EvalShapeFuncAndIntFac(
+      double eval_shape_func_and_int_fac(
           const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           const int iquad,                                       ///< id of current Gauss point
           CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec =

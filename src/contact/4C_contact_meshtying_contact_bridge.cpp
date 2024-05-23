@@ -70,13 +70,13 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
 }
 
 /*----------------------------------------------------------------------*
- |  StoreDirichletStatus                                     farah 06/14|
+ |  store_dirichlet_status                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::StoreDirichletStatus(
+void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
     Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
 {
-  if (HaveMeshtying()) MtManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
-  if (HaveContact()) ContactManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
+  if (HaveMeshtying()) MtManager()->GetStrategy().store_dirichlet_status(dbcmaps);
+  if (HaveContact()) ContactManager()->GetStrategy().store_dirichlet_status(dbcmaps);
 
   return;
 }
@@ -109,21 +109,21 @@ MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy() const
 /*----------------------------------------------------------------------*
  |  PostprocessTractions                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::PostprocessQuantities(
+void CONTACT::MeshtyingContactBridge::postprocess_quantities(
     Teuchos::RCP<IO::DiscretizationWriter>& output)
 {
   // contact
-  if (HaveContact()) ContactManager()->PostprocessQuantities(*output);
+  if (HaveContact()) ContactManager()->postprocess_quantities(*output);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->PostprocessQuantities(*output);
+  if (HaveMeshtying()) MtManager()->postprocess_quantities(*output);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::PostprocessQuantitiesPerInterface(
+void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
   // This is an optional feature, so we check if it has been enabled in the input file
@@ -132,10 +132,10 @@ void CONTACT::MeshtyingContactBridge::PostprocessQuantitiesPerInterface(
   if (writeInterfaceOutput)
   {
     // contact
-    if (HaveContact()) ContactManager()->PostprocessQuantitiesPerInterface(outputParams);
+    if (HaveContact()) ContactManager()->postprocess_quantities_per_interface(outputParams);
 
     // meshtying
-    if (HaveMeshtying()) MtManager()->PostprocessQuantitiesPerInterface(outputParams);
+    if (HaveMeshtying()) MtManager()->postprocess_quantities_per_interface(outputParams);
   }
 
   return;

@@ -54,11 +54,11 @@ void poromultiphase_dyn(int restart)
           comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
 
   // Parameter reading
-  const Teuchos::ParameterList& poroparams = problem->PoroMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& poroparams = problem->poro_multi_phase_dynamic_params();
   // access scatra params list
-  const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& structdyn = problem->structural_dynamic_params();
   // access poro fluid dynamic params list
-  const Teuchos::ParameterList& fluiddyn = problem->PoroFluidMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = problem->poro_fluid_multi_phase_dynamic_params();
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -83,7 +83,7 @@ void poromultiphase_dyn(int restart)
   // assign poro material for evaluation of porosity
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
-  POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname, fluid_disname);
+  POROMULTIPHASE::UTILS::assign_material_pointers(struct_disname, fluid_disname);
 
   // Setup the solver (only for the monolithic problem)
   algo->SetupSolver();

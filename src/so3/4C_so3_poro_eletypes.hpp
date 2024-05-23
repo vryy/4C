@@ -45,14 +45,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8PORO"; }
+      std::string get_element_type_string() const { return "SOLIDH8PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -74,14 +74,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4PORO"; }
+      std::string get_element_type_string() const { return "SOLIDT4PORO"; }
     };
 
 
@@ -104,14 +104,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex27PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH27PORO"; }
+      std::string get_element_type_string() const { return "SOLIDH27PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -133,14 +133,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet10PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT10PORO"; }
+      std::string get_element_type_string() const { return "SOLIDT10PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -162,14 +162,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoNurbs27PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SONURBS27PORO"; }
+      std::string get_element_type_string() const { return "SONURBS27PORO"; }
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

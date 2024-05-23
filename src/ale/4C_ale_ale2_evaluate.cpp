@@ -1123,7 +1123,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
     }
     case CORE::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
     {
-      MaterialResponse3dPlane(stress, C, strain, params, gp);
+      material_response3d_plane(stress, C, strain, params, gp);
       break;
     }
     default:
@@ -1138,13 +1138,13 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatrix& stress,
+void DRT::ELEMENTS::Ale2::material_response3d_plane(CORE::LINALG::SerialDenseMatrix& stress,
     CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   CORE::LINALG::Matrix<6, 1> gl(false);
-  GreenLagrangePlane3d(strain, gl);
+  green_lagrange_plane3d(strain, gl);
 
   // call 3d stress response
   CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::GreenLagrangePlane3d(
+void DRT::ELEMENTS::Ale2::green_lagrange_plane3d(
     const CORE::LINALG::SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}

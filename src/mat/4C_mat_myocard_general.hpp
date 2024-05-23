@@ -62,7 +62,7 @@ class MyocardGeneral
   };
 
   ///  returns number of internal state variables of the material
-  virtual int GetNumberOfInternalStateVariables() const = 0;
+  virtual int get_number_of_internal_state_variables() const = 0;
 
   ///  returns current internal state of the material
   virtual double GetInternalState(const int k) const = 0;
@@ -94,7 +94,7 @@ class MyocardGeneral
   };
 
   ///  return number of ionic currents
-  virtual int GetNumberOfIonicCurrents() const = 0;
+  virtual int get_number_of_ionic_currents() const = 0;
 
   ///  return ionic currents
   virtual double GetIonicCurrents(const int k) const = 0;
@@ -107,7 +107,7 @@ class MyocardGeneral
   };
 
   // resize internal state variables if number of Gauss point changes
-  virtual void ResizeInternalStateVariables(int gp)
+  virtual void resize_internal_state_variables(int gp)
   {
     FOUR_C_THROW("Multiple Gauss Points only implemented for MV and FHN model");
     return;

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  |  store the required ghosting within a round              farah 10/13 |
  |  robin iteration for current interface (public)                      |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::RoundRobinExtendGhosting(bool firstevaluation)
+void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
 {
   std::vector<int> element_GIDs_to_be_ghosted;
   std::vector<int> node_GIDs_to_be_ghosted;
@@ -47,7 +47,7 @@ void CONTACT::Interface::RoundRobinExtendGhosting(bool firstevaluation)
       }
     }
     // reset found elements
-    slave_ele->DeleteSearchElements();
+    slave_ele->delete_search_elements();
   }
 
   Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::rcp(new Epetra_Map(
@@ -74,7 +74,7 @@ void CONTACT::Interface::RoundRobinExtendGhosting(bool firstevaluation)
  | perform the ownership change within a round robin        farah 10/13 |
  | iteration                                                            |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::RoundRobinChangeOwnership()
+void CONTACT::Interface::round_robin_change_ownership()
 {
   // pack/unpack friction nodes is only required for wear problems
   // so we should create a slightly redundant function for the wear-
@@ -412,7 +412,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
 
   // export nodes and elements to the col map
   Discret().ExportColumnNodes(*colnodesfull);
-  Discret().ExportColumnElements(*colelesfull);
+  Discret().export_column_elements(*colelesfull);
 
   // ********************************************
   // call the (very) expensive FILLCOMPLETE()!
@@ -428,17 +428,17 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
  |  change master ownership clockwise for contact            farah 10/13|
  |  interface without evaluation of the interface                       |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::RoundRobinDetectGhosting()
+void CONTACT::Interface::round_robin_detect_ghosting()
 {
   if (SearchAlg() == INPAR::MORTAR::search_bfele)
-    EvaluateSearchBruteForce(SearchParam());
+    evaluate_search_brute_force(SearchParam());
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-    EvaluateSearchBinarytree();
+    evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
 
   // first ghosting for std. distribution
-  RoundRobinExtendGhosting(true);
+  round_robin_extend_ghosting(true);
 
   // Init Maps
   Teuchos::RCP<Epetra_Map> initial_slave_node_column_map =
@@ -462,7 +462,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
       if (Comm().MyPID() == 0 && proc > 0) std::cout << " #" << proc;
 
       // perform the ownership change
-      RoundRobinChangeOwnership();
+      round_robin_change_ownership();
 
       // build new search tree or do nothing for bruteforce
       if (SearchAlg() == INPAR::MORTAR::search_binarytree)
@@ -474,14 +474,14 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
       if (proc < (int)(Comm().NumProc() - 1))
       {
         if (SearchAlg() == INPAR::MORTAR::search_bfele)
-          EvaluateSearchBruteForce(SearchParam());
+          evaluate_search_brute_force(SearchParam());
         else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-          EvaluateSearchBinarytree();
+          evaluate_search_binarytree();
         else
           FOUR_C_THROW("Invalid search algorithm");
 
         // other ghostings per iteration
-        RoundRobinExtendGhosting(false);
+        round_robin_extend_ghosting(false);
       }
       else
       {
@@ -500,7 +500,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
       CORE::LINALG::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
-  Discret().ExportColumnElements(*eextendedghosting_);
+  Discret().export_column_elements(*eextendedghosting_);
   Discret().ExportColumnNodes(*nextendedghosting_);
   FillComplete(true);
 

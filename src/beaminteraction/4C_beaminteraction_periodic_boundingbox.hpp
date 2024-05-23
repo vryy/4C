@@ -70,7 +70,7 @@ namespace CORE::GEO
       double operator()(int i, int j) const { return box_(i, j); }
 
       /// initialize bounding box discretization
-      void SetupBoundingBoxDiscretization();
+      void setup_bounding_box_discretization();
 
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
@@ -81,9 +81,9 @@ namespace CORE::GEO
       /*!
       \brief get xi of intersection between two points
       */
-      void GetXiOfIntersection3D(CORE::LINALG::Matrix<3, 1> const& x1,
+      void get_xi_of_intersection3_d(CORE::LINALG::Matrix<3, 1> const& x1,
           CORE::LINALG::Matrix<3, 1> const& x2, CORE::LINALG::Matrix<3, 1>& xi) const;
-      void GetXiOfIntersection3D(CORE::LINALG::Matrix<3, 1> const& x1,
+      void get_xi_of_intersection3_d(CORE::LINALG::Matrix<3, 1> const& x1,
           CORE::LINALG::Matrix<3, 1> const& x2, CORE::LINALG::Matrix<3, 1>& xi,
           CORE::LINALG::Matrix<3, 2> const& box) const;
 
@@ -103,7 +103,7 @@ namespace CORE::GEO
       void UnShift3D(CORE::LINALG::Matrix<3, 1>& d, CORE::LINALG::Matrix<3, 1> const& ref,
           CORE::LINALG::Matrix<3, 1> const X = CORE::LINALG::Matrix<3, 1>(true)) const;
 
-      bool CheckIfShiftBetweenPoints(CORE::LINALG::Matrix<3, 1>& d,
+      bool check_if_shift_between_points(CORE::LINALG::Matrix<3, 1>& d,
           CORE::LINALG::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
           CORE::LINALG::Matrix<3, 1> const X = CORE::LINALG::Matrix<3, 1>(true)) const;
 
@@ -156,17 +156,17 @@ namespace CORE::GEO
       /*!
        \brief Get the outmost point of the boundingbox
        */
-      void UndeformedBoxCornerPointPosition(int i, std::vector<double>& x) const;
-      CORE::LINALG::Matrix<3, 1> UndeformedBoxCornerPointPosition(int i) const;
+      void undeformed_box_corner_point_position(int i, std::vector<double>& x) const;
+      CORE::LINALG::Matrix<3, 1> undeformed_box_corner_point_position(int i) const;
       /*!
        \brief get reference position of corner point i
        */
-      CORE::LINALG::Matrix<3, 1> ReferencePosOfCornerPoint(int i) const;
+      CORE::LINALG::Matrix<3, 1> reference_pos_of_corner_point(int i) const;
 
       /*!
        \brief get current position of corner point i
        */
-      CORE::LINALG::Matrix<3, 1> CurrentPositionOfCornerPoint(int i) const;
+      CORE::LINALG::Matrix<3, 1> current_position_of_corner_point(int i) const;
 
       /*!
        \brief print box
@@ -176,7 +176,7 @@ namespace CORE::GEO
       /*!
        \brief Write output
       */
-      void RuntimeOutputStepState(double timen, int stepn) const;
+      void runtime_output_step_state(double timen, int stepn) const;
 
       /*!
        \brief Apply dirichlet condition according to input file
@@ -193,17 +193,18 @@ namespace CORE::GEO
       //! @{
 
       //! transform from undeformed to global
-      void TransformFromUndeformedBoundingBoxSystemToGlobal(
+      void transform_from_undeformed_bounding_box_system_to_global(
           CORE::LINALG::Matrix<3, 1> const& xi, CORE::LINALG::Matrix<3, 1>& x) const;
 
-      void TransformFromUndeformedBoundingBoxSystemToGlobal(double const* xi, double* x) const;
+      void transform_from_undeformed_bounding_box_system_to_global(
+          double const* xi, double* x) const;
 
       //! transform from global to undeformed
-      bool TransformFromGlobalToUndeformedBoundingBoxSystem(
+      bool transform_from_global_to_undeformed_bounding_box_system(
           CORE::LINALG::Matrix<3, 1> const& x,  ///< input  -> global position
           CORE::LINALG::Matrix<3, 1>& xi  ///< output -> position in undeformed bounding box system
       ) const;
-      bool TransformFromGlobalToUndeformedBoundingBoxSystem(
+      bool transform_from_global_to_undeformed_bounding_box_system(
           double const* x,  ///< input  -> global position
           double* xi        ///< output -> position in undeformed bounding box system
       ) const;
@@ -224,7 +225,7 @@ namespace CORE::GEO
       }
 
       //! Check the init and setup state
-      inline void ThrowIfNotInitOrSetup() const
+      inline void throw_if_not_init_or_setup() const
       {
         if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
       }
@@ -247,12 +248,12 @@ namespace CORE::GEO
       //! @{
 
       //! evaluate lagrange polynomial that maps from undeformed to global at xi
-      void LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
+      void lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global(
           CORE::LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
           double r, double s, double t) const;
 
       //! evaluate first derivative of lagrange polynomial that maps from undeformed to global at xi
-      void LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1(
+      void lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global_deriv1(
           CORE::LINALG::Matrix<3, 8>&
               deriv1,  ///< to be filled with shape function derivative values
           double r, double s, double t) const;

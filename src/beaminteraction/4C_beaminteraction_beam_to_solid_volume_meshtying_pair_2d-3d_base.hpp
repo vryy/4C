@@ -72,7 +72,7 @@ namespace BEAMINTERACTION
      * @param reference (in) True -> the reference position is calculated, False -> the current
      * position is calculated.
      */
-    void EvaluateBeamPositionDouble(
+    void evaluate_beam_position_double(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
         CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const override;
 

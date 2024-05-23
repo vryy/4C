@@ -295,7 +295,7 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp_nodal_values,
           const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,

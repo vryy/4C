@@ -43,7 +43,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoWeg6Type::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoWeg6(id, owner));
     return ele;
@@ -59,7 +59,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6Type::Create(const int id, const
 }
 
 
-void DRT::ELEMENTS::SoWeg6Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoWeg6Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -73,22 +73,22 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoWeg6Type::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoWeg6Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoWeg6Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["WEDGE6"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("WEDGE6", 6)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
-                       .AddOptionalNamedDoubleVector("RAD", 3)
-                       .AddOptionalNamedDoubleVector("AXI", 3)
-                       .AddOptionalNamedDoubleVector("CIR", 3)
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
-                       .AddOptionalNamedDoubleVector("FIBER2", 3)
-                       .AddOptionalNamedDoubleVector("FIBER3", 3)
-                       .AddOptionalNamedDouble("GROWTHTRIG")
+                       .add_optional_named_double_vector("RAD", 3)
+                       .add_optional_named_double_vector("AXI", 3)
+                       .add_optional_named_double_vector("CIR", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER2", 3)
+                       .add_optional_named_double_vector("FIBER3", 3)
+                       .add_optional_named_double("GROWTHTRIG")
                        .Build();
 }
 
@@ -116,7 +116,7 @@ DRT::ELEMENTS::SoWeg6::SoWeg6(int id, int owner)
     pstime_ = PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::SoWeg6::Print(std::ostream& os) const
 }
 
 
-std::vector<double> DRT::ELEMENTS::SoWeg6::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoWeg6::element_center_refe_coords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

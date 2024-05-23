@@ -73,7 +73,7 @@ namespace CONTACT
      * @param[out] electrolyte_data    data bundle of the electrolyte-side element
      */
     template <int dim>
-    void AssignElectrodeAndElectrolyteQuantities(MORTAR::Element& slave_ele, double* slave_xi,
+    void assign_electrode_and_electrolyte_quantities(MORTAR::Element& slave_ele, double* slave_xi,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const CORE::LINALG::Matrix<dim, 1>& slave_normal,
@@ -95,7 +95,7 @@ namespace CONTACT
      * @return  determinant of the deformation gradient at the current Gauss point
      */
     template <int dim>
-    double CalculateDetFOfParentElement(const ElementDataBundle<dim>& electrode_quantities);
+    double calculate_det_f_of_parent_element(const ElementDataBundle<dim>& electrode_quantities);
 
     /*!
      * @brief Calculates the derivative of the determinant of the deformation gradient w.r.t. the
@@ -108,7 +108,7 @@ namespace CONTACT
      *                                   w.r.t. displacement
      */
     template <int dim>
-    void CalculateSpatialDerivativeOfDetF(double detF,
+    void calculate_spatial_derivative_of_det_f(double detF,
         const ElementDataBundle<dim>& electrode_quantities,
         CORE::GEN::Pairedvector<int, double>& d_detF_dd);
 
@@ -124,7 +124,7 @@ namespace CONTACT
      *                                   w.r.t. displacement
      */
     template <CORE::FE::CellType distype, int dim>
-    void CalculateSpatialDerivativeOfDetF(double detF,
+    void calculate_spatial_derivative_of_det_f(double detF,
         const ElementDataBundle<dim>& electrode_quantities,
         CORE::GEN::Pairedvector<int, double>& d_detF_dd);
 
@@ -206,7 +206,7 @@ namespace CONTACT
      * @param[in] electrolyte_quantities  electrolyte element data bundle
      */
     template <int dim>
-    void IntegrateSSIInterfaceCondition(bool slave_is_electrode, double jac,
+    void integrate_ssi_interface_condition(bool slave_is_electrode, double jac,
         const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double wgt,
         const ElementDataBundle<dim>& electrode_quantities,
         const ElementDataBundle<dim>& electrolyte_quantities);
@@ -255,7 +255,7 @@ namespace CONTACT
      * @param[out] d_pot_dd        derivative of Gauss point electric potential w.r.t. displacement
      */
     template <int dim>
-    void SetupGpElchProperties(const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc,
+    void setup_gp_elch_properties(const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc,
         double& gp_pot, CORE::GEN::Pairedvector<int, double>& d_conc_dc,
         CORE::GEN::Pairedvector<int, double>& d_conc_dd,
         CORE::GEN::Pairedvector<int, double>& d_pot_dpot,

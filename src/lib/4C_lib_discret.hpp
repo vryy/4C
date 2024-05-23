@@ -208,7 +208,7 @@ namespace DRT
     /*!
     \brief Get flag indicating whether degrees of freedom where assigned
 
-    Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
+    Degrees of freedom need to be assigned using assign_degrees_of_freedom()
     before any calculations using this discretization can be made
     */
     [[nodiscard]] virtual bool HaveDofs() const { return havedof_; }
@@ -221,7 +221,7 @@ namespace DRT
 
     Ask the current DofSet for the number of dofs of this element.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element those number of dofs are requested
     */
     virtual int NumDof(const Element* element) const
@@ -235,7 +235,7 @@ namespace DRT
 
     Ask the current DofSet for the gid of the dof of this element.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
     */
@@ -251,7 +251,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this element. The
     required vector is created and filled on the fly. So better keep it
     if you need more that one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element
     */
     virtual std::vector<int> Dof(const Element* element) const
@@ -266,7 +266,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)   : the element operated on
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
@@ -283,7 +283,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this element. The
     required vector is created and filled on the fly. So better keep it
     if you need more that one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element
     \param lm (in/out)    : lm vector the dofs are appended to
     */
@@ -299,7 +299,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     \param startindex (in): first index of vector at which will be written to end
     \param lm (in/out)    : lm vector the dofs are appended to
@@ -323,12 +323,12 @@ namespace DRT
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
     */
-    std::map<int, std::vector<int>>* GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* get_all_pbc_coupled_col_nodes();
 
     /*!
     \brief Get slave to master connectivity in case of periodic boundary conditions
     */
-    virtual Teuchos::RCP<std::map<int, int>> GetPBCSlaveToMasterNodeConnectivity();
+    virtual Teuchos::RCP<std::map<int, int>> get_pbc_slave_to_master_node_connectivity();
 
     //@}
 
@@ -339,7 +339,7 @@ namespace DRT
 
     Ask the current DofSet for the number of dofs of this node.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node those number of dofs are requested
     */
     int NumDof(const Node* node) const
@@ -353,7 +353,7 @@ namespace DRT
 
     Ask the current DofSet for the number of dofs of this node.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node those number of dofs are requested
     */
@@ -369,7 +369,7 @@ namespace DRT
 
     Ask the current DofSet for the number of dofs of this element.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)          : number of dofset
     \param element (in)      : the element those number of dofs are requested
     */
@@ -400,7 +400,7 @@ namespace DRT
 
     Ask the current DofSet for the gid of the dof of this node.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
@@ -415,7 +415,7 @@ namespace DRT
 
     Ask the current DofSet for the gid of the dof of this node.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
@@ -432,7 +432,7 @@ namespace DRT
 
     Ask the current DofSet for the gid of the dof of this element.
     There is a variable number of DofSets and one is currently selected.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)          : number of dofset
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
@@ -450,7 +450,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
     std::vector<int> Dof(const Node* node) const
@@ -465,7 +465,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
@@ -482,7 +482,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
 
     Additional input nodal dof set: If the node contains more than one set of dofs, which can be
     evaluated, the number of the set needs to be given. Currently only the case for XFEM.
@@ -507,7 +507,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this element. The
     required vector is created and filled on the fly. So better keep it
     if you need more that one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds     (in) : number of dofset
     \param element (in) : the element
     */
@@ -524,7 +524,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
@@ -540,7 +540,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
@@ -558,7 +558,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param element (in)   : the element operated on
     \param node (in)      : the node
@@ -578,7 +578,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this element. The
     required vector is created and filled on the fly. So better keep it
     if you need more that one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param element (in)      : the element
     \param lm (in/out)    : lm vector the dofs are appended to
@@ -596,7 +596,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     \param startindex (in): first index of vector at which will be written to end
@@ -636,7 +636,7 @@ namespace DRT
     If it does not exist yet, build it.
 
     - Filled()==true prerequisite
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
 
     */
     [[nodiscard]] virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
@@ -648,7 +648,7 @@ namespace DRT
     If it does not exist yet, build it.
 
     - Filled()==true prerequisite
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
 
     */
     virtual const Epetra_Map* DofColMap(unsigned nds = 0) const;
@@ -1295,7 +1295,7 @@ namespace DRT
     only builds maps!
 
     */
-    virtual std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> BuildElementRowColumn(
+    virtual std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> build_element_row_column(
         const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const;
 
     /*!
@@ -1362,7 +1362,7 @@ namespace DRT
     \param gidlist (in): list of element gids to be distributed
 
     */
-    void ProcZeroDistributeElementsToAll(Epetra_Map& target, std::vector<int>& gidlist);
+    void proc_zero_distribute_elements_to_all(Epetra_Map& target, std::vector<int>& gidlist);
 
     /*!
     \brief Export the nodes from proc 0 to a different parallel row layout
@@ -1373,7 +1373,7 @@ namespace DRT
     \param target (in): desired distirbution of elements
 
     */
-    void ProcZeroDistributeNodesToAll(Epetra_Map& target);
+    void proc_zero_distribute_nodes_to_all(Epetra_Map& target);
 
     /*!
     \brief Export the elements to a different parallel row layout
@@ -1423,7 +1423,7 @@ namespace DRT
 
     \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
     */
-    virtual void ExportColumnElements(
+    virtual void export_column_elements(
         const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
     /*!
@@ -1459,7 +1459,7 @@ namespace DRT
                submap of the full node rowmap returned from NodeRowMap())
     @return Vector containing the coordinates of all nodes which are present in the given noderowmap
      */
-    Teuchos::RCP<Epetra_MultiVector> BuildNodeCoordinates(
+    Teuchos::RCP<Epetra_MultiVector> build_node_coordinates(
         Teuchos::RCP<const Epetra_Map> noderowmap = Teuchos::null) const;
 
     //@}
@@ -1602,8 +1602,8 @@ namespace DRT
     \param state (in): vector of some data
 
     */
-    virtual void AddMultiVectorToParameterList(Teuchos::ParameterList& p, const std::string name,
-        Teuchos::RCP<const Epetra_MultiVector> vec);
+    virtual void add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
+        const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec);
 
     /*!
     \brief Call elements to evaluate
@@ -1890,7 +1890,7 @@ namespace DRT
     \param solveparams (in): List of parameters
     \param recompute (in)  : force method to recompute the nullspace
     */
-    virtual void ComputeNullSpaceIfNecessary(
+    virtual void compute_null_space_if_necessary(
         Teuchos::ParameterList& solveparams, bool recompute = false);
 
     /*!
@@ -1957,7 +1957,7 @@ namespace DRT
     the local pressure DOF id, namely {3}.
 
     */
-    void EvaluateInitialField(const std::string& fieldstring,
+    void evaluate_initial_field(const std::string& fieldstring,
         Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const;
 
     //@}
@@ -2022,7 +2022,7 @@ namespace DRT
 
     \return last dof assigned + 1
     */
-    virtual int AssignDegreesOfFreedom(int start);
+    virtual int assign_degrees_of_freedom(int start);
 
    private:
     /*!
@@ -2077,28 +2077,28 @@ namespace DRT
     /*!
     \brief Build pointers elements -> Nodes (Filled()==true NOT prerequisite)
     */
-    virtual void BuildElementToNodePointers();
+    virtual void build_element_to_node_pointers();
 
     /*!
     \brief Build pointers Node -> Element (Filled()==true NOT prerequisite)
 
     \note This is a collective call
     */
-    virtual void BuildNodeToElementPointers();
+    virtual void build_node_to_element_pointers();
 
     /*!
     \brief Build pointers Element -> Element (Filled()==true NOT prerequisite)
 
     \note This is a collective call
     */
-    virtual void BuildElementToElementPointers();
+    virtual void build_element_to_element_pointers();
 
     /*!
     \brief Build the geometry of surfaces belonging to the structure-fluid
     volume coupling condition -> this is special since an associated volume
     conditions also needs to be considered
     */
-    void FindAssociatedEleIDs(Teuchos::RCP<CORE::Conditions::Condition> cond,
+    void find_associated_ele_i_ds(Teuchos::RCP<CORE::Conditions::Condition> cond,
         std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
@@ -2106,7 +2106,7 @@ namespace DRT
     \brief Build the geometry of lines for a certain line condition
 
     */
-    virtual bool BuildLinesinCondition(
+    virtual bool build_linesin_condition(
         const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
@@ -2120,14 +2120,14 @@ namespace DRT
     \date 01/07
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
-    virtual bool BuildSurfacesinCondition(
+    virtual bool build_surfacesin_condition(
         const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
-    virtual bool BuildVolumesinCondition(
+    virtual bool build_volumesin_condition(
         const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
 
     /*!
@@ -2156,14 +2156,14 @@ namespace DRT
     \brief Build the geometry for boundary conditions
 
     */
-    virtual void BoundaryConditionsGeometry();
+    virtual void boundary_conditions_geometry();
 
     /*!
-     *  A helper function for BuildSurfacesinCondition,
-     *  BuildLinesinCondition, BuildInternalFaces, etc.
+     *  A helper function for build_surfacesin_condition,
+     *  build_linesin_condition, BuildInternalFaces, etc.
      *
-     *  A helper method for BuildLinesinCondition and
-     *  BuildSurfacesinCondition, below.
+     *  A helper method for build_linesin_condition and
+     *  build_surfacesin_condition, below.
      *  Gets a map (vector_of_nodes)->Element that maps
      *
      *  (A map with globally unique ids.)

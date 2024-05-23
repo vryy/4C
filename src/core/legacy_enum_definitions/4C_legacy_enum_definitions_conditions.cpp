@@ -355,7 +355,7 @@ std::string_view CORE::Conditions::to_string(const CORE::Conditions::ConditionTy
       return "Scalar-Structure coupling condition from Solid to Scatra";
     case CORE::Conditions::SSICouplingScatraToSolid:
       return "Scalar-Structure coupling condition from Scatra to Solid";
-    case CORE::Conditions::SSIInterfaceMeshtying:
+    case CORE::Conditions::ssi_interface_meshtying:
       return "Scalar-Structure interaction interface meshtying condition";
     case CORE::Conditions::SSIMeshtying3DomainIntersection:
       return "Scalar-Structure interaction interface meshtying condition including 3 domains";

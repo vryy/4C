@@ -68,8 +68,8 @@ namespace DRT
           const int iquad = -1  //!< id of current gauss point (default = -1)
           ) override;
 
-      //! ComputeStructChemPotential
-      double ComputeStructChemPotential(
+      //! compute_struct_chem_potential
+      double compute_struct_chem_potential(
           Teuchos::RCP<MAT::StructPoroReactionECM>& structmat, const int gp);
     };
 

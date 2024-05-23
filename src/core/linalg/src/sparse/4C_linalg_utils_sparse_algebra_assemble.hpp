@@ -187,8 +187,8 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
-  void ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
-      const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
+  void apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -207,8 +207,8 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
-      const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
+  void apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -233,7 +233,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichletToSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
+  void apply_dirichlet_to_system(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
       const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
       const Epetra_Map& dbcmap);
 
@@ -247,7 +247,7 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
    */
-  void ApplyDirichletToSystem(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
+  void apply_dirichlet_to_system(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
       const Epetra_Vector& dbctoggle);
 
   /*!
@@ -267,7 +267,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichletToSystem(
+  void apply_dirichlet_to_system(
       Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -287,7 +287,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichletToSystem(
+  void apply_dirichlet_to_system(
       Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!

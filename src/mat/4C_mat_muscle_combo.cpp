@@ -166,10 +166,10 @@ MAT::MuscleCombo::MuscleCombo(MAT::PAR::MuscleCombo* params)
       activation_evaluator_(std::monostate{})
 {
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy_.register_anisotropy_extension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropy_extension_.RegisterNeededTensors(
+  anisotropy_extension_.register_needed_tensors(
       MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
@@ -234,8 +234,8 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
 void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 
   activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
@@ -302,7 +302,7 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double derivPa = 0.0;
   if (params_->Popt_ != 0)
   {  // if active material
-    EvaluateActiveNominalStress(params, eleGID, lambdaM, intPa, Pa, derivPa);
+    evaluate_active_nominal_stress(params, eleGID, lambdaM, intPa, Pa, derivPa);
   }  // else: intPa, Pa and derivPa remain 0.0
 
   // computation of activation level omegaa and derivative \frac{\partial omegaa}{\partial C}
@@ -317,7 +317,7 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // compute activation level and derivative only if active nominal stress is not zero
   if (Pa >= 1E-12)
   {
-    EvaluateActivationLevel(lambdaM, intPa, Pa, derivPa, omegaa, derivOmegaa, derivDerivOmegaa);
+    evaluate_activation_level(lambdaM, intPa, Pa, derivPa, omegaa, derivOmegaa, derivDerivOmegaa);
 
     // passive part of invariant I and its first and second derivatives w.r.t. lambdaM
     double Ip =
@@ -397,8 +397,8 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::MuscleCombo::EvaluateActiveNominalStress(Teuchos::ParameterList& params, const int eleGID,
-    const double lambdaM, double& intPa, double& Pa, double& derivPa)
+void MAT::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& params,
+    const int eleGID, const double lambdaM, double& intPa, double& Pa, double& derivPa)
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
@@ -439,7 +439,7 @@ void MAT::MuscleCombo::EvaluateActiveNominalStress(Teuchos::ParameterList& param
   derivPa = Poptft * dFxidLamdaM;
 }
 
-void MAT::MuscleCombo::EvaluateActivationLevel(const double lambdaM, const double intPa,
+void MAT::MuscleCombo::evaluate_activation_level(const double lambdaM, const double intPa,
     const double Pa, const double derivPa, double& omegaa, double& derivOmegaa,
     double& derivDerivOmegaa)
 {

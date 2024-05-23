@@ -76,7 +76,8 @@ namespace PARTICLEALGORITHM
      *
      * \return set of particle types subjected to dirichlet boundary conditions
      */
-    const std::set<PARTICLEENGINE::TypeEnum>& GetParticleTypesSubjectedToDirichletBCSet() const
+    const std::set<PARTICLEENGINE::TypeEnum>& get_particle_types_subjected_to_dirichlet_bc_set()
+        const
     {
       return typessubjectedtodirichletbc_;
     };
@@ -88,7 +89,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[out] particlestatestotypes map of particle types and corresponding states
      */
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
@@ -97,7 +98,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void SetParticleReferencePosition() const;
+    void set_particle_reference_position() const;
 
     /*!
      * \brief evaluate dirichlet boundary condition
@@ -109,7 +110,7 @@ namespace PARTICLEALGORITHM
      * \param[in] evalvel  flag to indicate evaluation of velocity
      * \param[in] evalacc  flag to indicate evaluation of acceleration
      */
-    void EvaluateDirichletBoundaryCondition(
+    void evaluate_dirichlet_boundary_condition(
         const double& evaltime, const bool evalpos, const bool evalvel, const bool evalacc) const;
 
    protected:

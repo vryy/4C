@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
+        this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -64,7 +64,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   double segment_jacobian = 0.0;
   double beam_segmentation_factor = 0.0;
   double penalty_parameter =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetPenaltyParameter();
+      this->Params()->beam_to_solid_surface_meshtying_params()->GetPenaltyParameter();
 
   // Calculate the mesh tying forces.
   // Loop over segments.

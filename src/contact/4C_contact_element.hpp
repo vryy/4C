@@ -32,7 +32,7 @@ namespace CONTACT
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    void NodalBlockInformation(
+    void nodal_block_information(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
@@ -248,12 +248,12 @@ namespace CONTACT
     /*!
      \brief Assemble D-Matrix deriv contribution of one slave element into the adjacent nodes
      */
-    virtual void AssembleDderivToNodes(bool dual);
+    virtual void assemble_dderiv_to_nodes(bool dual);
 
     /*!
      \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
      */
-    virtual void AssembleMderivToNodes(MORTAR::Element& mele);
+    virtual void assemble_mderiv_to_nodes(MORTAR::Element& mele);
 
     //@}
    private:

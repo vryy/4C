@@ -48,7 +48,7 @@ namespace DRT
     Ask the current DofSet for the gids of the dofs of this node. The
     required vector is created and filled on the fly. So better keep it
     if you need more than one dof gid.
-    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
 
     Additional input nodal dof set: If the node contains more than one set of dofs, which can be
     evaluated, the number of the set needs to be given. Currently only the case for XFEM.

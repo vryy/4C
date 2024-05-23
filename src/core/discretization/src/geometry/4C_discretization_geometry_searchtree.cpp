@@ -76,7 +76,7 @@ void CORE::GEO::SearchTree::insertElement(const int eid)
 /*----------------------------------------------------------------------*
  | initialization of searchtree for SlipAle                 u.may 09/09 |
  *----------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
+void CORE::GEO::SearchTree::initialize_tree_slide_ale(const CORE::LINALG::Matrix<3, 2>& nodeBox,
     std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
@@ -92,7 +92,7 @@ void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3,
 /*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
+std::map<int, std::set<int>> CORE::GEO::SearchTree::search_elements_in_radius(
     const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
@@ -104,7 +104,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!(tree_root_->getElementList().empty()))
-    nodeset = tree_root_->searchElementsInRadius(dis, currentpositions, point, radius, label);
+    nodeset = tree_root_->search_elements_in_radius(dis, currentpositions, point, radius, label);
   else
     FOUR_C_THROW("element list is empty");
 
@@ -115,16 +115,16 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::buildStaticSearchTree(
+void CORE::GEO::SearchTree::build_static_search_tree(
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - build_static_search_tree");
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->getElementList().empty())
   {
-    tree_root_->buildStaticSearchTree(currentBVs);
+    tree_root_->build_static_search_tree(currentBVs);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -135,16 +135,16 @@ void CORE::GEO::SearchTree::buildStaticSearchTree(
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::buildStaticSearchTree(
+void CORE::GEO::SearchTree::build_static_search_tree(
     const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - build_static_search_tree");
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!tree_root_->getElementList().empty())
   {
-    tree_root_->buildStaticSearchTree(currentBVs);
+    tree_root_->build_static_search_tree(currentBVs);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -1156,7 +1156,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyRadius(
 /*----------------------------------------------------------------------*
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRadius(
+std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::search_elements_in_radius(
     const DRT::Discretization& dis,
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
@@ -1171,7 +1171,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
       if (childindex.size() < 1)
         FOUR_C_THROW("no child found\n");
       else if (childindex.size() == 1)  // child node found which encloses AABB so step down
-        return children_[childindex[0]]->searchElementsInRadius(
+        return children_[childindex[0]]->search_elements_in_radius(
             dis, currentpositions, point, radius, label);
       else
         return CORE::GEO::getElementsInRadius(
@@ -1196,7 +1196,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
       else if (childindex.size() == 1)  // child node found which encloses AABB so refine further
       {
         createChildren(dis, currentpositions);
-        return children_[childindex[0]]->searchElementsInRadius(
+        return children_[childindex[0]]->search_elements_in_radius(
             dis, currentpositions, point, radius, label);
       }
       else
@@ -1214,7 +1214,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
+void CORE::GEO::SearchTree::TreeNode::build_static_search_tree(
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs)
 {
   if (element_list_.empty()) return;
@@ -1224,7 +1224,7 @@ void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
   {
     createChildren(currentBVs);
     for (int count = 0; count < getNumChildren(); count++)
-      children_[count]->buildStaticSearchTree(currentBVs);
+      children_[count]->build_static_search_tree(currentBVs);
     return;
   }
   return;
@@ -1233,7 +1233,7 @@ void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
+void CORE::GEO::SearchTree::TreeNode::build_static_search_tree(
     const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs)
 {
   if (element_list_.empty()) return;
@@ -1243,7 +1243,7 @@ void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
   {
     createChildren(currentBVs);
     for (int count = 0; count < getNumChildren(); count++)
-      children_[count]->buildStaticSearchTree(currentBVs);
+      children_[count]->build_static_search_tree(currentBVs);
     return;
   }
   return;

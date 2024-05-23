@@ -46,8 +46,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
-    solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
-                                           integration_point,
+    solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+                                              integration_point,
     CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   auto evaluate_position = [&](const auto& q, auto& r_beam)

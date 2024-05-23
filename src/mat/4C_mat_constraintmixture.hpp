@@ -252,7 +252,7 @@ namespace MAT
     /// Return actual mass density in reference configuration
     double GetMassDensity(int gp) const { return refmassdens_->at(gp); }
     /// Return actual mass density in reference configuration
-    CORE::LINALG::Matrix<3, 1> GetMassDensityCollagen(int gp) const
+    CORE::LINALG::Matrix<3, 1> get_mass_density_collagen(int gp) const
     {
       return visrefmassdens_->at(gp);
     }
@@ -352,7 +352,7 @@ namespace MAT
     );
 
     /// elastic response for one collagen fiber
-    void EvaluateSingleFiberScalars(
+    void evaluate_single_fiber_scalars(
         double
             I4,  ///< fourth invariant multiplied with (prestretch / stretch at deposition time)^2
         double& fac_cmat,   ///< scalar factor for material stiffness matrix
@@ -395,15 +395,15 @@ namespace MAT
     );
 
     /// computes mass production rate for one fiber family
-    void MassProductionSingleFiber(const int gp,   ///< current Gauss point
-        CORE::LINALG::Matrix<3, 3> defgrd,         ///< deformation gradient
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S,  ///< 2nd PK-stress
-        double* massstress,                        ///< growth stress measure
-        double inner_radius,                       ///< inner radius
-        double* massprodcomp,                      ///< mass production rate
-        CORE::LINALG::Matrix<3, 1> a,              ///< fiber vector
-        const int idfiber,                         ///< number of fiber family 0,1,2,3
-        double growthfactor                        ///< growth factor for stress
+    void mass_production_single_fiber(const int gp,  ///< current Gauss point
+        CORE::LINALG::Matrix<3, 3> defgrd,           ///< deformation gradient
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S,    ///< 2nd PK-stress
+        double* massstress,                          ///< growth stress measure
+        double inner_radius,                         ///< inner radius
+        double* massprodcomp,                        ///< mass production rate
+        CORE::LINALG::Matrix<3, 1> a,                ///< fiber vector
+        const int idfiber,                           ///< number of fiber family 0,1,2,3
+        double growthfactor                          ///< growth factor for stress
     );
 
     /// function for massproduction
@@ -437,13 +437,13 @@ namespace MAT
     );
 
     /// compute stress and cmat for implicit integration with fiber stress as driving force
-    void EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> defgrd,  ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,     ///< green lagrange strain
-        const int gp,                                               ///< current Gauss point
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,   ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,             ///< 2nd PK-stress
-        double dt,                                                  ///< delta time
-        double time,                                                ///< time
+    void evaluate_implicit_single(CORE::LINALG::Matrix<3, 3> defgrd,  ///< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,       ///< green lagrange strain
+        const int gp,                                                 ///< current Gauss point
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,     ///< material stiffness matrix
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,               ///< 2nd PK-stress
+        double dt,                                                    ///< delta time
+        double time,                                                  ///< time
         double elastin_survival,  ///< amount of elastin which is still there
         double growthfactor       ///< growth factor for stress
     );

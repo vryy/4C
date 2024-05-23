@@ -56,7 +56,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
     const bool min_one_iteration) const
 {
   ProjectPointToSurface(point, element_data_surface, xi, projection_result,
-      GetSurfaceNormalInfluenceDirection(element_data_surface), min_one_iteration);
+      get_surface_normal_influence_direction(element_data_surface), min_one_iteration);
 }
 
 
@@ -64,7 +64,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithOther(
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::intersect_line_with_other(
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
@@ -73,7 +73,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  GetFaceFixedParameters(n_faces, face_fixed_parameters, face_fixed_values);
+  get_face_fixed_parameters(n_faces, face_fixed_parameters, face_fixed_values);
 
   // Clear the input vector.
   intersection_points.clear();
@@ -92,8 +92,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
     eta = eta_start;
 
     // Intersect the line with the surface.
-    IntersectLineWithSurfaceEdge(element_data_line, element_data_surface, face_fixed_parameters[i],
-        face_fixed_values[i], eta, xi, intersection_found);
+    intersect_line_with_surface_edge(element_data_line, element_data_surface,
+        face_fixed_parameters[i], face_fixed_values[i], eta, xi, intersection_found);
 
     // If a valid intersection is found, add it to the output vector.
     if (intersection_found == ProjectionResult::projection_found_valid)
@@ -109,7 +109,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::IntersectLineWithSurfaceEdge(const ElementData<line, scalar_type>& element_data_line,
+    surface>::intersect_line_with_surface_edge(const ElementData<line, scalar_type>&
+                                                   element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
@@ -119,17 +120,17 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   {
     if (surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
       FOUR_C_THROW(
-          "Fixed_parameter in IntersectLineWithSurfaceEdge has to be smaller than 2 with a "
+          "Fixed_parameter in intersect_line_with_surface_edge has to be smaller than 2 with a "
           "quad element.");
     else if (surface::geometry_type_ == DiscretizationTypeGeometry::none)
       FOUR_C_THROW("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 2)
-      FOUR_C_THROW("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
+      FOUR_C_THROW("fixed_parameter in intersect_line_with_surface_edge can be 2 at maximum.");
   }
 
   // Approximated influence size of the surface.
   const double normal_influence_direction =
-      GetSurfaceNormalInfluenceDirection(element_data_surface);
+      get_surface_normal_influence_direction(element_data_surface);
 
   // Initialize data structures.
   // Point on line.
@@ -237,7 +238,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename surface>
 double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::GetSurfaceNormalInfluenceDirection(const ElementData<surface, scalar_type>&
+    surface>::get_surface_normal_influence_direction(const ElementData<surface, scalar_type>&
         element_data_surface) const
 {
   if (is_unit_test_)
@@ -246,7 +247,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   {
     double surface_size = GetSurfaceSize(element_data_surface);
     double line_tube_size_radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
-                                       ->GetCircularCrossSectionRadiusForInteractions();
+                                       ->get_circular_cross_section_radius_for_interactions();
     return std::max(surface_size, 3.0 * line_tube_size_radius);
   }
 }
@@ -296,7 +297,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetS
  *
  */
 template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetFaceFixedParameters(
+void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_face_fixed_parameters(
     unsigned int& n_faces, std::vector<unsigned int>& face_fixed_parameters,
     std::vector<double>& face_fixed_values) const
 {
@@ -369,7 +370,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  this->GetFaceFixedParameters(n_faces, face_fixed_parameters, face_fixed_values);
+  this->get_face_fixed_parameters(n_faces, face_fixed_parameters, face_fixed_values);
 
   // Initialize variables for the projections.
   ProjectionResult projection_result = ProjectionResult::none;
@@ -386,8 +387,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
     // Add the projection point to an array.
     std::array<std::reference_wrapper<ProjectionPoint1DTo3D<scalar_type>>, 2>
         segment_start_end_points = {new_segment.GetStartPoint(), new_segment.GetEndPoint()};
-    segment_start_end_points[0].get().SetFromOtherPointDouble(segment_double.GetStartPoint());
-    segment_start_end_points[1].get().SetFromOtherPointDouble(segment_double.GetEndPoint());
+    segment_start_end_points[0].get().set_from_other_point_double(segment_double.GetStartPoint());
+    segment_start_end_points[1].get().set_from_other_point_double(segment_double.GetEndPoint());
 
     // If the start or end points are intersection points, the intersections have to be reevaluated.
     for (auto& point : segment_start_end_points)
@@ -395,7 +396,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       const int intersection_face = point.get().GetIntersectionFace();
       if (intersection_face >= 0)
       {
-        this->IntersectLineWithSurfaceEdge(element_data_line, element_data_surface,
+        this->intersect_line_with_surface_edge(element_data_line, element_data_surface,
             face_fixed_parameters[intersection_face], face_fixed_values[intersection_face],
             point.get().GetEta(), point.get().GetXi(), projection_result, true);
       }
@@ -404,8 +405,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
     // Reevaluate the integration points along the segment.
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
         new_segment.GetProjectionPoints();
-    projection_points.resize(segment_double.GetNumberOfProjectionPoints());
-    for (unsigned int i_point = 0; i_point < segment_double.GetNumberOfProjectionPoints();
+    projection_points.resize(segment_double.get_number_of_projection_points());
+    for (unsigned int i_point = 0; i_point < segment_double.get_number_of_projection_points();
          i_point++)
     {
       // Position of the projection point within the segment.
@@ -415,7 +416,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
       // Calculate spatial point.
       auto& projection_point = projection_points[i_point];
-      projection_point.SetFromOtherPointDouble(projection_point_double);
+      projection_point.set_from_other_point_double(projection_point_double);
       projection_point.SetEta(new_segment.GetEtaA() + new_segment.GetSegmentLength() * factor);
 
       EvaluatePosition<line>(projection_point.GetEta(), element_data_line, point_in_space);

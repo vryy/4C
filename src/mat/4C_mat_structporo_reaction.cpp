@@ -146,7 +146,7 @@ void MAT::StructPoroReaction::ComputePorosity(Teuchos::ParameterList& params, do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& params, double press,
+void MAT::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref,
     double* W)
 {
@@ -166,7 +166,7 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
   }
 
   // call base class
-  StructPoro::ConstitutiveDerivatives(
+  StructPoro::constitutive_derivatives(
       params, press, J, porosity, refporosity_, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
 
   return;

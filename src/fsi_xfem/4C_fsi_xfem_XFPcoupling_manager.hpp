@@ -44,7 +44,7 @@ namespace XFEM
     //@{
 
     //! predict states in the coupling object
-    void PredictCouplingStates() override {}
+    void predict_coupling_states() override {}
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n)

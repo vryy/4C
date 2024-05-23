@@ -934,7 +934,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 //----------------------------------------------------------------------
 // sampling of lift/drag values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce, double liftforce)
+void FLD::TurbulenceStatisticsSqc::do_lift_drag_time_sample(double dragforce, double liftforce)
 {
   double cdrag = 2.0 * dragforce / (x3max_ - x3min_);
   double clift = 2.0 * liftforce / (x3max_ - x3min_);
@@ -946,7 +946,7 @@ void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce, double
   liftsq_ += clift * clift;
 
   return;
-}  // TurbulenceStatisticsSqc::DoLiftDragTimeSample
+}  // TurbulenceStatisticsSqc::do_lift_drag_time_sample
 
 
 //----------------------------------------------------------------------
@@ -2325,7 +2325,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
 
   return;
 
-}  // TurbulenceStatisticsSqc::TimeAverageMeansAndOutputOfStatistics
+}  // TurbulenceStatisticsSqc::time_average_means_and_output_of_statistics
 
 
 /*----------------------------------------------------------------------*

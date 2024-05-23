@@ -58,15 +58,15 @@ FPSI::FPSICoupling::FPSICoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
       poro_fluid_fluid_interface_map_(PoroFluid_Fluid_InterfaceMap),
       conductivity_(0.0)
 {
-  SetupInterfaceCoupling();
-  InitCouplingMatrixesRHS();
-  ReInitCouplingMatrixTransform();
+  setup_interface_coupling();
+  init_coupling_matrixes_rhs();
+  re_init_coupling_matrix_transform();
   return;
 }
 /*----------------------------------------------------------------------/
 | Initialize Coupling Matrixes and Coupling RHS              ager 12/14 |
 /----------------------------------------------------------------------*/
-void FPSI::FPSICoupling::InitCouplingMatrixesRHS()
+void FPSI::FPSICoupling::init_coupling_matrixes_rhs()
 {
   // fluid extractor
   CORE::LINALG::MapExtractor fluidextractor(*fluid_->DofRowMap(), fluid_->DofRowMap(), false);
@@ -104,7 +104,7 @@ void FPSI::FPSICoupling::InitCouplingMatrixesRHS()
 /*----------------------------------------------------------------------/
 | Setup the Coupling Object                                  ager 12/14 |
 /----------------------------------------------------------------------*/
-void FPSI::FPSICoupling::SetupInterfaceCoupling()
+void FPSI::FPSICoupling::setup_interface_coupling()
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
@@ -180,17 +180,17 @@ void FPSI::FPSICoupling::SetupInterfaceCoupling()
 
   // porous fluid to fluid
   icoup_pf_f_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoup_pf_f_->SetupConditionCoupling(*porofluiddis, porofluid_extractor_->CondMap(), *fluiddis,
+  icoup_pf_f_->setup_condition_coupling(*porofluiddis, porofluid_extractor_->CondMap(), *fluiddis,
       fluidvelpres_extractor_->CondMap(), "FPSICoupling", ndim + 1, false);
 
   // porous structure to fluid
   icoup_ps_f_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoup_ps_f_->SetupConditionCoupling(*porostructdis, porostruct_extractor_->CondMap(), *fluiddis,
+  icoup_ps_f_->setup_condition_coupling(*porostructdis, porostruct_extractor_->CondMap(), *fluiddis,
       fluidvel_extractor_->CondMap(), "FPSICoupling", ndim, false);
 
   // porous structure to ale
   icoup_ps_a_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoup_ps_a_->SetupConditionCoupling(*porostructdis, porostruct_extractor_->CondMap(),
+  icoup_ps_a_->setup_condition_coupling(*porostructdis, porostruct_extractor_->CondMap(),
       *AleField()->Discretization(), AleField()->Interface()->FPSICondMap(), "FPSICoupling", ndim,
       false);
 
@@ -200,7 +200,7 @@ void FPSI::FPSICoupling::SetupInterfaceCoupling()
 /*-----------------------------------------------------------------------/
 | Method reinitializes the matrix transformation objects      ager 12/14 |
 /-----------------------------------------------------------------------*/
-void FPSI::FPSICoupling::ReInitCouplingMatrixTransform()
+void FPSI::FPSICoupling::re_init_coupling_matrix_transform()
 {
   // create transformation objects for coupling terms
   couplingrowtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
@@ -217,10 +217,10 @@ void FPSI::FPSICoupling::ReInitCouplingMatrixTransform()
 /*-------------------------------------------------------------------------------/
 | Evaluate Coupling Matrixes and Coupling RHS    orig. rauch / modif. ager 12/14 |
 /-------------------------------------------------------------------------------*/
-void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
+void FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs()
 {
   // Evaluates all Coupling Matrixes ...
-  TEUCHOS_FUNC_TIME_MONITOR("FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("FPSI::FPSICoupling::evaluate_coupling_matrixes_rhs");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fp_porofluid = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(*(PoroField()->FluidField()->DofRowMap()), 81, true, true));

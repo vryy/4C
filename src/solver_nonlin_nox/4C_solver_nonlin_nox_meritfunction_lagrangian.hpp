@@ -58,7 +58,7 @@ namespace NOX
         double computeSlope(
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const override;
 
-        double computeMixed2ndOrderTerms(
+        double compute_mixed2nd_order_terms(
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const;
 
         /** \brief Computes the quadratic model.
@@ -83,14 +83,14 @@ namespace NOX
          *  The function returns the linearized model without the actual function value!
          *
          *  \author hiermeier \date 04/17 */
-        virtual double computeSaddlePointModel(const double& stepPV, const double& stepLM,
+        virtual double compute_saddle_point_model(const double& stepPV, const double& stepLM,
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const;
 
         /** \brief Alternative function call.
          *
          *  Here we choose the same step size for
          *  the primary and Lagrange multiplier degrees of freedom. */
-        double computeSaddlePointModel(const double& step, const ::NOX::Abstract::Vector& dir,
+        double compute_saddle_point_model(const double& step, const ::NOX::Abstract::Vector& dir,
             const ::NOX::Abstract::Group& grp) const;
 
         //! return the name of the merit function
@@ -104,7 +104,7 @@ namespace NOX
         /** This list is a sub-list of the merit function enumerator list.
          *
          *  \author hiermeier \date 12/17 */
-        std::map<std::string, MeritFctName> GetSupportedTypeList() const;
+        std::map<std::string, MeritFctName> get_supported_type_list() const;
 
         /// Set the Lagrangian merit function type
         void SetType(const std::string& identifier);

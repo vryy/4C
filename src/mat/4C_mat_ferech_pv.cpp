@@ -190,7 +190,7 @@ double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
+double MAT::FerEchPV::compute_reaction_coeff(const double provar) const
 {
   // no reaction coefficient if progress variable lower than critical value
   double reacoeff = 0.0;

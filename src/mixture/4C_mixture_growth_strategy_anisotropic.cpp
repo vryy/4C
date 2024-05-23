@@ -26,7 +26,7 @@ MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
 }
 
 std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
-MIXTURE::PAR::AnisotropicGrowthStrategy::CreateGrowthStrategy()
+MIXTURE::PAR::AnisotropicGrowthStrategy::create_growth_strategy()
 {
   return std::make_unique<MIXTURE::AnisotropicGrowthStrategy>(this);
 }
@@ -38,31 +38,32 @@ MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
           Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {params->fiber_id_ - 1})
 {
-  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.register_needed_tensors(
+      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(
+void MIXTURE::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
     CORE::COMM::PackBuffer& data) const
 {
-  MixtureGrowthStrategy::PackMixtureGrowthStrategy(data);
+  MixtureGrowthStrategy::pack_mixture_growth_strategy(data);
 
   anisotropy_extension_.PackAnisotropy(data);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::UnpackMixtureGrowthStrategy(
+void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  MixtureGrowthStrategy::UnpackMixtureGrowthStrategy(position, data);
+  MixtureGrowthStrategy::unpack_mixture_growth_strategy(position, data);
 
   anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MIXTURE::AnisotropicGrowthStrategy::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
+void MIXTURE::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
     CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
@@ -72,7 +73,7 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradien
       anisotropy_extension_.GetStructuralTensor(gp, 0), 1.0, Id);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::EvaluateGrowthStressCmat(
+void MIXTURE::AnisotropicGrowthStrategy::evaluate_growth_stress_cmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
     const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
     const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

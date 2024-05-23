@@ -72,7 +72,7 @@ NOX::NLN::StatusTest::ActiveSet::ActiveSet(
       if (max_cycle_size_ > 0)
       {
         // get the current active set
-        Teuchos::RCP<const Epetra_Map> activeset = cnlngrp->GetCurrentActiveSetMap(qtype_);
+        Teuchos::RCP<const Epetra_Map> activeset = cnlngrp->get_current_active_set_map(qtype_);
         // add a new map a the beginning of the deque
         cycling_maps_.push_front(cnlngrp->GetOldActiveSetMap(qtype_));
         // remove the last entry of the deque, if the max_cycle_size_ is exceeded

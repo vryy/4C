@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor                                              farah 11/13 |
  *----------------------------------------------------------------------*/
 WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->StructuralDynamicParams())
+    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->structural_dynamic_params())
 
 {
   /*--------------------------------------------------------------------*
@@ -52,9 +52,9 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // create structure
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(
-      new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+      new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->structural_dynamic_params(),
           const_cast<Teuchos::ParameterList&>(
-              GLOBAL::Problem::Instance()->StructuralDynamicParams()),
+              GLOBAL::Problem::Instance()->structural_dynamic_params()),
           GLOBAL::Problem::Instance()->GetDis("structure")));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
   structure_->Setup();
@@ -64,7 +64,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+      new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->structural_dynamic_params(),
           GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());
   if (ale_ == Teuchos::null)
@@ -74,7 +74,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   ale_->CreateSystemMatrix();
 
   // contact/meshtying manager
-  cmtman_ = StructureField()->MeshtyingContactBridge()->ContactManager();
+  cmtman_ = StructureField()->meshtying_contact_bridge()->ContactManager();
 
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
@@ -88,7 +88,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   interfaces_ = cstrategy.ContactInterfaces();
 
   // create contact interfaces for material conf.
-  CreateMaterialInterface();
+  create_material_interface();
 
   // input
   CheckInput();
@@ -113,7 +113,7 @@ void WEAR::Algorithm::CheckInput()
 /*----------------------------------------------------------------------*
  | Create interfaces for material conf.                     farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Algorithm::CreateMaterialInterface()
+void WEAR::Algorithm::create_material_interface()
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
@@ -477,8 +477,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
           double normalfac = 0.0;
-          bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
-              faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+          bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
+              normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
           // store nurbs specific data to node
           cele->ZeroSized() = zero_size;

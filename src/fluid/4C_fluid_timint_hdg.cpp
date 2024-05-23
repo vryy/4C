@@ -49,7 +49,7 @@ void FLD::TimIntHDG::Init()
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
-                              ->NumDofPerElementAuxiliary()
+                              ->num_dof_per_element_auxiliary()
                         : 0;
 
   // set degrees of freedom in the discretization
@@ -207,7 +207,7 @@ void FLD::TimIntHDG::ExplicitPredictor()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                     kronbichler 05/14 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDG::SetOldPartOfRighthandside()
+void FLD::TimIntHDG::set_old_part_of_righthandside()
 {
   hist_->PutScalar(0.0);
 
@@ -222,7 +222,7 @@ void FLD::TimIntHDG::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha time integration kro 05/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::GenAlphaUpdateAcceleration()
+void FLD::TimIntHDG::gen_alpha_update_acceleration()
 {
   //                                  n+1     n
   //                               vel   - vel
@@ -249,7 +249,7 @@ void FLD::TimIntHDG::GenAlphaUpdateAcceleration()
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha  kron 05/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::GenAlphaIntermediateValues()
+void FLD::TimIntHDG::gen_alpha_intermediate_values()
 {
   // set intermediate values for accelerations
   //
@@ -286,7 +286,7 @@ void FLD::TimIntHDG::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state               kronbichler 05/14 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDG::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntHDG::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
   eleparams.set<bool>("needslocalupdate", !first_assembly_);
 }
@@ -294,7 +294,7 @@ void FLD::TimIntHDG::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state               kronbichler 05/14 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDG::ClearStateAssembleMatAndRHS()
+void FLD::TimIntHDG::clear_state_assemble_mat_and_rhs()
 {
   if (!first_assembly_)
   {
@@ -305,7 +305,7 @@ void FLD::TimIntHDG::ClearStateAssembleMatAndRHS()
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
   first_assembly_ = false;
-  FluidImplicitTimeInt::ClearStateAssembleMatAndRHS();
+  FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
 }
 
 
@@ -342,10 +342,10 @@ void FLD::TimIntHDG::SetInitialFlowField(
     Teuchos::RCP<HomIsoTurbInitialField> HitInitialFieldHDG =
         Teuchos::rcp(new FLD::HomIsoTurbInitialFieldHDG(*this, initfield));
     // calculate initial field
-    HitInitialFieldHDG->CalculateInitialField();
+    HitInitialFieldHDG->calculate_initial_field();
 
     // get statistics of initial field
-    CallStatisticsManager();
+    call_statistics_manager();
 
     // initialize  forcing depending on initial field
     forcing_interface_->SetInitialSpectrum(initfield);
@@ -411,7 +411,7 @@ void FLD::TimIntHDG::SetInitialFlowField(
 /*----------------------------------------------------------------------*
  | evaluate error for test cases with analytical solutions  kronbi 05/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   INPAR::FLUID::CalcError calcerr =
@@ -431,7 +431,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::EvaluateErrorComparedToAnalyti
       break;
   };
 
-  return FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol();
+  return FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol();
 }
 
 
@@ -561,7 +561,7 @@ void FLD::TimIntHDG::Output()
 /*----------------------------------------------------------------------*
  | calculate intermediate solution                              bk 04/15|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::CalcIntermediateSolution()
+void FLD::TimIntHDG::calc_intermediate_solution()
 {
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
@@ -572,7 +572,7 @@ void FLD::TimIntHDG::CalcIntermediateSolution()
     Teuchos::RCP<Epetra_Vector> inttmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(1), true);
     inttmp->Update(1.0, *intvelnp_, 0.0);
 
-    FLD::FluidImplicitTimeInt::CalcIntermediateSolution();
+    FLD::FluidImplicitTimeInt::calc_intermediate_solution();
 
     intvelnp_->Update(1.0, *inttmp, 0.0);
 
@@ -592,12 +592,12 @@ void FLD::TimIntHDG::CalcIntermediateSolution()
     //    acc    = acc * --------- + ------------
     //       (0)           gamma      gamma * dt
     //
-    GenAlphaUpdateAcceleration();
+    gen_alpha_update_acceleration();
 
     // ----------------------------------------------------------------
     // compute values at intermediate time steps
     // ----------------------------------------------------------------
-    GenAlphaIntermediateValues();
+    gen_alpha_intermediate_values();
   }
   return;
 }

@@ -50,16 +50,16 @@ namespace MORTAR
 
     void Setup();
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> RedistributedToUnredistributed(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> redistributed_to_unredistributed(
         const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
-    void RedistributedToUnredistributed(const CONTACT::MatBlockType bt,
+    void redistributed_to_unredistributed(const CONTACT::MatBlockType bt,
         const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> UnredistributedToRedistributed(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> unredistributed_to_redistributed(
         const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
-    void UnredistributedToRedistributed(const CONTACT::MatBlockType bt,
+    void unredistributed_to_redistributed(const CONTACT::MatBlockType bt,
         const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
    private:
@@ -77,7 +77,7 @@ namespace MORTAR
       if (not isinit_) FOUR_C_THROW("Call Init() first!");
     }
 
-    inline void ThrowIfNotInitAndSetup() const
+    inline void throw_if_not_init_and_setup() const
     {
       ThrowIfNotInit();
       if (not issetup_) FOUR_C_THROW("Call Setup() first!");

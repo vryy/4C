@@ -176,7 +176,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
       return GetTransform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale, nullptr,
-              GetCouplingConverter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
+              get_coupling_converter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
       break;
     }
     case CouplingCommManager::row:
@@ -184,7 +184,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
       return GetTransform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
-              GetCouplingConverter(idxA, idxB).getRawPtr(), nullptr, matB, true, addmatrix);
+              get_coupling_converter(idxA, idxB).getRawPtr(), nullptr, matB, true, addmatrix);
       break;
     }
     case CouplingCommManager::row_and_col:
@@ -192,8 +192,8 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
       return GetTransform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
-              GetCouplingConverter(idxA, idxB).getRawPtr(),
-              GetCouplingConverter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
+              get_coupling_converter(idxA, idxB).getRawPtr(),
+              get_coupling_converter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
       break;
     }
     default:
@@ -209,14 +209,14 @@ void XFEM::CouplingCommManager::Setup(std::map<int, Teuchos::RCP<const DRT::Disc
 {
   if (cond_name_ != "")  // Setup for Communication on Condition
   {
-    SetupMultiMapExtractors(dis);
+    setup_multi_map_extractors(dis);
     SetupCouplings(dis);
   }
   else  // Setup for Communication on full Discretization
   {
-    SetupFullCouplings(dis);      // First Couple full discretizations (from startdim to enddim)
-    SetupFullMapExtractors(dis);  // Setup Extractors between Couplingpart of discretization and
-                                  // full discretization (e.g. pres <==> vel&pres)
+    SetupFullCouplings(dis);         // First Couple full discretizations (from startdim to enddim)
+    setup_full_map_extractors(dis);  // Setup Extractors between Couplingpart of discretization and
+                                     // full discretization (e.g. pres <==> vel&pres)
   }
   SetupFullExtractor(dis);
   return;
@@ -225,7 +225,7 @@ void XFEM::CouplingCommManager::Setup(std::map<int, Teuchos::RCP<const DRT::Disc
 /*-----------------------------------------------------------------------------------------*
 | Setup MultiMapExtractors for all fields                                      ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::SetupMultiMapExtractors(
+void XFEM::CouplingCommManager::setup_multi_map_extractors(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
@@ -243,12 +243,13 @@ void XFEM::CouplingCommManager::SetupMultiMapExtractors(
 /*-----------------------------------------------------------------------------------------*
 | Setup MultiMapExtractors for all fields                                      ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::SetupFullMapExtractors(
+void XFEM::CouplingCommManager::setup_full_map_extractors(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (dis.size() < 2)
     FOUR_C_THROW(
-        "SetupFullMapExtractors: Just extract from discretization to coupled map! (e.g. Fluid vel "
+        "setup_full_map_extractors: Just extract from discretization to coupled map! (e.g. Fluid "
+        "vel "
         "<==> Fluid vel&pres)");
 
   for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
@@ -304,7 +305,7 @@ void XFEM::CouplingCommManager::SetupCouplings(
       if (betadis == dis.end())
         FOUR_C_THROW("Couldn't find discretization for key %d", (*mmebeta).first);
 
-      coup_[key]->SetupConditionCoupling(*(*alphadis).second, (*mmealpha).second->Map(1),
+      coup_[key]->setup_condition_coupling(*(*alphadis).second, (*mmealpha).second->Map(1),
           *(*betadis).second, (*mmebeta).second->Map(1), cond_name_, enddim_ - startdim_, true);
     }
   }
@@ -364,7 +365,7 @@ void XFEM::CouplingCommManager::SetupFullExtractor(
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Converter between Discret A and B                                      ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::GetCouplingConverter(
+Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::get_coupling_converter(
     int idxA, int idxB)
 {
   if (idxA < idxB)
@@ -378,7 +379,7 @@ Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::GetCou
   else
   {
     FOUR_C_THROW(
-        "Coupling_Comm_Manager::GetCouplingConverter: Coupling Converter from %d to %d makes not "
+        "Coupling_Comm_Manager::get_coupling_converter: Coupling Converter from %d to %d makes not "
         "really sense, does it?",
         idxA, idxB);
   }

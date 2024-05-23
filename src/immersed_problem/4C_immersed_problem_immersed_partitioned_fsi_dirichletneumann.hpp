@@ -64,7 +64,7 @@ namespace IMMERSED
     void Setup() override;
 
     /// initialize search tree for structure discretization
-    void SetupStructuralDiscretization();
+    void setup_structural_discretization();
 
     /// read restart data
     void ReadRestart(int step) override;
@@ -97,19 +97,19 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
     /// get immersed nodes and determine their dofs
-    void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
+    void build_immersed_dirich_map(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<Epetra_Map>& dirichmap,
         const Teuchos::RCP<const Epetra_Map>& dirichmap_original);
 
     /// add immersed dirichlet values from immersed dis to systemvector of background dis
-    void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
+    void do_immersed_dirichlet_cond(Teuchos::RCP<Epetra_Vector> statevector,
         Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
     /// set state necessary state vectors
     virtual void SetStatesFluidOP();
 
     /// set state necessary state vectors
-    virtual void SetStatesVelocityCorrection();
+    virtual void set_states_velocity_correction();
 
     /// set state necessary state vectors
     virtual void SetStatesStructOP();
@@ -124,10 +124,10 @@ namespace IMMERSED
     void PrepareFluidOp();
 
     /// call to special extraction method
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp();
 
     /// call to special application of interface forces
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> full_traction_vec);
+    virtual void apply_interface_forces(Teuchos::RCP<Epetra_Vector> full_traction_vec);
 
     /// call to special routine that adds dirichlet values to fluid field
     virtual void AddDirichCond();
@@ -146,7 +146,7 @@ namespace IMMERSED
     struct_bdry_traction_ contains the current tractions on the immersed boundary.
 
     */
-    virtual void CalcFluidTractionsOnStructure();
+    virtual void calc_fluid_tractions_on_structure();
 
     /*!
     \brief calc the current artificial velocity by projection from structure velocity onto fluid
@@ -162,17 +162,17 @@ namespace IMMERSED
     InitialGuess(). In case of no restart, we can just return the velocity since it had recently
     been projected after the last structural solve. This work would be done twice, else.
     */
-    virtual Teuchos::RCP<Epetra_Vector> CalcArtificialVelocity();
+    virtual Teuchos::RCP<Epetra_Vector> calc_artificial_velocity();
 
     /// apply given vector as Dirichlet to artificial fluid domain
-    virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
+    virtual void apply_immersed_dirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
 
     /// improve quality of solution near the interface
-    virtual void CorrectInterfaceVelocity();
+    virtual void correct_interface_velocity();
 
     /// reset immersed information in fluid dis
     /// e.g. isimmersed_, isboundaryimmersed_
-    virtual void ResetImmersedInformation();
+    virtual void reset_immersed_information();
 
 
     //! @name Various global forces

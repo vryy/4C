@@ -82,7 +82,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void UpdateMapsOfStateVectors();
+    void update_maps_of_state_vectors();
 
     //! @name get states (read only access)
     //! @{
@@ -94,7 +94,7 @@ namespace PARTICLEWALL
     inline Teuchos::RCP<const Epetra_Vector> GetDispCol() const { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<const Epetra_Vector> GetDispRowLastTransfer() const
+    inline Teuchos::RCP<const Epetra_Vector> get_disp_row_last_transfer() const
     {
       return disp_row_last_transfer_;
     };
@@ -122,7 +122,10 @@ namespace PARTICLEWALL
     inline Teuchos::RCP<Epetra_Vector>& GetRefDispCol() { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<Epetra_Vector> GetDispRowLastTransfer() { return disp_row_last_transfer_; };
+    inline Teuchos::RCP<Epetra_Vector> get_disp_row_last_transfer()
+    {
+      return disp_row_last_transfer_;
+    };
 
     //! get wall velocities (column map based)
     inline Teuchos::RCP<Epetra_Vector> GetVelCol() { return vel_col_; };

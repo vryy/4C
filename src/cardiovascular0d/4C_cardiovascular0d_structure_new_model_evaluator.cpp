@@ -67,8 +67,8 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // time-integration dies ...
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
-      GLOBAL::Problem::Instance()->StructuralDynamicParams(),
-      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), *dummysolver,
+      GLOBAL::Problem::Instance()->structural_dynamic_params(),
+      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params(), *dummysolver,
       Teuchos::null));
 
   // set flag
@@ -155,7 +155,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
 
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
-  block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
+  block_vec_ptr = cardvasc0dman_->get_cardiovascular0_drhs();
 
   if (block_vec_ptr.is_null())
     FOUR_C_THROW(
@@ -164,7 +164,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
         "are present!");
 
   const int elements_f = f.Map().NumGlobalElements();
-  const int max_gid = GetBlockDofRowMapPtr()->MaxAllGID();
+  const int max_gid = get_block_dof_row_map_ptr()->MaxAllGID();
   // only call when f is the full rhs of the coupled problem (not for structural
   // equilibriate initial state call)
   if (elements_f == max_gid + 1) CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
@@ -186,7 +186,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
   stiff_cardio_ptr_->Zero();
 
   // --- Kdz - block ---------------------------------------------------
-  block_ptr = cardvasc0dman_->GetMatDstructDcv0ddof();
+  block_ptr = cardvasc0dman_->get_mat_dstruct_dcv0ddof();
   // scale with str time-integrator dependent value
   block_ptr->Scale(timefac_np);
   GState().AssignModelBlock(jac, *block_ptr, Type(), MatBlockType::displ_lm);
@@ -200,7 +200,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
   block_ptr = Teuchos::null;
 
   // --- Kzz - block - already scaled with 0D theta by 0D model !-------
-  block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
+  block_ptr = cardvasc0dman_->get_cardiovascular0_d_stiffness();
   GState().AssignModelBlock(jac, *block_ptr, Type(), MatBlockType::lm_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
@@ -280,7 +280,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::DetermineStressStrain()
+void STR::MODELEVALUATOR::Cardiovascular0D::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -296,7 +296,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::DetermineOptionalQuantity()
+void STR::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -324,16 +324,17 @@ void STR::MODELEVALUATOR::Cardiovascular0D::ResetStepState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::get_block_dof_row_map_ptr()
+    const
 {
   CheckInitSetup();
 
-  return cardvasc0dman_->GetCardiovascular0DMap();
+  return cardvasc0dman_->get_cardiovascular0_d_map();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::GetCurrentSolutionPtr()
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::get_current_solution_ptr()
     const
 {
   // there are no model specific solution entries
@@ -343,7 +344,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::GetCurr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::Cardiovascular0D::GetLastTimeStepSolutionPtr() const
+STR::MODELEVALUATOR::Cardiovascular0D::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;

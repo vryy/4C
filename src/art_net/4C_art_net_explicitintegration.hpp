@@ -123,10 +123,10 @@ namespace ART
     \brief calculate values that could be used for postprocessing
            such as pressure and flowrate.
     */
-    void CalcPostprocessingValues();
+    void calc_postprocessing_values();
 
 
-    void CalcScatraFromScatraFW(
+    void calc_scatra_from_scatra_fw(
         Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatra_fb);
 
     /*!

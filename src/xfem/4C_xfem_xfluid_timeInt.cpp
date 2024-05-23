@@ -142,7 +142,7 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
     for (int method_idx = 0; method_idx < nummethods; method_idx++)
     {
       printf("\n%s:\t #dofsets(P%i/allprocs):\t(%i/%i)",
-          MapMethodEnumToString(INPAR::XFEM::XFluidTimeInt(method_idx)).c_str(), myrank_,
+          map_method_enum_to_string(INPAR::XFEM::XFluidTimeInt(method_idx)).c_str(), myrank_,
           cpu_methods[method_idx], glob_methods[method_idx]);
     }
     IO::cout << "\n+-------------------------------------------------------+\n" << IO::endl;
@@ -155,7 +155,8 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
 /*----------------------------------------------------------------------*
 | returns matching std::string for each reconstruction method   schott 07/12 |
 *----------------------------------------------------------------------*/
-std::string XFEM::XFluidTimeInt::MapMethodEnumToString(const enum INPAR::XFEM::XFluidTimeInt term)
+std::string XFEM::XFluidTimeInt::map_method_enum_to_string(
+    const enum INPAR::XFEM::XFluidTimeInt term)
 {
   // length of return std::string is 14 due to usage in formated screen output
   switch (term)
@@ -190,14 +191,14 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString(const enum INPAR::XFEM::X
   }
 
   return "";
-}  // ScaTraTimIntImpl::MapTimIntEnumToString
+}  // ScaTraTimIntImpl::map_tim_int_enum_to_string
 
 
 // -------------------------------------------------------------------
 // transfer standard and ghost dofs to new map as far as possible and
 // mark all dofs for reconstruction
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::TransferDofsToNewMap(
+void XFEM::XFluidTimeInt::transfer_dofs_to_new_map(
     const std::vector<Teuchos::RCP<const Epetra_Vector>>&
         oldRowStateVectors,  /// row map based vectors w.r.t old interface position
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -215,7 +216,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
   {
     // get global id of a node
     int gid = noderowmap->GID(lid);
-    TransferNodalDofsToNewMap(oldRowStateVectors, newRowStateVectors, dbcgids, gid);
+    transfer_nodal_dofs_to_new_map(oldRowStateVectors, newRowStateVectors, dbcgids, gid);
   }
 
   // export the reconstruction method information to other procs
@@ -228,7 +229,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 // transfer standard and ghost dofs to new map as far as possible and
 // mark all dofs for reconstruction
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::TransferDofsToNewMap(
+void XFEM::XFluidTimeInt::transfer_dofs_to_new_map(
     const std::vector<Teuchos::RCP<const Epetra_Vector>>&
         oldRowStateVectors,  /// row map based vectors w.r.t old interface position
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -241,7 +242,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
   for (size_t i = 0; i < node_gids.size(); ++i)
   {
     // get global id of a node
-    TransferNodalDofsToNewMap(oldRowStateVectors, newRowStateVectors, dbcgids, node_gids[i]);
+    transfer_nodal_dofs_to_new_map(oldRowStateVectors, newRowStateVectors, dbcgids, node_gids[i]);
   }
   // export the reconstruction method information to other procs
   // this has to be done, when SL-nodes mark non-row surrounding nodes (and its some of its dofsets)
@@ -253,7 +254,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 // transfer standard and ghost dofs to new map as far as possible
 // and mark nodal dofs for reconstruction
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
+void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
     const std::vector<Teuchos::RCP<const Epetra_Vector>>&
         oldRowStateVectors,  /// row map based vectors w.r.t old interface position
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -268,7 +269,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
 #endif
 
   if (oldRowStateVectors.size() != newRowStateVectors.size())
-    FOUR_C_THROW("TransferDofsToNewMap: not equal number of old and new vectors");
+    FOUR_C_THROW("transfer_dofs_to_new_map: not equal number of old and new vectors");
 
   // get the node
   DRT::Node* node = dis_->gNode(gid);
@@ -298,7 +299,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
 
     // just one dofset at new timestep t^(n+1)
     if (numDofSets_new == 1)
-      unique_std_uncut_np = NonIntersectedElements(node, wizard_new_);
+      unique_std_uncut_np = non_intersected_elements(node, wizard_new_);
     else
       unique_std_uncut_np = false;
   }
@@ -310,7 +311,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
 
     // just one dofset at new timestep t^n
     if (numDofSets_old == 1)
-      unique_std_uncut_n = NonIntersectedElements(node, wizard_old_);
+      unique_std_uncut_n = non_intersected_elements(node, wizard_old_);
     else
       unique_std_uncut_n = false;
   }
@@ -366,7 +367,8 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
         pos_new = n_new->NodalDofSets()[0]->Position();
       else
         FOUR_C_THROW(
-            "XFEM::XFluidTimeInt::TransferDofsToNewMap() - Case B: n_new->NodalDofSets().size() != "
+            "XFEM::XFluidTimeInt::transfer_dofs_to_new_map() - Case B: "
+            "n_new->NodalDofSets().size() != "
             "1");
     }
 
@@ -403,7 +405,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
     else if (numDofSets_old == 1 and !unique_std_uncut_n)
     {
       // check if there is a standard dofset
-      int nds_old = n_old->GetStandardNodalDofSet(pos_new);
+      int nds_old = n_old->get_standard_nodal_dof_set(pos_new);
 
       if (nds_old != -1)  // case b)
       {
@@ -467,7 +469,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
       //-------------------------------------
 
       // check if there is a standard dofset
-      int nds_old = n_old->GetStandardNodalDofSet(pos_new);
+      int nds_old = n_old->get_standard_nodal_dof_set(pos_new);
 
       if (nds_old == -1)
       {
@@ -846,7 +848,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
 // -------------------------------------------------------------------
 // get nodes and dofsets for given reconstruction method
 // -------------------------------------------------------------------
-std::map<int, std::set<int>>& XFEM::XFluidTimeInt::Get_NodeToDofMap_For_Reconstr(
+std::map<int, std::set<int>>& XFEM::XFluidTimeInt::get_node_to_dof_map_for_reconstr(
     INPAR::XFEM::XFluidTimeInt reconstr)
 {
   // returns empty map if reconstruction method is not present
@@ -856,7 +858,7 @@ std::map<int, std::set<int>>& XFEM::XFluidTimeInt::Get_NodeToDofMap_For_Reconstr
 // -------------------------------------------------------------------
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::NonIntersectedElements(
+bool XFEM::XFluidTimeInt::non_intersected_elements(
     DRT::Node* n, const Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
   const int numele = n->NumElement();
@@ -891,7 +893,7 @@ bool XFEM::XFluidTimeInt::NonIntersectedElements(
 // -------------------------------------------------------------------
 // find all ghost dofsets around this node and its std-dofset
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
+void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     std::map<int, std::set<int>>&
         ghostDofsets,       /// surrounding ghost dofsets to be filled, map of ghost nodes and
                             /// correponding ghost nds index w.r.t given std nodal dofset
@@ -1092,7 +1094,7 @@ void XFEM::XFluidTimeInt::MarkDofs(const DRT::Node* node,  /// drt node
   // nodes with the Ghost-penalty approach this is done to avoid kinks in the reconstructed field
   // when only std-values are computed using SL but ghost-values would be copied in case of the full
   // SL-algorithm in the boundary zone, all ghost-values will be reconstructed using the GP-approach
-  // (this is done in the TransferDofsToNewMap directly)
+  // (this is done in the transfer_dofs_to_new_map directly)
   if ((timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
           timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP) and
       method == INPAR::XFEM::Xf_TimeInt_STD_by_SL)
@@ -1100,13 +1102,13 @@ void XFEM::XFluidTimeInt::MarkDofs(const DRT::Node* node,  /// drt node
     // map of global nid of a neighbored ghost node and the corresponding ghost-dofset-number which
     // corresponds to the given std dofset at the node
     std::map<int, std::set<int>> ghostDofsets;
-    FindSurroundingGhostDofsets(ghostDofsets, node, nds_new);
+    find_surrounding_ghost_dofsets(ghostDofsets, node, nds_new);
 
     for (std::map<int, std::set<int>>::iterator it = ghostDofsets.begin(); it != ghostDofsets.end();
          it++)
     {
       // mark the ghost dofset in case that the node is a row node on this proc
-      // otherwise mark it for export at the end of TransferDofsToNewMap
+      // otherwise mark it for export at the end of transfer_dofs_to_new_map
       int nid = it->first;
       std::set<int>& nds = it->second;
       for (std::set<int>::iterator nds_it = nds.begin(); nds_it != nds.end(); nds_it++)
@@ -1513,7 +1515,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     {
       //--------------------------------------
       // special check whether node slides on cut surface
-      successful_check = SpecialCheck_SlidingOnSurface(did_node_change_side, n_old, n_new);
+      successful_check = special_check_sliding_on_surface(did_node_change_side, n_old, n_new);
 
       if (!successful_check or (successful_check and did_node_change_side))
         return -1;  // do not accept the old value
@@ -1528,7 +1530,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
       {
         std::vector<int>& identified_sides = identified_old_sets[nds_old];
         successful_check =
-            SpecialCheck_InterfaceTips(did_node_change_side, identified_sides, n_old, n_new);
+            special_check_interface_tips(did_node_change_side, identified_sides, n_old, n_new);
 
         if (!successful_check or (successful_check and did_node_change_side))
           return -1;  // do not accept the old value
@@ -1549,7 +1551,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
 }
 
 
-bool XFEM::XFluidTimeInt::SpecialCheck_SlidingOnSurface(bool& changed_side,
+bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
     const CORE::GEO::CUT::Node* n_old,  /// node w.r.t to old wizard
     const CORE::GEO::CUT::Node* n_new   /// node w.r.t to new wizard
 )
@@ -1659,7 +1661,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_SlidingOnSurface(bool& changed_side,
 // check if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
 // return if check was successful
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
+bool XFEM::XFluidTimeInt::special_check_interface_tips(
     bool& changed_side,                  /// did the node change the side ?
     std::vector<int>& identified_sides,  /// side Id of identified side
     const CORE::GEO::CUT::Node* n_old,   /// node w.r.t to old wizard
@@ -1723,7 +1725,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
     // TODO: USE the FOUR_C_THROW, at the moment we just throw a warning
     IO::cout
         << "WARNING: node " << n_old->Id()
-        << " seems to move (background ALE?). Check the SpecialCheck_InterfaceTips-Check for ALE!"
+        << " seems to move (background ALE?). Check the special_check_interface_tips-Check for ALE!"
         << IO::endl;
 
     changed_side = false;
@@ -1751,7 +1753,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
       DRT::Element* side = condition_manager_->GetSide(coup_sid);
 
       successful_check =
-          SpecialCheck_InterfaceTips_SpaceTime(changed_side, side, coup_sid, n_coord_old);
+          special_check_interface_tips_space_time(changed_side, side, coup_sid, n_coord_old);
     }
     else
     {
@@ -1760,7 +1762,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
             "background fluid ALE with level-sets interface??? Think about that, does Scatra "
             "support this?");
 
-      successful_check = SpecialCheck_InterfaceTips_Levelset(changed_side);
+      successful_check = special_check_interface_tips_levelset(changed_side);
     }
 
     if (!successful_check) return false;  // return non-successful check
@@ -1780,7 +1782,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
   return successful_check;
 }
 
-bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_Levelset(
+bool XFEM::XFluidTimeInt::special_check_interface_tips_levelset(
     bool& changed_side  /// did the node change the side ?
 )
 {
@@ -1794,7 +1796,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_Levelset(
   return true;
 }
 
-bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
+bool XFEM::XFluidTimeInt::special_check_interface_tips_space_time(
     bool& changed_side,  /// did the node change the side ?
     DRT::Element* side, const int coup_sid,
     const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates

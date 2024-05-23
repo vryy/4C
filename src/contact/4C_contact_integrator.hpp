@@ -113,10 +113,10 @@ namespace CONTACT
      wear)
 
      */
-    virtual void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+    virtual void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
         MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
-    virtual void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+    virtual void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
         MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
@@ -138,10 +138,10 @@ namespace CONTACT
      for the auxiliary plane coupling case
 
      */
-    virtual void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    virtual void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
-    virtual void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    virtual void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
@@ -151,7 +151,7 @@ namespace CONTACT
      the auxiliary plane coupling case with quadratic interpolation
 
      */
-    void IntegrateDerivCell3DAuxPlaneQuad(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_deriv_cell3_d_aux_plane_quad(MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
 
@@ -159,7 +159,7 @@ namespace CONTACT
      \brief ....
 
      */
-    void IntegrateDerivCell3DAuxPlaneLTS(MORTAR::Element& sele, MORTAR::Element& lsele,
+    void integrate_deriv_cell3_d_aux_plane_lts(MORTAR::Element& sele, MORTAR::Element& lsele,
         MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
         const Epetra_Comm& comm);
 
@@ -167,7 +167,7 @@ namespace CONTACT
      \brief ....
 
      */
-    void IntegrateDerivCell3DAuxPlaneSTL(MORTAR::Element& mele, MORTAR::Element& lele,
+    void integrate_deriv_cell3_d_aux_plane_stl(MORTAR::Element& mele, MORTAR::Element& lele,
         MORTAR::Element& sele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
         const Epetra_Comm& comm);
 
@@ -175,7 +175,7 @@ namespace CONTACT
      \brief Compute penalty scaling factor kappa on slave element
 
      */
-    void IntegrateKappaPenalty(MORTAR::Element& sele, double* sxia, double* sxib,
+    void integrate_kappa_penalty(MORTAR::Element& sele, double* sxia, double* sxib,
         Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg);
 
 
@@ -184,14 +184,14 @@ namespace CONTACT
             for last converged configuration
 
      */
-    void IntegrateKappaPenaltyLTS(MORTAR::Element& sele);
+    void integrate_kappa_penalty_lts(MORTAR::Element& sele);
 
     /*!
      \brief Compute penalty scaling factor kappa on slave integration element
      (special version for the 3D quadratic case)
 
      */
-    void IntegrateKappaPenalty(MORTAR::Element& sele, MORTAR::IntElement& sintele, double* sxia,
+    void integrate_kappa_penalty(MORTAR::Element& sele, MORTAR::IntElement& sintele, double* sxia,
         double* sxib, Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg);
 
     //@}
@@ -467,7 +467,7 @@ namespace CONTACT
         const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
         bool dualquad3d);
 
-    void inline GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Element& sele, MORTAR::Element& sintele,
+    void inline gp_3_d_dm_quad_pwlin_lin(int& iter, MORTAR::Element& sele, MORTAR::Element& sintele,
         MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& sval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmintval,
         CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
@@ -570,7 +570,7 @@ namespace CONTACT
      \brief evaluate weighted Gap entries at GP (quad)
 
      */
-    void inline GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntElement& sintele,
+    void inline gp_3_d_g_quad_pwlin_lin(int& iter, MORTAR::IntElement& sintele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmintval,
         CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmintderiv,
         double& gap, double* gpn, double& jac, double& wgt,
@@ -797,7 +797,7 @@ namespace CONTACT
     \brief Calculate Determinate of the Deformation Gradient at GP
 
     */
-    double DetDeformationGradient(
+    double det_deformation_gradient(
         MORTAR::Element& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin);
 
     /*!
@@ -805,7 +805,7 @@ namespace CONTACT
 
     */
     template <CORE::FE::CellType parentdistype, int dim>
-    double TDetDeformationGradient(
+    double t_det_deformation_gradient(
         MORTAR::Element& sele, double& wgt, double* gpcoord, std::map<int, double>& JLin);
 
     /*!

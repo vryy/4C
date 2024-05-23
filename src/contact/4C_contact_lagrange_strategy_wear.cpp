@@ -171,7 +171,7 @@ void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
         interface_[i]->SplitMasterDofs();
         gmdofnrowmap_ = CORE::LINALG::MergeMap(gmdofnrowmap_, interface_[i]->MNDofs());
 
-        interface_[i]->BuildActiveSetMaster();
+        interface_[i]->build_active_set_master();
         gmslipn_ = CORE::LINALG::MergeMap(gmslipn_, interface_[i]->SlipMasterNDofs(), false);
       }
 
@@ -333,7 +333,7 @@ void WEAR::LagrangeStrategyWear::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
-  UpdateGlobalSelfContactState();
+  update_global_self_contact_state();
 
   /**********************************************************************/
   /* initialize Dold and Mold if not done already                       */
@@ -432,7 +432,7 @@ void WEAR::LagrangeStrategyWear::AssembleMortar()
       // this is for the implicit wear algorithm
       // we have to update the wear-increment in every newton-step and not just
       // after a time step!
-      StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+      store_nodal_quantities(MORTAR::StrategyBase::weightedwear);
       interface_[0]->AssembleWear(*wearvector_);
       g_->Update(1.0, *wearvector_, 1.0);
 
@@ -560,7 +560,7 @@ void WEAR::LagrangeStrategyWear::Initialize()
  | condense wear and lm. for impl/expl wear algorithm        farah 10/13|
  | Internal state variable approach!                                    |
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
+void WEAR::LagrangeStrategyWear::condense_wear_impl_expl(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector>& gact)
 {
@@ -594,8 +594,8 @@ void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invd->ReplaceDiagonalValues(*diag);
-  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+  err = invd->replace_diagonal_values(*diag);
+  if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -641,7 +641,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
     // split and transform to redistributed maps
     CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
         gndofrowmap_, ksmsm, ksmn, knsm, knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
     knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
   }
@@ -1580,8 +1580,8 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invd->ReplaceDiagonalValues(*diag);
-  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
+  err = invd->replace_diagonal_values(*diag);
+  if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1626,7 +1626,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
     // split and transform to redistributed maps
     CORE::LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
         gndofrowmap_, ksmsm, ksmn, knsm, knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmsm = MORTAR::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
     knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
   }
@@ -1847,7 +1847,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   if (erre > 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  erre = inve->ReplaceDiagonalValues(*diage);
+  erre = inve->replace_diagonal_values(*diage);
 
   /********************************************************************/
   /* (b) build linedis + lintdis                                     */
@@ -2622,7 +2622,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -2691,7 +2691,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
       interface_[i]->AssembleLinSlip_W(*linslip_w_);
 
       // w-line rhs
-      interface_[i]->AssembleInactiveWearRhs(*inactive_wear_rhs_);
+      interface_[i]->assemble_inactive_wear_rhs(*inactive_wear_rhs_);
       interface_[i]->AssembleWearCondRhs(*wear_cond_rhs_);
 
       // for both-sided discrete wear
@@ -2699,13 +2699,13 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
       {
         // blocks for w-lines
         interface_[i]->AssembleTE_Master(*twmatrix_m_, *ematrix_m_);
-        interface_[i]->AssembleLinT_D_Master(*lintdis_m_);
-        interface_[i]->AssembleLinT_LM_Master(*lintlm_m_);
-        interface_[i]->AssembleLinE_D_Master(*linedis_m_);
+        interface_[i]->assemble_lin_t_d_master(*lintdis_m_);
+        interface_[i]->assemble_lin_t_lm_master(*lintlm_m_);
+        interface_[i]->assemble_lin_e_d_master(*linedis_m_);
 
         // w-line rhs
-        interface_[i]->AssembleInactiveWearRhs_Master(*inactive_wear_rhs_m_);
-        interface_[i]->AssembleWearCondRhs_Master(*wear_cond_rhs_m_);
+        interface_[i]->assemble_inactive_wear_rhs_master(*inactive_wear_rhs_m_);
+        interface_[i]->assemble_wear_cond_rhs_master(*wear_cond_rhs_m_);
       }
     }
   }  // end interface loop
@@ -2844,7 +2844,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   //**********************************************************************
   else if ((systype == INPAR::CONTACT::system_condensed) && !wearprimvar_)
   {
-    CondenseWearImplExpl(kteff, feff, gact);
+    condense_wear_impl_expl(kteff, feff, gact);
   }
   //**********************************************************************
   //**********************************************************************
@@ -2853,7 +2853,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   //**********************************************************************
   else
   {
-    PrepareSaddlePointSystem(kteff, feff);
+    prepare_saddle_point_system(kteff, feff);
   }
   // FD checks...
 #ifdef WEARIMPLICITFDLM
@@ -2887,8 +2887,8 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->FDCheckSlipIncrDerivTXI();
-    if (Dim() == 3) interface_[i]->FDCheckSlipIncrDerivTETA();
+    interface_[i]->fd_check_slip_incr_deriv_txi();
+    if (Dim() == 3) interface_[i]->fd_check_slip_incr_deriv_teta();
   }
 #endif  // #ifdef CONTACTFDGAP
 
@@ -2921,7 +2921,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i)
-    interface_[i]->FDCheckDerivT_D_Master(*lintdisM_);
+    interface_[i]->fd_check_deriv_t_d_master(*lintdisM_);
 
 #endif
 
@@ -2942,7 +2942,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i)
-    interface_[i]->FDCheckDerivE_D_Master(*linedisM_);
+    interface_[i]->fd_check_deriv_e_d_master(*linedisM_);
 
 #endif
 
@@ -2994,7 +2994,8 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   std::cout << " -- CONTACTFDMORTARE_MASTER -----------------------------------" << std::endl;
   ematrixM_->Complete();
   if (ematrixM_->NormOne())
-    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->FDCheckMortarE_Master_Deriv();
+    for (int i = 0; i < (int)interface_.size(); ++i)
+      interface_[i]->fd_check_mortar_e_master_deriv();
   // ematrix_->UnComplete();
   std::cout << " -- CONTACTFDMORTARE_MASTER -----------------------------------" << std::endl;
 #endif  // #ifdef CONTACTFDMORTARD
@@ -3009,7 +3010,8 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
   std::cout << " -- CONTACTFDMORTART_MASTER -----------------------------------" << std::endl;
   twmatrixM_->Complete();
   if (twmatrixM_->NormOne())
-    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->FDCheckMortarT_Master_Deriv();
+    for (int i = 0; i < (int)interface_.size(); ++i)
+      interface_[i]->fd_check_mortar_t_master_deriv();
   // ematrix_->UnComplete();
   std::cout << " -- CONTACTFDMORTART_MASTER -----------------------------------" << std::endl;
 #endif  // #ifdef CONTACTFDMORTARD
@@ -3020,7 +3022,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 /*----------------------------------------------------------------------*
  | preparation for self-contact and assemble lind/m          farah 10/13|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::PrepareSaddlePointSystem(
+void WEAR::LagrangeStrategyWear::prepare_saddle_point_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   //----------------------------------------------------------------------
@@ -3123,7 +3125,7 @@ void WEAR::LagrangeStrategyWear::PrepareSaddlePointSystem(
 /*----------------------------------------------------------------------*
  | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
+void WEAR::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<CORE::LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
@@ -3265,7 +3267,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     }
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
 
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
 
     /****************************************************************************************
@@ -3365,7 +3367,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
 
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
 
 
@@ -3567,7 +3569,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
 
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
 
 
@@ -3766,7 +3768,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
     Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-    CORE::LINALG::ApplyDirichletToSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+    CORE::LINALG::apply_dirichlet_to_system(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
     trkdz->ApplyDirichlet(*dirichtoggle, false);
 
     // row map (equals domain map) extractor
@@ -3924,7 +3926,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // apply Dirichlet B.C. to mergedrhs and mergedsol
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     CORE::LINALG::Export(*dirichtoggle, *dirichtoggleexp);
-    CORE::LINALG::ApplyDirichletToSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
+    CORE::LINALG::apply_dirichlet_to_system(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     // return references to solution and rhs vector
     blocksol = mergedsol;
@@ -3944,7 +3946,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 /*------------------------------------------------------------------------*
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::UpdateDisplacementsAndLMincrements(
+void WEAR::LagrangeStrategyWear::update_displacements_and_l_mincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   //**********************************************************************
@@ -4299,7 +4301,7 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn =
@@ -4524,16 +4526,16 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
   }
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
 
   if (wearprimvar_)
   {
-    StoreNodalQuantities(MORTAR::StrategyBase::wupdate);
+    store_nodal_quantities(MORTAR::StrategyBase::wupdate);
   }
 
   if (wearbothpv_)
   {
-    StoreNodalQuantities(MORTAR::StrategyBase::wmupdate);
+    store_nodal_quantities(MORTAR::StrategyBase::wmupdate);
   }
 
   return;
@@ -4673,7 +4675,7 @@ bool WEAR::LagrangeStrategyWear::RedistributeContact(
     interface_[i]->FillComplete(true, maxdof_);
 
     // print new parallel distribution
-    interface_[i]->PrintParallelDistribution();
+    interface_[i]->print_parallel_distribution();
 
     // re-create binary search tree
     interface_[i]->CreateSearchTree();
@@ -4806,8 +4808,8 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // store restart information on Lagrange multipliers into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  store_nodal_quantities(MORTAR::StrategyBase::lmcurrent);
+  store_nodal_quantities(MORTAR::StrategyBase::lmold);
 
   // TODO: same procedure for discrete wear...
 
@@ -4819,7 +4821,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(), "lagrmultold");
-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+    store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
   }
 
   // store restart Mortar quantities
@@ -4827,7 +4829,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
 
   if (friction_)
   {
-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+    store_nodal_quantities(MORTAR::StrategyBase::activeold);
     StoreToOld(MORTAR::StrategyBase::dm);
   }
 
@@ -4881,10 +4883,10 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
+void WEAR::LagrangeStrategyWear::update_active_set_semi_smooth(const bool firstStepPredictor)
 {
   // call base routine
-  CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
+  CONTACT::LagrangeStrategy::update_active_set_semi_smooth(firstStepPredictor);
 
   // for both-sided wear
   gminvolvednodes_ = Teuchos::null;
@@ -4915,7 +4917,7 @@ void WEAR::LagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepP
 
     if (wearprimvar_ and wearbothpv_)
     {
-      interface_[i]->BuildActiveSetMaster();
+      interface_[i]->build_active_set_master();
       gmslipn_ = CORE::LINALG::MergeMap(gmslipn_, interface_[i]->SlipMasterNDofs(), false);
       gmslipnodes_ = CORE::LINALG::MergeMap(gmslipnodes_, interface_[i]->SlipMasterNodes(), false);
       gmactivenodes_ =
@@ -4940,12 +4942,12 @@ void WEAR::LagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepP
 /*----------------------------------------------------------------------*
  |  Update Wear rhs for seq. staggered partitioned sol.      farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
+void WEAR::LagrangeStrategyWear::update_wear_discret_iterate(bool store)
 {
   if (store)
   {
-    StoreNodalQuantities(MORTAR::StrategyBase::wold);
-    if (wearbothpv_) StoreNodalQuantities(MORTAR::StrategyBase::wmold);
+    store_nodal_quantities(MORTAR::StrategyBase::wold);
+    if (wearbothpv_) store_nodal_quantities(MORTAR::StrategyBase::wmold);
   }
   else
   {
@@ -4991,9 +4993,9 @@ void WEAR::LagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
 /*----------------------------------------------------------------------*
  |  Update Wear for different time scales                    farah 12/13|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::UpdateWearDiscretAccumulation()
+void WEAR::LagrangeStrategyWear::update_wear_discret_accumulation()
 {
-  if (weartimescales_) StoreNodalQuantities(MORTAR::StrategyBase::wupdateT);
+  if (weartimescales_) store_nodal_quantities(MORTAR::StrategyBase::wupdateT);
 
   return;
 }
@@ -5007,7 +5009,7 @@ void WEAR::LagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
   CONTACT::AbstractStrategy::Update(dis);
 
   // wear: store history values
-  if (weightedwear_) StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+  if (weightedwear_) store_nodal_quantities(MORTAR::StrategyBase::weightedwear);
 
   return;
 }
@@ -5016,7 +5018,7 @@ void WEAR::LagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  Store wear data                                          farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
+void WEAR::LagrangeStrategyWear::store_nodal_quantities(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -5045,7 +5047,7 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
         break;
       }
       default:
-        CONTACT::AbstractStrategy::StoreNodalQuantities(type);
+        CONTACT::AbstractStrategy::store_nodal_quantities(type);
         break;
     }  // switch
 

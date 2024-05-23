@@ -63,7 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakCompType::NodalBlockInformation(
+void DRT::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
@@ -81,11 +81,11 @@ void DRT::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakCompType ::SetupElementDefinition(
+void DRT::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
-  FluidType::SetupElementDefinition(definitions_fluid);
+  FluidType::setup_element_definition(definitions_fluid);
 
   std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 

@@ -45,7 +45,8 @@ void tsi_dyn_drt()
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
   const INPAR::TSI::SolutionSchemeOverFields coupling =
       CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 

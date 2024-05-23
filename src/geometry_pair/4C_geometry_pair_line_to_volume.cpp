@@ -57,7 +57,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithSurface(
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersect_line_with_surface(
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
@@ -178,7 +178,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithOther(
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersect_line_with_other(
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
@@ -223,7 +223,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     eta = eta_start;
 
     // Intersect the line with the surface.
-    IntersectLineWithSurface(element_data_line, element_data_volume, face_fixed_parameters[i],
+    intersect_line_with_surface(element_data_line, element_data_volume, face_fixed_parameters[i],
         face_fixed_values[i], eta, xi, intersection_found);
 
     // If a valid intersection is found, add it to the output vector.

@@ -300,13 +300,13 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeOpenCircuitPotential(
+double MAT::Electrode::compute_open_circuit_potential(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
   double ocp(0.0);
 
   // intercalation fraction
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
 
   // print warning to screen if prescribed interval of validity for ocp calculation model is given
   // but not satisfied
@@ -418,23 +418,24 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
     ocp = std::numeric_limits<double>::infinity();
 
   return ocp;
-}  // MAT::Electrode::ComputeOpenCircuitPotential
+}  // MAT::Electrode::compute_open_circuit_potential
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeDOpenCircuitPotentialDConcentration(
+double MAT::Electrode::compute_d_open_circuit_potential_d_concentration(
     double concentration, double faraday, double frt, double detF) const
 {
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_ocp_dX = ComputeDOpenCircuitPotentialDIntercalationFraction(X, faraday, frt);
-  const double d_X_dc = ComputeDIntercalationFractionDConcentration(ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double d_ocp_dX =
+      compute_d_open_circuit_potential_d_intercalation_fraction(X, faraday, frt);
+  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(ChiMax(), CMax(), detF);
 
   return d_ocp_dX * d_X_dc;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeDOpenCircuitPotentialDIntercalationFraction(
+double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction(
     double X, double faraday, double frt) const
 
 {
@@ -541,26 +542,28 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDIntercalationFraction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeDOpenCircuitPotentialDDetF(
+double MAT::Electrode::compute_d_open_circuit_potential_d_det_f(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_OCP_dX = ComputeDOpenCircuitPotentialDIntercalationFraction(X, faraday, frt);
-  const double d_X_ddetF = ComputeDIntercalationFractionDDetF(concentration, ChiMax(), CMax());
+  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double d_OCP_dX =
+      compute_d_open_circuit_potential_d_intercalation_fraction(X, faraday, frt);
+  const double d_X_ddetF =
+      compute_d_intercalation_fraction_d_det_f(concentration, ChiMax(), CMax());
 
   return d_OCP_dX * d_X_ddetF;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
+double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_concentration(
     double concentration, double faraday, double frt, double detF) const
 {
   double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
 
   // intercalation fraction
-  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_X_dc = ComputeDIntercalationFractionDConcentration(ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0.0 and X < 1.0)
@@ -670,7 +673,7 @@ double MAT::Electrode::ComputeD2OpenCircuitPotentialDConcentrationDConcentration
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
+double MAT::Electrode::compute_d_open_circuit_potential_d_temperature(
     const double concentration, const double faraday, const double gasconstant) const
 {
   double ocpderiv = 0.0;
@@ -685,7 +688,7 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
     }
     case MAT::PAR::ocp_redlichkister:
     {
-      const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), 1.0);
+      const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), 1.0);
 
       ocpderiv = std::log((1.0 - X) / X) * gasconstant / faraday;
       break;

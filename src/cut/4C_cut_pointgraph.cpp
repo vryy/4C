@@ -1011,8 +1011,8 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
           {
             Point *next_point = all_points_[row[0]];
             file << "//Next point has Id" << next_point->Id() << std::endl;
-            cut_point->DumpConnectivityInfo();
-            next_point->DumpConnectivityInfo();
+            cut_point->dump_connectivity_info();
+            next_point->dump_connectivity_info();
           }
           else
             file << "//This point is not connected to anything\n";
@@ -1028,7 +1028,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
             CORE::GEO::CUT::OUTPUT::GmshPointDump(
                 file_pgraph, (it->second), (it->second)->Id(), false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file_pgraph, false);
-            (it->second)->DumpConnectivityInfo();
+            (it->second)->dump_connectivity_info();
           }
 
           file_pgraph.close();

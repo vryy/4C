@@ -69,12 +69,12 @@ namespace NOX
             Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
 
         //! derived
-        void SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
+        void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
             CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs,
             Epetra_Vector& rhs) const override;
 
         //! Combine the linear solution parts [derived]
-        void CompleteSolutionAfterSolve(
+        void complete_solution_after_solve(
             const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const override;
 
        private:
@@ -82,11 +82,11 @@ namespace NOX
         void throwError(const std::string& functionName, const std::string& errorMsg) const;
 
         //! Solve a linear system containing a diagonal matrix
-        void applyDiagonalInverse(
+        void apply_diagonal_inverse(
             CORE::LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const;
 
         /// return a pointer to the currently active linear solver
-        Teuchos::RCP<CORE::LINALG::Solver> GetLinearContactSolver(
+        Teuchos::RCP<CORE::LINALG::Solver> get_linear_contact_solver(
             const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers)
             const;
 

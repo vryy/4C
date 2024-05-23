@@ -57,13 +57,13 @@ namespace FBI
     void Setup();
 
     /// Sets the flag to compute only force contributions from the beam
-    void SetWeakDirichletFlag() { calcfluidweakdirichletforce_ = true; }
+    void set_weak_dirichlet_flag() { calcfluidweakdirichletforce_ = true; }
 
     /// Sets the flag to compute force contributions from beam and fluid
-    void UnsetWeakDirichletFlag() { calcfluidweakdirichletforce_ = false; }
+    void unset_weak_dirichlet_flag() { calcfluidweakdirichletforce_ = false; }
 
     /// Returns \ref calcfluidweakdirichletforce_
-    bool GetWeakDirichletFlag() { return calcfluidweakdirichletforce_; }
+    bool get_weak_dirichlet_flag() { return calcfluidweakdirichletforce_; }
 
     /**
      * \brief Returns the isinit_ flag.
@@ -94,7 +94,7 @@ namespace FBI
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::FBI::BeamToFluidConstraintEnforcement GetConstraintEnforcement() const
+    inline INPAR::FBI::BeamToFluidConstraintEnforcement get_constraint_enforcement() const
     {
       return constraint_enforcement_;
     }
@@ -102,7 +102,7 @@ namespace FBI
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::FBI::BeamToFluidDiscretization GetContactDiscretization() const
+    inline INPAR::FBI::BeamToFluidDiscretization get_contact_discretization() const
     {
       return meshtying_discretization_;
     }
@@ -123,8 +123,8 @@ namespace FBI
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVisualizationOuputParamsPtr()
-        const
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams>
+    get_visualization_ouput_params_ptr() const
     {
       return output_params_;
     }
@@ -132,7 +132,8 @@ namespace FBI
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions GetMortarShapeFunctionType() const
+    inline INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions get_mortar_shape_function_type()
+        const
     {
       return mortar_shape_function_;
     }

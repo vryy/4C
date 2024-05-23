@@ -51,7 +51,7 @@ namespace ALE
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP() override;
 
     //! Condensation operation for a block matrix
-    void CondensationOperationBlockMatrix(
+    void condensation_operation_block_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator>&
             sysmat,                             ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine

@@ -54,7 +54,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -67,7 +67,7 @@ namespace DRT
         return nullspace;
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -419,7 +419,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -440,7 +440,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -453,7 +453,7 @@ namespace DRT
         return nullspace;
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -536,7 +536,7 @@ namespace DRT
       /*!
       \brief Return center coordinates of element
       */
-      virtual std::vector<double> ElementCenterRefeCoords();
+      virtual std::vector<double> element_center_refe_coords();
 
       /*!
       \brief Return unique ParObject id
@@ -811,7 +811,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -836,7 +836,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -849,7 +849,7 @@ namespace DRT
         return nullspace;
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -1184,7 +1184,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -1209,7 +1209,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -1222,7 +1222,7 @@ namespace DRT
         return nullspace;
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -1554,7 +1554,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatra
@@ -1578,7 +1578,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -1591,7 +1591,7 @@ namespace DRT
         return nullspace;
       }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -1930,7 +1930,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatraLine3

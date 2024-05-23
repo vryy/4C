@@ -69,7 +69,7 @@ to enable multiple sets of dofs on the same mesh. But judging from
 past experience this feature will not be used that often. So effort
 has been made to hide the possibility of multiple DofSets.
 
-The setup is done by AssignDegreesOfFreedom(). This method uses two
+The setup is done by assign_degrees_of_freedom(). This method uses two
 redundant nodal and elemental vectors. It would be hard to avoid
 those. Lets hope we can always afford them.
 
@@ -81,7 +81,7 @@ to be able to redistribute a mesh without losing the old vectors.
 <h3>Invariants</h3>
 
 There are two possible states in this class: Reset and setup. To
-change back and forth use AssignDegreesOfFreedom() and Reset().
+change back and forth use assign_degrees_of_freedom() and Reset().
 
 <h3>Dof number uniqueness</h3>
 
@@ -283,7 +283,7 @@ namespace CORE::Dofsets
     //! Print this class
     void Print(std::ostream& os) const override;
 
-    //! Return true if \ref AssignDegreesOfFreedom was called
+    //! Return true if \ref assign_degrees_of_freedom was called
     bool Filled() const override { return filled_; }
 
     //@}
@@ -299,7 +299,7 @@ namespace CORE::Dofsets
 
     @return Maximum dof number of this dofset
     */
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
@@ -354,13 +354,13 @@ namespace CORE::Dofsets
     }
 
     /// Get Reserved Max Number Dofs per Node
-    virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf) { return; };
+    virtual void get_reserved_max_num_dofper_node(int& maxnodenumdf) { return; };
 
-    /// get first number to be used as Dof GID in AssignDegreesOfFreedom
-    virtual int GetFirstGIDNumberToBeUsed(const DRT::Discretization& dis) const;
+    /// get first number to be used as Dof GID in assign_degrees_of_freedom
+    virtual int get_first_gid_number_to_be_used(const DRT::Discretization& dis) const;
 
-    /// get minimal node GID to be used in AssignDegreesOfFreedom
-    virtual int GetMinimalNodeGIDIfRelevant(const DRT::Discretization& dis) const;
+    /// get minimal node GID to be used in assign_degrees_of_freedom
+    virtual int get_minimal_node_gid_if_relevant(const DRT::Discretization& dis) const;
 
     /// filled flag
     bool filled_;
@@ -395,7 +395,7 @@ namespace CORE::Dofsets
     /*!
     \brief Activate special dof handling due to point coupling conditions?
 
-    \note In the logic outlined above and implemented in AssignDegreesOfFreedom() we
+    \note In the logic outlined above and implemented in assign_degrees_of_freedom() we
     assume that each nodal dof only appears once and therefore that we can
     define a unique access to all dofs of one node by knowing (1) its number of
     nodal dofs and (2) its first dof gid. The second, third,... dof gid are

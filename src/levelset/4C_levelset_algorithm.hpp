@@ -60,7 +60,7 @@ namespace SCATRA
     /// time loop
     void TimeLoop() override;
 
-    void CheckAndWriteOutputAndRestart() override;
+    void check_and_write_output_and_restart() override;
 
     /// read restart data
     void ReadRestart(
@@ -77,7 +77,7 @@ namespace SCATRA
 
 
     // output position of center of mass assuming a smoothed interfaces
-    void MassCenterUsingSmoothing();
+    void mass_center_using_smoothing();
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
@@ -98,10 +98,10 @@ namespace SCATRA
     void Solve() override;
 
     /// calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol() override;
+    void evaluate_error_compared_to_analytical_sol() override;
 
    protected:
-    virtual void GetInitialVolumeOfMinusDomain(const Teuchos::RCP<const Epetra_Vector>& phinp,
+    virtual void get_initial_volume_of_minus_domain(const Teuchos::RCP<const Epetra_Vector>& phinp,
         const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value
@@ -127,13 +127,13 @@ namespace SCATRA
     /** \brief calculation of nodal velocity field via L2-projection for reinitialization
      *
      * (helper function for ReinitEq()) */
-    virtual void CalcNodeBasedReinitVel();
+    virtual void calc_node_based_reinit_vel();
 
     /// execute the elliptic reinitialization procedure
-    void ReinitializeWithEllipticEquation();
+    void reinitialize_with_elliptic_equation();
 
     /// set element parameters for reinitialization equation
-    void SetReinitializationElementParameters(bool calcinitialtimederivative = false) const;
+    void set_reinitialization_element_parameters(bool calcinitialtimederivative = false) const;
 
     /** \brief access nodal gradient-based values for reinitialization
      *
@@ -153,7 +153,7 @@ namespace SCATRA
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature
     // -----------------------------------------------------------------
-    void ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature,
+    void reconstructed_nodal_curvature(Teuchos::RCP<Epetra_Vector> curvature,
         const Teuchos::RCP<const Epetra_Vector> phi,
         const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
@@ -184,13 +184,13 @@ namespace SCATRA
 
    private:
     /// add parameters depending of the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
+    void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;
 
     /// manipulate velocity field away from the interface
-    void ManipulateFluidFieldForGfunc();
+    void manipulate_fluid_field_for_gfunc();
 
     /// modification of convective velocity at contact points
-    void ApplyContactPointBoundaryCondition();
+    void apply_contact_point_boundary_condition();
 
     // -----------------------------------------------------------------
     // reinitialization
@@ -200,21 +200,21 @@ namespace SCATRA
     void ReinitEq();
 
     /// set time parameters for reinitialization equation
-    void SetReinitializationElementTimeParameters();
+    void set_reinitialization_element_time_parameters();
 
     /// preparations to solve reinitialization equation within existing framework (helper function
     /// for ReinitEq())
-    void PrepareTimeLoopReinit();
+    void prepare_time_loop_reinit();
 
     /// time loop for reinitialization equation (helper function for ReinitEq())
     void TimeLoopReinit();
 
     /// clean necessary modifications to solve reinitialization equation within existing framework
     /// (helper function for ReinitEq())
-    void FinishTimeLoopReinit();
+    void finish_time_loop_reinit();
 
     /// setup the variables to do a new reinitialization time step (helper function for ReinitEq())
-    void PrepareTimeStepReinit();
+    void prepare_time_step_reinit();
 
     /// nonlinear solver for reinitialization equation (helper function for ReinitEq())
     void SolveReinit();
@@ -224,7 +224,7 @@ namespace SCATRA
 
     /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for
     /// ReinitEq())
-    bool ConvergenceCheckReinit();
+    bool convergence_check_reinit();
 
     /// update phi within the reinitialization loop
     virtual void UpdateReinit() = 0;
@@ -233,22 +233,22 @@ namespace SCATRA
     void ReinitGeo(const std::map<int, CORE::GEO::BoundaryIntCells>& interface);
 
     /// compute normal vector of interface patch (helper function for ReinitGeo())
-    void ComputeNormalVectorToInterface(const CORE::GEO::BoundaryIntCell& patch,
+    void compute_normal_vector_to_interface(const CORE::GEO::BoundaryIntCell& patch,
         const CORE::LINALG::SerialDenseMatrix& patchcoord, CORE::LINALG::Matrix<3, 1>& normal);
 
     /// compute distance to vertex of patch (helper function for ReinitGeo())
-    void ComputeDistanceToPatch(const CORE::LINALG::Matrix<3, 1>& node,
+    void compute_distance_to_patch(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& vertexdist);
 
     /// compute distance to edge of patch (helper function for ReinitGeo())
-    void ComputeDistanceToEdge(const CORE::LINALG::Matrix<3, 1>& node,
+    void compute_distance_to_edge(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& edgedist);
 
     /// find a facing interface patch by projection of node into boundary cell space (helper
     /// function for ReinitGeo())
-    void FindFacingPatchProjCellSpace(const CORE::LINALG::Matrix<3, 1>& node,
+    void find_facing_patch_proj_cell_space(const CORE::LINALG::Matrix<3, 1>& node,
         const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         const CORE::LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
 
@@ -279,11 +279,11 @@ namespace SCATRA
     // additional post-processing and evaluation methods
     // -----------------------------------------------------------------
 
-    virtual void OutputOfLevelSetSpecificValues();
+    virtual void output_of_level_set_specific_values();
 
     // check for mass conservation before and after reinitialization as well as
     // at the end of the time step
-    void MassConservationCheck(const double actvolminus, const bool writetofile = false);
+    void mass_conservation_check(const double actvolminus, const bool writetofile = false);
 
     // reconstruction of interface and output of domains
     void CaptureInterface(

@@ -82,7 +82,7 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::ifstream::pos_type DatFileReader::ExcludedSectionPosition(const std::string& section) const
+  std::ifstream::pos_type DatFileReader::excluded_section_position(const std::string& section) const
   {
     auto i = excludepositions_.find(section);
     if (i == excludepositions_.end())
@@ -95,7 +95,7 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  unsigned int DatFileReader::ExcludedSectionLength(const std::string& section) const
+  unsigned int DatFileReader::excluded_section_length(const std::string& section) const
   {
     auto i = excludepositions_.find(section);
     if (i == excludepositions_.end())
@@ -1148,7 +1148,7 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::PrintUnknownSections()
+  bool DatFileReader::print_unknown_sections()
   {
     // This function shell be called only after all reading with DatFileReader
     // is finished. Only then we have a proper protocol of (in-)valid section names

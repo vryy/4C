@@ -26,8 +26,8 @@ ADAPTER::StructureFactory::StructureFactory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::StructureFactory::BuildStructureAlgorithm(
-    const Teuchos::ParameterList& sdyn) const
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew>
+ADAPTER::StructureFactory::build_structure_algorithm(const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
@@ -49,11 +49,11 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::StructureFactory::Buil
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::BuildStructureAlgorithm(
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::build_structure_algorithm(
     const Teuchos::ParameterList& sdyn)
 {
   StructureFactory factory;
-  return factory.BuildStructureAlgorithm(sdyn);
+  return factory.build_structure_algorithm(sdyn);
 }
 
 FOUR_C_NAMESPACE_CLOSE

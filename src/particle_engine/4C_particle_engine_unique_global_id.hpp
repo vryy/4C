@@ -112,7 +112,7 @@ namespace PARTICLEENGINE
      *
      * \return number of reusable global ids on this processor
      */
-    inline int GetNumberOfReusableGlobalIds() { return reusableglobalids_.size(); }
+    inline int get_number_of_reusable_global_ids() { return reusableglobalids_.size(); }
 
     /*!
      * \brief insert freed global id
@@ -136,7 +136,7 @@ namespace PARTICLEENGINE
      *
      * \param[in,out] requesteduniqueglobalids requested unique global ids
      */
-    void DrawRequestedNumberOfGlobalIds(std::vector<int>& requesteduniqueglobalids);
+    void draw_requested_number_of_global_ids(std::vector<int>& requesteduniqueglobalids);
 
    private:
     /*!
@@ -148,7 +148,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void GatherReusableGlobalIdsFromAllProcsOnMasterProc();
+    void gather_reusable_global_ids_from_all_procs_on_master_proc();
 
     /*!
      * \brief prepare requested global ids for all processors
@@ -158,7 +158,7 @@ namespace PARTICLEENGINE
      * \param[in]     numberofrequestedgids number of requested global ids on this processor
      * \param[in,out] preparedglobalids     prepared global ids
      */
-    void PrepareRequestedGlobalIdsForAllProcs(
+    void prepare_requested_global_ids_for_all_procs(
         int numberofrequestedgids, std::map<int, std::vector<int>>& preparedglobalids);
 
     /*!
@@ -169,7 +169,8 @@ namespace PARTICLEENGINE
      * \param[in]     preparedglobalids        prepared global ids
      * \param[in,out] requesteduniqueglobalids requested unique global ids
      */
-    void ExtractRequestedGlobalIdsOnMasterProc(std::map<int, std::vector<int>>& preparedglobalids,
+    void extract_requested_global_ids_on_master_proc(
+        std::map<int, std::vector<int>>& preparedglobalids,
         std::vector<int>& requesteduniqueglobalids) const;
 
     /*!
@@ -180,7 +181,7 @@ namespace PARTICLEENGINE
      * \param[in]     tobesendglobalids        global ids to be send to each processor
      * \param[in,out] requesteduniqueglobalids requested unique global ids
      */
-    void DistributeRequestedGlobalIdsFromMasterProcToAllProcs(
+    void distribute_requested_global_ids_from_master_proc_to_all_procs(
         std::map<int, std::vector<int>>& tobesendglobalids,
         std::vector<int>& requesteduniqueglobalids) const;
 

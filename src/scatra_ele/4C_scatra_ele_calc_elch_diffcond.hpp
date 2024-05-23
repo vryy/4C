@@ -72,7 +72,7 @@ namespace DRT
           ) override;
 
       //! calculate contributions to matrix and rhs (outside of loop over all scalars)
-      void CalcMatAndRhsOutsideScalarLoop(
+      void calc_mat_and_rhs_outside_scalar_loop(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
@@ -81,8 +81,8 @@ namespace DRT
           ) override;
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
-      void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,                                      //!< location vector
+      void correction_for_flux_across_dc(DRT::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                                          //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
           ) override;
@@ -143,7 +143,7 @@ namespace DRT
       );
 
       //! Potential equation div i inserted current - concentration overpotential
-      void CalcMatPotEquDiviConc(
+      void calc_mat_pot_equ_divi_conc(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,      //!< domain-integration factor times time-integration factor
@@ -230,7 +230,7 @@ namespace DRT
       );
 
       //! CalcRhs: Potential equation div i inserted current - conc. overpotential
-      void CalcRhsPotEquDiviConc(
+      void calc_rhs_pot_equ_divi_conc(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -296,8 +296,8 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate an electrode boundary kinetics point condition
-      void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                       ///< element matrix
+      void evaluate_elch_boundary_kinetics_point(const DRT::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,                           ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
@@ -316,9 +316,9 @@ namespace DRT
           ) override;
 
       //! evaluate electrode kinetics domain condition
-      void EvaluateElchDomainKinetics(const DRT::Element* ele,  ///< the actual boundary element
-          CORE::LINALG::SerialDenseMatrix& emat,                ///< element-matrix
-          CORE::LINALG::SerialDenseVector& erhs,                ///< element-rhs
+      void evaluate_elch_domain_kinetics(const DRT::Element* ele,  ///< the actual boundary element
+          CORE::LINALG::SerialDenseMatrix& emat,                   ///< element-matrix
+          CORE::LINALG::SerialDenseVector& erhs,                   ///< element-rhs
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
@@ -332,20 +332,20 @@ namespace DRT
 
       //! validity check for all elements with respect to
       //! formulation-specific parameter, degree's of freedom, number of scalars, ...
-      void CheckElchElementParameter(DRT::Element* ele  //!< the element we are dealing with
+      void check_elch_element_parameter(DRT::Element* ele  //!< the element we are dealing with
           ) override;
 
       //! calculate element mass matrix and element residual for initial time derivative
-      void CalcInitialTimeDerivative(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat,         //!< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,         //!< element residual
-          Teuchos::ParameterList& params,                //!< parameter list
-          DRT::Discretization& discretization,           //!< discretization
-          DRT::Element::LocationArray& la                //!< location array
+      void calc_initial_time_derivative(DRT::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat,            //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,            //!< element residual
+          Teuchos::ParameterList& params,                   //!< parameter list
+          DRT::Discretization& discretization,              //!< discretization
+          DRT::Element::LocationArray& la                   //!< location array
           ) override;
 
       //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
-      void CorrectRHSFromCalcRHSLinMass(
+      void correct_rhs_from_calc_rhs_lin_mass(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
@@ -366,21 +366,21 @@ namespace DRT
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
-      void CalErrorComparedToAnalytSolution(
+      void cal_error_compared_to_analyt_solution(
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
           ) override;
 
-      void CalcElchDomainKinetics(DRT::Element* ele, Teuchos::ParameterList& params,
+      void calc_elch_domain_kinetics(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
-      void EvaluateElectrodeStatus(const DRT::Element* ele,  ///< the actual boundary element
-          CORE::LINALG::SerialDenseVector& scalars,          ///< scalars to be computed
-          Teuchos::ParameterList& params,                    ///< the parameter list
-          Teuchos::RCP<CORE::Conditions::Condition> cond,    ///< the condition
+      void evaluate_electrode_status(const DRT::Element* ele,  ///< the actual boundary element
+          CORE::LINALG::SerialDenseVector& scalars,            ///< scalars to be computed
+          Teuchos::ParameterList& params,                      ///< the parameter list
+          Teuchos::RCP<CORE::Conditions::Condition> cond,      ///< the condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -393,7 +393,7 @@ namespace DRT
       );
 
       //! set internal variables for diffusion-conduction formulation
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get diffusion manager for diffusion-conduction formulation
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager()
@@ -414,7 +414,7 @@ namespace DRT
         return static_cast<ScaTraEleUtilsElchDiffCond<distype>*>(myelch::utils_);
       }
 
-      void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+      void calculate_mean_electrode_concentration(const DRT::Element* const& ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseVector& conc) override;
 
@@ -574,10 +574,10 @@ namespace DRT
       /*========================================================================*/
 
       //! Output of transport parameter (to screen)
-      void OutputTransportParams(const int numscal) override
+      void output_transport_params(const int numscal) override
       {
         // call base class routine
-        dmelectrode::OutputTransportParams(numscal);
+        dmelectrode::output_transport_params(numscal);
 
         // additional outputs
         for (int k = 0; k < numscal; ++k)
@@ -670,7 +670,7 @@ namespace DRT
       }
 
       //! compute and set internal variables only used by the Diffusion-Conduction formulation
-      void SetInternalVariablesElchDiffCond(
+      void set_internal_variables_elch_diff_cond(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
@@ -685,7 +685,7 @@ namespace DRT
       )
       {
         // set internal variables in base variable manager
-        vmelectrode::SetInternalVariablesElchElectrode(
+        vmelectrode::set_internal_variables_elch_electrode(
             funct, derxy, ephinp, ephin, econvelnp, ehist);
 
         // set constant parameter RT/F

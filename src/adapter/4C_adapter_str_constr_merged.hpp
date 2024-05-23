@@ -99,7 +99,7 @@ namespace ADAPTER
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
+    void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
@@ -125,9 +125,9 @@ namespace ADAPTER
     bool HaveConstraint() override { return structure_->HaveConstraint(); };
 
     /// Return bool indicating if constraints are defined
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
-      return structure_->GetConstraintManager();
+      return structure_->get_constraint_manager();
     };
 
     INPAR::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
@@ -140,11 +140,11 @@ namespace ADAPTER
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    void UpdateIterIncrConstr(
+    void update_iter_incr_constr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
-      structure_->UpdateIterIncrConstr(lagrincr);
+      structure_->update_iter_incr_constr(lagrincr);
     }
 
     /// @name Apply interface forces

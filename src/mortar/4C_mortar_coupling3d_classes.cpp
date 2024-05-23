@@ -54,7 +54,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* pare
 
   // as discretization is already evaluated, compute area
   // (data container has to be initialized first)
-  InitializeDataContainer();
+  initialize_data_container();
   MoData().Area() = ComputeArea();
 
   return;

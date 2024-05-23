@@ -108,7 +108,7 @@ void MAT::PermeableFluid::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::PermeableFluid::ComputeReactionCoeff() const
+double MAT::PermeableFluid::compute_reaction_coeff() const
 {
   // check for zero or negative viscosity
   if (Viscosity() < 1e-15) FOUR_C_THROW("zero or negative viscosity");

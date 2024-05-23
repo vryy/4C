@@ -108,7 +108,7 @@ namespace DRT::ELEMENTS
     }
 
     static inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-    EvaluateDDeformationGradientDDisplacements(const DRT::Element& ele,
+    evaluate_d_deformation_gradient_d_displacements(const DRT::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -120,8 +120,9 @@ namespace DRT::ELEMENTS
       return CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>(true);
     }
 
-    static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> EvaluateDDeformationGradientDXi(
-        const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+    static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_xi(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
@@ -134,7 +135,7 @@ namespace DRT::ELEMENTS
 
     static inline CORE::LINALG::Matrix<9,
         CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
-    EvaluateDDeformationGradientDDisplacementsDXi(const DRT::Element& ele,
+    evaluate_d_deformation_gradient_d_displacements_d_xi(const DRT::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -147,13 +148,13 @@ namespace DRT::ELEMENTS
           CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>(true);
     }
 
-    static void AddInternalForceVector(
+    static void add_internal_force_vector(
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
-      DRT::ELEMENTS::AddInternalForceVector(
+      DRT::ELEMENTS::add_internal_force_vector(
           linearization.linear_b_operator_, stress, integration_factor, force_vector);
     }
 

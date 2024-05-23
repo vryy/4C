@@ -47,7 +47,7 @@ namespace UTILS
   <h3>Invariants</h3>
 
   There are two possible states in this class: Reset and setup. To
-  change back and forth use AssignDegreesOfFreedom() and Reset().
+  change back and forth use assign_degrees_of_freedom() and Reset().
 
 
   \author tk     */
@@ -78,8 +78,9 @@ namespace UTILS
     //! @name Construction
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(const Teuchos::RCP<DRT::Discretization> dis, const int ndofs,
-        const int start, const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor);
+    virtual int assign_degrees_of_freedom(const Teuchos::RCP<DRT::Discretization> dis,
+        const int ndofs, const int start,
+        const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor);
 
     /// reset all internal variables
     void Reset() override;

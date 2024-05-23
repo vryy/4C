@@ -126,7 +126,7 @@ double STR::EXPLICIT::Generic::CalcRefNormForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
+void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
@@ -143,9 +143,9 @@ bool STR::EXPLICIT::Generic::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const
+void STR::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  ModelEval().RemoveCondensedContributionsFromRhs(rhs);
+  ModelEval().remove_condensed_contributions_from_rhs(rhs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -158,15 +158,15 @@ void STR::EXPLICIT::Generic::UpdateStepElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::UpdateConstantStateContributions() {}
+void STR::EXPLICIT::Generic::update_constant_state_contributions() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::PostUpdate() { UpdateConstantStateContributions(); }
+void STR::EXPLICIT::Generic::PostUpdate() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::EXPLICIT::Generic::GetDefaultStepLength() const
+double STR::EXPLICIT::Generic::get_default_step_length() const
 {
   // default: return a step length of 1.0
   return 1.0;

@@ -41,7 +41,7 @@ namespace FLD
     \brief same as above for low-Mach-number flow
    */
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
-  // provided there move it if you are using it in a similar way as CalcChannelStatistics
+  // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
   void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& temperature,
@@ -450,7 +450,7 @@ namespace FLD
     \brief same as above for turbulent scalar transport
    */
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
-  // provided there move it if you are using it in a similar way as CalcChannelStatistics
+  // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
   void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& scalar,

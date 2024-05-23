@@ -90,7 +90,7 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
-    EquilibrateInitialState();
+    equilibrate_initial_state();
   }
   else
   {
@@ -106,7 +106,7 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
     /* ToDo tolerance value is experience and based on following consideration:
      * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
      * initial, stress free state of order 1e-8 */
-    if (not CurrentStateIsEquilibrium(1.0e-6) and GlobalState().GetMyRank() == 0)
+    if (not current_state_is_equilibrium(1.0e-6) and GlobalState().GetMyRank() == 0)
       std::cout << "\nSERIOUS WARNING: Initially non vanishing acceleration states "
                    "in case of ml_rotation = true,\ni.e. an initial state where the system "
                    "is not equilibrated, cannot yet be computed correctly.\nThis means your "
@@ -142,7 +142,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 
   if (IsPredictorState()) return;
 
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::UpdateConstantStateContributions()
+void STR::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 {
   const double& dt = (*GlobalState().GetDeltaTime())[0];
 
@@ -251,7 +251,7 @@ bool STR::IMPLICIT::OneStepTheta::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(Epetra_Vector& f) const
+void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
   CORE::LINALG::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
@@ -266,7 +266,8 @@ void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(Epetra_Vector& f) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
+void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
+    CORE::LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   const double& dt = (*GlobalState().GetDeltaTime())[0];
@@ -299,7 +300,7 @@ void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader
   ioreader.ReadVector(fviscon_ptr_, "fvisco");
 
   ModelEval().ReadRestart(ioreader);
-  UpdateConstantStateContributions();
+  update_constant_state_contributions();
 }
 
 /*----------------------------------------------------------------------------*
@@ -346,11 +347,11 @@ void STR::IMPLICIT::OneStepTheta::UpdateStepElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::PostUpdate() { UpdateConstantStateContributions(); }
+void STR::IMPLICIT::OneStepTheta::PostUpdate() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::PredictConstDisConsistVelAcc(
+void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
@@ -377,7 +378,7 @@ void STR::IMPLICIT::OneStepTheta::PredictConstDisConsistVelAcc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::PredictConstVelConsistAcc(
+bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();

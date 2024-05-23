@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(
+    void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
@@ -148,7 +148,7 @@ namespace BEAMINTERACTION
      * @param points (in) Vector with the projection points.
      * @param visualization_params (in) Parameter list with visualization parameters.
      */
-    void AddVisualizationIntegrationPoints(
+    void add_visualization_integration_points(
         const Teuchos::RCP<BeamToSolidOutputWriterVisualization>& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const;

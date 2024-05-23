@@ -73,7 +73,7 @@ namespace MIXTURE
      *
      * @param lambda_pre
      */
-    void UpdateDepositionStretch(double lambda_pre);
+    void update_deposition_stretch(double lambda_pre);
 
     /*!
      * @brief Set deformation state of the fiber
@@ -102,26 +102,28 @@ namespace MIXTURE
      * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
      * lambda_r
      */
-    CORE::LINALG::Matrix<2, 2> IntegrateLocalEvolutionEquationsImplicit(double dt);
+    CORE::LINALG::Matrix<2, 2> integrate_local_evolution_equations_implicit(double dt);
 
     /*!
      * @brief Integrate the local evolution equation with an explicit time integration scheme.
      *
      * @param dt (in) : timestep
      */
-    void IntegrateLocalEvolutionEquationsExplicit(double dt);
+    void integrate_local_evolution_equations_explicit(double dt);
     /// @}
-    [[nodiscard]] double EvaluateCurrentHomeostaticFiberCauchyStress() const;
-    [[nodiscard]] double EvaluateCurrentFiberCauchyStress() const;
-    [[nodiscard]] double EvaluateCurrentFiberPK2Stress() const;
-    [[nodiscard]] double EvaluateDCurrentFiberPK2StressDLambdafsq() const;
-    [[nodiscard]] double EvaluateDCurrentFiberPK2StressDLambdar() const;
-    [[nodiscard]] double EvaluateDCurrentGrowthEvolutionImplicitTimeIntegrationResiduumDLambdafsq(
+    [[nodiscard]] double evaluate_current_homeostatic_fiber_cauchy_stress() const;
+    [[nodiscard]] double evaluate_current_fiber_cauchy_stress() const;
+    [[nodiscard]] double evaluate_current_fiber_p_k2_stress() const;
+    [[nodiscard]] double evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
+    [[nodiscard]] double evaluate_d_current_fiber_p_k2_stress_d_lambdar() const;
+    [[nodiscard]] double
+    evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
         double dt) const;
-    [[nodiscard]] double EvaluateDCurrentRemodelEvolutionImplicitTimeIntegrationResiduumDLambdafsq(
+    [[nodiscard]] double
+    evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
         double dt) const;
-    [[nodiscard]] double EvaluateCurrentGrowthScalar() const;
-    [[nodiscard]] double EvaluateCurrentLambdar() const;
+    [[nodiscard]] double evaluate_current_growth_scalar() const;
+    [[nodiscard]] double evaluate_current_lambdar() const;
     /// @}
 
    private:

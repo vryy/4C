@@ -110,12 +110,12 @@ namespace STR
     void Setup();
 
     //! setup the MultiMapExtractor in the global state
-    void SetupMultiMapExtractor();
+    void setup_multi_map_extractor();
 
     //! @name General evaluate routines
     //!@{
 
-    bool InitializeInertiaAndDamping(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac);
+    bool initialize_inertia_and_damping(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac);
 
     bool ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f);
 
@@ -189,7 +189,7 @@ namespace STR
      *  example is the condensed contact.
      *
      *  \author hiermeier \date 03/18 */
-    void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
+    void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const;
 
     /*! \brief Predict all internal variables in model evaluators
      *
@@ -274,7 +274,7 @@ namespace STR
      * @param timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
      * @param modjac ??
      */
-    void AssembleJacobianContributionsFromElementLevelForPTC(const Vector& me_vec,
+    void assemble_jacobian_contributions_from_element_level_for_ptc(const Vector& me_vec,
         const double timefac_np, Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac);
 
     /** \brief Assembly of a sub-set of stiffness contributions
@@ -296,7 +296,7 @@ namespace STR
 
     void CreateBackupState(const Epetra_Vector& dir);
 
-    void RecoverFromBackupState();
+    void recover_from_backup_state();
 
     /*! \brief reset all model states (incl. the structural dynamic state)
      *
@@ -358,13 +358,13 @@ namespace STR
     void UpdateResidual();
 
     //! calculation of stresses and strains
-    void DetermineStressStrain();
+    void determine_stress_strain();
 
     //! calculation of engery
     void DetermineEnergy();
 
     //! calculation of an optional quantitiy
-    void DetermineOptionalQuantity();
+    void determine_optional_quantity();
 
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
@@ -372,10 +372,10 @@ namespace STR
     /**
      * \brief Do stuff that has to be done before the runtime output is written.
      */
-    void RuntimePreOutputStepState();
+    void runtime_pre_output_step_state();
 
     //! Write the current step state during runtime
-    void RuntimeOutputStepState() const;
+    void runtime_output_step_state() const;
 
     //! Do things after writing output
     void PostOutput();
@@ -420,19 +420,19 @@ namespace STR
      *  method
      *
      *  \author hiermeier \date 12/17 */
-    void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+    void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
         const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
 
     /*! \brief Executed before the solution of the linear system
      *
      *  \author seitz \date 04/17 */
-    void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+    void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
         const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
 
     //!@}
 
     //! computes element based scaling contributions for PTC
-    void ComputeJacobianContributionsFromElementLevelForPTC(
+    void compute_jacobian_contributions_from_element_level_for_ptc(
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
    protected:

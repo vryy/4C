@@ -380,7 +380,7 @@ namespace MAT
     void SetupLatticeVectors();
 
     //! read lattice orientation matrix from .dat file
-    void SetupLatticeOrientation(INPUT::LineDefinition* linedef);
+    void setup_lattice_orientation(INPUT::LineDefinition* linedef);
 
     //! update internal variables
     void Update() override;
@@ -397,9 +397,10 @@ namespace MAT
         int eleGID) override;
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
-    void MillerBravaisToMiller(const std::vector<CORE::LINALG::Matrix<4, 1>>&
-                                   plane_normal_hex,  //!< [IN] vector of slip/twinning plane
-                                                      //!< normals in Miller-Bravais index notation
+    void miller_bravais_to_miller(
+        const std::vector<CORE::LINALG::Matrix<4, 1>>&
+            plane_normal_hex,  //!< [IN] vector of slip/twinning plane
+                               //!< normals in Miller-Bravais index notation
         const std::vector<CORE::LINALG::Matrix<4,
             1>>& direction_hex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais
                                  //!< index notation

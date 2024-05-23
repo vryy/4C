@@ -70,7 +70,7 @@ void FSI::Partitioned::Setup()
   FSI::Algorithm::Setup();
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-  SetDefaultParameters(fsidyn, noxparameterlist_);
+  set_default_parameters(fsidyn, noxparameterlist_);
   SetupCoupling(fsidyn, Comm());
 }
 
@@ -81,11 +81,11 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 {
   if (Comm().MyPID() == 0) std::cout << "\n SetupCoupling in FSI::Partitioned ..." << std::endl;
 
-  CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
 
   if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
@@ -95,7 +95,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   {
     matchingnodes_ = true;
     const int ndim = GLOBAL::Problem::Instance()->NDim();
-    coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+    coupsf.setup_condition_coupling(*StructureField()->Discretization(),
         StructureField()->Interface()->FSICondMap(), *MBFluidField()->Discretization(),
         MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -113,9 +113,9 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 
     Teuchos::RCP<ADAPTER::FluidXFEM> x_movingboundary =
         Teuchos::rcp_dynamic_cast<ADAPTER::FluidXFEM>(MBFluidField());
-    coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+    coupsf.setup_condition_coupling(*StructureField()->Discretization(),
         StructureField()->Interface()->FSICondMap(),
-        *x_movingboundary->BoundaryDiscretization(),  // use the matching boundary discretization
+        *x_movingboundary->boundary_discretization(),  // use the matching boundary discretization
         x_movingboundary->StructInterface()->FSICondMap(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
@@ -137,7 +137,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
     coupsfm_->Setup(StructureField()->Discretization(), MBFluidField()->Discretization(),
         (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()))
             ->AleField()
-            ->WriteAccessDiscretization(),
+            ->write_access_discretization(),
         coupleddof, "FSICoupling", comm, true);
   }
   else
@@ -153,11 +153,11 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::SetDefaultParameters(
+void FSI::Partitioned::set_default_parameters(
     const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
   if (Comm().MyPID() == 0)
-    std::cout << "\n SetDefaultParameters in FSI::Partitioned ..." << std::endl;
+    std::cout << "\n set_default_parameters in FSI::Partitioned ..." << std::endl;
 
   // extract sublist with settings for partitioned solver
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
@@ -424,7 +424,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   }
 
   // get an idea of interface displacement
-  ExtractPreviousInterfaceSolution();
+  extract_previous_interface_solution();
 
   Teuchos::Time timer("time step timer");
 
@@ -530,7 +530,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // extract final displacement and velocity
     // since we did update, this is very easy to extract
-    ExtractPreviousInterfaceSolution();
+    extract_previous_interface_solution();
 
     // write current solution
     Output();
@@ -763,7 +763,7 @@ void FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 {
-  return StructureField()->PredictInterfaceDispnp();
+  return StructureField()->predict_interface_dispnp();
 }
 
 
@@ -772,7 +772,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceDisp()
 {
   // extract displacements
-  return StructureField()->ExtractInterfaceDispnp();
+  return StructureField()->extract_interface_dispnp();
 }
 
 
@@ -781,7 +781,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceDisp()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceForce()
 {
   // extract forces
-  return FluidToStruct(MBFluidField()->ExtractInterfaceForces());
+  return FluidToStruct(MBFluidField()->extract_interface_forces());
 }
 
 
@@ -879,7 +879,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);
@@ -895,7 +895,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
     return coupsf.SlaveToMaster(iv);
@@ -903,7 +903,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
   else
   {
     // Translate consistent nodal forces to interface loads
-    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField()->IntegrateInterfaceShape();
+    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField()->integrate_interface_shape();
     const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
 
     if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
@@ -916,24 +916,24 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar()
+CORE::ADAPTER::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar()
 {
   return *coupsfm_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const CORE::ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() const
+const CORE::ADAPTER::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar() const
 {
   return *coupsfm_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::ExtractPreviousInterfaceSolution()
+void FSI::Partitioned::extract_previous_interface_solution()
 {
-  idispn_ = StructureField()->ExtractInterfaceDispn();
-  iveln_ = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
+  idispn_ = StructureField()->extract_interface_dispn();
+  iveln_ = FluidToStruct(MBFluidField()->extract_interface_veln());
 }
 
 /*----------------------------------------------------------------------*/

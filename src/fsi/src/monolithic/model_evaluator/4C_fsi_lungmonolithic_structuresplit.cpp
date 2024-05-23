@@ -110,7 +110,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
 {
   GeneralSetup();
   // create combined map
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   FluidField()->UseBlockMatrix(false);
 
@@ -125,7 +125,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithicStructureSplit::CreateCombinedDofRowMap()
+void FSI::LungMonolithicStructureSplit::create_combined_dof_row_map()
 {
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
       Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
@@ -200,7 +200,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
   CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
 
-  Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+  Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_interface_veln();
   Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
   Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
@@ -319,7 +319,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSpa
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
@@ -529,7 +529,7 @@ void FSI::LungMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const E
   // process structure unknowns
 
   Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSICondVector(fx);
-  FluidField()->VelocityToDisplacement(fcx);
+  FluidField()->velocity_to_displacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x, 0);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 

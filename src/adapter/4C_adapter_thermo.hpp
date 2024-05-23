@@ -220,10 +220,11 @@ namespace ADAPTER
     virtual void ResetStep() = 0;
 
     //! store an RCP to the contact strategy constructed in the structural time integration
-    virtual void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) = 0;
+    virtual void set_nitsche_contact_strategy(
+        Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) = 0;
 
     //! store an RCP to the contact interface parameters in the structural time integration
-    virtual void SetNitscheContactParameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
+    virtual void set_nitsche_contact_parameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
 
     /// apply interface loads on the thermal field
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
@@ -264,7 +265,7 @@ namespace ADAPTER
     /// In partitioned solution schemes, it is better to keep the current
     /// solution instead of evaluating the initial guess (as the predictor)
     /// does.
-    virtual void PreparePartitionStep() = 0;
+    virtual void prepare_partition_step() = 0;
 
     /// create result test for encapulated thermo algorithm
     virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;

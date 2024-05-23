@@ -59,7 +59,7 @@ void SCATRA::TimIntCardiacMonodomainOST::Update()
   TimIntOneStepTheta::Update();
 
   // time update of myocard material
-  TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
+  TimIntCardiacMonodomain::element_material_time_update();
 
   return;
 }
@@ -105,11 +105,11 @@ void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 06/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::AddTimeIntegrationSpecificVectors(
+void SCATRA::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   // Call function from baseclass
-  TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  TimIntOneStepTheta::add_time_integration_specific_vectors(forcedincrementalsolver);
   discret_->SetState("phin", phin_);
 
   return;
@@ -155,7 +155,7 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Update()
   TimIntBDF2::Update();
 
   // time update of myocard material
-  TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
+  TimIntCardiacMonodomain::element_material_time_update();
 
   return;
 }
@@ -240,7 +240,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Update()
   TimIntGenAlpha::Update();
 
   // time update of myocard material
-  TimIntCardiacMonodomain::ElementMaterialTimeUpdate();
+  TimIntCardiacMonodomain::element_material_time_update();
 
   return;
 }
@@ -282,11 +282,11 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 12/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(
+void SCATRA::TimIntCardiacMonodomainGenAlpha::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   // Call function from baseclass
-  TimIntGenAlpha::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  TimIntGenAlpha::add_time_integration_specific_vectors(forcedincrementalsolver);
 
   if (incremental_ or forcedincrementalsolver) discret_->SetState("phin", phin_);
 

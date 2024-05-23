@@ -81,7 +81,7 @@ class Beam3ContactOctTree
   };
 
   //!\brief Initialize class vectors for new Octree search
-  void InitializeOctreeSearch();
+  void initialize_octree_search();
   /*!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
    * \param currentpositions (in) map holding node positions
    */
@@ -147,7 +147,7 @@ class Beam3ContactOctTree
    * \param contactpaits      (out) vector holding all contact pairs considered after octree
    * evaluation
    */
-  void BoundingBoxIntersection(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+  void bounding_box_intersection(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       std::vector<std::vector<DRT::Element*>>& contactpairelements);
 
   /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to
@@ -178,7 +178,7 @@ class Beam3ContactOctTree
    *  \param OutVec   (in) Target/Output vector
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag */
-  void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec,
+  void communicate_multi_vector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec,
       bool zerofy = false, bool doexport = true, bool doimport = true);
 
   /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
@@ -187,15 +187,16 @@ class Beam3ContactOctTree
       CORE::LINALG::SerialDenseMatrix& coord);
 
   /*! \brief Undo the shifts due periodic BCs and make coord continuous */
-  void UndoEffectOfPeriodicBoundaryCondition(
+  void undo_effect_of_periodic_boundary_condition(
       CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts);
 
   /*! \brief Retrieve bounding box specific extrusion value*/
-  double GetBoundingBoxExtrusionValue();
+  double get_bounding_box_extrusion_value();
 
   //! \brief translate std::vec<std::vec<type> > > to Epetra_MultiVector
   template <class TYPE>
-  void StdVecToEpetraMultiVec(std::vector<std::vector<TYPE>>& stdvec, Epetra_MultiVector& epetravec)
+  void std_vec_to_epetra_multi_vec(
+      std::vector<std::vector<TYPE>>& stdvec, Epetra_MultiVector& epetravec)
   {
     if (std::strcmp(typeid(TYPE).name(), "i") != 0 && std::strcmp(typeid(TYPE).name(), "f") != 0 &&
         std::strcmp(typeid(TYPE).name(), "d") != 0)
@@ -213,7 +214,8 @@ class Beam3ContactOctTree
   }
   //! \brief translate Epetra_MultiVector to std::vec<std::vec<type> > >
   template <class TYPE>
-  void EpetraMultiVecToStdVec(Epetra_MultiVector& epetravec, std::vector<std::vector<TYPE>>& stdvec)
+  void epetra_multi_vec_to_std_vec(
+      Epetra_MultiVector& epetravec, std::vector<std::vector<TYPE>>& stdvec)
   {
     if (std::strcmp(typeid(TYPE).name(), "i") != 0 && std::strcmp(typeid(TYPE).name(), "f") != 0 &&
         std::strcmp(typeid(TYPE).name(), "d") != 0)

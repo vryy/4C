@@ -63,7 +63,7 @@ namespace DRT
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface
-      void NormDiffFluxAndVelIntegral(const DRT::Element* ele, Teuchos::ParameterList& params,
+      void norm_diff_flux_and_vel_integral(const DRT::Element* ele, Teuchos::ParameterList& params,
           const std::vector<double>& enormdiffflux, const std::vector<double>& enormvel);
 
       //! thermodynamic pressure

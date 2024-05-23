@@ -74,7 +74,7 @@ namespace DRT
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void EvaluateS2ICouplingAtIntegrationPoint(
+      static void evaluate_s2_i_coupling_at_integration_point(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
@@ -113,7 +113,7 @@ namespace DRT
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
       template <CORE::FE::CellType distype_master>
-      static void EvaluateS2ICouplingODAtIntegrationPoint(
+      static void evaluate_s2_i_coupling_od_at_integration_point(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
@@ -147,12 +147,12 @@ namespace DRT
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                      ///< parameter list
-          DRT::Discretization& discretization,                 ///< discretization
-          DRT::Element::LocationArray& la,                     ///< location array
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,       ///< element matrix for slave side
-          CORE::LINALG::SerialDenseMatrix& emastermatrix       ///< element matrix for master side
+      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                          ///< parameter list
+          DRT::Discretization& discretization,                     ///< discretization
+          DRT::Element::LocationArray& la,                         ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
 
       //! evaluate action

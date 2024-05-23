@@ -27,7 +27,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set params interface pointer in the parent element
-  ParentElement()->SetParamsInterfacePtr(params);
+  ParentElement()->set_params_interface_ptr(params);
 
   // get type of condition
   enum LoadType

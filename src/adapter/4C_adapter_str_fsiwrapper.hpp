@@ -54,13 +54,13 @@ namespace ADAPTER
     /// @name Extract interface values
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispn();
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp();
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
+    virtual Teuchos::RCP<Epetra_Vector> predict_interface_dispnp();
 
     /// @name Apply interface forces
 
@@ -70,20 +70,20 @@ namespace ADAPTER
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// remove as soon as new structure is fully usable ! todo
     /// only 3 nightly tests use this method:
     /// fsi_dc3D_part_ait_ga_ost_xwall (no solidsh8 possible yet)
     /// fsi_ow3D_mtr_drt (no solidsh8 possible yet)
     /// constr2D_fsi (newtonlinuzawa not implemented; but really needed ?)
-    virtual void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// rebuild FSI interface from structure side
     virtual void RebuildInterface();
 
     /// set pointer to model evaluator
-    void SetModelEvaluatorPtr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> me)
     {
       fsi_model_evaluator_ = me;
       return;

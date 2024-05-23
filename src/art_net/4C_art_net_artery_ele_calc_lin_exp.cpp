@@ -95,7 +95,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
 
 
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow./area.,
@@ -165,12 +165,12 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
     break;
     case ARTERY::calc_postpro_vals:
     {
-      CalcPostprocessingValues(ele, params, discretization, la[0].lm_, mat);
+      calc_postprocessing_values(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::calc_scatra_from_scatra_fb:
     {
-      CalcScatraFromScatraFW(ele, params, discretization, la[0].lm_, mat);
+      calc_scatra_from_scatra_fw(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case ARTERY::evaluate_wf_wb:
@@ -180,7 +180,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
     break;
     case ARTERY::evaluate_scatra_analytically:
     {
-      SolveScatraAnalytically(ele, params, discretization, la[0].lm_, mat);
+      solve_scatra_analytically(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     default:
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
 
 
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow./area.,
@@ -1535,7 +1535,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
 {
@@ -1681,7 +1681,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
  |  from the forward and backward transport                             |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcScatraFromScatraFW(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
 {
@@ -1847,7 +1847,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery* ele,
+void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
 {
@@ -1868,7 +1868,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
 
 
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow./area.,

@@ -65,13 +65,13 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! prescribe open boundary states
-    virtual void PrescribeOpenBoundaryStates(const double& evaltime) = 0;
+    virtual void prescribe_open_boundary_states(const double& evaltime) = 0;
 
     //! interpolate open boundary states
-    virtual void InterpolateOpenBoundaryStates() = 0;
+    virtual void interpolate_open_boundary_states() = 0;
 
     //! check open boundary phase change
-    virtual void CheckOpenBoundaryPhaseChange(const double maxinteractiondistance) final;
+    virtual void check_open_boundary_phase_change(const double maxinteractiondistance) final;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -132,10 +132,10 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! prescribe open boundary states
-    void PrescribeOpenBoundaryStates(const double& evaltime) override;
+    void prescribe_open_boundary_states(const double& evaltime) override;
 
     //! interpolate open boundary states
-    void InterpolateOpenBoundaryStates() override;
+    void interpolate_open_boundary_states() override;
   };
 
   class SPHOpenBoundaryNeumann : public SPHOpenBoundaryBase
@@ -156,10 +156,10 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! prescribe open boundary states
-    void PrescribeOpenBoundaryStates(const double& evaltime) override;
+    void prescribe_open_boundary_states(const double& evaltime) override;
 
     //! interpolate open boundary states
-    void InterpolateOpenBoundaryStates() override;
+    void interpolate_open_boundary_states() override;
   };
 
 }  // namespace PARTICLEINTERACTION

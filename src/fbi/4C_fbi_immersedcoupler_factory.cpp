@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::CreateGeometryCoupler(
+Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::create_geometry_coupler(
     const Teuchos::ParameterList& fbidyn)
 {
   INPAR::FBI::BeamToFluidPreSortStrategy presort_strategy =

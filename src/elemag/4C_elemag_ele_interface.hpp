@@ -60,7 +60,7 @@ namespace DRT
         This class does not provide a definition for this function; it
         must be defined in ElemagEleCalc.
        */
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
+      virtual int integrate_shape_function(DRT::ELEMENTS::Elemag* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1) = 0;
     };

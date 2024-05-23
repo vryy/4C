@@ -32,12 +32,12 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
   DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*ele1);
+    std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*ele1);
 
     for (unsigned i = 0; i < ids_2.size(); ++i)
     {
       DRT::Element* actele2 = dis2->gElement(ids_2[i]);
-      std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*actele2);
+      std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
@@ -75,12 +75,12 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
   DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*ele2);
+    std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
       DRT::Element* actele1 = dis1->gElement(ids_1[i]);
-      std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*actele1);
+      std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 

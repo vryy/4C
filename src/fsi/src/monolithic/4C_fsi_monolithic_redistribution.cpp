@@ -38,10 +38,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::RedistributeMonolithicGraph(
+void FSI::BlockMonolithic::redistribute_monolithic_graph(
     const FSI_COUPLING coupling, const Epetra_Comm& comm)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeMonolithicGraph");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::redistribute_monolithic_graph");
 
   const int myrank = comm.MyPID();
 
@@ -104,7 +104,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   /*********************************/
   /* get node mapping at interface */
   /*********************************/
-  CreateInterfaceMapping(structuredis, fluiddis, slavenodesPtr, mastergnodesPtr,
+  create_interface_mapping(structuredis, fluiddis, slavenodesPtr, mastergnodesPtr,
       fluidToStructureMap, structureToFluidMap);
 
 
@@ -164,7 +164,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
       insertedEdges;  // edges inserted during construction of monolithic graph:
                       // have to be removed after redistribution
 
-  BuildMonolithicGraph(monolithicGraph, deletedEdges, insertedEdges, fluidToStructureMap,
+  build_monolithic_graph(monolithicGraph, deletedEdges, insertedEdges, fluidToStructureMap,
       structureToFluidMap, structuredis, fluiddis);
 
   if (myrank == 0) std::cout << "About to call Partitioner..." << std::endl;
@@ -212,7 +212,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   Teuchos::RCP<Epetra_CrsGraph> fluidGraphRedist =
       Teuchos::rcp(new Epetra_CrsGraph(Copy, *fluidRowmap, 0));
 
-  RestoreRedistStructFluidGraph(insertedEdges, deletedEdges, bal_graph, monolithicRownodes,
+  restore_redist_struct_fluid_graph(insertedEdges, deletedEdges, bal_graph, monolithicRownodes,
       monolithicColnodes, structureGraphRedist, fluidGraphRedist, fluidToStructureMap);
 
   structureGraphRedist->FillComplete();
@@ -255,13 +255,13 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   fluidoutput->OverwriteResultFile();
   aleoutput->OverwriteResultFile();
   structureoutput->OverwriteResultFile();
-  CreateStructureTimeIntegrator(fsidyn, structuredis);
+  create_structure_time_integrator(fsidyn, structuredis);
   SetLambda();
 
   fluidoutput->OverwriteResultFile();
   aleoutput->OverwriteResultFile();
   structureoutput->OverwriteResultFile();
-  CreateFluidAndALETimeIntegrator(fsidyn, fluiddis, aledis);
+  create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
   SetLambda();
 
 
@@ -289,11 +289,11 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Redistribute domain,
+void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::Redistribute domain,
     const FSI_COUPLING coupling, const double inputWeight1, const double inputWeight2,
     const Epetra_Comm& comm, int unbalance)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::RedistributeDomainDecomposition");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::redistribute_domain_decomposition");
 
   interfaceprocs_.clear();
 
@@ -358,7 +358,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   std::map<int, std::list<int>> inverseNodeOwner;  // Create a map that maps Owner <-> Nodes
   std::map<int, std::list<int>>* inverseNodeOwnerPtr = &inverseNodeOwner;
 
-  CreateNodeOwnerRelationship(nodeOwnerPtr, inverseNodeOwnerPtr, slavenodesPtr, mastergnodesPtr,
+  create_node_owner_relationship(nodeOwnerPtr, inverseNodeOwnerPtr, slavenodesPtr, mastergnodesPtr,
       structuredis, fluiddis, domain);
 
   /*********************************************/
@@ -479,7 +479,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
     fluidoutput->OverwriteResultFile();
     aleoutput->OverwriteResultFile();
     structureoutput->OverwriteResultFile();
-    CreateStructureTimeIntegrator(fsidyn, structuredis);
+    create_structure_time_integrator(fsidyn, structuredis);
     SetLambda();
   }
   else if (domain == INPAR::FSI::Redistribute_fluid)
@@ -487,7 +487,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
     fluidoutput->OverwriteResultFile();
     aleoutput->OverwriteResultFile();
     structureoutput->OverwriteResultFile();
-    CreateFluidAndALETimeIntegrator(fsidyn, fluiddis, aledis);
+    create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
     SetLambda();
   }
 
@@ -512,8 +512,8 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   //  aleoutput->OverwriteResultFile();
   //  structureoutput->OverwriteResultFile();
   //
-  //  CreateStructureTimeIntegrator(fsidyn, structuredis);
-  //  CreateFluidAndALETimeIntegrator(fsidyn, fluiddis, aledis);
+  //  create_structure_time_integrator(fsidyn, structuredis);
+  //  create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
   //  SetLambda();
 
   /*
@@ -539,25 +539,25 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   // check and fix ml nullspace if neccessary
 
   //  // get parameter list of structural dynamics
-  //  const Teuchos::ParameterList& sdyn = problem->StructuralDynamicParams();
+  //  const Teuchos::ParameterList& sdyn = problem->structural_dynamic_params();
   //  // get the solver number used for structural solver
   //  const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   //  Teuchos::ParameterList slist = problem->SolverParams(slinsolvernumber);
-  //  structuredis->ComputeNullSpaceIfNecessary(slist,true);
+  //  structuredis->compute_null_space_if_necessary(slist,true);
   //
   //  // get parameter list of fluid dynamics
   //  const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
   //  // get the solver number used for fluid solver
   //  const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   //  Teuchos::ParameterList flist = problem->SolverParams(flinsolvernumber);
-  //  fluiddis->ComputeNullSpaceIfNecessary(flist,true);
+  //  fluiddis->compute_null_space_if_necessary(flist,true);
   //
   //  // get parameter list of ale dynamics
   //  const Teuchos::ParameterList& adyn = problem->AleDynamicParams();
   //  // get the solver number used for ale solver
   //  const int alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
   //  Teuchos::ParameterList alist = problem->SolverParams(alinsolvernumber);
-  //  aledis->ComputeNullSpaceIfNecessary(alist,true);
+  //  aledis->compute_null_space_if_necessary(alist,true);
 
 
   // setup has do be done again
@@ -1084,7 +1084,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
 }
 
 /*---------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
+void FSI::BlockMonolithic::restore_redist_struct_fluid_graph(
     std::map<int, std::vector<int>>& edgesToRemove, std::map<int, std::vector<int>>& edgesToInsert,
     Teuchos::RCP<Epetra_CrsGraph> monolithicGraph, Teuchos::RCP<Epetra_Map> monolithicRowmap,
     Teuchos::RCP<Epetra_Map> monolithicColmap, Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
@@ -1297,7 +1297,7 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::FindNodeRelatedToDof(std::map<int, DRT::Node*>* nodes, int gdofid,
+void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, DRT::Node*>* nodes, int gdofid,
     Teuchos::RCP<DRT::Discretization> discretization, int* re)
 {
   re[0] = -2;  // code: the node cannot be found on this proc
@@ -1323,7 +1323,7 @@ void FSI::BlockMonolithic::FindNodeRelatedToDof(std::map<int, DRT::Node*>* nodes
   }
 }
 
-void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+void FSI::BlockMonolithic::build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
     std::map<int, std::vector<int>>& deletedEdges, std::map<int, std::vector<int>>& insertedEdges,
     std::map<int, std::vector<int>>& fluidToStructureMap,
     std::map<int, std::vector<int>>& structureToFluidMap,

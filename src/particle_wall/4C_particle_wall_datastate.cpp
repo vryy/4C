@@ -87,7 +87,7 @@ void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
       FOUR_C_THROW("map of state 'force_col_' corrupt!");
 }
 
-void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors()
+void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
 {
   if (disp_row_ != Teuchos::null and disp_col_ != Teuchos::null)
   {

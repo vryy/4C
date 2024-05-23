@@ -38,7 +38,7 @@ PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWr
                               *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time));
 }
 
-void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRuntimeOutput(
+void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization_runtime_output(
     const int step, const double time) const
 {
   // reset the writer object
@@ -47,7 +47,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
   // node displacements
   {
     if (walldatastate_->GetDispCol() != Teuchos::null)
-      runtime_vtuwriter_->AppendDofBasedResultDataVector(
+      runtime_vtuwriter_->append_dof_based_result_data_vector(
           walldatastate_->GetRefDispCol(), 3, 0, "disp");
   }
 
@@ -60,7 +60,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
       const DRT::Node* node = walldiscretization_->lColNode(inode);
       (*nodeowner)[inode] = node->Owner();
     }
-    runtime_vtuwriter_->AppendNodeBasedResultDataVector(nodeowner, 1, "owner");
+    runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");
   }
 
   // element owner
@@ -77,7 +77,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
       const DRT::Element* ele = walldiscretization_->lRowElement(iele);
       (*eleid)[iele] = ele->Id();
     }
-    runtime_vtuwriter_->AppendElementBasedResultDataVector(eleid, 1, "id");
+    runtime_vtuwriter_->append_element_based_result_data_vector(eleid, 1, "id");
   }
 
   // finalize everything and write all required files to filesystem

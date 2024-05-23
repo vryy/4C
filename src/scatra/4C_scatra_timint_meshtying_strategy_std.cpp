@@ -57,7 +57,7 @@ void SCATRA::MeshtyingStrategyStd::SetupMeshtying() { return; }
 void SCATRA::MeshtyingStrategyStd::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+  init_conv_check_strategy();
   return;
 }
 
@@ -94,7 +94,7 @@ const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyStd::init_conv_check_strategy()
 {
   if (scatratimint_->MicroScale())
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(
@@ -108,6 +108,6 @@ void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-}  // SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyStd::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

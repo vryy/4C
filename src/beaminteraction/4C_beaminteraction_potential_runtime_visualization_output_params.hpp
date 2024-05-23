@@ -40,43 +40,43 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the container holding the general output parameters
      */
-    const IO::VisualizationParameters& GetVisualizationParameters() const
+    const IO::VisualizationParameters& get_visualization_parameters() const
     {
       return visualization_parameters_;
     }
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
-    int OutputIntervalInSteps() const
+    int output_interval_in_steps() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return output_interval_steps_;
     };
 
     /// whether to write output in every iteration of the nonlinear solver
-    bool OutputEveryIteration() const
+    bool output_every_iteration() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return output_every_iteration_;
     };
 
     /// whether to write output for forces
     bool IsWriteForces() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return output_forces_;
     };
 
     /// whether to write output for moments
     bool IsWriteMoments() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return output_moments_;
     };
 
     /// whether to write forces/moments separately for each element pair
-    bool IsWriteForcesMomentsPerElementPair() const
+    bool is_write_forces_moments_per_element_pair() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return write_force_moment_per_elepair_;
     };
 
@@ -88,7 +88,7 @@ namespace BEAMINTERACTION
     inline const bool& IsSetup() const { return issetup_; };
 
     //! asserts the init and setup status
-    void ThrowErrorIfNotInitAndSetup() const;
+    void throw_error_if_not_init_and_setup() const;
 
     //! asserts the init status
     void ThrowErrorIfNotInit() const;

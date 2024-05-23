@@ -194,7 +194,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 ///*----------------------------------------------------------------------------*
 // |  Initialize data container                                  eichinger 10/16|
 // *----------------------------------------------------------------------------*/
-// void CROSSLINKING::CrosslinkerNode::InitializeDataContainer()
+// void CROSSLINKING::CrosslinkerNode::initialize_data_container()
 //{
 //  // only initialize if not yet done
 //  if (cldata_ ==Teuchos::null)

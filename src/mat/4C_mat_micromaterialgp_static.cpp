@@ -49,8 +49,9 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   old_kda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
-  const Teuchos::ParameterList& sdyn_macro = GLOBAL::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& sdyn_micro = microproblem->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn_macro =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn_micro = microproblem->structural_dynamic_params();
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
   microdis->Comm().Broadcast(&dt_, 1, 0);
@@ -179,12 +180,12 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
     Teuchos::RCP<IO::OutputControl> microcontrol =
         Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
-            microproblem->SpatialApproximationType(), "micro-input-file-not-known", restartname_,
+            microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->FileSteps(),
             CORE::UTILS::IntegralValue<bool>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
-        microdis, microcontrol, microproblem->SpatialApproximationType()));
+        microdis, microcontrol, microproblem->spatial_approximation_type()));
     micro_output_->SetOutput(microcontrol);
 
     micro_output_->WriteMesh(step_, time_);
@@ -273,7 +274,7 @@ void MAT::MicroMaterialGP::ResetTimeAndStep()
 
 /// perform microscale simulation
 
-void MAT::MicroMaterialGP::PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::MicroMaterialGP::perform_micro_simulation(CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
@@ -288,7 +289,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* de
 
   microstatic->Predictor(defgrd);
   microstatic->FullNewton();
-  microstatic->StaticHomogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
+  microstatic->static_homogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
   // explicitly since we dealt with Teuchos::RCP's -> any update in class

@@ -83,27 +83,27 @@ namespace ADAPTER
 
     Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override;
 
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
 
     /// Return interface velocity at new time level n+1
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
 
     /// Return interface velocity at old time level n
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
 
-    Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_free_surface_veln() override;
 
-    void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) override;
+    void apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// Apply initial mesh displacement
-    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override;
+    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override;
 
-    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
+    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     /// Update fluid griv velocity via FD approximation
     void UpdateGridv();
 
-    void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
+    void apply_mesh_displacement_increment(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
       FOUR_C_THROW("not implemented!");
     };
@@ -118,7 +118,7 @@ namespace ADAPTER
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    void DisplacementToVelocity(
+    void displacement_to_velocity(
         Teuchos::RCP<Epetra_Vector> fcx  ///< interface displacement step increment
         ) override;
 
@@ -126,17 +126,17 @@ namespace ADAPTER
     //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
-    void VelocityToDisplacement(
+    void velocity_to_displacement(
         Teuchos::RCP<Epetra_Vector> fcx  ///< interface velocity step increment at interface
         ) override;
 
-    void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override;
+    void free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) override;
 
-    void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override;
+    void free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) override;
 
     //@}
 
-    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
+    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     void UseBlockMatrix(bool splitmatrix) override;
 
@@ -214,7 +214,7 @@ namespace ADAPTER
     //@}
 
     /// Calculate WSS vector
-    virtual Teuchos::RCP<Epetra_Vector> CalculateWallShearStresses();
+    virtual Teuchos::RCP<Epetra_Vector> calculate_wall_shear_stresses();
 
    protected:
     /// create conditioned dof-map extractor for the fluid
@@ -316,10 +316,10 @@ namespace ADAPTER
     ) const;
 
     //! return order of accuracy of auxiliary integrator
-    int AuxMethodOrderOfAccuracy() const;
+    int aux_method_order_of_accuracy() const;
 
     //! return leading error coefficient of velocity of auxiliary integrator
-    double AuxMethodLinErrCoeffVel() const;
+    double aux_method_lin_err_coeff_vel() const;
 
     Teuchos::RCP<Epetra_Vector> locerrvelnp_;  ///< vector of temporal local discretization error
 

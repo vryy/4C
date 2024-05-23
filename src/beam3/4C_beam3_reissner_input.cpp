@@ -83,6 +83,9 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno) { centerline_hermite_ = yesno; }
+void DRT::ELEMENTS::Beam3r::set_centerline_hermite(const bool yesno)
+{
+  centerline_hermite_ = yesno;
+}
 
 FOUR_C_NAMESPACE_CLOSE

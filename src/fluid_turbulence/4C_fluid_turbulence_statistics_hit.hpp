@@ -60,12 +60,12 @@ namespace FLD
     //! dump the result to file
     virtual void DumpStatistics(int step, bool multiple_records = false);
     //! version with scalar field
-    virtual void DumpScatraStatistics(int step, bool multiple_records = false);
+    virtual void dump_scatra_statistics(int step, bool multiple_records = false);
 
     //! reset sums and number of samples to zero
     virtual void ClearStatistics();
     //! version with scalar field
-    virtual void ClearScatraStatistics();
+    virtual void clear_scatra_statistics();
 
 
    protected:
@@ -81,10 +81,10 @@ namespace FLD
 
     //! calculate the resolved energy for the given discretization
     //! and write to statistics file
-    virtual void CalculateResolvedEnergyDecayingTurbulence();
+    virtual void calculate_resolved_energy_decaying_turbulence();
 
     //! numerical integration via trapezoidal rule
-    static double IntegrateTrapezoidalRule(
+    static double integrate_trapezoidal_rule(
         const double& x_1, const double& x_2, const double& y_1, const double& y_2)
     {
       const double value = 0.5 * (x_2 - x_1) * (y_2 + y_1);
@@ -195,14 +195,14 @@ namespace FLD
     };
 
     //! version with scalar field
-    void DumpScatraStatistics(int step, bool multiple_records = false) override
+    void dump_scatra_statistics(int step, bool multiple_records = false) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
     };
 
     //! version with scalar field
-    void ClearScatraStatistics() override
+    void clear_scatra_statistics() override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
@@ -212,7 +212,7 @@ namespace FLD
    protected:
     //! calculate the resolved energy for the given discretization
     //! and write to statistics file
-    void CalculateResolvedEnergyDecayingTurbulence() override
+    void calculate_resolved_energy_decaying_turbulence() override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

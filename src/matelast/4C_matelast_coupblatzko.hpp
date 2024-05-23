@@ -105,7 +105,7 @@ namespace MAT
           ) override;
 
       // add first and second derivative w.r.t. principal invariants
-      void AddDerivativesPrincipal(
+      void add_derivatives_principal(
           CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
           CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
           const CORE::LINALG::Matrix<3, 1>&
@@ -115,7 +115,7 @@ namespace MAT
           ) override;
 
       // add third derivative w.r.t. principal invariants
-      void AddThirdDerivativesPrincipalIso(
+      void add_third_derivatives_principal_iso(
           CORE::LINALG::Matrix<10, 1>&
               dddPIII_iso,  ///< third derivative with respect to invariants
           const CORE::LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants

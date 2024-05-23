@@ -125,7 +125,7 @@ void STR::TIMINT::ImplicitBase::PrintStep()
   const int stepn = DataGlobalState().GetStepN();
   const double& timen = DataGlobalState().GetTimeN();
   const double& dt = (*DataGlobalState().GetDeltaTime())[0];
-  const int newtoniter = DataGlobalState().GetNlnIterationNumber(stepn);
+  const int newtoniter = DataGlobalState().get_nln_iteration_number(stepn);
   double wct = DataGlobalState().GetTimer()->totalElapsedTime(true);
 
   // open outstd::stringstream

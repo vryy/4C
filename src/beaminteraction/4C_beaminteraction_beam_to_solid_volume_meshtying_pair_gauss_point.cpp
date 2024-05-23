@@ -51,7 +51,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
@@ -72,7 +72,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   double segment_jacobian = 0.0;
   double beam_segmentation_factor = 0.0;
   double penalty_parameter =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+      this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.
@@ -187,7 +187,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 {
   // This function only gives contributions for rotational coupling.
   auto rot_coupling_type =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingType();
+      this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
   if (rot_coupling_type == INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none) return;
 
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
@@ -195,7 +195,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
@@ -228,15 +228,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   {
     // In the case of "fix_triad_2d" we couple both, the ey and ez direction to the beam. Therefore,
     // we have to evaluate the coupling terms w.r.t both of those coupling types.
-    EvaluateRotationalCouplingTerms(
+    evaluate_rotational_coupling_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_force, local_stiff);
-    EvaluateRotationalCouplingTerms(
+    evaluate_rotational_coupling_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_force, local_stiff);
   }
   else
-    EvaluateRotationalCouplingTerms(rot_coupling_type, q_solid, triad_interpolation_scheme,
+    evaluate_rotational_coupling_terms(rot_coupling_type, q_solid, triad_interpolation_scheme,
         ref_triad_interpolation_scheme, local_force, local_stiff);
 
 
@@ -269,7 +269,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
-    solid>::EvaluateRotationalCouplingTerms(  //
+    solid>::evaluate_rotational_coupling_terms(  //
     const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
     const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -313,8 +313,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
   double beam_segmentation_factor = 0.0;
-  double rotational_penalty_parameter =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingPenaltyParameter();
+  double rotational_penalty_parameter = this->Params()
+                                            ->beam_to_solid_volume_meshtying_params()
+                                            ->get_rotational_coupling_penalty_parameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.
@@ -340,7 +341,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
-      triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -350,7 +351,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
-      ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
@@ -399,7 +400,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_fc_solid_d_psi_beam(i_solid_dof, i_dim) = fc_solid_gp(i_solid_dof).dx(i_dim);
 
-      triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+      triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
           I_beam_tilde, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)

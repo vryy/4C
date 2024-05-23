@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_values(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
     DRT::Discretization& discretization,  //!< discretization
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
 
     // gradient of test function times temperature gradient
     double laplawfrhs_gradtemp(0.);
-    GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, vi, gradtemp, derxy);
+    get_laplacian_weak_form_rhs(laplawfrhs_gradtemp, vi, gradtemp, derxy);
 
     for (int ui = 0; ui < nen_; ++ui)
     {
@@ -100,13 +100,13 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
 
     // gradient of test function times temperature gradient
     double laplawfrhs_gradtemp(0.);
-    GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, vi, gradtemp, derxy);
+    get_laplacian_weak_form_rhs(laplawfrhs_gradtemp, vi, gradtemp, derxy);
 
     for (int ui = 0; ui < nen_; ++ui)
     {
       // gradient of test function times gradient of shape function
       double laplawf(0.);
-      GetLaplacianWeakForm(laplawf, vi, ui, derxy);
+      get_laplacian_weak_form(laplawf, vi, ui, derxy);
 
       // linearizations of Soret effect term in concentration residuals w.r.t. thermo dofs
       emat(rowconc, ui) +=
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
   {
     // gradient of test function times temperature gradient
     double laplawfrhs_gradtemp(0.);
-    GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, vi, gradtemp, derxy);
+    get_laplacian_weak_form_rhs(laplawfrhs_gradtemp, vi, gradtemp, derxy);
 
     // contributions of Soret effect term to concentration residuals
     erhs[vi * 2] -=
@@ -205,10 +205,10 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(
     for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       double laplawfrhs(0.0);
-      GetLaplacianWeakFormRHS(laplawfrhs, vi, gradconc, derxy);
+      get_laplacian_weak_form_rhs(laplawfrhs, vi, gradconc, derxy);
       emat(rowconc, ui) += timefacfac * tempderivisodiffcoef * laplawfrhs * funct(ui);
 
-      GetLaplacianWeakFormRHS(laplawfrhs, vi, gradpot, derxy);
+      get_laplacian_weak_form_rhs(laplawfrhs, vi, gradpot, derxy);
       emat(rowpot, ui) += timefacfac * invF * tempderivcond * laplawfrhs * funct(ui) * scalefac;
     }
   }

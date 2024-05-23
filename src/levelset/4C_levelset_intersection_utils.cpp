@@ -90,7 +90,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     const CORE::FE::CellType distype = ele->Shape();
 
     // clear vector each loop
-    BoundaryIntCellsPerEle<T>().clear();
+    boundary_int_cells_per_ele<T>().clear();
 
     // ------------------------------------------------------------------------
     // Prepare cut
@@ -124,7 +124,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
       // ----------------------------------------------------------------------
       // get zero level-set contour
       // ----------------------------------------------------------------------
-      GetZeroLevelSetContour(cuteles, xyze, distype);
+      get_zero_level_set_contour(cuteles, xyze, distype);
     }
     // =========================================================
     // element is uncut
@@ -142,8 +142,8 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     }
 
     // store interface of element
-    if (BoundaryIntCellsPerEle<T>().size() > 0)
-      elementBoundaryIntCells[ele->Id()] = BoundaryIntCellsPerEle<T>();
+    if (boundary_int_cells_per_ele<T>().size() > 0)
+      elementBoundaryIntCells[ele->Id()] = boundary_int_cells_per_ele<T>();
   }
 
   return;
@@ -151,7 +151,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
+void SCATRA::LEVELSET::Intersection::get_zero_level_set_contour(
     const CORE::GEO::CUT::plain_element_set& cuteles, const CORE::LINALG::SerialDenseMatrix& xyze,
     CORE::FE::CellType distype)
 {
@@ -181,7 +181,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
         {
           CORE::GEO::CUT::BoundaryCell* bcell = *ibcell;
 
-          AddToBoundaryIntCellsPerEle(xyze, *bcell, distype);
+          add_to_boundary_int_cells_per_ele(xyze, *bcell, distype);
 
           Surface() += bcell->Area();
         }
@@ -196,12 +196,12 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
+void SCATRA::LEVELSET::Intersection::add_to_boundary_int_cells_per_ele(
     const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::GEO::CUT::BoundaryCell& bcell,
     CORE::FE::CellType distype_ele)
 {
   CORE::FE::CellType distype_bc = bcell.Shape();
-  CheckBoundaryCellType(distype_bc);
+  check_boundary_cell_type(distype_bc);
 
   const int numnodebc = CORE::FE::getNumberOfElementNodes(distype_bc);
 
@@ -226,13 +226,13 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
   // store boundary element and sum area into surface
   // be careful, we only set physical coordinates
   CORE::LINALG::SerialDenseMatrix dummyMat;
-  BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCells>().push_back(
+  boundary_int_cells_per_ele<CORE::GEO::BoundaryIntCells>().push_back(
       CORE::GEO::BoundaryIntCell(distype_bc, -1, localcoord, dummyMat, coord, true));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(CORE::FE::CellType distype_bc) const
+void SCATRA::LEVELSET::Intersection::check_boundary_cell_type(CORE::FE::CellType distype_bc) const
 {
   if (distype_bc != CORE::FE::CellType::tri3 and distype_bc != CORE::FE::CellType::quad4)
   {
@@ -437,9 +437,9 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
 #endif
 
   CORE::COMM::PackBuffer data;
-  packBoundaryIntCells(myinterface, data);
+  pack_boundary_int_cells(myinterface, data);
   data.StartPacking();
-  packBoundaryIntCells(myinterface, data);
+  pack_boundary_int_cells(myinterface, data);
 
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send
@@ -489,7 +489,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     //-----------------------------------------------
     std::map<int, CORE::GEO::BoundaryIntCells> interface_recv;
 
-    unpackBoundaryIntCells(dataRecv, interface_recv);
+    unpack_boundary_int_cells(dataRecv, interface_recv);
 
     // add group of cells to my interface map
     /* remark: all groups of boundary integration cells (interface pieces
@@ -516,7 +516,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
+void SCATRA::LEVELSET::Intersection::pack_boundary_int_cells(
     const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap, CORE::COMM::PackBuffer& dataSend)
 {
   // pack data on all processors
@@ -539,7 +539,7 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
       CORE::COMM::ParObject::AddtoPack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
-      const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
+      const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.cell_nodal_pos_xi_domain();
       CORE::COMM::ParObject::AddtoPack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
@@ -552,7 +552,7 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
+void SCATRA::LEVELSET::Intersection::unpack_boundary_int_cells(
     const std::vector<char>& data, std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap)
 {
   // pointer to current position in a group of cells in local std::string (counts bytes)

@@ -52,7 +52,7 @@ namespace DRT
       //!< create element of this element type
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -244,7 +244,7 @@ namespace DRT
 
        *///                                                  (public) ghamm 09/13
       /*------------------------------------------------------------------------*/
-      void RemoveSpecificAssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content);
+      void remove_specific_associated_eles(BINSTRATEGY::UTILS::BinContentType bin_content);
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -252,7 +252,7 @@ namespace DRT
 
        *///                                                  (public) ghamm 09/13
       /*------------------------------------------------------------------------*/
-      void RemoveAllAssociatedEles();
+      void remove_all_associated_eles();
 
       /*!
       \brief Build pointer vector from vector of element pointers

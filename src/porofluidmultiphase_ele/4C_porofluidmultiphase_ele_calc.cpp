@@ -88,7 +88,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* e
   if (SetupCalc(ele, discretization, action) == -1) return -1;
 
   // extract element based or nodal values
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  extract_element_and_node_values(ele, params, discretization, la);
 
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat, elevec);
@@ -121,13 +121,13 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
     case POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat:
     {
       // loop over gauss points and evaluate off-diagonal terms
-      GaussPointLoopODStruct(ele, elemat, elevec, discretization, la);
+      gauss_point_loop_od_struct(ele, elemat, elevec, discretization, la);
       break;
     }
     case POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat:
     {
       // loop over gauss points and evaluate off-diagonal terms
-      GaussPointLoopODScatra(ele, elemat, elevec, discretization, la);
+      gauss_point_loop_od_scatra(ele, elemat, elevec, discretization, la);
       break;
     }
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
     case POROFLUIDMULTIPHASE::calc_phase_velocities:
     {
       // loop over gauss points and average
-      GaussPointLoopAverage(ele, elemat, elevec, discretization, la);
+      gauss_point_loop_average(ele, elemat, elevec, discretization, la);
       break;
     }
     default:
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Ele
     DRT::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
-  PrepareGaussPointLoop(ele);
+  prepare_gauss_point_loop(ele);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
@@ -195,12 +195,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Ele
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopAverage(DRT::Element* ele,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_average(DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
-  PrepareGaussPointLoop(ele);
+  prepare_gauss_point_loop(ele);
 
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
@@ -219,20 +219,20 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopAverage(D
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(DRT::Element* ele,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
+    DRT::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
-  PrepareGaussPointLoop(ele);
+  prepare_gauss_point_loop(ele);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
-  GaussPointLoopODStruct(intpoints, ele, elemat, elevec, discretization, la);
+  gauss_point_loop_od_struct(intpoints, ele, elemat, elevec, discretization, la);
 
   return;
 }
@@ -241,20 +241,20 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 06/17 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(DRT::Element* ele,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
+    DRT::Element* ele, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // prepare gauss point evaluation
-  PrepareGaussPointLoop(ele);
+  prepare_gauss_point_loop(ele);
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
-  GaussPointLoopODScatra(intpoints, ele, elemat, elevec, discretization, la);
+  gauss_point_loop_od_scatra(intpoints, ele, elemat, elevec, discretization, la);
 
   return;
 }
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PrepareGaussPointLoop(DRT::Element* ele)
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loop(DRT::Element* ele)
 {
   return;
 }
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
@@ -319,7 +319,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
     const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
     //----------------------------------------------------------------
     // 1) element off-diagonal matrix
     //----------------------------------------------------------------
-    evaluator_->EvaluateMatrixODStruct(elemat, funct_, deriv_, derxy_, xjm_, totalnumdofpernode_,
+    evaluator_->evaluate_matrix_od_struct(elemat, funct_, deriv_, derxy_, xjm_, totalnumdofpernode_,
         *phasemanager_, *variablemanager_, rhsfac, fac, det_);
 
     // clear current gauss point data for safety
@@ -357,7 +357,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
     const CORE::FE::IntPointsAndWeights<nsd_>& intpoints, DRT::Element* ele,
     std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
     std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
@@ -366,7 +366,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
   // start the loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
@@ -382,8 +382,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
     //----------------------------------------------------------------
     // 1) element off-diagonal matrix
     //----------------------------------------------------------------
-    evaluator_->EvaluateMatrixODScatra(elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_,
-        *variablemanager_, rhsfac, fac);
+    evaluator_->evaluate_matrix_od_scatra(elemat, funct_, derxy_, totalnumdofpernode_,
+        *phasemanager_, *variablemanager_, rhsfac, fac);
 
     // clear current gauss point data for safety
     phasemanager_->ClearGPState();
@@ -417,7 +417,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(DRT::Element* 
 
     if (jacobian_needed)
     {
-      ComputeJacobianAtNode(inode);
+      compute_jacobian_at_node(inode);
     }
     else
       j_ = 1.0;
@@ -487,7 +487,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze0_);
 
   // set current coordinates to initial coordinates
-  // the displacements will be added later in ExtractElementAndNodeValues() for the moving mesh case
+  // the displacements will be added later in extract_element_and_node_values() for the moving mesh
+  // case
   xyze_ = xyze0_;
 
   // set element
@@ -517,9 +518,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
   phasemanager_->Setup(ele);
 
   // rebuild the phase manager
-  variablemanager_ =
-      DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd_, nen_>::CreateVariableManager(
-          *para_, action, actmat, totalnumdofpernode_, numfluidphases_);
+  variablemanager_ = DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd_,
+      nen_>::create_variable_manager(*para_, action, actmat, totalnumdofpernode_, numfluidphases_);
 
   // build the evaluator
   evaluator_ = DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd_, nen_>::CreateEvaluator(
@@ -532,11 +532,11 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::extract_element_and_node_values(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
-  variablemanager_->ExtractElementAndNodeValues(*ele, discretization, la, xyze_);
+  variablemanager_->extract_element_and_node_values(*ele, discretization, la, xyze_);
   return;
 }
 
@@ -545,7 +545,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ExtractElementAndNodeVa
  | evaluate shape functions and derivatives at int. point     vuong 08/16 |
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
+double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_derivs_at_int_point(
     const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad                                        ///< id of current Gauss point
 )
@@ -554,7 +554,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = gpcoord[idim];
 
-  det_ = EvalShapeFuncAndDerivsInParameterSpace();
+  det_ = eval_shape_func_and_derivs_in_parameter_space();
 
   if (det_ < 1E-16)
     FOUR_C_THROW(
@@ -590,13 +590,14 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
 
-}  // PoroFluidMultiPhaseEleCalc::EvalShapeFuncAndDerivsAtIntPoint
+}  // PoroFluidMultiPhaseEleCalc::eval_shape_func_and_derivs_at_int_point
 
 /*--------------------------------------------------------------------------*
  | evaluate shape functions and derivatives in parameter space   vuong 08/16 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDerivsInParameterSpace()
+double
+DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_derivs_in_parameter_space()
 {
   double det = 0.0;
 
@@ -637,13 +638,13 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
  | Compute Jacobian at node 'inode'                        kremheller 04/17 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(const int inode)
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at_node(const int inode)
 {
   // get parameter space coordinates of current node
   CORE::LINALG::Matrix<3, 1> myXi = CORE::FE::GetNodeCoordinates(inode, distype);
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = myXi(idim);
 
-  det_ = EvalShapeFuncAndDerivsInParameterSpace();
+  det_ = eval_shape_func_and_derivs_in_parameter_space();
 
   if (det_ < 1E-16)
     FOUR_C_THROW(

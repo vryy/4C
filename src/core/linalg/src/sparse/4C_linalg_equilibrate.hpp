@@ -46,7 +46,7 @@ namespace CORE::LINALG
    * matrix entries of the row).
    * - By column means scaling each column of the matrix with a scalar (inverse of sum of matrix
    * entries of the column). This could be seen as defining an individual system of units for each
-   * dof. Thus, after solving the solution vector has to be rescaled (in UnequilibrateIncrement()).
+   * dof. Thus, after solving the solution vector has to be rescaled (in unequilibrate_increment()).
    * - Combining equilibration of rows and columns is possible.
    *
    * Equilibration can be done for symmetric matrix in a way that it keeps the symmetry and has
@@ -58,9 +58,10 @@ namespace CORE::LINALG
    *
    * In case of block matrices each block can be equilibrated in with a different method
    *
-   * Note: Call EquilibrateSystem() before Solve() and UnequilibrateIncrement() after Solve() within
-   * specific problem. In case of linear problems, where the matrices do not change, it is possible
-   * to use EquilibrateMatrix() after assembly and EquilibrateRHS() before every Solve() call.
+   * Note: Call EquilibrateSystem() before Solve() and unequilibrate_increment() after Solve()
+   * within specific problem. In case of linear problems, where the matrices do not change, it is
+   * possible to use EquilibrateMatrix() after assembly and EquilibrateRHS() before every Solve()
+   * call.
    */
   class Equilibration
   {
@@ -101,7 +102,7 @@ namespace CORE::LINALG
      *
      * @param[in,out] increment  increment vector
      */
-    virtual void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const = 0;
+    virtual void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const = 0;
 
    protected:
     /*!
@@ -139,7 +140,7 @@ namespace CORE::LINALG
      * @param[in,out] matrix      matrix
      * @param[in]     invcolsums  sums of absolute values of column entries in matrix
      */
-    void EquilibrateMatrixColumns(
+    void equilibrate_matrix_columns(
         CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const;
 
     /*!
@@ -148,7 +149,7 @@ namespace CORE::LINALG
      * @param[in,out] matrix      matrix
      * @param[in]     invrowsums  sums of absolute values of row entries in matrix
      */
-    void EquilibrateMatrixRows(
+    void equilibrate_matrix_rows(
         CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
@@ -170,7 +171,7 @@ namespace CORE::LINALG
 
     void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override;
 
-    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override;
+    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
 
    private:
     EquilibrationMethod method_;
@@ -218,7 +219,7 @@ namespace CORE::LINALG
 
     void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector> residual) const override;
 
-    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override;
+    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
 
    private:
     std::vector<EquilibrationMethod> method_blocks_;
@@ -238,7 +239,7 @@ namespace CORE::LINALG
 
     void EquilibrateRHS(Teuchos::RCP<Epetra_Vector> residual) const override {}
 
-    void UnequilibrateIncrement(Teuchos::RCP<Epetra_Vector> increment) const override {}
+    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override {}
   };
 
   /*----------------------------------------------------------------------*

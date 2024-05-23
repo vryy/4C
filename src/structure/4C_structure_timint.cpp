@@ -227,7 +227,7 @@ void STR::TimInt::Setup()
   // we have to call Init() before
   CheckIsInit();
 
-  CreateAllSolutionVectors();
+  create_all_solution_vectors();
 
   // create stiffness, mass matrix and other fields
   CreateFields();
@@ -244,7 +244,7 @@ void STR::TimInt::Setup()
   // initialize 0D cardiovascular manager
   cardvasc0dman_ =
       Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_, (*dis_)(0), sdynparams_,
-          GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), *solver_, mor_));
+          GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params(), *solver_, mor_));
 
   // initialize spring dashpot manager
   springman_ = Teuchos::rcp(new CONSTRAINTS::SpringDashpotManager(discret_));
@@ -269,7 +269,7 @@ void STR::TimInt::Setup()
     // If mortar contact or meshtying is chosen in the input file, then a
     // corresponding manager object stored via #cmtman_ is created and all relevant
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
-    PrepareContactMeshtying(sdynparams_);
+    prepare_contact_meshtying(sdynparams_);
   }
 
   // check whether we have locsys BCs and create LocSysManager if so
@@ -335,7 +335,7 @@ void STR::TimInt::Setup()
 /*----------------------------------------------------------------------------------------------*
  * Create all solution vectors
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::CreateAllSolutionVectors()
+void STR::TimInt::create_all_solution_vectors()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
@@ -417,13 +417,13 @@ void STR::TimInt::SetInitialFields()
   localdofs.push_back(0);
   localdofs.push_back(1);
   localdofs.push_back(2);
-  discret_->EvaluateInitialField(field, (*vel_)(0), localdofs);
+  discret_->evaluate_initial_field(field, (*vel_)(0), localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
-  discret_->EvaluateInitialField(porosityfield, (*dis_)(0), porositylocaldofs);
+  discret_->evaluate_initial_field(porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------*/
@@ -462,13 +462,13 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams)
+void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynparams)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::PrepareContactMeshtying");
+  TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::prepare_contact_meshtying");
 
   // some parameters
-  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->contact_dynamic_params();
   INPAR::MORTAR::ShapeFcn shapefcn =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype =
@@ -511,7 +511,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
       *discret_, mortarconditions, contactconditions, time_integration_factor));
 
-  cmtbridge_->StoreDirichletStatus(dbcmaps_);
+  cmtbridge_->store_dirichlet_status(dbcmaps_);
   cmtbridge_->SetState(zeros_);
 
   // contact and constraints together not yet implemented
@@ -542,7 +542,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-        GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
+        GLOBAL::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
     {
@@ -552,7 +552,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
 
       // (3) apply result of mesh initialization to underlying problem discretization
-      ApplyMeshInitialization(Xslavemod);
+      apply_mesh_initialization(Xslavemod);
     }
     else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
     {
@@ -571,7 +571,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // FOR CONTACT FORMULATIONS (ONLY ONCE)
     // (1) Evaluate reference state for friction and initialize gap
-    cmtbridge_->ContactManager()->GetStrategy().EvaluateReferenceState();
+    cmtbridge_->ContactManager()->GetStrategy().evaluate_reference_state();
   }
 
   // visualization of initial configuration
@@ -587,7 +587,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // only plausibility check, that a contact solver is available
     if (contactsolver_ == Teuchos::null)
-      FOUR_C_THROW("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
+      FOUR_C_THROW("No contact solver in STR::TimInt::prepare_contact_meshtying? Cannot be!");
   }
 
   // output of strategy / shapefcn / system type to screen
@@ -908,7 +908,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod)
+void STR::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
   if (Xslavemod == Teuchos::null) return;
@@ -966,7 +966,7 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
 void STR::TimInt::PrepareStepContact()
 {
   // just do something here if contact is present
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     if (cmtbridge_->HaveContact())
     {
@@ -990,7 +990,7 @@ void STR::TimInt::PostTimeLoop()
 /*----------------------------------------------------------------------*/
 /* equilibrate system at initial state
  * and identify consistent accelerations */
-void STR::TimInt::DetermineMassDampConsistAccel()
+void STR::TimInt::determine_mass_damp_consist_accel()
 {
   // temporary right hand sinde vector in this routing
   Teuchos::RCP<Epetra_Vector> rhs =
@@ -1105,7 +1105,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // add initial forces due to 0D cardiovascular for consistent initial acceleration calculation!
     // needed in case of initial ventricular pressures != 0
     Teuchos::ParameterList pwindk;
-    if (cardvasc0dman_->HaveCardiovascular0D())
+    if (cardvasc0dman_->have_cardiovascular0_d())
     {
       pwindk.set("scale_timint", 1.0);
       pwindk.set("time_step_size", (*dt_)[0]);
@@ -1236,9 +1236,9 @@ void STR::TimInt::UpdateStepTime()
 
 /*----------------------------------------------------------------------*/
 /* Update contact and meshtying */
-void STR::TimInt::UpdateStepContactMeshtying()
+void STR::TimInt::update_step_contact_meshtying()
 {
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     cmtbridge_->Update(disn_);
 #ifdef MORTARGMSH1
@@ -1251,16 +1251,16 @@ void STR::TimInt::UpdateStepContactMeshtying()
 
 /*----------------------------------------------------------------------*/
 /* Update beam contact */
-void STR::TimInt::UpdateStepBeamContact()
+void STR::TimInt::update_step_beam_contact()
 {
   if (HaveBeamContact()) beamcman_->Update(*disn_, stepn_, 99);
 }
 
 /*----------------------------------------------------------------------*/
 /* Velocity update method (VUM) for contact */
-void STR::TimInt::UpdateStepContactVUM()
+void STR::TimInt::update_step_contact_vum()
 {
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     bool do_vum =
         CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "VELOCITY_UPDATE");
@@ -1287,7 +1287,7 @@ void STR::TimInt::UpdateStepContactVUM()
 
       // parameter list
       const Teuchos::ParameterList& sdynparams =
-          GLOBAL::Problem::Instance()->StructuralDynamicParams();
+          GLOBAL::Problem::Instance()->structural_dynamic_params();
 
       // time integration parameter
       double alpham = 0.0;
@@ -1318,9 +1318,9 @@ void STR::TimInt::UpdateStepContactVUM()
       Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->GetStrategy().ActiveRowNodes();
       Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->GetStrategy().SlaveRowNodes();
       Teuchos::RCP<Epetra_Map> notredistslavedofmap =
-          cmtbridge_->GetStrategy().NotReDistSlaveRowDofs();
+          cmtbridge_->GetStrategy().not_re_dist_slave_row_dofs();
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
-          cmtbridge_->GetStrategy().NotReDistMasterRowDofs();
+          cmtbridge_->GetStrategy().not_re_dist_master_row_dofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap =
           CORE::LINALG::SplitMap(*slavenodemap, *activenodemap);
 
@@ -1339,7 +1339,7 @@ void STR::TimInt::UpdateStepContactVUM()
       Minv->ExtractDiagonalCopy(*diag);
       err = diag->Reciprocal(*diag);
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
-      err = Minv->ReplaceDiagonalValues(*diag);
+      err = Minv->replace_diagonal_values(*diag);
       Minv->Complete(*dofmap, *dofmap);
 
       // displacement increment Dd
@@ -1688,7 +1688,7 @@ void STR::TimInt::ResetStep()
 
   // reset 0D cardiovascular model if we have monolithic 0D cardiovascular-structure coupling (mhv
   // 02/2015)
-  if (cardvasc0dman_->HaveCardiovascular0D()) cardvasc0dman_->ResetStep();
+  if (cardvasc0dman_->have_cardiovascular0_d()) cardvasc0dman_->ResetStep();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1705,12 +1705,12 @@ void STR::TimInt::ReadRestart(const int step)
 
   ReadRestartState();
 
-  ReadRestartConstraint();
-  ReadRestartCardiovascular0D();
-  ReadRestartContactMeshtying();
-  ReadRestartBeamContact();
-  ReadRestartMultiScale();
-  ReadRestartSpringDashpot();
+  read_restart_constraint();
+  read_restart_cardiovascular0_d();
+  read_restart_contact_meshtying();
+  read_restart_beam_contact();
+  read_restart_multi_scale();
+  read_restart_spring_dashpot();
 
   ReadRestartForce();
 }
@@ -1736,11 +1736,11 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
   if (conman_->HaveConstraint()) FOUR_C_THROW("Set restart not implemented for constraints");
 
   // Cardiovascular0D
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
     FOUR_C_THROW("Set restart not implemented for Cardiovascular0D");
 
   // contact / meshtying
-  if (HaveContactMeshtying()) FOUR_C_THROW("Set restart not implemented for contact / meshtying");
+  if (have_contact_meshtying()) FOUR_C_THROW("Set restart not implemented for contact / meshtying");
 
   // beam contact
   if (HaveBeamContact()) FOUR_C_THROW("Set restart not implemented for beam contact");
@@ -1796,7 +1796,7 @@ void STR::TimInt::SetRestartState(Teuchos::RCP<Epetra_Vector> disn,
 }
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
-void STR::TimInt::ReadRestartConstraint()
+void STR::TimInt::read_restart_constraint()
 {
   if (conman_->HaveConstraint())
   {
@@ -1811,9 +1811,9 @@ void STR::TimInt::ReadRestartConstraint()
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for 0D cardiovascular models */
-void STR::TimInt::ReadRestartCardiovascular0D()
+void STR::TimInt::read_restart_cardiovascular0_d()
 {
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     IO::DiscretizationReader reader(
         discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
@@ -1823,7 +1823,7 @@ void STR::TimInt::ReadRestartCardiovascular0D()
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for spring dashpot */
-void STR::TimInt::ReadRestartSpringDashpot()
+void STR::TimInt::read_restart_spring_dashpot()
 {
   if (springman_->HaveSpringDashpot())
   {
@@ -1835,7 +1835,7 @@ void STR::TimInt::ReadRestartSpringDashpot()
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for contact / meshtying */
-void STR::TimInt::ReadRestartContactMeshtying()
+void STR::TimInt::read_restart_contact_meshtying()
 {
   //**********************************************************************
   // NOTE: There is an important difference here between contact and
@@ -1847,12 +1847,12 @@ void STR::TimInt::ReadRestartContactMeshtying()
   //**********************************************************************
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
-  if (HaveContactMeshtying()) cmtbridge_->ReadRestart(reader, (*dis_)(0), zeros_);
+  if (have_contact_meshtying()) cmtbridge_->ReadRestart(reader, (*dis_)(0), zeros_);
 }
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for beam contact */
-void STR::TimInt::ReadRestartBeamContact()
+void STR::TimInt::read_restart_beam_contact()
 {
   if (HaveBeamContact())
   {
@@ -1864,7 +1864,7 @@ void STR::TimInt::ReadRestartBeamContact()
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for multi-scale */
-void STR::TimInt::ReadRestartMultiScale()
+void STR::TimInt::read_restart_multi_scale()
 {
   Teuchos::RCP<MAT::PAR::Bundle> materials = GLOBAL::Problem::Instance()->Materials();
   for (std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::const_iterator i =
@@ -1890,9 +1890,9 @@ void STR::TimInt::ReadRestartMultiScale()
 /* Calculate all output quantities that depend on a potential material history */
 void STR::TimInt::PrepareOutput(bool force_prepare_timestep)
 {
-  DetermineStressStrain();
+  determine_stress_strain();
   DetermineEnergy();
-  DetermineOptionalQuantity();
+  determine_optional_quantity();
   if (havemicromat_) PrepareOutputMicro();
 }
 
@@ -1970,7 +1970,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
     // if state already exists, add restart information
     if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
     {
-      AddRestartToOutputState();
+      add_restart_to_output_state();
       return;
     }
   }
@@ -2028,7 +2028,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   OutputVolumeMass();
 
   // output of nodal positions in current configuration
-  OutputNodalPositions();
+  output_nodal_positions();
 
   // write output on micro-scale (multi-scale analysis)
   if (havemicromat_) OutputMicro();
@@ -2037,7 +2037,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
 /*-----------------------------------------------------------------------------*
  * write GMSH output of displacement field
  *-----------------------------------------------------------------------------*/
-void STR::TimInt::WriteGmshStrucOutputStep()
+void STR::TimInt::write_gmsh_struc_output_step()
 {
   if (not gmsh_out_) return;
 
@@ -2053,7 +2053,7 @@ void STR::TimInt::WriteGmshStrucOutputStep()
   gmshfilecontent << "};" << std::endl;
 }
 
-bool STR::TimInt::HasFinalStateBeenWritten() const { return step_ == lastwrittenresultsstep_; }
+bool STR::TimInt::has_final_state_been_written() const { return step_ == lastwrittenresultsstep_; }
 /*----------------------------------------------------------------------*/
 /* We need the restart data to perform on "restarts" on the fly for parameter
  * continuation
@@ -2079,7 +2079,7 @@ void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> ti
   if (conman_->HaveConstraint()) FOUR_C_THROW("Get restart data not implemented for constraints");
 
   // contact / meshtying
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
     FOUR_C_THROW("Get restart data not implemented for contact / meshtying");
 
   // beam contact
@@ -2118,7 +2118,7 @@ void STR::TimInt::OutputRestart(bool& datawritten)
   }
 
   // 0D cardiovascular models
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     output_->WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
     output_->WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
@@ -2128,10 +2128,10 @@ void STR::TimInt::OutputRestart(bool& datawritten)
   }
 
   // contact and meshtying
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     cmtbridge_->WriteRestart(output_);
-    cmtbridge_->PostprocessQuantities(output_);
+    cmtbridge_->postprocess_quantities(output_);
 
     {
       Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
@@ -2139,7 +2139,7 @@ void STR::TimInt::OutputRestart(bool& datawritten)
       cmtOutputParams->set<int>("step", step_);
       cmtOutputParams->set<double>("time", (*time_)[0]);
       cmtOutputParams->set<Teuchos::RCP<const Epetra_Vector>>("displacement", (*dis_)(0));
-      cmtbridge_->PostprocessQuantitiesPerInterface(cmtOutputParams);
+      cmtbridge_->postprocess_quantities_per_interface(cmtOutputParams);
     }
   }
 
@@ -2208,9 +2208,9 @@ void STR::TimInt::OutputState(bool& datawritten)
   firstoutputofrun_ = false;
 
   // meshtying and contact output
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
-    cmtbridge_->PostprocessQuantities(output_);
+    cmtbridge_->postprocess_quantities(output_);
 
     {
       Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
@@ -2218,7 +2218,7 @@ void STR::TimInt::OutputState(bool& datawritten)
       cmtOutputParams->set<int>("step", step_);
       cmtOutputParams->set<double>("time", (*time_)[0]);
       cmtOutputParams->set<Teuchos::RCP<const Epetra_Vector>>("displacement", (*dis_)(0));
-      cmtbridge_->PostprocessQuantitiesPerInterface(cmtOutputParams);
+      cmtbridge_->postprocess_quantities_per_interface(cmtOutputParams);
     }
   }
 
@@ -2234,7 +2234,7 @@ void STR::TimInt::OutputState(bool& datawritten)
 
 /*----------------------------------------------------------------------*/
 /* add restart information to OutputState */
-void STR::TimInt::AddRestartToOutputState()
+void STR::TimInt::add_restart_to_output_state()
 {
   // add velocity and acceleration if necessary
   if (!writevelacc_)
@@ -2254,7 +2254,7 @@ void STR::TimInt::AddRestartToOutputState()
   }
 
   // 0D cardiovascular models
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     output_->WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
     output_->WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
@@ -2267,7 +2267,7 @@ void STR::TimInt::AddRestartToOutputState()
   if (springman_->HaveSpringDashpot()) springman_->OutputRestart(output_, discret_, disn_);
 
   // contact/meshtying
-  if (HaveContactMeshtying()) cmtbridge_->WriteRestart(output_, true);
+  if (have_contact_meshtying()) cmtbridge_->WriteRestart(output_, true);
 
   // TODO: add missing restart data for surface stress and contact/meshtying here
 
@@ -2288,7 +2288,7 @@ void STR::TimInt::AddRestartToOutputState()
 
 /*----------------------------------------------------------------------*/
 /* Calculation of stresses and strains */
-void STR::TimInt::DetermineStressStrain()
+void STR::TimInt::determine_stress_strain()
 {
   if (writeresultsevery_ and
       ((writestress_ != INPAR::STR::stress_none) or
@@ -2390,7 +2390,7 @@ void STR::TimInt::DetermineEnergy()
 
 /*----------------------------------------------------------------------*/
 /* Calculation of an optional quantity */
-void STR::TimInt::DetermineOptionalQuantity()
+void STR::TimInt::determine_optional_quantity()
 {
   if (writeresultsevery_ and (writeoptquantity_ != INPAR::STR::optquantity_none) and
       (stepn_ % writeresultsevery_ == 0))
@@ -2577,7 +2577,7 @@ void STR::TimInt::OutputOptQuantity(bool& datawritten)
 void STR::TimInt::OutputContact()
 {
   // only for contact / meshtying simulations
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // print active set
     cmtbridge_->GetStrategy().PrintActiveSet();
@@ -2824,7 +2824,7 @@ void STR::TimInt::PrepareOutputMicro()
 
 /*----------------------------------------------------------------------*/
 /* output nodal positions */
-void STR::TimInt::OutputNodalPositions()
+void STR::TimInt::output_nodal_positions()
 {
 #ifdef PRINTSTRUCTDEFORMEDNODECOORDS
 
@@ -2917,7 +2917,7 @@ void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetr
 /* check whether we have nonlinear inertia forces or not */
 int STR::TimInt::HaveNonlinearMass() const
 {
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   int masslin = CORE::UTILS::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
@@ -2925,7 +2925,7 @@ int STR::TimInt::HaveNonlinearMass() const
 
 /*----------------------------------------------------------------------*/
 /* check whether the initial conditions are fulfilled */
-void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fext,
+void STR::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector> fext,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel,
     Teuchos::RCP<const Epetra_Vector> acc, const Teuchos::ParameterList* sdynparams) const
 {
@@ -3133,7 +3133,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     case INPAR::STR::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
-      if (HaveContactMeshtying())
+      if (have_contact_meshtying())
       {
         cmtbridge_->GetStrategy().ModifyPenalty();
       }
@@ -3189,7 +3189,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
         cardvasc0dman_->Modify_k_ptc(sum, fac);
 
         // adapt penalty parameter
-        if (HaveContactMeshtying() and divconrefinementlevel_ > adapt_penaltycontact_after)
+        if (have_contact_meshtying() and divconrefinementlevel_ > adapt_penaltycontact_after)
         {
           if (myrank_ == 0)
           {

@@ -47,7 +47,7 @@ void FLD::TimIntBDF2::Init()
   if (numstasteps_ > 0)
     FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
 
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   CompleteGeneralInit();
 
@@ -91,7 +91,7 @@ void FLD::TimIntBDF2::SetTheta()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                              bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::SetOldPartOfRighthandside()
+void FLD::TimIntBDF2::set_old_part_of_righthandside()
 {
   /*
      BDF2: for constant time step:
@@ -119,7 +119,7 @@ void FLD::TimIntBDF2::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+void FLD::TimIntBDF2::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
     const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
     const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
@@ -191,7 +191,7 @@ void FLD::TimIntBDF2::OutputofFilteredVel(
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
-void FLD::TimIntBDF2::SetElementTimeParameter()
+void FLD::TimIntBDF2::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -218,7 +218,7 @@ void FLD::TimIntBDF2::SetElementTimeParameter()
 /*----------------------------------------------------------------------*
 | Return linear error coefficient of velocity             mayr.mt 12/13 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntBDF2::MethodLinErrCoeffVel() const
+double FLD::TimIntBDF2::method_lin_err_coeff_vel() const
 {
   double nominator = (dta_ + dtp_) * (dta_ + dtp_);
   double denominator = 6 * dta_ * (2 * dta_ + dtp_);

@@ -48,7 +48,7 @@ namespace DRT::ELEMENTS
   class SolidPoroType : public DRT::ElementType
   {
    public:
-    void SetupElementDefinition(
+    void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string elecelltype,
@@ -60,7 +60,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] std::string Name() const override { return "SolidPoroType"; }
 
-    void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+    void nodal_block_information(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -137,7 +137,7 @@ namespace DRT::ELEMENTS
         CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+    void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
     Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
     {
@@ -157,7 +157,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] MAT::StructPoro& StructPoroMaterial(int nummat = 0) const;
 
-    [[nodiscard]] MAT::FluidPoroMultiPhase& FluidPoroMultiMaterial(int nummat = 1) const;
+    [[nodiscard]] MAT::FluidPoroMultiPhase& fluid_poro_multi_material(int nummat = 1) const;
 
     [[nodiscard]] MAT::So3Material& SolidPoroMaterial(int nummat = 0) const;
 

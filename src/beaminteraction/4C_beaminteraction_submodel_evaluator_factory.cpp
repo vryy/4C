@@ -32,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>
-BEAMINTERACTION::SUBMODELEVALUATOR::Factory::BuildModelEvaluators(
+BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
     const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes) const
 {
   // create a new standard map
@@ -72,11 +72,11 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::BuildModelEvaluators(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>
-BEAMINTERACTION::SUBMODELEVALUATOR::BuildModelEvaluators(
+BEAMINTERACTION::SUBMODELEVALUATOR::build_model_evaluators(
     const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes)
 {
   Factory factory;
-  return factory.BuildModelEvaluators(submodeltypes);
+  return factory.build_model_evaluators(submodeltypes);
 }
 
 FOUR_C_NAMESPACE_CLOSE

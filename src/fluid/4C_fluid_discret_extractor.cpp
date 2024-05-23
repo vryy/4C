@@ -328,7 +328,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         if (allcond[numcond] == "SurfacePeriodic")
         {
           PeriodicBoundaryConditions pbc(childdiscret_, false);
-          pbc.UpdateDofsForPeriodicBoundaryConditions();
+          pbc.update_dofs_for_periodic_boundary_conditions();
         }
       }
 
@@ -404,13 +404,13 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       PeriodicBoundaryConditions pbc(childdiscret_, false);
-      pbc.UpdateDofsForPeriodicBoundaryConditions();
+      pbc.update_dofs_for_periodic_boundary_conditions();
 
       // get node to node coupling
       col_pbcmapmastertoslave_ = Teuchos::rcp(new std::map<int, std::vector<int>>());
-      col_pbcmapmastertoslave_ = pbc.ReturnAllCoupledColNodes();
+      col_pbcmapmastertoslave_ = pbc.return_all_coupled_col_nodes();
       row_pbcmapmastertoslave_ = Teuchos::rcp(new std::map<int, std::vector<int>>());
-      row_pbcmapmastertoslave_ = pbc.ReturnAllCoupledRowNodes();
+      row_pbcmapmastertoslave_ = pbc.return_all_coupled_row_nodes();
     }
 
     if (childdiscret_->Comm().MyPID() == 0)
@@ -427,7 +427,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // set discretization writer
     childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_,
         GLOBAL::Problem::Instance()->OutputControlFile(),
-        GLOBAL::Problem::Instance()->SpatialApproximationType())));
+        GLOBAL::Problem::Instance()->spatial_approximation_type())));
 
     // call FillComplete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as

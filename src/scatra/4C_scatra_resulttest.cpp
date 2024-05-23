@@ -184,7 +184,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
     // extract state vector of discrete scatra-scatra interface layer thicknesses
     // depending on whether monolithic or semi-implicit solution approach is used
     Teuchos::RCP<const Epetra_Vector> s2igrowthvec(Teuchos::null);
-    switch (strategy->IntLayerGrowthEvaluation())
+    switch (strategy->int_layer_growth_evaluation())
     {
       case INPAR::S2I::growth_evaluation_monolithic:
       {
@@ -415,7 +415,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
-    result = strategy->MortarDiscretization(interface_num).DofRowMap()->NumMyElements();
+    result = strategy->mortar_discretization(interface_num).DofRowMap()->NumMyElements();
     scatratimint_->Discretization()->Comm().Broadcast(&result, 1, proc_num);
   }
 

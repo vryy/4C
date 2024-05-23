@@ -183,7 +183,7 @@ namespace STRUMULTI
     stresses and constitutive tensor by averaging over RVE
 
     */
-    void StaticHomogenization(CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat,
+    void static_homogenization(CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat,
         CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
 
     /*!
@@ -364,7 +364,7 @@ namespace STRUMULTI
       CORE::LINALG::SerialDenseMatrix cmat_;
     };
 
-    [[nodiscard]] inline const MicroStaticData* GetMicroStaticDataPtr() const
+    [[nodiscard]] inline const MicroStaticData* get_micro_static_data_ptr() const
     {
       return std::addressof(microstatic_data_);
     };

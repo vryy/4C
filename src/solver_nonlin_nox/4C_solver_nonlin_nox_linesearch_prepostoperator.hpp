@@ -59,7 +59,7 @@ namespace NOX
          *
          * \param solver     : Access to the underlying solver object.
          * \param linesearch : Access to the line search object. */
-        virtual void runPreModifyStepLength(
+        virtual void run_pre_modify_step_length(
             const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch);
 
        protected:
@@ -70,14 +70,14 @@ namespace NOX
         Teuchos::RCP<map> prePostOperatorMapPtr_ = Teuchos::null;
       };
 
-      inline void PrePostOperator::runPreModifyStepLength(
+      inline void PrePostOperator::run_pre_modify_step_length(
           const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
       {
         if (havePrePostOperator_)
         {
           map::iterator it;
           for (auto& it : *prePostOperatorMapPtr_)
-            it.second->runPreModifyStepLength(solver, linesearch);
+            it.second->run_pre_modify_step_length(solver, linesearch);
         }
       }
     }  // namespace LineSearch

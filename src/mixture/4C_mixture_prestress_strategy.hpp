@@ -83,7 +83,7 @@ namespace MIXTURE
       }
 
       /// create prestress strategy instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() = 0;
+      virtual std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() = 0;
 
       /*!
        * \brief Factory of the prestress strategy parameters

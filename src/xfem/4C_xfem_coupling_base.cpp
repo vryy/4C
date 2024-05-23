@@ -105,7 +105,7 @@ void XFEM::CouplingBase::Init()
   // do Init
   // ---------------------------------------------------------------------------
 
-  if (dofset_coupling_map_.empty()) FOUR_C_THROW("Call SetDofSetCouplingMap() first!");
+  if (dofset_coupling_map_.empty()) FOUR_C_THROW("Call set_dof_set_coupling_map() first!");
 
   SetCouplingDofsets();
 
@@ -117,22 +117,22 @@ void XFEM::CouplingBase::Init()
 
   // create a cutter discretization from conditioned nodes of the given coupling discretization or
   // simply clone the discretization
-  SetCutterDiscretization();
+  set_cutter_discretization();
 
   // set unique element conditions
-  SetElementConditions();
+  set_element_conditions();
 
   // set condition specific parameters
-  SetConditionSpecificParameters();
+  set_condition_specific_parameters();
 
   // set the averaging strategy
-  SetAveragingStrategy();
+  set_averaging_strategy();
 
   // set coupling discretization
-  SetCouplingDiscretization();
+  set_coupling_discretization();
 
   // initialize element level configuration map (no evaluation)
-  InitConfigurationMap();
+  init_configuration_map();
 
   // ---------------------------------------------------------------------------
   // set isInit flag
@@ -161,10 +161,10 @@ void XFEM::CouplingBase::Setup()
   PrepareCutterOutput();
 
   // do condition specific setup
-  DoConditionSpecificSetup();
+  do_condition_specific_setup();
 
   // initialize the configuration map
-  SetupConfigurationMap();
+  setup_configuration_map();
 
   // ---------------------------------------------------------------------------
   // set isSetup flag
@@ -177,7 +177,7 @@ void XFEM::CouplingBase::Setup()
 /*--------------------------------------------------------------------------*
  * Initialize Configuration Map --> No Terms are evaluated at the interface
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::InitConfigurationMap()
+void XFEM::CouplingBase::init_configuration_map()
 {
   // Configuration of Consistency Terms
   // all components:
@@ -255,7 +255,7 @@ void XFEM::CouplingBase::InitConfigurationMap()
 }
 
 
-void XFEM::CouplingBase::SetElementConditions()
+void XFEM::CouplingBase::set_element_conditions()
 {
   // number of column cutter boundary elements
   int nummycolele = cutter_dis_->NumMyColElements();
@@ -286,7 +286,7 @@ void XFEM::CouplingBase::SetElementConditions()
       CORE::Conditions::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
 
       std::vector<CORE::Conditions::Condition*> mynewcond;
-      GetConditionByCouplingId(mycond, coupling_id_, mynewcond);
+      get_condition_by_coupling_id(mycond, coupling_id_, mynewcond);
 
       CORE::Conditions::Condition* cond_unique = nullptr;
 
@@ -332,7 +332,7 @@ void XFEM::CouplingBase::SetElementConditions()
   }
 }
 
-void XFEM::CouplingBase::GetConditionByCouplingId(
+void XFEM::CouplingBase::get_condition_by_coupling_id(
     const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
     std::vector<CORE::Conditions::Condition*>& mynewcond)
 {
@@ -360,16 +360,16 @@ void XFEM::CouplingBase::Status(const int coupling_idx, const int side_start_gid
         "---+-----------------------------+-----------------------------+--------------------------"
         "---+\n");
     printf("   | %8i | %9i | %27s | %7i | %27s | %27s | %27s | %27s |\n", coupling_idx,
-        side_start_gid, TypeToStringForPrint(CondType_stringToEnum(cond_name_)).c_str(),
+        side_start_gid, type_to_string_for_print(CondType_stringToEnum(cond_name_)).c_str(),
         coupling_id_, DisNameToString(cutter_dis_).c_str(), DisNameToString(cond_dis_).c_str(),
         DisNameToString(coupl_dis_).c_str(),
-        AveragingToStringForPrint(averaging_strategy_).c_str());
+        averaging_to_string_for_print(averaging_strategy_).c_str());
   }
 }
 
 
 
-void XFEM::CouplingBase::SetAveragingStrategy()
+void XFEM::CouplingBase::set_averaging_strategy()
 {
   const INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
 
@@ -384,7 +384,8 @@ void XFEM::CouplingBase::SetAveragingStrategy()
       // check unhandled cased
       if (averaging_strategy_ == INPAR::XFEM::Mean || averaging_strategy_ == INPAR::XFEM::Harmonic)
         FOUR_C_THROW(
-            "XFEM::CouplingBase::SetAveragingStrategy(): Strategy Mean/Harmoninc not available for "
+            "XFEM::CouplingBase::set_averaging_strategy(): Strategy Mean/Harmoninc not available "
+            "for "
             "FSI monolithic, ... coming soon!");
       break;
     }
@@ -426,7 +427,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
 }
 
 
-void XFEM::CouplingBase::SetCouplingDiscretization()
+void XFEM::CouplingBase::set_coupling_discretization()
 {
   const INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
 
@@ -484,7 +485,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   }
 }
 
-void XFEM::CouplingBase::EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
+void XFEM::CouplingBase::evaluate_dirichlet_function(CORE::LINALG::Matrix<3, 1>& ivel,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
@@ -496,7 +497,7 @@ void XFEM::CouplingBase::EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& i
   ivel(2, 0) = final_values[2];
 }
 
-void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
+void XFEM::CouplingBase::evaluate_neumann_function(CORE::LINALG::Matrix<3, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
@@ -516,7 +517,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itr
   itraction(2, 0) = final_values[2];
 }
 
-void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
+void XFEM::CouplingBase::evaluate_neumann_function(CORE::LINALG::Matrix<6, 1>& itraction,
     const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time)
 {
   std::vector<double> final_values(6, 0.0);
@@ -598,7 +599,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
   }  // loop dofs
 }
 
-void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const double* x,
+void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const double* x,
     const double& val, const CORE::Conditions::Condition* cond, const double time)
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
@@ -667,11 +668,11 @@ void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid el
   // Todo: As soon as the master side may not be position = outside anymore we need to take that
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
-  XFEM::UTILS::GetVolumeCellMaterial(xfele, mat_m, CORE::GEO::CUT::Point::outside);
+  XFEM::UTILS::get_volume_cell_material(xfele, mat_m, CORE::GEO::CUT::Point::outside);
   if (mat_m->MaterialType() == CORE::Materials::m_fluid)
     visc_m = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_m)->Viscosity();
   else
-    FOUR_C_THROW("GetCouplingSpecificAverageWeights: Master Material not a fluid material?");
+    FOUR_C_THROW("get_coupling_specific_average_weights: Master Material not a fluid material?");
   return;
 }
 
@@ -684,12 +685,12 @@ void XFEM::CouplingBase::GetAverageWeights(DRT::Element* xfele,  ///< xfluid ele
     double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
     bool& non_xfluid_coupling)
 {
-  non_xfluid_coupling = (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided);
+  non_xfluid_coupling = (get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided);
 
-  if (GetAveragingStrategy() != INPAR::XFEM::Harmonic)
-    XFEM::UTILS::GetStdAverageWeights(GetAveragingStrategy(), kappa_m);
+  if (get_averaging_strategy() != INPAR::XFEM::Harmonic)
+    XFEM::UTILS::GetStdAverageWeights(get_averaging_strategy(), kappa_m);
   else
-    GetCouplingSpecificAverageWeights(xfele, coup_ele, kappa_m);
+    get_coupling_specific_average_weights(xfele, coup_ele, kappa_m);
 
   kappa_s = 1.0 - kappa_m;
   return;
@@ -698,8 +699,8 @@ void XFEM::CouplingBase::GetAverageWeights(DRT::Element* xfele,  ///< xfluid ele
 /*--------------------------------------------------------------------------------
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
-    DRT::Element* coup_ele,                                            ///< coup_ele ele
+void XFEM::CouplingBase::get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
+    DRT::Element* coup_ele,                                             ///< coup_ele ele
     const double& kappa_m,  ///< Weight parameter (parameter +/master side)
     const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -709,16 +710,16 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     double& NIT_visc_stab_fac_tang  ///< viscous part of Nitsche's penalty term in tang direction
 )
 {
-  Get_ViscPenalty_Stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k, NIT_visc_stab_fac,
+  get_visc_penalty_stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k, NIT_visc_stab_fac,
       NIT_visc_stab_fac_tang, params->NITStabScaling(), params->NITStabScalingTang(),
-      params->IsPseudo2D(), params->ViscStabTracEstimate());
+      params->IsPseudo2D(), params->visc_stab_trac_estimate());
 }
 
 /*--------------------------------------------------------------------------------
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
-void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
-    DRT::Element* coup_ele,                                            ///< coup_ele ele
+void XFEM::CouplingBase::get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
+    DRT::Element* coup_ele,                                             ///< coup_ele ele
     const double& kappa_m,           ///< Weight parameter (parameter +/master side)
     const double& kappa_s,           ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,           ///< the inverse characteristic element length h_k
@@ -728,7 +729,7 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     const INPAR::XFEM::ViscStabTraceEstimate ViscStab_TraceEstimate)
 {
   double penscaling = 0.0;
-  if (GetAveragingStrategy() != INPAR::XFEM::Embedded_Sided)
+  if (get_averaging_strategy() != INPAR::XFEM::Embedded_Sided)
   {
     double visc_m = 0.0;
     GetViscosityMaster(
@@ -736,17 +737,17 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     penscaling = visc_m * kappa_m * inv_h_k;
   }
 
-  if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
   {
     double penscaling_s = 0.0;
-    GetPenaltyScalingSlave(coup_ele, penscaling_s);
+    get_penalty_scaling_slave(coup_ele, penscaling_s);
     penscaling += penscaling_s * kappa_s * inv_h_k;
   }
 
-  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling, NITStabScaling,
+  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->Shape(), penscaling, NITStabScaling,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac);
 
-  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling, NITStabScalingTang,
+  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->Shape(), penscaling, NITStabScalingTang,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }

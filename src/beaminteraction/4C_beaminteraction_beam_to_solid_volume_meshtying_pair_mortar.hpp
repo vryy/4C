@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(
+    void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Return 0 by default.
      */
-    void EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+    void evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
         const CORE::LINALG::Matrix<3, 1, double>& r_solid,
         CORE::LINALG::Matrix<3, 1, double>& force) const override;
 

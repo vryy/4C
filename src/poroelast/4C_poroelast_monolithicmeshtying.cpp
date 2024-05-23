@@ -29,9 +29,9 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 {
   // Initialize mortar adapter for meshtying interface
   mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
@@ -59,7 +59,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   Monolithic::Evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
-  Teuchos::RCP<Epetra_Vector> fvel = FluidStructureCoupling().SlaveToMaster(
+  Teuchos::RCP<Epetra_Vector> fvel = fluid_structure_coupling().SlaveToMaster(
       FluidField()->ExtractVelocityPart(FluidField()->Velnp()));
 
   // modified pressure vector modfpres is used to get pressure values to mortar/contact integrator.
@@ -82,7 +82,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
     modfpres->ReplaceGlobalValues(1, &val[i], &gid);
   }
   // convert velocity map to structure displacement map
-  modfpres = FluidStructureCoupling().SlaveToMaster(modfpres);
+  modfpres = fluid_structure_coupling().SlaveToMaster(modfpres);
 
   // for the SetState() methods in EvaluatePoroMt() non const state vectores are needed
   // ->WriteAccess... methods are used (even though we will not change the states ...)
@@ -99,7 +99,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
 
   // modify system matrix and rhs for meshtying
   mortar_adapter_->EvaluatePoroMt(fvel, svel, modfpres, sdisp, StructureField()->Discretization(),
-      f, k_fs, frhs, FluidStructureCoupling(), FluidField()->DofRowMap());
+      f, k_fs, frhs, fluid_structure_coupling(), FluidField()->DofRowMap());
 
   // assign modified parts of system matrix into full system matrix
   systemmatrix_->Assign(1, 1, CORE::LINALG::View, *f);
@@ -119,10 +119,10 @@ void POROELAST::MonolithicMeshtying::Update()
   mortar_adapter_->UpdatePoroMt();
 }
 
-void POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep(
+void POROELAST::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_step(
     Teuchos::RCP<const Epetra_Vector> iterinc)
 {
-  Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
+  Monolithic::recover_lagrange_multiplier_after_newton_step(iterinc);
 
   // displacement and fluid velocity & pressure incremental vector
   Teuchos::RCP<const Epetra_Vector> s_iterinc;
@@ -133,10 +133,10 @@ void POROELAST::MonolithicMeshtying::RecoverLagrangeMultiplierAfterNewtonStep(
   Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*s_iterinc));
   Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
 
-  mortar_adapter_->RecoverFluidLMPoroMt(tmpsx, tmpfx);
+  mortar_adapter_->recover_fluid_lm_poro_mt(tmpsx, tmpfx);
 }
 
-void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
+void POROELAST::MonolithicMeshtying::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_);
@@ -156,8 +156,8 @@ void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
   rhs_f = Extractor()->ExtractVector(rhs_, 1);
   rhs_fvel = FluidField()->ExtractVelocityPart(rhs_f);
   // now split it
-  rhs_fvel_activen = FluidVelActiveDofExtractor()->ExtractVector(rhs_fvel, 0);
-  rhs_fvel_other = FluidVelActiveDofExtractor()->ExtractVector(rhs_fvel, 1);
+  rhs_fvel_activen = fluid_vel_active_dof_extractor()->ExtractVector(rhs_fvel, 0);
+  rhs_fvel_other = fluid_vel_active_dof_extractor()->ExtractVector(rhs_fvel, 1);
   // pressure is treated separately anyway
   rhs_fpres = FluidField()->ExtractPressurePart(rhs_f);
 
@@ -278,14 +278,14 @@ bool POROELAST::MonolithicMeshtying::SetupSolver()
 
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poroelastdyn =
-      GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+      GLOBAL::Problem::Instance()->poroelast_dynamic_params();
 
   tolfres_ncoup_ = poroelastdyn.get<double>("TOLRES_NCOUP");
 
   return true;
 }
 
-void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstream& oss)
+void POROELAST::MonolithicMeshtying::print_newton_iter_header_stream(std::ostringstream& oss)
 {
   oss << "------------------------------------------------------------" << std::endl;
   oss << "                   Newton-Raphson Scheme                    " << std::endl;
@@ -347,7 +347,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
   }
 }
 
-void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstream& oss)
+void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostringstream& oss)
 {
   // enter converged state etc
   oss << std::setw(7) << iter_;

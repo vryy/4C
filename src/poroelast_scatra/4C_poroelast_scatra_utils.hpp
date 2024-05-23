@@ -96,14 +96,14 @@ namespace POROELASTSCATRA
      processors! Otherwise any information which connects face and volume
      element is lost! (Parent Element Pointer is not communicated)
      */
-    void CreateVolumeGhosting(
+    void create_volume_ghosting(
         DRT::Discretization& idiscret);  // redistributed interface discretization of contact!
 
     /*! Reconnect Face Element - Parent Element Pointers!
      Parent Element need to be ghosted on the processors where Face Elements
      exist already.
      */
-    void ReconnectParentPointers(DRT::Discretization& idiscret, DRT::Discretization& voldiscret,
+    void reconnect_parent_pointers(DRT::Discretization& idiscret, DRT::Discretization& voldiscret,
         DRT::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector

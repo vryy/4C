@@ -56,7 +56,7 @@ namespace DRT
 
    public:
     /// setup the dat file input line definitions for this type of element
-    virtual void SetupElementDefinition(
+    virtual void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
     {
     }
@@ -96,7 +96,7 @@ namespace DRT
                 displacement, fluid velocity)
     @param[out] np Number of degrees of freedom for local constraints (e.g. fluid pressure)
     */
-    virtual void NodalBlockInformation(
+    virtual void nodal_block_information(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation

@@ -45,7 +45,7 @@ namespace FLD
     virtual ~HomIsoTurbInitialField() = default;
 
     //! calculate initial field
-    virtual void CalculateInitialField();
+    virtual void calculate_initial_field();
 
    protected:
     //! sort criterium for double values up to a tolerance of 10-9
@@ -59,13 +59,13 @@ namespace FLD
     };
 
     //! non-dimensionalize and store experimental data
-    void PrepareExparimentalData();
+    void prepare_exparimental_data();
 
     //! estimate energy form given energy spectrum (experimental data)
-    double InterpolateEnergyFromSpectrum(double k);
+    double interpolate_energy_from_spectrum(double k);
 
     //! estimate energy form given energy spectrum (function for E)
-    double CalculateEnergyFromSpectrum(double k);
+    double calculate_energy_from_spectrum(double k);
 
     //! fluid discretization
     Teuchos::RCP<DRT::Discretization> discret_;
@@ -100,7 +100,7 @@ namespace FLD
 
 
     //! calculate initial field
-    void CalculateInitialField() override;
+    void calculate_initial_field() override;
 
    protected:
     Teuchos::RCP<Epetra_Vector> intveln_;

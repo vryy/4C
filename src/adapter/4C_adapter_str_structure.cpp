@@ -156,7 +156,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   Teuchos::RCP<CORE::LINALG::Solver> contactsolver = Teuchos::null;
 
   if (onlymeshtying or onlycontact or meshtyingandcontact)
-    contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
+    contactsolver = create_contact_meshtying_solver(actdis, sdyn);
 
   if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
@@ -432,7 +432,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       case GLOBAL::ProblemType::fpsi_xfem:
       case GLOBAL::ProblemType::fsi_xfem:
       {
-        const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
+        const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =
             CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
                 porodyn, "COUPALGO");
@@ -491,14 +491,14 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinear
   solver = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   return solver;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(
+Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_contact_meshtying_solver(
     Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
@@ -516,7 +516,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
     if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
     if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
   }
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
 
   // Get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
@@ -557,7 +557,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
-      actdis->ComputeNullSpaceIfNecessary(solver->Params());
+      actdis->compute_null_space_if_necessary(solver->Params());
 
       // feed the solver object with additional information
       if (onlycontact or meshtyingandcontact)
@@ -585,7 +585,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
         // provide null space information
         if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
         {
-          actdis->ComputeNullSpaceIfNecessary(
+          actdis->compute_null_space_if_necessary(
               solver->Params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
@@ -601,7 +601,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
       // build meshtying solver
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
-      actdis->ComputeNullSpaceIfNecessary(solver->Params());
+      actdis->compute_null_space_if_necessary(solver->Params());
     }
     break;
   }

@@ -107,7 +107,7 @@ namespace THR
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make capacity matrix
-    void DetermineCapaConsistTempRate();
+    void determine_capa_consist_temp_rate();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC(const double time,  //!< at time
@@ -123,13 +123,13 @@ namespace THR
     );
 
     //! prepare thermal contact
-    void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) override
+    void set_nitsche_contact_strategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) override
     {
       contact_strategy_nitsche_ = strategy;
     }
 
     //! prepare thermal contact parameters
-    void SetNitscheContactParameters(
+    void set_nitsche_contact_parameters(
         Teuchos::RCP<CONTACT::ParamsInterface> params_interface) override
     {
       contact_params_interface_ = params_interface;
@@ -228,12 +228,12 @@ namespace THR
     );
 
     //! Add restart information to OutputState
-    void AddRestartToOutputState();
+    void add_restart_to_output_state();
 
     //! Heatflux & temperature gradient output
     //! \author lw (originally)
-    void OutputHeatfluxTempgrad(bool& datawritten  //!< (in/out) read and append if
-                                                   //!< it was written at this time step
+    void output_heatflux_tempgrad(bool& datawritten  //!< (in/out) read and append if
+                                                     //!< it was written at this time step
     );
 
     //! Energy output
@@ -275,7 +275,7 @@ namespace THR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    void PreparePartitionStep() override = 0;
+    void prepare_partition_step() override = 0;
 
     //! thermal result test
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
@@ -292,7 +292,7 @@ namespace THR
     );
 
     //! Apply convective boundary conditions force
-    void ApplyForceExternalConv(Teuchos::ParameterList& p,
+    void apply_force_external_conv(Teuchos::ParameterList& p,
         const double time,                               //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> tempn,         //!< old temperature state T_n
         const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
@@ -301,7 +301,7 @@ namespace THR
     );
 
     //! Evaluate ordinary internal force, its tangent at state
-    void ApplyForceTangInternal(
+    void apply_force_tang_internal(
         Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
         const double time,                             //!< evaluation time
         const double dt,                               //!< step size
@@ -312,7 +312,7 @@ namespace THR
     );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
-    void ApplyForceTangInternal(
+    void apply_force_tang_internal(
         Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
         const double time,                             //!< evaluation time
         const double dt,                               //!< step size
@@ -373,7 +373,7 @@ namespace THR
     virtual int MethodSteps() = 0;
 
     //! Give order of accuracy
-    virtual int MethodOrderOfAccuracy() = 0;
+    virtual int method_order_of_accuracy() = 0;
 
     //! Return linear error coefficient of temperatures
     virtual double MethodLinErrCoeff() = 0;
@@ -508,7 +508,7 @@ namespace THR
     }
 
     //! Return thermal contact manager
-    Teuchos::RCP<CONTACT::NitscheStrategyTsi> NitscheContactStrategy()
+    Teuchos::RCP<CONTACT::NitscheStrategyTsi> nitsche_contact_strategy()
     {
       return contact_strategy_nitsche_;
     }
@@ -517,7 +517,7 @@ namespace THR
 
    protected:
     //! evaluate error compared to analytical solution
-    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol();
+    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol();
 
     //! @name General purpose algorithm members
     //@{

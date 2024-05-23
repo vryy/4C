@@ -78,7 +78,7 @@ namespace
 
       std::vector<std::pair<std::string, double>> params;
       if (function_lin_def.HaveNamed("PARAMS"))
-        function_lin_def.ExtractPairOfStringAndDoubleVector("PARAMS", params);
+        function_lin_def.extract_pair_of_string_and_double_vector("PARAMS", params);
 
       return CreatePoroFunction<dim>(type, params);
     }
@@ -116,11 +116,11 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 /*----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::AddValidPoroFunctions(CORE::UTILS::FunctionManager& function_manager)
 {
-  function_manager.AddFunctionDefinition(
+  function_manager.add_function_definition(
       {INPUT::LineDefinition::Builder()
               .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
               .AddOptionalNamedInt("NUMPARAMS")
-              .AddOptionalNamedPairOfStringAndDoubleVector(
+              .add_optional_named_pair_of_string_and_double_vector(
                   "PARAMS", INPUT::LengthFromIntNamed("NUMPARAMS"))
               .Build()},
       TryCreatePoroFunctionDispatch);

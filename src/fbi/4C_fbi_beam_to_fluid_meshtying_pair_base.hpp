@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Print this beam contact element pair to screen.
      */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
+    void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(
+    void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
@@ -118,7 +118,8 @@ namespace BEAMINTERACTION
      */
     BeamToFluidMeshtyingPairBase();
 
-    void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
+    void evaluate_beam_position(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
         CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.

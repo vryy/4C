@@ -96,34 +96,34 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_forces()
 {
-  return FluidField()->ExtractInterfaceForces();
+  return FluidField()->extract_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_velnp()
 {
-  return FluidField()->ExtractInterfaceVelnp();
+  return FluidField()->extract_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_veln()
 {
-  return FluidField()->ExtractInterfaceVeln();
+  return FluidField()->extract_interface_veln();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::integrate_interface_shape()
 {
   // Actually we do not need this here, because this will be handled in the coupling.
-  return FluidField()->IntegrateInterfaceShape();
+  return FluidField()->integrate_interface_shape();
 }
 
 
@@ -137,18 +137,18 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FBIFluidMB::SetCouplingContributions(
+void ADAPTER::FBIFluidMB::set_coupling_contributions(
     Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)
-      ->SetCouplingContributions(matrix);
+      ->set_coupling_contributions(matrix);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::ApplyInterfaceValues(
+void ADAPTER::FBIFluidMB::apply_interface_values(
     Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  FluidField()->AddContributionToExternalLoads(iforce);
+  FluidField()->add_contribution_to_external_loads(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

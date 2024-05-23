@@ -614,14 +614,14 @@ namespace MORTAR
      is initialized.
 
      */
-    virtual void InitializeDataContainer();
+    virtual void initialize_data_container();
 
-    virtual void InitializePoroDataContainer()
+    virtual void initialize_poro_data_container()
     {
       FOUR_C_THROW("Shouldn't land here...");
       return;
     };
-    virtual void InitializeEhlDataContainer()
+    virtual void initialize_ehl_data_container()
     {
       FOUR_C_THROW("Shouldn't land here...");
       return;

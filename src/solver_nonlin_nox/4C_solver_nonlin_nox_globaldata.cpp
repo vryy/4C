@@ -165,32 +165,32 @@ void NOX::NLN::GlobalData::Setup()
   nlnparams_->set("Optimization Problem Type", opt_type_);
 
   // set printing parameters
-  SetPrintingParameters();
+  set_printing_parameters();
 
   // construct the nox utils class
   nox_utils_ = Teuchos::rcp(new ::NOX::Utils(nlnparams_->sublist("Printing")));
 
   // set (non-linear) solver option parameters
-  SetSolverOptionParameters();
+  set_solver_option_parameters();
 
   // set status test parameters
-  SetStatusTestParameters();
+  set_status_test_parameters();
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GlobalData::SetPrintingParameters()
+void NOX::NLN::GlobalData::set_printing_parameters()
 {
-  NOX::NLN::AUX::SetPrintingParameters(*nlnparams_, *comm_);
+  NOX::NLN::AUX::set_printing_parameters(*nlnparams_, *comm_);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GlobalData::SetSolverOptionParameters()
+void NOX::NLN::GlobalData::set_solver_option_parameters()
 {
   /* NOX gives you the option to use a user defined merit function by inserting
    * a Teuchos::RCP<::NOX::MeritFunction::Generic> pointer into the parameter
@@ -264,7 +264,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GlobalData::SetStatusTestParameters()
+void NOX::NLN::GlobalData::set_status_test_parameters()
 {
   Teuchos::ParameterList& statusTestParams = nlnparams_->sublist("Status Test", true);
 
@@ -363,7 +363,7 @@ Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::GetNlnParameterListPtr()
+const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::get_nln_parameter_list_ptr()
 {
   if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
@@ -388,7 +388,7 @@ const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
+Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::get_required_interface()
 {
   if (i_req_ptr_.is_null())
     FOUR_C_THROW("Required interface pointer iReqPtr_ was not initialized!");
@@ -398,7 +398,7 @@ Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequir
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
+Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::get_jacobian_interface()
 {
   if (i_jac_ptr_.is_null())
     FOUR_C_THROW("Jacobian interface pointer iJacPtr_ was not initialized!");
@@ -408,7 +408,7 @@ Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>
-NOX::NLN::GlobalData::GetPreconditionerInterface()
+NOX::NLN::GlobalData::get_preconditioner_interface()
 {
   /* We explicitly allow a return value of Teuchos::nullptr, because the
    * preconditioner interface is in many cases optional */
@@ -417,7 +417,7 @@ NOX::NLN::GlobalData::GetPreconditionerInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::GetConstraintInterfaces()
+const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::get_constraint_interfaces()
 {
   if (i_constr_.size() == 0) FOUR_C_THROW("The constraint interface map is empty!");
 
@@ -426,7 +426,7 @@ const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::GetConstraint
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::CONSTRAINT::PrecInterfaceMap& NOX::NLN::GlobalData::GetConstraintPrecInterfaces()
+const NOX::NLN::CONSTRAINT::PrecInterfaceMap& NOX::NLN::GlobalData::get_constraint_prec_interfaces()
 {
   if (i_constr_prec_.size() == 0)
     FOUR_C_THROW("The constraint preconditioner interface map is empty!");

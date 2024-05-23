@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   // major switch to different time integrators
   switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
@@ -70,7 +70,7 @@ void caldyn_drt()
 void dyn_nlnstructural_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
 
@@ -80,7 +80,7 @@ void dyn_nlnstructural_drt()
 
     if (pbc_struct.HasPBC())
     {
-      pbc_struct.UpdateDofsForPeriodicBoundaryConditions();
+      pbc_struct.update_dofs_for_periodic_boundary_conditions();
     }
   }
 
@@ -110,7 +110,7 @@ void dyn_nlnstructural_drt()
     default:
     {
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-          ADAPTER::BuildStructureAlgorithm(sdyn);
+          ADAPTER::build_structure_algorithm(sdyn);
       adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       adapterbase_ptr->Setup();
       structadapter = adapterbase_ptr->StructureField();
@@ -144,7 +144,7 @@ void dyn_nlnstructural_drt()
   // run time integration
   structadapter->Integrate();
 
-  if (write_final_state && !structadapter->HasFinalStateBeenWritten())
+  if (write_final_state && !structadapter->has_final_state_been_written())
   {
     constexpr bool forceWriteRestart = true;
     constexpr bool force_prepare = true;

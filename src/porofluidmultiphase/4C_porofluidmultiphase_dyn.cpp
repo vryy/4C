@@ -52,7 +52,7 @@ void porofluidmultiphase_dyn(int restart)
   // Parameter reading
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& porodyn = problem->PoroFluidMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& porodyn = problem->poro_fluid_multi_phase_dynamic_params();
 
   // get the solver number used for poro fluid solver
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");

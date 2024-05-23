@@ -34,7 +34,7 @@ namespace TSI
   //! TSI algorithm base
   //!
   //!
-  //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
+  //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
   //!  ThermoBaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
@@ -91,7 +91,7 @@ namespace TSI
     void Update() override;
     //@}
 
-    void PrepareContactStrategy() override;
+    void prepare_contact_strategy() override;
 
     //! @name Solve
 

@@ -77,17 +77,17 @@ namespace CONTACT
      * \params[in/out] localactivesetchange true if the active set changed
      *
      */
-    void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange) override;
+    void assemble_reg_normal_forces(bool& localisincontact, bool& localactivesetchange) override;
 
     /**
      * \brief Throws an error since frictional contact is not yet tested
      */
-    void AssembleRegTangentForcesPenalty() override;
+    void assemble_reg_tangent_forces_penalty() override;
 
     /** \brief return the multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness
      */
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> GetConstitutiveContactLaw()
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> get_constitutive_contact_law()
     {
       return coconstlaw_;
     }

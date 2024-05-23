@@ -51,8 +51,8 @@ namespace DRT
 
       void MaterialPostSetup(DRT::Element& ele, MAT::So3Material& solid_material) override;
 
-      void EvaluateNonlinearForceStiffnessMass(DRT::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization,
+      void evaluate_nonlinear_force_stiffness_mass(DRT::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
@@ -63,13 +63,13 @@ namespace DRT
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           STR::ELEMENTS::ParamsInterface& str_interface) override;
 
-      void CalculateStressesStrains(DRT::Element& ele, MAT::So3Material& solid_material,
+      void calculate_stresses_strains(DRT::Element& ele, MAT::So3Material& solid_material,
           const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
           const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
-      double CalculateInternalEnergy(DRT::Element& ele, MAT::So3Material& solid_material,
+      double calculate_internal_energy(DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
@@ -79,7 +79,7 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
-      void ResetToLastConverged(DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void reset_to_last_converged(DRT::Element& ele, MAT::So3Material& solid_material) override;
 
       void VisData(const std::string& name, std::vector<double>& data) override;
 

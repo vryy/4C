@@ -67,7 +67,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 
   // check if we have a problem that needs to be prestressed
   if (Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-          GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+          GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") !=
       INPAR::STR::PreStress::none)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(

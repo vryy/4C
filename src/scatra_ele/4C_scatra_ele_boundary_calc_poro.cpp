@@ -128,7 +128,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
-      my::rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
+      my::rotsymmpbc_->rotate_my_values_if_necessary(econvel);
 
       // construct location vector for pressure dofs
       std::vector<int> lmpre(nen_, -1);
@@ -203,7 +203,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::
     // loop over all integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints, iquad, &(this->normal_));
+      const double fac = my::eval_shape_func_and_int_fac(intpoints, iquad, &(this->normal_));
 
       const double porosity = ComputePorosity(ele);
 

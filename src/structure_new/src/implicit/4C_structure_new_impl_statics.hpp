@@ -85,12 +85,12 @@ namespace STR
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations (derived) */
-      void PredictConstDisConsistVelAcc(
+      void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      bool PredictConstVelConsistAcc(
+      bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations and consistent velocities (derived)
@@ -109,28 +109,28 @@ namespace STR
       int MethodSteps() const override { return 1; }
 
       //! Give local order of accuracy of displacement part
-      int MethodOrderOfAccuracyDis() const override
+      int method_order_of_accuracy_dis() const override
       {
         FOUR_C_THROW("Sensible to ask?");
         return 0;
       }
 
       //! Give local order of accuracy of velocity part
-      int MethodOrderOfAccuracyVel() const override
+      int method_order_of_accuracy_vel() const override
       {
         FOUR_C_THROW("Sensible to ask?");
         return 0;
       }
 
       //! Return linear error coefficient of displacements
-      double MethodLinErrCoeffDis() const override
+      double method_lin_err_coeff_dis() const override
       {
         FOUR_C_THROW("Sensible to ask?");
         return 0.0;
       }
 
       //! Return linear error coefficient of velocities
-      double MethodLinErrCoeffVel() const override
+      double method_lin_err_coeff_vel() const override
       {
         FOUR_C_THROW("Sensible to ask?");
         return 0.0;
@@ -142,12 +142,12 @@ namespace STR
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void AddViscoMassContributions(Epetra_Vector& f) const override{};
+      void add_visco_mass_contributions(Epetra_Vector& f) const override{};
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override{};
+      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override{};
 
       //! reset the time step dependent parameters for the element evaluation [derived]
       void ResetEvalParams() override;

@@ -73,7 +73,7 @@ void FLD::TimIntLoma::Init()
   // if (gasconstant_ < 1e-15) FOUR_C_THROW("received zero or negative gas constant");
 
   // set some Loma-specific parameters
-  SetElementCustomParameter();
+  set_element_custom_parameter();
   return;
 }
 
@@ -83,7 +83,7 @@ void FLD::TimIntLoma::Init()
  | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
     Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
     Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
@@ -169,7 +169,7 @@ void FLD::TimIntLoma::SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> 
   thermpressdtam_ = thermpressdtam;
 
   return;
-}  // TimIntLoma::SetLomaIterScalarFields
+}  // TimIntLoma::set_loma_iter_scalar_fields
 
 
 /*----------------------------------------------------------------------*
@@ -194,7 +194,7 @@ void FLD::TimIntLoma::SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp
 // -------------------------------------------------------------------
 // set loma parameters                               rasthofer 03/2012
 // -------------------------------------------------------------------
-void FLD::TimIntLoma::SetElementCustomParameter()
+void FLD::TimIntLoma::set_element_custom_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -217,9 +217,9 @@ void FLD::TimIntLoma::SetElementCustomParameter()
 /*----------------------------------------------------------------------*
 | print info about turbulence model (loma-specific)            bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::PrintTurbulenceModel()
+void FLD::TimIntLoma::print_turbulence_model()
 {
-  FluidImplicitTimeInt::PrintTurbulenceModel();
+  FluidImplicitTimeInt::print_turbulence_model();
 
   if (physicaltype_ == INPAR::FLUID::loma and turbmodel_ == INPAR::FLUID::smagorinsky)
   {
@@ -244,7 +244,7 @@ void FLD::TimIntLoma::PrintTurbulenceModel()
 /*----------------------------------------------------------------------*
 | set custom ele params in AssembleMatAndRHS                   bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntLoma::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("thermpress at n+alpha_F/n+1", thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n", thermpressam_);
@@ -254,9 +254,9 @@ void FLD::TimIntLoma::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList
 }
 
 /*----------------------------------------------------------------------*
-| set custom ele params in ApplyNonlinearBoundaryConditions    bk 11/13 |
+| set custom ele params in apply_nonlinear_boundary_conditions    bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetCustomEleParamsApplyNonlinearBoundaryConditions(
+void FLD::TimIntLoma::set_custom_ele_params_apply_nonlinear_boundary_conditions(
     Teuchos::ParameterList& eleparams)
 {
   eleparams.set("thermpress at n+alpha_F/n+1", thermpressaf_);
@@ -264,9 +264,10 @@ void FLD::TimIntLoma::SetCustomEleParamsApplyNonlinearBoundaryConditions(
 }
 
 /*----------------------------------------------------------------------*
-| set custom ele params in LinearRelaxationSolve               bk 11/13 |
+| set custom ele params in linear_relaxation_solve               bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams)
+void FLD::TimIntLoma::set_custom_ele_params_linear_relaxation_solve(
+    Teuchos::ParameterList& eleparams)
 {
   eleparams.set("thermpress at n+alpha_F/n+1", thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n", thermpressam_);
@@ -278,7 +279,7 @@ void FLD::TimIntLoma::SetCustomEleParamsLinearRelaxationSolve(Teuchos::Parameter
 /*----------------------------------------------------------------------*
 | call the statistics manager including thermpress parameters  bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::CallStatisticsManager()
+void FLD::TimIntLoma::call_statistics_manager()
 {
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
@@ -311,10 +312,10 @@ void FLD::TimIntLoma::AVM3Preparation()
   eleparams.set("thermpressderiv at n+alpha_F/n+1", thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1", thermpressdtam_);
 
-  AVM3AssembleMatAndRHS(eleparams);
+  av_m3_assemble_mat_and_rhs(eleparams);
 
   // get scale-separation matrix
-  AVM3GetScaleSeparationMatrix();
+  av_m3_get_scale_separation_matrix();
 
   // perform initial separation to initialize fsvelaf_
   // required for loma

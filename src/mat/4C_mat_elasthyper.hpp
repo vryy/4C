@@ -244,7 +244,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
-    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
         CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
@@ -266,7 +266,7 @@ namespace MAT
      * \param dddPIII(in,out) : 3rd derivative of strain energy function w.r.t. principle invariants
      * \param temp(in) : temperature
      */
-    virtual void EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
+    virtual void evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
         CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
         CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp);
 
@@ -297,12 +297,12 @@ namespace MAT
               w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma}
               \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void EvaluateCauchyTempDeriv(const CORE::LINALG::Matrix<3, 1>& prinv, const double ndt,
-        const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
-        const CORE::LINALG::Matrix<9, 1>& iFTV, const CORE::LINALG::Matrix<9, 1>& DbdndtDFV,
-        const CORE::LINALG::Matrix<9, 1>& DibdndtDFV, const CORE::LINALG::Matrix<9, 1>& DI1DF,
-        const CORE::LINALG::Matrix<9, 1>& DI2DF, const CORE::LINALG::Matrix<9, 1>& DI3DF,
-        CORE::LINALG::Matrix<9, 1>* D2sntDFDT)
+    virtual void evaluate_cauchy_temp_deriv(const CORE::LINALG::Matrix<3, 1>& prinv,
+        const double ndt, const double bdndt, const double ibdndt, const double* temp,
+        double* DsntDT, const CORE::LINALG::Matrix<9, 1>& iFTV,
+        const CORE::LINALG::Matrix<9, 1>& DbdndtDFV, const CORE::LINALG::Matrix<9, 1>& DibdndtDFV,
+        const CORE::LINALG::Matrix<9, 1>& DI1DF, const CORE::LINALG::Matrix<9, 1>& DI2DF,
+        const CORE::LINALG::Matrix<9, 1>& DI3DF, CORE::LINALG::Matrix<9, 1>* D2sntDFDT)
     {
     }
 
@@ -325,7 +325,7 @@ namespace MAT
     virtual void SetupAAA(Teuchos::ParameterList& params, int eleGID);
 
     /// return if anisotropic not splitted formulation
-    virtual bool AnisotropicPrincipal() const { return summandProperties_.anisoprinc; }
+    virtual bool anisotropic_principal() const { return summandProperties_.anisoprinc; }
 
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return summandProperties_.anisomod; }

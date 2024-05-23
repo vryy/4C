@@ -57,11 +57,11 @@ namespace POROELAST
       void CheckMaterialType(const int matid);
 
       //! set anisotropic permeability directions onto fluid element
-      void SetAnisotropicPermeabilityDirectionsOntoFluid(
+      void set_anisotropic_permeability_directions_onto_fluid(
           Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
 
       //! set anisotropic permeability nodal coefficients onto fluid element
-      void SetAnisotropicPermeabilityNodalCoeffsOntoFluid(
+      void set_anisotropic_permeability_nodal_coeffs_onto_fluid(
           Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele);
     };
 

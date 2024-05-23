@@ -69,7 +69,7 @@ namespace ADAPTER
     Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }
 
     /// create result test for Lubrication field
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateLubricationFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> create_lubrication_field_test();
 
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter();
 

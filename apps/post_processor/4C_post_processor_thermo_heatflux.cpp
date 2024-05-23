@@ -187,7 +187,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
       FOUR_C_THROW("Cannot handle numdf=%g", numdf);
     }
 
-    filter_.GetWriter().WriteNodalResultStep(
+    filter_.GetWriter().write_nodal_result_step(
         *files[0], nodal_heatfluxes, resultfilepos, groupname, name[0], numdf);
   }
 
@@ -252,7 +252,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
       FOUR_C_THROW("vector containing element center heatfluxes/tempgradients not available");
     }
 
-    filter_.GetWriter().WriteElementResultStep(
+    filter_.GetWriter().write_element_result_step(
         *files[0], eleheatflux, resultfilepos, groupname, name[0], numdf, 0);
   }
 

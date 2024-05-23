@@ -197,8 +197,8 @@ void MAT::LinElast1DGrowth::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 double MAT::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double conc) const
 {
-  const double def_grad_inel =
-      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                  : get_growth_factor_conc_prop(conc);
 
   const double def_grad_el = def_grad / def_grad_inel;
   const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
@@ -211,8 +211,8 @@ double MAT::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double co
 double MAT::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const double conc) const
 {
   // F_in
-  const double def_grad_inel =
-      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                  : get_growth_factor_conc_prop(conc);
 
   // F_el
   const double def_grad_el = def_grad / def_grad_inel;
@@ -222,7 +222,7 @@ double MAT::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const dou
 
   // dF_in/dF
   const double d_def_grad_inel_d_def_grad =
-      AmountPropGrowth() ? GetGrowthFactorAoSPropDeriv(conc, def_grad) : 0.0;
+      AmountPropGrowth() ? get_growth_factor_ao_s_prop_deriv(conc, def_grad) : 0.0;
 
   // dF_el_dF
   const double d_def_grad_el_d_def_grad =
@@ -241,10 +241,10 @@ double MAT::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const dou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::LinElast1DGrowth::EvaluateElasticEnergy(double def_grad, double conc) const
+double MAT::LinElast1DGrowth::evaluate_elastic_energy(double def_grad, double conc) const
 {
-  const double def_grad_inel =
-      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                  : get_growth_factor_conc_prop(conc);
 
   const double def_grad_el = def_grad / def_grad_inel;
   const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
@@ -254,14 +254,15 @@ double MAT::LinElast1DGrowth::EvaluateElasticEnergy(double def_grad, double conc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::LinElast1DGrowth::GetGrowthFactorConcProp(const double conc) const
+double MAT::LinElast1DGrowth::get_growth_factor_conc_prop(const double conc) const
 {
   return CORE::FE::Polynomial(growth_params_->poly_params_).Evaluate(conc - growth_params_->c0_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const double def_grad) const
+double MAT::LinElast1DGrowth::get_growth_factor_ao_s_prop(
+    const double conc, const double def_grad) const
 {
   return CORE::FE::Polynomial(growth_params_->poly_params_)
       .Evaluate(conc * def_grad - growth_params_->c0_);
@@ -269,7 +270,7 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
+double MAT::LinElast1DGrowth::get_growth_factor_ao_s_prop_deriv(
     const double conc, const double def_grad) const
 {
   const double first_deriv = CORE::FE::Polynomial(growth_params_->poly_params_)

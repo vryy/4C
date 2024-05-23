@@ -111,7 +111,7 @@ namespace CONSTRAINTS
     void OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
 
     //! output of spring offset
-    void OutputPrestrOffsetOld(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
+    void output_prestr_offset_old(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
 
     //! return type of spring
     SpringType GetSpringType() { return springtype_; }
@@ -133,7 +133,7 @@ namespace CONSTRAINTS
     void SetSpringType();
 
     //! set up MORTAR interface for direction cursurfnormal
-    void InitializeCurSurfNormal();
+    void initialize_cur_surf_normal();
 
     //! calculate nodal area - old!
     void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
@@ -142,7 +142,7 @@ namespace CONSTRAINTS
     void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
-    void InitializePrestrOffset();
+    void initialize_prestr_offset();
 
     Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
     Teuchos::RCP<CORE::Conditions::Condition> spring_;  ///< spring dashpot condition

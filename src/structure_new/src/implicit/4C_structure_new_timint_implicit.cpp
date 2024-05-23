@@ -87,12 +87,12 @@ void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
   IntegratorPtr()->SetState(*x);
   ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
   NlnSolver().SolutionGroup().setX(x_nox);
-  SetStateInSyncWithNOXGroup(true);
+  set_state_in_sync_with_nox_group(true);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::PreparePartitionStep()
+void STR::TIMINT::Implicit::prepare_partition_step()
 {
   CheckInitSetup();
   FOUR_C_THROW("Not yet implemented!");
@@ -142,7 +142,7 @@ int STR::TIMINT::Implicit::IntegrateStep()
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 {
   CheckInitSetup();
-  ThrowIfStateNotInSyncWithNOXGroup();
+  throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   NlnSolver().Reset();
   // solve the non-linear problem
@@ -153,12 +153,12 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TIMINT::Implicit::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (disiterinc == Teuchos::null) return;
 
   CheckInitSetup();
-  ThrowIfStateNotInSyncWithNOXGroup();
+  throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
@@ -183,13 +183,13 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::DetermineStressStrain() { ImplInt().DetermineStressStrain(); }
+void STR::TIMINT::Implicit::determine_stress_strain() { ImplInt().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  UpdateStateIncrementally(disiterinc);
+  update_state_incrementally(disiterinc);
 
   Evaluate();
 }
@@ -199,7 +199,7 @@ void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 void STR::TIMINT::Implicit::Evaluate()
 {
   CheckInitSetup();
-  ThrowIfStateNotInSyncWithNOXGroup();
+  throw_if_state_not_in_sync_with_nox_group();
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
@@ -244,7 +244,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     // In this case, the time step size is halved as consequence of a non-converging nonlinear
     // solver. After a prescribed number of converged time steps, the time step is doubled again.
     // The following methods checks, if the time step size can be increased again.
-    CheckForTimeStepIncrease(nonlinsoldiv);
+    check_for_time_step_increase(nonlinsoldiv);
     return INPAR::STR::conv_success;
   }
   // get ID of actual processor in parallel
@@ -309,7 +309,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
 
-      Integrator().UpdateConstantStateContributions();
+      Integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -336,17 +336,17 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
 
-      SetDivConRefineLevel(GetDivConRefineLevel() + 1);
-      SetDivConNumFineStep(0);
+      set_div_con_refine_level(get_div_con_refine_level() + 1);
+      set_div_con_num_fine_step(0);
 
-      if (GetDivConRefineLevel() == GetMaxDivConRefineLevel())
+      if (get_div_con_refine_level() == get_max_div_con_refine_level())
         FOUR_C_THROW(
             "Maximal divercont refinement level reached. Adapt your time basic time step size!");
 
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
 
-      Integrator().UpdateConstantStateContributions();
+      Integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -364,24 +364,24 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       comm.SumAll(&proc_randnum, &randnum, 1);
       const double numproc = comm.NumProc();
       randnum /= numproc;
-      if (GetRandomTimeStepFactor() > 1.0)
-        SetRandomTimeStepFactor(randnum * 0.49 + 0.51);
-      else if (GetRandomTimeStepFactor() < 1.0)
-        SetRandomTimeStepFactor(randnum * 0.99 + 1.0);
+      if (get_random_time_step_factor() > 1.0)
+        set_random_time_step_factor(randnum * 0.49 + 0.51);
+      else if (get_random_time_step_factor() < 1.0)
+        set_random_time_step_factor(randnum * 0.99 + 1.0);
       else
-        SetRandomTimeStepFactor(randnum * 1.48 + 0.51);
+        set_random_time_step_factor(randnum * 1.48 + 0.51);
 
       if (myrank == 0)
       {
         IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
                     "number between 0.51 and 1.99 -> here: "
-                 << GetRandomTimeStepFactor() << " !" << IO::endl;
+                 << get_random_time_step_factor() << " !" << IO::endl;
       }
       // multiply time-step size by random number
-      SetDeltaTime(GetDeltaTime() * GetRandomTimeStepFactor());
+      SetDeltaTime(GetDeltaTime() * get_random_time_step_factor());
       // update maximum number of time steps
-      int endstep = (1.0 / GetRandomTimeStepFactor()) * GetStepEnd() +
-                    (1.0 - (1.0 / GetRandomTimeStepFactor())) * GetStepNp() + 1;
+      int endstep = (1.0 / get_random_time_step_factor()) * GetStepEnd() +
+                    (1.0 - (1.0 / get_random_time_step_factor())) * GetStepNp() + 1;
       if (endstep > std::numeric_limits<int>::max())
         FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
       SetStepEnd(endstep);
@@ -390,7 +390,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
 
-      Integrator().UpdateConstantStateContributions();
+      Integrator().update_constant_state_contributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -436,7 +436,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status)
+void STR::TIMINT::Implicit::check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status)
 {
   CheckInitSetup();
 
@@ -444,11 +444,11 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
 
   if (GetDivergenceAction() != INPAR::STR::divcont_adapt_step)
     return;
-  else if (status == INPAR::STR::conv_success and GetDivConRefineLevel() != 0)
+  else if (status == INPAR::STR::conv_success and get_div_con_refine_level() != 0)
   {
-    SetDivConNumFineStep(GetDivConNumFineStep() + 1);
+    set_div_con_num_fine_step(get_div_con_num_fine_step() + 1);
 
-    if (GetDivConNumFineStep() == maxnumfinestep)
+    if (get_div_con_num_fine_step() == maxnumfinestep)
     {
       // increase the step size if the remaining number of steps is a even number
       if (((GetStepEnd() - GetStepNp()) % 2) == 0 and GetStepEnd() != GetStepNp())
@@ -456,8 +456,8 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
         if (DataGlobalState().GetMyRank() == 0)
           IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
 
-        SetDivConRefineLevel(GetDivConRefineLevel() - 1);
-        SetDivConNumFineStep(0);
+        set_div_con_refine_level(get_div_con_refine_level() - 1);
+        set_div_con_num_fine_step(0);
 
         SetStepEnd(GetStepEnd() - (GetStepEnd() - GetStepNp()) / 2);
 
@@ -466,21 +466,21 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
       }
       else  // otherwise we have to wait one more time step until the step size can be increased
       {
-        SetDivConNumFineStep(GetDivConNumFineStep() - 1);
+        set_div_con_num_fine_step(get_div_con_num_fine_step() - 1);
       }
     }
     return;
   }
-}  // CheckForTimeStepIncrease()
+}  // check_for_time_step_increase()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const
+void STR::TIMINT::Implicit::print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const
 {
   typedef CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
       LinalgBlockSparseMatrix;
 
-  if (not GetDataIO().IsWriteJacobianToMatlab()) return;
+  if (not GetDataIO().is_write_jacobian_to_matlab()) return;
 
   // create file name
   std::stringstream filebase;
@@ -500,7 +500,8 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
   Teuchos::RCP<const NOX::NLN::LinearSystem> nln_lin_system =
       Teuchos::rcp_dynamic_cast<const NOX::NLN::LinearSystem>(linear_system, true);
 
-  const enum NOX::NLN::LinSystem::OperatorType jac_type = nln_lin_system->getJacobianOperatorType();
+  const enum NOX::NLN::LinSystem::OperatorType jac_type =
+      nln_lin_system->get_jacobian_operator_type();
 
   Teuchos::RCP<const Epetra_Operator> jac_ptr = nln_lin_system->getJacobianOperator();
 
@@ -537,7 +538,7 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::ComputeConditionNumber(const NOX::NLN::Group& grp) const
+void STR::TIMINT::Implicit::compute_condition_number(const NOX::NLN::Group& grp) const
 {
   std::string name_prefix;
 
@@ -564,14 +565,15 @@ void STR::TIMINT::Implicit::ComputeConditionNumber(const NOX::NLN::Group& grp) c
       const std::string nox_cond_type_str(
           NOX::NLN::LinSystem::ConditionNumber2String(nox_cond_type));
 
-      const_cast<NOX::NLN::Group&>(grp).computeSerialJacobianConditionNumber(nox_cond_type, true);
+      const_cast<NOX::NLN::Group&>(grp).compute_serial_jacobian_condition_number(
+          nox_cond_type, true);
 
       name_prefix = nox_cond_type_str + "_";
 
       if (cond_type == INPAR::STR::ConditionNumber::max_min_ev_ratio)
       {
-        max_rev = grp.getJacobianMaxRealEigenvalue();
-        min_rev = grp.getJacobianMinRealEigenvalue();
+        max_rev = grp.get_jacobian_max_real_eigenvalue();
+        min_rev = grp.get_jacobian_min_real_eigenvalue();
       }
 
       break;
@@ -631,30 +633,30 @@ int STR::TIMINT::Implicit::MethodSteps() const { return implint_ptr_->MethodStep
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::Implicit::MethodOrderOfAccuracyDis() const
+int STR::TIMINT::Implicit::method_order_of_accuracy_dis() const
 {
-  return implint_ptr_->MethodOrderOfAccuracyDis();
+  return implint_ptr_->method_order_of_accuracy_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::Implicit::MethodOrderOfAccuracyVel() const
+int STR::TIMINT::Implicit::method_order_of_accuracy_vel() const
 {
-  return implint_ptr_->MethodOrderOfAccuracyVel();
+  return implint_ptr_->method_order_of_accuracy_vel();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::Implicit::MethodLinErrCoeffDis() const
+double STR::TIMINT::Implicit::method_lin_err_coeff_dis() const
 {
-  return implint_ptr_->MethodLinErrCoeffDis();
+  return implint_ptr_->method_lin_err_coeff_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::Implicit::MethodLinErrCoeffVel() const
+double STR::TIMINT::Implicit::method_lin_err_coeff_vel() const
 {
-  return implint_ptr_->MethodLinErrCoeffVel();
+  return implint_ptr_->method_lin_err_coeff_vel();
 }
 
 FOUR_C_NAMESPACE_CLOSE

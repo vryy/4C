@@ -118,7 +118,7 @@ namespace STR
         return stepmax_;
       };
 
-      bool IsRestartingInitialState() const
+      bool is_restarting_initial_state() const
       {
         CheckInitSetup();
         return isrestarting_initial_state_;
@@ -181,14 +181,14 @@ namespace STR
       }
 
       /// Returns the tolerance for the displacements during prestressing
-      double GetPreStressDisplacementTolerance() const
+      double get_pre_stress_displacement_tolerance() const
       {
         CheckInitSetup();
         return prestress_displacement_tolerance_;
       }
 
       /// Returns the minimum number of load steps during prestressing
-      [[nodiscard]] int GetPreStressMinimumNumberOfLoadSteps() const
+      [[nodiscard]] int get_pre_stress_minimum_number_of_load_steps() const
       {
         CheckInitSetup();
         return prestress_min_number_of_load_steps_;
@@ -224,14 +224,14 @@ namespace STR
       };
 
       /// Returns mid-time energy type
-      enum INPAR::STR::MidAverageEnum GetMidTimeEnergyType() const
+      enum INPAR::STR::MidAverageEnum get_mid_time_energy_type() const
       {
         CheckInitSetup();
         return mid_time_energy_type_;
       }
 
       /// Returns number of times you want to halve your timestep in case nonlinear solver diverges
-      const int& GetMaxDivConRefineLevel() const
+      const int& get_max_div_con_refine_level() const
       {
         CheckInitSetup();
         return maxdivconrefinementlevel_;
@@ -252,7 +252,7 @@ namespace STR
       }
 
       /// Returns the inital pseudo time step for the PTC method
-      const double& GetInitialPTCPseudoTimeStep() const { return ptc_delta_init_; }
+      const double& get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
       ///@}
 
       /// @name Get mutable linear solver variables (read only access)
@@ -278,14 +278,14 @@ namespace STR
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
-      const double& GetDampingStiffnessFactor() const
+      const double& get_damping_stiffness_factor() const
       {
         CheckInitSetup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
-      const double& GetDampingMassFactor() const
+      const double& get_damping_mass_factor() const
       {
         CheckInitSetup();
         return dampm_;
@@ -324,7 +324,7 @@ namespace STR
       };
 
       /// Returns current active element technologies
-      const std::set<enum INPAR::STR::EleTech>& GetElementTechnologies() const
+      const std::set<enum INPAR::STR::EleTech>& get_element_technologies() const
       {
         CheckInitSetup();
         return *eletechs_;
@@ -340,7 +340,7 @@ namespace STR
       /// @name Get model specific data container
       ///@{
       /// Returns periodic bounding box object (read access)
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& get_periodic_bounding_box() const
       {
         CheckInitSetup();
         return periodic_boundingbox_;
@@ -364,7 +364,7 @@ namespace STR
       }
 
       /// Return random factor for timestep in case nonlinear solver diverges
-      const double& GetRandomTimeStepFactor() const
+      const double& get_random_time_step_factor() const
       {
         CheckInitSetup();
         return rand_tsfac_;
@@ -372,7 +372,7 @@ namespace STR
 
 
       /// Return level of refinement in case of divercontype_ == adapt_step
-      const int& GetDivConRefineLevel() const
+      const int& get_div_con_refine_level() const
       {
         CheckInitSetup();
         return divconrefinementlevel_;
@@ -380,7 +380,7 @@ namespace STR
 
 
       /// Return number of fine steps in case of in case of divercontype_ == adapt_step
-      const int& GetDivConNumFineStep() const
+      const int& get_div_con_num_fine_step() const
       {
         CheckInitSetup();
         return divconnumfinestep_;
@@ -418,10 +418,10 @@ namespace STR
       double GetIncrTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
       /// Returns the tolerance type of the different quantities
-      enum INPAR::STR::ConvNorm GetIncrToleranceType(
+      enum INPAR::STR::ConvNorm get_incr_tolerance_type(
           const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
-      enum INPAR::STR::ConvNorm GetIncrToleranceType(
+      enum INPAR::STR::ConvNorm get_incr_tolerance_type(
           const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
           const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
 
@@ -479,13 +479,13 @@ namespace STR
         return prestresstime_;
       }
 
-      double& GetPreStressDisplacementTolerance()
+      double& get_pre_stress_displacement_tolerance()
       {
         CheckInitSetup();
         return prestress_displacement_tolerance_;
       }
 
-      [[nodiscard]] int& GetPreStressMinimumNumberOfLoadSteps()
+      [[nodiscard]] int& get_pre_stress_minimum_number_of_load_steps()
       {
         CheckInitSetup();
         return prestress_min_number_of_load_steps_;
@@ -520,7 +520,7 @@ namespace STR
       };
 
       /// Returns mid-time energy type
-      enum INPAR::STR::MidAverageEnum& GetMidTimeEnergyType()
+      enum INPAR::STR::MidAverageEnum& get_mid_time_energy_type()
       {
         CheckInitSetup();
         return mid_time_energy_type_;
@@ -556,21 +556,21 @@ namespace STR
       }
 
       /// Return random factor for time step in case nonlinear solver diverges
-      double& GetRandomTimeStepFactor()
+      double& get_random_time_step_factor()
       {
         CheckInitSetup();
         return rand_tsfac_;
       }
 
       /// Return level of refinement in case of divercontype_ == adapt_step
-      int& GetDivConRefineLevel()
+      int& get_div_con_refine_level()
       {
         CheckInitSetup();
         return divconrefinementlevel_;
       }
 
       /// Return number of fine steps in case of in case of divercontype_ == adapt_step
-      int& GetDivConNumFineStep()
+      int& get_div_con_num_fine_step()
       {
         CheckInitSetup();
         return divconnumfinestep_;
@@ -607,14 +607,14 @@ namespace STR
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
-      double& GetDampingStiffnessFactor()
+      double& get_damping_stiffness_factor()
       {
         CheckInitSetup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
-      double& GetDampingMassFactor()
+      double& get_damping_mass_factor()
       {
         CheckInitSetup();
         return dampm_;
@@ -641,7 +641,7 @@ namespace STR
       };
 
       /// Returns the current active element technologies
-      std::set<enum INPAR::STR::EleTech>& GetElementTechnologies()
+      std::set<enum INPAR::STR::EleTech>& get_element_technologies()
       {
         CheckInitSetup();
         return *eletechs_;
@@ -1134,7 +1134,7 @@ namespace STR
       //! @{
 
       //! Return time integration parameter \f$\theta\f$
-      bool GetModifiedForwardEuler() const
+      bool get_modified_forward_euler() const
       {
         CheckInitSetup();
         return modexpleuler_;

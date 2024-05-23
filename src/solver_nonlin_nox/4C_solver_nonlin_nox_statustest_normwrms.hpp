@@ -52,10 +52,10 @@ namespace NOX
         ::NOX::StatusTest::StatusType getStatus() const override;
 
         //! returns the absolute tolerance of the given quantity
-        double GetAbsoluteTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        double get_absolute_tolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
         //! returns the relative tolerance of the given quantity
-        double GetRelativeTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        double get_relative_tolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
         std::ostream& print(std::ostream& stream, int indent) const override;
 

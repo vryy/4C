@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
+BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
     Teuchos::RCP<const DRT::Discretization> discretization1,
     Teuchos::RCP<const DRT::Discretization> discretization2,
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
 {
   // Get the meshtying discretization method.
   INPAR::FBI::BeamToFluidDiscretization meshtying_discretization =
-      params_ptr->GetContactDiscretization();
+      params_ptr->get_contact_discretization();
 
   switch (meshtying_discretization)
   {

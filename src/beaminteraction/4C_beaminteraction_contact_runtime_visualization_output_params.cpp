@@ -75,8 +75,8 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInitAndSetup()
-    const
+void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
+    throw_error_if_not_init_and_setup() const
 {
   if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }

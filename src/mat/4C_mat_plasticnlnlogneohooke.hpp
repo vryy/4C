@@ -210,7 +210,7 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //! return names of visualization data available for direct VTK output
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     //! return visualization data for direct VTK output

@@ -356,7 +356,7 @@ void MAT::FluidPoroMultiPhase::EvaluateSaturation(std::vector<double>& saturatio
 /*----------------------------------------------------------------------*
  | transform generalized pressures to true pressures        vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
+void MAT::FluidPoroMultiPhase::transform_gen_pres_to_true_pres(
     const std::vector<double>& phinp, std::vector<double>& phi_transformed) const
 {
   // get trafo matrix
@@ -371,7 +371,7 @@ void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
 /*----------------------------------------------------------------------------------------*
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
+void MAT::FluidPoroMultiPhase::evaluate_deriv_of_dof_wrt_pressure(
     CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& state) const
 {
   for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
@@ -384,7 +384,8 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
 
     for (int jphase = 0; jphase < NumFluidPhases(); jphase++)
     {
-      derivs(iphase, jphase) = singlephase.EvaluateDerivOfDofWrtPressure(iphase, jphase, state);
+      derivs(iphase, jphase) =
+          singlephase.evaluate_deriv_of_dof_wrt_pressure(iphase, jphase, state);
     }
   }
   return;
@@ -393,7 +394,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
 /*--------------------------------------------------------------------------*
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
  *---------------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
+void MAT::FluidPoroMultiPhase::evaluate_deriv_of_saturation_wrt_pressure(
     CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
@@ -413,7 +414,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
     for (int jphase = 0; jphase < NumFluidPhases(); jphase++)
     {
       const double saturationderiv =
-          singlephase.EvaluateDerivOfSaturationWrtPressure(iphase, jphase, pressure);
+          singlephase.evaluate_deriv_of_saturation_wrt_pressure(iphase, jphase, pressure);
       derivs(iphase, jphase) = saturationderiv;
       // the saturation of the last phase is 1.0- (sum of all saturations)
       // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
@@ -426,7 +427,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
 /*--------------------------------------------------------------------------*
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
  *---------------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
+void MAT::FluidPoroMultiPhase::evaluate_second_deriv_of_saturation_wrt_pressure(
     std::vector<CORE::LINALG::SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
@@ -447,8 +448,9 @@ void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
     {
       for (int kphase = 0; kphase < NumFluidPhases(); kphase++)
       {
-        const double saturationderivderiv = singlephase.EvaluateSecondDerivOfSaturationWrtPressure(
-            iphase, jphase, kphase, pressure);
+        const double saturationderivderiv =
+            singlephase.evaluate_second_deriv_of_saturation_wrt_pressure(
+                iphase, jphase, kphase, pressure);
         derivs[iphase](jphase, kphase) = saturationderivderiv;
         // the saturation of the last phase is 1.0- (sum of all saturations)
         // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)

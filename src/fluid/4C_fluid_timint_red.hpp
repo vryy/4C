@@ -65,13 +65,13 @@ namespace FLD
     for dirichlet bc in this context
 
     */
-    void DoProblemSpecificBoundaryConditions() override;
+    void do_problem_specific_boundary_conditions() override;
 
     /*!
     \brief update the 3D-to-reduced_D coupling data in AssembleMatAndRHS
 
     */
-    virtual void Update3DToReducedMatAndRHS();
+    virtual void update3_d_to_reduced_mat_and_rhs();
 
     /*!
     \brief read restart data
@@ -106,7 +106,7 @@ namespace FLD
     \brief Insert Womersley condition
 
     */
-    void InsertVolumetricSurfaceFlowCondVector(
+    void insert_volumetric_surface_flow_cond_vector(
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res) override;
 
     /// prepare AVM3-based scale separation
@@ -116,7 +116,7 @@ namespace FLD
     void PrepareTimeStep() override;
 
     /*!
-    \brief Additional function for RedModels in LinearRelaxationSolve
+    \brief Additional function for RedModels in linear_relaxation_solve
 
     */
     void CustomSolve(Teuchos::RCP<Epetra_Vector> relax) override;
@@ -125,7 +125,7 @@ namespace FLD
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief call elements to calculate system matrix/rhs and assemble
@@ -137,7 +137,7 @@ namespace FLD
     \brief apply Dirichlet boundary conditions to system of equations
 
     */
-    void ApplyDirichletToSystem() override;
+    void apply_dirichlet_to_system() override;
 
 
    protected:

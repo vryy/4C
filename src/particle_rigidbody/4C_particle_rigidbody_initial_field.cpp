@@ -131,11 +131,11 @@ namespace
       case PARTICLEENGINE::Velocity:
         return rigidbodydatastates.GetRefVelocity();
       case PARTICLEENGINE::AngularVelocity:
-        return rigidbodydatastates.GetRefAngularVelocity();
+        return rigidbodydatastates.get_ref_angular_velocity();
       case PARTICLEENGINE::Acceleration:
         return rigidbodydatastates.GetRefAcceleration();
       case PARTICLEENGINE::AngularAcceleration:
-        return rigidbodydatastates.GetRefAngularAcceleration();
+        return rigidbodydatastates.get_ref_angular_acceleration();
 
       default:
         FOUR_C_THROW("unsupported state vector '%s' for initialization of rigid body!",

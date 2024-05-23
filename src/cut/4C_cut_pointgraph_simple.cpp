@@ -139,9 +139,9 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::FindCycles(
   {
     CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(element, side, cycle, location, strategy);
 
-    if (correct_rotation_direction_) CorrectRotationDirection(element->Sides()[0], main_cycles_);
+    if (correct_rotation_direction_) correct_rotation_direction(element->Sides()[0], main_cycles_);
 
-    SplitMainCyclesIntoLineCycles();
+    split_main_cycles_into_line_cycles();
   }
   else
   {
@@ -168,7 +168,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::FindCycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::SplitMainCyclesIntoLineCycles()
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::split_main_cycles_into_line_cycles()
 {
   std::vector<Cycle> line_main_cycles;
   for (std::vector<Cycle>::const_iterator ic = main_cycles_.begin(); ic != main_cycles_.end(); ++ic)
@@ -207,16 +207,16 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindLineFacetCycles(
     const plain_facet_set &line_facets, Element *parent_element)
 {
   Cycle cycle;
-  FillGraphAndCycleWithLineFacets(line_facets, cycle);
+  fill_graph_and_cycle_with_line_facets(line_facets, cycle);
 
-  graph_2d_->SetCorrectRotationDirection(true);
+  graph_2d_->set_correct_rotation_direction(true);
 
   FindCycles(parent_element, cycle);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FillGraphAndCycleWithLineFacets(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::fill_graph_and_cycle_with_line_facets(
     const plain_facet_set &line_facets, Cycle &cycle)
 {
   plain_point_set point_set;
@@ -245,7 +245,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindCycles(Element *element, Cycl
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph2D::CorrectRotationDirection(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::correct_rotation_direction(
     const Side *side, std::vector<Cycle> &cycles)
 {
   CORE::LINALG::Matrix<2, 1> rs = CORE::FE::getLocalCenterPosition<2>(side->Shape());

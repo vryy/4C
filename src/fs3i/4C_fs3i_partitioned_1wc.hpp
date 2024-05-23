@@ -42,7 +42,7 @@ namespace FS3I
 
     void PrepareTimeStep() override;
 
-    bool ScatraConvergenceCheck(int itnum) override;
+    bool scatra_convergence_check(int itnum) override;
   };
 
 }  // namespace FS3I

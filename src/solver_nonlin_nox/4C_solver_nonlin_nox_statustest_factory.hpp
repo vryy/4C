@@ -38,7 +38,7 @@ namespace NOX
         virtual ~Factory() = default;
 
         //! Returns a outer status test set from a parameter list.
-        Teuchos::RCP<::NOX::StatusTest::Generic> BuildOuterStatusTests(Teuchos::ParameterList& p,
+        Teuchos::RCP<::NOX::StatusTest::Generic> build_outer_status_tests(Teuchos::ParameterList& p,
             const ::NOX::Utils& utils,
             std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests) const;
 
@@ -114,7 +114,7 @@ namespace NOX
        *  \relates NOX::NLN::StatusTest::Factory
        *
        */
-      Teuchos::RCP<::NOX::StatusTest::Generic> BuildOuterStatusTests(Teuchos::ParameterList& p,
+      Teuchos::RCP<::NOX::StatusTest::Generic> build_outer_status_tests(Teuchos::ParameterList& p,
           const ::NOX::Utils& utils,
           std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests = nullptr);
 

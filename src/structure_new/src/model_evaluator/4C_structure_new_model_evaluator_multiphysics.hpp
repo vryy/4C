@@ -95,7 +95,7 @@ namespace STR
         active_mt_ = mtype;
       };
 
-      void CheckActiveModelType() const
+      void check_active_model_type() const
       {
         if (active_mt_ == mt_none) FOUR_C_THROW("No active model evaluator set for Multiphysics");
       };
@@ -158,13 +158,13 @@ namespace STR
       void UpdateStepElement() override{};
 
       //! [derived]
-      void DetermineStressStrain() override{};
+      void determine_stress_strain() override{};
 
       //! [derived]
       void DetermineEnergy() override{};
 
       //! [derived]
-      void DetermineOptionalQuantity() override{};
+      void determine_optional_quantity() override{};
 
       //! [derived]
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override{};
@@ -179,21 +179,21 @@ namespace STR
       //! @{
 
       //! Returns a pointer to the model specific dof row map
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override
       {
         return Teuchos::null;
       };
 
       //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier
       //! vector)
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override
       {
         return Teuchos::null;
       };
 
       //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange
       //! multiplier vector)
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override
       {
         return Teuchos::null;
       };
@@ -212,14 +212,14 @@ namespace STR
       //! return reference to map containing the model evaluators
       std::map<enum STR::MODELEVALUATOR::MultiphysicType,
           Teuchos::RCP<STR::MODELEVALUATOR::Generic>>&
-      GetModelEvalutaorMap()
+      get_model_evalutaor_map()
       {
         return me_map_;
       };
 
      public:
       //! return RCP to model evaluator of specific MultiphysicType
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> GetModelEvaluatorFromMap(
+      Teuchos::RCP<STR::MODELEVALUATOR::Generic> get_model_evaluator_from_map(
           enum STR::MODELEVALUATOR::MultiphysicType mtype) const
       {
         return me_map_.at(mtype);

@@ -100,18 +100,18 @@ namespace CORE::ADAPTER
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
 
     */
-    Teuchos::RCP<const Epetra_Vector> ApplyVectorMapping12(
+    Teuchos::RCP<const Epetra_Vector> apply_vector_mapping12(
         Teuchos::RCP<const Epetra_Vector> vec) const;
-    Teuchos::RCP<const Epetra_Vector> ApplyVectorMapping21(
+    Teuchos::RCP<const Epetra_Vector> apply_vector_mapping21(
         Teuchos::RCP<const Epetra_Vector> vec) const;
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ApplyMatrixMapping12(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> apply_matrix_mapping12(
         Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ApplyMatrixMapping21(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> apply_matrix_mapping21(
         Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
 
     //@}

@@ -120,7 +120,7 @@ namespace NOX
 
      private:
       //! Method for computing directional derivatives numerically
-      ::NOX::Abstract::Vector& computeDirectionalDerivative(
+      ::NOX::Abstract::Vector& compute_directional_derivative(
           const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface);
 
       //! Printing utilities

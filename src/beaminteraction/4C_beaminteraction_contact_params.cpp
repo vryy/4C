@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamToBeamContactParams()
+void BEAMINTERACTION::BeamContactParams::build_beam_to_beam_contact_params()
 {
   beam_to_beam_contact_params_ = Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactParams());
   beam_to_beam_contact_params_->Init();
@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToBeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeOutputParams(
+void BEAMINTERACTION::BeamContactParams::build_beam_contact_runtime_output_params(
     const double restart_time)
 {
   beam_contact_runtime_output_params_ =
@@ -58,7 +58,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeOutputParams(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamToSphereContactParams()
+void BEAMINTERACTION::BeamContactParams::build_beam_to_sphere_contact_params()
 {
   beam_to_sphere_contact_params_ = Teuchos::rcp(new BEAMINTERACTION::BeamToSphereContactParams());
   beam_to_sphere_contact_params_->Init();
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSphereContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidVolumeMeshtyingParams()
+void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_volume_meshtying_params()
 {
   beam_to_solid_volume_meshtying_params_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams());
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidVolumeMeshtyingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceMeshtyingParams()
+void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_surface_meshtying_params()
 {
   beam_to_solid_surface_meshtying_params_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams());
@@ -88,7 +88,7 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceMeshtyingParams(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceContactParams()
+void BEAMINTERACTION::BeamContactParams::build_beam_to_solid_surface_contact_params()
 {
   beam_to_solid_surface_contact_params_ =
       Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceContactParams());

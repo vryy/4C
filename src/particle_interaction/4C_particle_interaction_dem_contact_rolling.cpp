@@ -83,7 +83,7 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal
   d_rolling_fac_ = (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
 }
 
-void PARTICLEINTERACTION::DEMContactRollingViscous::EffectiveRadiusParticle(
+void PARTICLEINTERACTION::DEMContactRollingViscous::effective_radius_particle(
     const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const
 {
   if (radius_j)
@@ -92,7 +92,7 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::EffectiveRadiusParticle(
     r_eff = radius_i[0];
 }
 
-void PARTICLEINTERACTION::DEMContactRollingViscous::RelativeRollingVelocity(const double& r_eff,
+void PARTICLEINTERACTION::DEMContactRollingViscous::relative_rolling_velocity(const double& r_eff,
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
 {
@@ -100,7 +100,7 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RelativeRollingVelocity(cons
   if (angvel_j) UTILS::VecAddCross(v_rel_rolling, normal, angvel_j);
 }
 
-void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double* gap_rolling,
+void PARTICLEINTERACTION::DEMContactRollingViscous::rolling_contact_moment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
     const double& r_eff, const double& mu_rolling, const double& normalcontactforce,
     double* rollingcontactmoment) const
@@ -117,7 +117,7 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double*
   UTILS::VecScale(rollingcontactmoment, r_eff);
 }
 
-void PARTICLEINTERACTION::DEMContactRollingViscous::RollingPotentialEnergy(
+void PARTICLEINTERACTION::DEMContactRollingViscous::rolling_potential_energy(
     const double* gap_rolling, double& rollingpotentialenergy) const
 {
   rollingpotentialenergy = 0.0;
@@ -152,7 +152,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::Setup(const double& k_normal
     d_rolling_fac_ = 2.0 * std::sqrt(k_normal);
 }
 
-void PARTICLEINTERACTION::DEMContactRollingCoulomb::EffectiveRadiusParticle(
+void PARTICLEINTERACTION::DEMContactRollingCoulomb::effective_radius_particle(
     const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const
 {
   if (radius_j)
@@ -162,7 +162,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::EffectiveRadiusParticle(
     r_eff = radius_i[0] + gap;
 }
 
-void PARTICLEINTERACTION::DEMContactRollingCoulomb::RelativeRollingVelocity(const double& r_eff,
+void PARTICLEINTERACTION::DEMContactRollingCoulomb::relative_rolling_velocity(const double& r_eff,
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
 {
@@ -172,7 +172,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RelativeRollingVelocity(cons
   UTILS::VecScale(v_rel_rolling, r_eff);
 }
 
-void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double* gap_rolling,
+void PARTICLEINTERACTION::DEMContactRollingCoulomb::rolling_contact_moment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
     const double& r_eff, const double& mu_rolling, const double& normalcontactforce,
     double* rollingcontactmoment) const
@@ -230,7 +230,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double*
   UTILS::VecScale(rollingcontactmoment, r_eff);
 }
 
-void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingPotentialEnergy(
+void PARTICLEINTERACTION::DEMContactRollingCoulomb::rolling_potential_energy(
     const double* gap_rolling, double& rollingpotentialenergy) const
 {
   rollingpotentialenergy = 0.5 * k_rolling_ * UTILS::VecDot(gap_rolling, gap_rolling);

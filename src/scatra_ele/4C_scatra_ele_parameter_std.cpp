@@ -85,7 +85,8 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterStd::SetNodesetParameters(Teuchos::ParameterList& parameters)
+void DRT::ELEMENTS::ScaTraEleParameterStd::set_nodeset_parameters(
+    Teuchos::ParameterList& parameters)
 {
   nds_disp_ = parameters.get<int>("ndsdisp", -1);
   nds_growth_ = parameters.get<int>("ndsgrowth", -1);
@@ -292,7 +293,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsThermo() const
   return nds_thermo_;
 }
 
-int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
+int DRT::ELEMENTS::ScaTraEleParameterStd::nds_two_tensor_quantity() const
 {
   FOUR_C_ASSERT(nds_two_tensor_quantitiy_ != -1,
       "You try to access the number of dofset associated with two-tensor quantity dofs without "

@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
      * step, for all contained elements (Vector of vector).
      */
-    void SetRestartDisplacement(
+    void set_restart_displacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_) override;
 
     /**
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
-    void GetPairVisualization(
+    void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+    virtual void evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
         const CORE::LINALG::Matrix<3, 1, double>& r_solid,
         CORE::LINALG::Matrix<3, 1, double>& force) const;
 
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
      * @param beam_coupling_ref (out) shifted reference position of the beam.
      * @param solid_coupling_ref (out) shifted reference position of the solid.
      */
-    void GetCouplingReferencePosition(GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
+    void get_coupling_reference_position(GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
         GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const;
 
    protected:

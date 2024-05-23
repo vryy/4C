@@ -117,7 +117,7 @@ namespace CONTACT
         const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
-    void IntegratePoroNoOutFlow(const double fac, MORTAR::Element& ele, double* xi,
+    void integrate_poro_no_out_flow(const double fac, MORTAR::Element& ele, double* xi,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const double jac, const CORE::GEN::Pairedvector<int, double>& jacintcellmap,
         const double wgt, const CORE::LINALG::Matrix<dim, 1>& normal,
@@ -128,7 +128,7 @@ namespace CONTACT
         MORTAR::Element& otherele, const CORE::LINALG::SerialDenseVector& othershape,
         double& poropressure);
 
-    void GetPoroQuantitiesatGP(MORTAR::Element& ele, double* xi, double& spresgp,  //(in)
+    void get_poro_quantitiesat_gp(MORTAR::Element& ele, double* xi, double& spresgp,  //(in)
         double& sJ, std::map<int, double>& sJLin, double& sporosity, double& sdphi_dp,
         double& sdphi_dJ);  // out
 

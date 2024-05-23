@@ -156,7 +156,7 @@ void ADAPTER::StructureLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initvol, Teuchos::RCP<Epetra_Vector> signvol, const int offsetID)
 {
   if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   if (initvol == Teuchos::null or signvol == Teuchos::null)
     FOUR_C_THROW("Structure lung volume constraint cannot be initialized");
@@ -266,7 +266,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
     const int offsetID)
 {
   if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // parameter list
   Teuchos::ParameterList params;
@@ -412,7 +412,7 @@ void ADAPTER::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
   // NOTE: OldFlowRatesRed, OldVolsRed and OldLagrMultRed are redundant vectors,
   // hence "conversion" into a std::vector<double> provides identical
   // results on all processors. However, only processor 0 writes
-  // output in WriteRedundantDoubleVector.
+  // output in write_redundant_double_vector.
 
   Teuchos::RCP<std::vector<double>> flowrates =
       Teuchos::rcp(new std::vector<double>(OldFlowRatesRed->MyLength()));
@@ -433,9 +433,9 @@ void ADAPTER::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
     (*lmult)[i] = (*OldLagrMultRed)[i];
   }
 
-  output->WriteRedundantDoubleVector(stream1.str(), volumes);
-  output->WriteRedundantDoubleVector(stream2.str(), flowrates);
-  output->WriteRedundantDoubleVector(stream3.str(), lmult);
+  output->write_redundant_double_vector(stream1.str(), volumes);
+  output->write_redundant_double_vector(stream2.str(), flowrates);
+  output->write_redundant_double_vector(stream3.str(), lmult);
 }
 
 
@@ -471,9 +471,9 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
   Teuchos::RCP<std::vector<double>> lmult =
       Teuchos::rcp(new std::vector<double>(OldLagrMultRed->MyLength()));
 
-  reader.ReadRedundantDoubleVector(volumes, stream1.str());
-  reader.ReadRedundantDoubleVector(flowrates, stream2.str());
-  reader.ReadRedundantDoubleVector(lmult, stream3.str());
+  reader.read_redundant_double_vector(volumes, stream1.str());
+  reader.read_redundant_double_vector(flowrates, stream2.str());
+  reader.read_redundant_double_vector(lmult, stream3.str());
 
   for (int i = 0; i < OldFlowRatesRed->MyLength(); ++i)
   {

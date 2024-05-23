@@ -40,7 +40,7 @@ namespace SCATRA
     explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
 
-    bool SystemMatrixInitializationNeeded() const override { return true; }
+    bool system_matrix_initialization_needed() const override { return true; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
     //@}
@@ -56,7 +56,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
   };  // class MeshtyingStrategyStdElch
 }  // namespace SCATRA
 

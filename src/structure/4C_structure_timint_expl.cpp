@@ -75,7 +75,7 @@ void STR::TimIntExpl::Setup()
     FOUR_C_THROW("Currently, constraints cannot be done with explicit time integration.");
 
   // explicit time integrators can only handle penalty contact / meshtying
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     INPAR::CONTACT::SolvingStrategy soltype =
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(

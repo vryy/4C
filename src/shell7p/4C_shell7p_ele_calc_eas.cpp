@@ -186,14 +186,14 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::MaterialPostSetup(
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::ResetToLastConverged(
+void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::reset_to_last_converged(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateInternalEnergy(DRT::Element& ele,
+double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
@@ -321,7 +321,7 @@ double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateInternalEnergy(DRT::E
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::Element& ele,
+void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(DRT::Element& ele,
     MAT::So3Material& solid_material, const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
     const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::El
 
           // update the deformation gradient
           CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(false);
-          SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+          SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
               strains.defgrd_, strains.gl_strain_, defgrd_enh);
           strains.defgrd_ = defgrd_enh;
 
@@ -458,7 +458,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::El
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessMass(
+void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_stiffness_mass(
     DRT::Element& ele, MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessM
           if (solid_material.NeedsDefgrd())
           {
             CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(false);
-            SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+            SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
                 strains.defgrd_, strains.gl_strain_, defgrd_enh);
             strains.defgrd_ = defgrd_enh;
           }
@@ -649,7 +649,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessM
         // add internal force vector
         if (force_vector != nullptr)
         {
-          SHELL::AddInternalForceVector<distype>(
+          SHELL::add_internal_force_vector<distype>(
               Bop, stress_enh.stress_, integration_factor, *force_vector);
         }
         // add internal mass_matrix
@@ -719,8 +719,8 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
   if (interface_ptr.IsDefaultStep())
   {
     // first, store the eas state of the previous accepted Newton step
-    interface_ptr.SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas, locking_types_.total,
-        eas_iteration_data_.alpha_[0], ele.Owner());
+    interface_ptr.sum_into_my_previous_sol_norm(NOX::NLN::StatusTest::quantity_eas,
+        locking_types_.total, eas_iteration_data_.alpha_[0], ele.Owner());
 
     // compute the EAS increment delta_alpha
     EvaluateAlphaIncrement<distype>(
@@ -861,7 +861,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
               CORE::LINALG::Matrix<DRT::ELEMENTS::SHELL::DETAIL::num_dim,
                   DRT::ELEMENTS::SHELL::DETAIL::num_dim>
                   defgrd_enh(false);
-              SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+              SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }

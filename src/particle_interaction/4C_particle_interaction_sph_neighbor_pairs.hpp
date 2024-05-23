@@ -73,39 +73,39 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
 
     //! get reference to particle pair data
-    inline const SPHParticlePairData& GetRefToParticlePairData() const
+    inline const SPHParticlePairData& get_ref_to_particle_pair_data() const
     {
       return particlepairdata_;
     };
 
     //! get reference to particle-wall pair data
-    inline const SPHParticleWallPairData& GetRefToParticleWallPairData() const
+    inline const SPHParticleWallPairData& get_ref_to_particle_wall_pair_data() const
     {
       return particlewallpairdata_;
     };
 
     //! get relevant particle pair indices for disjoint combination of particle types
-    void GetRelevantParticlePairIndicesForDisjointCombination(
+    void get_relevant_particle_pair_indices_for_disjoint_combination(
         const std::set<PARTICLEENGINE::TypeEnum>& types_a,
         const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const;
 
     //! get relevant particle pair indices for equal combination of particle types
-    void GetRelevantParticlePairIndicesForEqualCombination(
+    void get_relevant_particle_pair_indices_for_equal_combination(
         const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const;
 
     //! get relevant particle wall pair indices for specific particle types
-    void GetRelevantParticleWallPairIndices(
+    void get_relevant_particle_wall_pair_indices(
         const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const;
 
     //! evaluate neighbor pairs
-    void EvaluateNeighborPairs();
+    void evaluate_neighbor_pairs();
 
    private:
     //! evaluate particle pairs
-    void EvaluateParticlePairs();
+    void evaluate_particle_pairs();
 
     //! evaluate particle-wall pairs
-    void EvaluateParticleWallPairs();
+    void evaluate_particle_wall_pairs();
 
     //! particle pair data with evaluated quantities
     SPHParticlePairData particlepairdata_;

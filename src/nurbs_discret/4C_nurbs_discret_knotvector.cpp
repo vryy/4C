@@ -113,7 +113,7 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector& old)
  | convert an element gid to its corresponding triple knot index        |
  |                                                  (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
+void DRT::NURBS::Knotvector::convert_ele_gid_to_knot_ids(
     const int gid, int& npatch, std::vector<int>& loc_cart_id) const
 {
   if ((int)loc_cart_id.size() != dim_)
@@ -164,7 +164,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
   }
 
   return;
-}  // ConvertEleGidToKnotIds
+}  // convert_ele_gid_to_knot_ids
 
 
 /*----------------------------------------------------------------------*
@@ -211,7 +211,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
 
   //  gid = gid - 3773;
 
-  ConvertEleGidToKnotIds(gid, npatch, cartids);
+  convert_ele_gid_to_knot_ids(gid, npatch, cartids);
 
   // use them to aquire the required knots
   for (int rr = 0; rr < dim_; ++rr)
@@ -248,7 +248,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
  | parent element. On the fly, get orientation of normal vector.        |
  |                                                  (public) gammi 05/09|
  *----------------------------------------------------------------------*/
-bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
+bool DRT::NURBS::Knotvector::get_boundary_ele_and_parent_knots(
     std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
     std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
     const int surfaceid) const
@@ -517,7 +517,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
   }
 
   return (zero_size);
-}  // DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots
+}  // DRT::NURBS::Knotvector::get_boundary_ele_and_parent_knots
 
 
 /*----------------------------------------------------------------------*
@@ -872,7 +872,7 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
  |  Return number of zero sized elements in knotspan of this patch      |
  |  (public)                                                gammi 05/08 |
  *----------------------------------------------------------------------*/
-std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
+std::vector<int> DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
 {
   if (!filled_)
   {
@@ -966,7 +966,7 @@ std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
   }
 
   return (num_zero_sized);
-}  // DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
+}  // DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
 
 
 
@@ -974,14 +974,14 @@ std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
  |  Return the global id of the next nonzero sized element in the       |
  |  knotspan                  (public)                      gammi 04/09 |
  *----------------------------------------------------------------------*/
-int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(const int zero_ele_gid)
+int DRT::NURBS::Knotvector::return_next_nonzero_ele_gid(const int zero_ele_gid)
 {
   std::vector<int> zero_ele_cart_id(dim_);
   std::vector<int> nonzero_ele_cart_id(dim_);
 
   int npatch = -1;
 
-  ConvertEleGidToKnotIds(zero_ele_gid, npatch, zero_ele_cart_id);
+  convert_ele_gid_to_knot_ids(zero_ele_gid, npatch, zero_ele_cart_id);
 
   std::vector<int> count(dim_, -1);
 
@@ -1004,16 +1004,16 @@ int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(const int zero_ele_gid)
   {
     nonzero_ele_cart_id[dir] = zero_ele_cart_id[dir] + count[dir];
   }
-  int nextnonzero_gid = ConvertEleKnotIdsToGid(npatch, nonzero_ele_cart_id);
+  int nextnonzero_gid = convert_ele_knot_ids_to_gid(npatch, nonzero_ele_cart_id);
 
   return (nextnonzero_gid);
-}  // DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid
+}  // DRT::NURBS::Knotvector::return_next_nonzero_ele_gid
 
 /*----------------------------------------------------------------------*
  | convert an element local id + patch number to its corresponding gid  |
  |                                                  (public) gammi 04/09|
  *----------------------------------------------------------------------*/
-int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
+int DRT::NURBS::Knotvector::convert_ele_knot_ids_to_gid(
     const int& npatch, const std::vector<int>& loc_cart_id)
 {
   if (!filled_)
@@ -1067,7 +1067,7 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
   }
 
   return (gid);
-}  // DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid
+}  // DRT::NURBS::Knotvector::convert_ele_knot_ids_to_gid
 
 
 /*----------------------------------------------------------------------*

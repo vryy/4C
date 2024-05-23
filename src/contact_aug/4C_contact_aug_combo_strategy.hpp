@@ -47,11 +47,11 @@ namespace CONTACT
 
      private:
       /// create the interface objects for the combined strategies
-      static void CreateStrategyInterfaces(const enum INPAR::CONTACT::SolvingStrategy strat_type,
+      static void create_strategy_interfaces(const enum INPAR::CONTACT::SolvingStrategy strat_type,
           const plain_interface_set& ref_interfaces, plain_interface_set& strat_interfaces);
 
       /// create the linear solver objects for the different combined contact strategies
-      static void CreateStrategyLinearSolvers(const CONTACT::AbstractStrategy& strategy,
+      static void create_strategy_linear_solvers(const CONTACT::AbstractStrategy& strategy,
           const std::string& lin_solver_id_str, const Teuchos::ParameterList& params,
           CONTACT::ParamsInterface* cparams_interface, plain_lin_solver_set& strat_lin_solvers);
 
@@ -101,35 +101,36 @@ namespace CONTACT
       void UpdateActiveSet() override;
 
       /// function wrapper
-      void EvaluateRelMovPredict() override;
+      void evaluate_rel_mov_predict() override;
 
       /// function wrapper
-      bool ActiveSetSemiSmoothConverged() const override;
+      bool active_set_semi_smooth_converged() const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override;
+      Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override;
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const override;
+      Teuchos::RCP<const Epetra_Map> sl_normal_do_f_row_map_ptr(const bool& redist) const override;
 
       /// function wrapper
       const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const override;
+      Teuchos::RCP<const Epetra_Map> sl_tangential_do_f_row_map_ptr(
+          const bool& redist) const override;
 
       /// function wrapper
-      const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const override;
+      const Epetra_Map& sl_tangential_do_f_row_map(const bool& redist) const override;
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
           const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
+      Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(
           const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
@@ -142,7 +143,7 @@ namespace CONTACT
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       /// function wrapper
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_condensed_matrix_block_ptr(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override;
 
       /// function wrapper
@@ -155,7 +156,7 @@ namespace CONTACT
       void EvalConstrRHS() override;
 
       /// function wrapper
-      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
+      void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
 
       /// function wrapper
       void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
@@ -169,7 +170,7 @@ namespace CONTACT
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const override;
 
       /// function wrapper
-      double GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
+      double get_linearized_potential_value_terms(const Epetra_Vector& dir,
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const override;
@@ -178,10 +179,10 @@ namespace CONTACT
       void WriteOutput(IO::DiscretizationWriter& writer) const override;
 
       /// function wrapper
-      void EvaluateReferenceState() override;
+      void evaluate_reference_state() override;
 
       /// function wrapper
-      bool DynRedistributeContact(const Teuchos::RCP<const Epetra_Vector>& dis,
+      bool dyn_redistribute_contact(const Teuchos::RCP<const Epetra_Vector>& dis,
           Teuchos::RCP<const Epetra_Vector> vel, const int nlniter) override;
 
       /// @}
@@ -192,7 +193,7 @@ namespace CONTACT
       /// @{
 
       /// function wrapper
-      bool WasInContactLastIter() const;
+      bool was_in_contact_last_iter() const;
 
       /// @}
 
@@ -207,7 +208,7 @@ namespace CONTACT
       const std::vector<Teuchos::RCP<CONTACT::Interface>>& Interfaces() const override;
 
       /// function wrapper
-      void ComputeContactStresses() final;
+      void compute_contact_stresses() final;
 
       /** \brief function wrapper: Redistribute and setup augmented Lagrangian members
        *
@@ -225,7 +226,7 @@ namespace CONTACT
       void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams) override;
+      void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
       void RunPreEvaluate(CONTACT::ParamsInterface& cparams) override;
@@ -249,22 +250,22 @@ namespace CONTACT
           const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       /// function wrapper
-      void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+      void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
           const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
           const NOX::NLN::Group& grp) override;
 
       /// function wrapper
-      void RemoveCondensedContributionsFromRhs(Epetra_Vector& str_rhs) const override;
+      void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
 
       /// function wrapper
       void CorrectParameters(
           CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type) override;
 
       /// function wrapper
-      void ResetLagrangeMultipliers(
+      void reset_lagrange_multipliers(
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
-      void PostStoreDirichletStatus(
+      void post_store_dirichlet_status(
           Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
 
       /// @}
@@ -285,10 +286,10 @@ namespace CONTACT
       void RunPostEvalForce(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalForceStiff
-      void RunPostEvalForceStiff(CONTACT::ParamsInterface& cparams);
+      void run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalStaticConstraontRHS
-      void RunPostEvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams);
+      void run_post_eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
 
       /// @}
 
@@ -307,14 +308,14 @@ namespace CONTACT
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+      void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
           Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void UpdateDisplacementsAndLMincrements(
+      void update_displacements_and_l_mincrements(
           Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
       {
         FOUR_C_THROW("Deprecated function call!");
@@ -343,8 +344,8 @@ namespace CONTACT
       };
       void ResetPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
       void ModifyPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
-      void UpdateUzawaAugmentedLagrange() override { FOUR_C_THROW("Wrong strategy!"); };
-      void UpdateConstraintNorm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
+      void update_uzawa_augmented_lagrange() override { FOUR_C_THROW("Wrong strategy!"); };
+      void update_constraint_norm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
       bool IsPenalty() const override { return false; };
       //! @}
       //! @}
@@ -523,17 +524,17 @@ namespace CONTACT
       double GetPenetrationBound() const;
 
       /// return the structural force without DBC DOFs
-      Teuchos::RCP<Epetra_Vector> GetStructuralForceWithoutDbcDofs(
+      Teuchos::RCP<Epetra_Vector> get_structural_force_without_dbc_dofs(
           const CONTACT::ParamsInterface& cparams);
 
       /** check the relative difference between the Lagrange multiplier contact force
        *  and the structural force at all active contact DOFs. */
-      bool CheckContactResidualNorm(const Epetra_Vector& str_slmaforce,
+      bool check_contact_residual_norm(const Epetra_Vector& str_slmaforce,
           const Epetra_Vector& constr_slmaforce, std::ostream& os) const;
 
       /** check the angle between the Lagrange multiplier contact force
        *  and the structural force at all active contact DOFs. */
-      bool CheckAngleBetweenStrForceAndContactForce(const Epetra_Vector& str_slmaforce,
+      bool check_angle_between_str_force_and_contact_force(const Epetra_Vector& str_slmaforce,
           const Epetra_Vector& constr_slmaforce, std::ostream& os) const;
 
       /// check cn-bound (fall-back strategy, which is usually not activated)
@@ -545,8 +546,8 @@ namespace CONTACT
           Teuchos::RCP<Epetra_Vector>& constr_slmaforce) const;
 
       /// get global dof maps for the active sl/ma force vector
-      void GetGlobalSlMaActiveForceMaps(const Epetra_Vector& slforce, const Epetra_Vector& maforce,
-          Teuchos::RCP<Epetra_Map>& gSlActiveForceMap,
+      void get_global_sl_ma_active_force_maps(const Epetra_Vector& slforce,
+          const Epetra_Vector& maforce, Teuchos::RCP<Epetra_Map>& gSlActiveForceMap,
           Teuchos::RCP<Epetra_Map>& gMaActiveForceMap) const;
 
       /// print header

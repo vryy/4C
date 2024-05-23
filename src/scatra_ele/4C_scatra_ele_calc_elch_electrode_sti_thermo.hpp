@@ -67,10 +67,10 @@ namespace DRT
           ) override;
 
       //! extract quantities for element evaluation
-      void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                  //!< parameter list
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void extract_element_and_node_values(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                      //!< parameter list
+          DRT::Discretization& discretization,                 //!< discretization
+          DRT::Element::LocationArray& la                      //!< location array
           ) override;
 
       //! get material parameters
@@ -100,12 +100,12 @@ namespace DRT
           ) override;
 
       //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs
-      void SysmatODScatraThermo(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat     //!< element matrix
+      void sysmat_od_scatra_thermo(DRT::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat        //!< element matrix
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get internal variable manager for thermodynamic electrodes
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>> VarManager()
@@ -143,7 +143,7 @@ namespace DRT
 
 
       //! set internal variables for element evaluation
-      void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
+      void set_internal_variables(const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
           const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephinp,  //!< nodal concentration and electric potential values at time t_(n+1) or
@@ -158,11 +158,11 @@ namespace DRT
       )
       {
         // set thermo variables
-        vmthermo::SetInternalVariablesSTIThermo(funct, derxy, etempnp);
+        vmthermo::set_internal_variables_sti_thermo(funct, derxy, etempnp);
 
         // set scatra variables
         // this requires the temperature to be already set
-        vmelchelectrode::SetInternalVariablesElchElectrode(
+        vmelchelectrode::set_internal_variables_elch_electrode(
             funct, derxy, ephinp, ephin, econvelnp, ehist);
       }
 

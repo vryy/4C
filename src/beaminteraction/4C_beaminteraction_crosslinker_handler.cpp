@@ -44,7 +44,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::DistributeLinkerToBins(
+void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
     Teuchos::RCP<Epetra_Map> const& linkerrowmap)
 {
   std::list<Teuchos::RCP<DRT::Node>> homelesslinker;
@@ -56,7 +56,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::DistributeLinkerToBins(
   }
 
   // start round robin loop to fill linker into their correct bins
-  FillLinkerIntoBinsRoundRobin(homelesslinker);
+  fill_linker_into_bins_round_robin(homelesslinker);
 }
 
 /*----------------------------------------------------------------------*
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::RemoveAllLinker()
 /*----------------------------------------------------------------------*
 | fill linker into their correct bin on according proc   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
+void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
@@ -170,11 +170,11 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
 | fill linker into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::list<int>>
-BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
+BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList");
+      "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
 
@@ -265,7 +265,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   }
   if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
-  ReceiveLinkerAndFillThemInBins(summedtargets[myrank_], exporter, homelesslinker);
+  receive_linker_and_fill_them_in_bins(summedtargets[myrank_], exporter, homelesslinker);
 
   // wait for all communications to finish
   {
@@ -281,11 +281,11 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
 | fill linker into their correct bin on according proc using ghosting   eichinger 02/17 |
  *-----------------------------------------------------------------------------------------*/
 Teuchos::RCP<std::list<int>>
-BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
+BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
     std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting");
+      "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
@@ -381,7 +381,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- receive -----
-  ReceiveLinkerAndFillThemInBins(summedtargets[myrank_], exporter, homelesslinker);
+  receive_linker_and_fill_them_in_bins(summedtargets[myrank_], exporter, homelesslinker);
 
   // wait for all communications to finish
   for (int i = 0; i < length; ++i) exporter.Wait(request[i]);
@@ -394,7 +394,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int const numrec,
+void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bins(int const numrec,
     CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker)
 {
   // ---- receive ----
@@ -525,7 +525,7 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(Teuchos::RCP<DR
 Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLinker(
     bool const fill_using_ghosting)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::BeamCrosslinkerHandler::TransferLinker");
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::beam_crosslinker_handler::TransferLinker");
 
   // set of homeless linker
   std::list<Teuchos::RCP<DRT::Node>> homelesslinker;
@@ -620,11 +620,11 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
   // bin
   if (fill_using_ghosting)
   {
-    deletedlinker = FillLinkerIntoBinsUsingGhosting(homelesslinker);
+    deletedlinker = fill_linker_into_bins_using_ghosting(homelesslinker);
   }
   else
   {
-    deletedlinker = FillLinkerIntoBinsRemoteIdList(homelesslinker);
+    deletedlinker = fill_linker_into_bins_remote_id_list(homelesslinker);
   }
 
   return deletedlinker;
@@ -633,15 +633,15 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
 /*-----------------------------------------------------------------------------*
  | build reduced bin col map based on boundary row bins       eichinger 01/17  |
  *-----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::GetNeighbouringBinsOfLinkerContainingBoundaryRowBins(
-    std::set<int>& colbins) const
+void BEAMINTERACTION::BeamCrosslinkerHandler::
+    get_neighbouring_bins_of_linker_containing_boundary_row_bins(std::set<int>& colbins) const
 {
   colbins.clear();
 
   std::list<DRT::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
 
   if (boundaryrowbins.size() == 0)
-    FOUR_C_THROW("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
+    FOUR_C_THROW("Boundary row bins unknown, call function determine_boundary_row_bins() first!");
 
   // loop over boundary row bins and add neighbors of filled row bins
   std::list<DRT::Element*>::const_iterator it;

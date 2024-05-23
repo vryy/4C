@@ -111,7 +111,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
     if (nodecount != 0)
       FOUR_C_THROW("something is wrong in this element with the number of virtual nodes vs dofs");
 
-    int err = EvaluateServiceXWall(
+    int err = evaluate_service_x_wall(
         ele, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
 
     // for some EvaluateService actions, elevec1 is not necessary
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateServiceXWall(
+int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
@@ -458,12 +458,12 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallTauWIncForward()
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalShapeFuncAndDerivsAtIntPoint(
+void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_shape_func_and_derivs_at_int_point(
     const double* gpcoord,  // actual integration point (coords)
     double gpweight         // actual integration point (weight)
 )
 {
-  EvalStdShapeFuncAndDerivsAtIntPoint(gpcoord, gpweight);
+  eval_std_shape_func_and_derivs_at_int_point(gpcoord, gpweight);
 
   EvalEnrichment();
   return;
@@ -473,10 +473,11 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalShapeFuncAndDerivsA
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDerivsAtIntPoint(
-    const double* gpcoord,  // actual integration point (coords)
-    double gpweight         // actual integration point (weight)
-)
+void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
+    eval_std_shape_func_and_derivs_at_int_point(
+        const double* gpcoord,  // actual integration point (coords)
+        double gpweight         // actual integration point (weight)
+    )
 {
   funct_.Clear();
   derxy_.Clear();
@@ -820,7 +821,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
   //----------------------------------------------------------------------------
 
   CORE::LINALG::Matrix<nsd_, nen_> evel(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evel, nullptr, "vel");
+  my::extract_values_from_global_vector(
+      discretization, lm, *my::rotsymmpbc_, &evel, nullptr, "vel");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -853,7 +855,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
-      EvalShapeFuncAndDerivsAtIntPoint(gpc, 1.0);
+      eval_shape_func_and_derivs_at_int_point(gpc, 1.0);
 
       // calculate wall-normal vector
       CORE::LINALG::Matrix<nsd_, 1> normwall(true);
@@ -868,7 +870,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
         const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
         const double* gpc = gp.data();
         // evaluate shape functions and derivatives at integration point
-        EvalShapeFuncAndDerivsAtIntPoint(gpc, 1.0);
+        eval_shape_func_and_derivs_at_int_point(gpc, 1.0);
 
         normwall.Multiply(derxy_, ewdist_);
         if (normwall.Norm2() < 1.0e-10)
@@ -957,7 +959,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
        ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     const unsigned Velx = 0;
     const unsigned Vely = 1;
@@ -1075,18 +1077,19 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //----------------------------------------------------------------------------
 
   CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
+  my::extract_values_from_global_vector(
+      discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
 
   CORE::LINALG::Matrix<nsd_, nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if (switchonaccn)
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &eaccn, nullptr, "accn");
 
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if (switchonvelnp)
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelnp, nullptr, "velnp");
 
   //----------------------------------------------------------------------------
@@ -1108,14 +1111,14 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
        iquad != my::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     CORE::LINALG::Matrix<nen_, 1> newfunct(my::funct_);
 
     XWallTauWIncBack();
 
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     CORE::LINALG::Matrix<nen_, 1> oldfunct(my::funct_);
 
@@ -1313,7 +1316,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
-  my::ExtractValuesFromGlobalVector(
+  my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
   // add displacement when fluid nodes move in the ALE case
@@ -1346,7 +1349,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::PrepareGaussRule()
   // which is the wall-normal element direction?
   // calculate jacobian at element center
   my::is_higher_order_ele_ = false;
-  my::EvalShapeFuncAndDerivsAtEleCenter();
+  my::eval_shape_func_and_derivs_at_ele_center();
   my::is_higher_order_ele_ = true;
 
   // the derivative of the wall distance with respect to the local coordinates

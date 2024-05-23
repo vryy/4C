@@ -43,8 +43,8 @@ DRT::ELEMENTS::SoHex8DeterminantAnalysis::create()
 {
   if (not issetup_)
   {
-    buildMapLagrange20ToBezier27();
-    buildMapLagrangeToBezier();
+    build_map_lagrange20_to_bezier27();
+    build_map_lagrange_to_bezier();
     issetup_ = true;
   }
 
@@ -53,7 +53,7 @@ DRT::ELEMENTS::SoHex8DeterminantAnalysis::create()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildSubMapBezierToLagrange(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_sub_map_bezier_to_lagrange(
     const double* left, const double* right, CORE::LINALG::Matrix<27, 27>& sub_map_b2l) const
 {
   double scale[3] = {0.0, 0.0, 0.0};
@@ -63,12 +63,12 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildSubMapBezierToLagrange(
 
   shift = left;
 
-  buildMapBezierToLagrange(sub_map_b2l, scale, shift);
+  build_map_bezier_to_lagrange(sub_map_b2l, scale, shift);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapLagrange20ToBezier27()
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange20_to_bezier27()
 {
   map_q_.putScalar(0.0);
 
@@ -117,17 +117,17 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapLagrange20ToBezier27()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapBezierToLagrange(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
     CORE::LINALG::Matrix<27, 27>& map_b2l)
 {
   const double scale[3] = {1.0, 1.0, 1.0};
   const double shift[3] = {0.0, 0.0, 0.0};
-  buildMapBezierToLagrange(map_b2l, scale, shift);
+  build_map_bezier_to_lagrange(map_b2l, scale, shift);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapBezierToLagrange(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
     CORE::LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift)
 {
   // build map from bezier to lagrange
@@ -143,10 +143,10 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapBezierToLagrange(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapLagrangeToBezier()
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier()
 {
   // build map from bezier to lagrange
-  buildMapBezierToLagrange(map_l2b_);
+  build_map_bezier_to_lagrange(map_l2b_);
 
   // (0) compute the factorization of the map (LU-decomposition)
   std::vector<int> ipiv(27);
@@ -185,7 +185,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
 {
   // placed on the stack and, thus, not static
   CORE::LINALG::Matrix<20, 1> tet4_volumes;
-  compute20Tet4Volumes(tet4_volumes, x_curr);
+  compute20_tet4_volumes(tet4_volumes, x_curr);
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
   std::cout << "20 TET4 volumes:\n";
@@ -213,7 +213,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
   else
     rcount_ptr = &rcount;
 
-  const bool isvalid = recursiveSubdivision(bcoeffs, bcube.left_, bcube.right_, *rcount_ptr);
+  const bool isvalid = recursive_subdivision(bcoeffs, bcube.left_, bcube.right_, *rcount_ptr);
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
   std::cout << "The current element is " << (isvalid ? "valid" : "invalid") << ".\n";
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::getSubCubeBorders(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursiveSubdivision(
+bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
     const CORE::LINALG::Matrix<27, 1>& bcoeffs, const double* left, const double* right,
     unsigned& rcount) const
 {
@@ -331,7 +331,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursiveSubdivision(
   auto it = subcubes.begin();
   while (it != subcubes.end())
   {
-    getBezierCoeffsOfSubdomain(bcoeffs, *it, sub_bcoeffs);
+    get_bezier_coeffs_of_subdomain(bcoeffs, *it, sub_bcoeffs);
 
     // check first 8 entries of each column
     if (hasInvalidEntry(sub_bcoeffs.A(), 8)) return false;
@@ -359,7 +359,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursiveSubdivision(
   {
     /* if there are undetermined cases left, do a recursive call and
      * subdivide the current subdivision once more. */
-    if (not recursiveSubdivision(bcoeffs, subcube.left_, subcube.right_, rcount)) return false;
+    if (not recursive_subdivision(bcoeffs, subcube.left_, subcube.right_, rcount)) return false;
   }
 
   return true;
@@ -367,14 +367,14 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursiveSubdivision(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::getBezierCoeffsOfSubdomain(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomain(
     const CORE::LINALG::Matrix<27, 1>& bcoeffs, BezierCube& subcube,
     CORE::LINALG::Matrix<27, 1>& sub_bcoeffs) const
 {
   static CORE::LINALG::Matrix<27, 27> sub_map_b2l(false);
   static CORE::LINALG::Matrix<27, 1> tmp(false);
 
-  buildSubMapBezierToLagrange(subcube.left_, subcube.right_, sub_map_b2l);
+  build_sub_map_bezier_to_lagrange(subcube.left_, subcube.right_, sub_map_b2l);
 
   tmp.Multiply(sub_map_b2l, bcoeffs);
   sub_bcoeffs.Multiply(map_l2b_, tmp);
@@ -399,7 +399,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::hasInvalidEntry(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::computeTet4VolAtCorners(
+unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corners(
     CORE::LINALG::Matrix<20, 1>& tet4_volumes,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
     const std::function<unsigned(unsigned i)>& f_index0,
@@ -437,7 +437,7 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::computeTet4VolAtCorners(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::computeTet4VolAtEdges(
+unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
     CORE::LINALG::Matrix<20, 1>& tet4_volumes,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
     const std::function<unsigned(unsigned i)>& f_index0,
@@ -476,14 +476,14 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::computeTet4VolAtEdges(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20Tet4Volumes(
+void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
     CORE::LINALG::Matrix<20, 1>& tet4_volumes,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const
 {
   // --------------------------------------------------------------------------
   // corner TET4s from 0 to 3
   unsigned offset = 0;
-  offset = computeTet4VolAtCorners(
+  offset = compute_tet4_vol_at_corners(
       tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },       // 1, 2, 3, 0
       [](unsigned i) -> unsigned { return fast_mod(i + 3, 4); },       // 3, 0, 1, 2
@@ -492,7 +492,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20Tet4Volumes(
 
   // --------------------------------------------------------------------------
   // corner TET4s from 4 to 7
-  offset = computeTet4VolAtCorners(
+  offset = compute_tet4_vol_at_corners(
       tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },   // 5, 6, 7, 4
       [](unsigned i) -> unsigned { return fast_mod(i + 3, 4) + 4; },   // 7, 4, 5, 6
@@ -501,7 +501,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20Tet4Volumes(
 
   // --------------------------------------------------------------------------
   // edge TET4s from 8 to 11
-  offset = computeTet4VolAtEdges(
+  offset = compute_tet4_vol_at_edges(
       tet4_volumes, x_curr,
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },      // 1, 2, 3, 0
       [](unsigned i) -> unsigned { return i; },                       // 0, 1, 2, 3
@@ -513,7 +513,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20Tet4Volumes(
 
   // --------------------------------------------------------------------------
   // edge TET4s from 12 to 15
-  offset = computeTet4VolAtEdges(
+  offset = compute_tet4_vol_at_edges(
       tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i; },  // 0, 1, 2, 3
       [](unsigned i) -> unsigned { return (i + 4); },                  // 4, 5, 6, 7
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4); },       // 1, 2, 3, 0
@@ -524,7 +524,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20Tet4Volumes(
 
   // --------------------------------------------------------------------------
   // edge TET4s from 16 to 19
-  offset = computeTet4VolAtEdges(
+  offset = compute_tet4_vol_at_edges(
       tet4_volumes, x_curr, [](unsigned i) -> unsigned { return i + 4; },  // 4, 5, 6, 7
       [](unsigned i) -> unsigned { return fast_mod(i + 1, 4) + 4; },       // 5, 6, 7, 4
       [](unsigned i) -> unsigned { return i; },                            // 0, 1, 2, 3

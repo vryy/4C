@@ -29,15 +29,15 @@ namespace
 
     level.EmplaceBack(3, 5);
     EXPECT_EQ(level.GetNumberOfLevels(), 1);
-    EXPECT_EQ(level.GetTotalNumberOfSimpsonIntervals(), 5);
+    EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 5);
 
     level.EmplaceBack(2, 3);
     EXPECT_EQ(level.GetNumberOfLevels(), 2);
-    EXPECT_EQ(level.GetTotalNumberOfSimpsonIntervals(), 8);
+    EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 8);
 
     level.EmplaceBack(2, 6);
     EXPECT_EQ(level.GetNumberOfLevels(), 2);
-    EXPECT_EQ(level.GetTotalNumberOfSimpsonIntervals(), 14);
+    EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 14);
   }
 
   TEST(TimestepAdaptivityTest, EmplaceBackInWrongOrder)
@@ -89,13 +89,13 @@ namespace
     EXPECT_ANY_THROW(level.SplitLevel(1, 0));
   }
 
-  TEST(TimestepAdaptivityTest, GetTotalNumberOfSimpsonIntervals)
+  TEST(TimestepAdaptivityTest, get_total_number_of_simpson_intervals)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
     level.EmplaceBack(3, 2);
     level.EmplaceBack(2, 1);
 
-    EXPECT_EQ(level.GetTotalNumberOfSimpsonIntervals(), 3);
+    EXPECT_EQ(level.get_total_number_of_simpson_intervals(), 3);
   }
 
   TEST(TimestepAdaptivityTest, MaxLevel)
@@ -107,15 +107,15 @@ namespace
     EXPECT_EQ(level.MaxLevel(), 3);
   }
 
-  TEST(TimestepAdaptivityTest, GetNumberOfSimpsonIntervals)
+  TEST(TimestepAdaptivityTest, get_number_of_simpson_intervals)
   {
     MIXTURE::TimestepAdaptivityInfo level{};
     level.EmplaceBack(3, 2);
     level.EmplaceBack(2, 1);
 
-    EXPECT_EQ(level.GetNumberOfSimpsonIntervals(3), 2);
-    EXPECT_EQ(level.GetNumberOfSimpsonIntervals(2), 1);
-    EXPECT_EQ(level.GetNumberOfSimpsonIntervals(1), 0);
+    EXPECT_EQ(level.get_number_of_simpson_intervals(3), 2);
+    EXPECT_EQ(level.get_number_of_simpson_intervals(2), 1);
+    EXPECT_EQ(level.get_number_of_simpson_intervals(1), 0);
   }
 
   TEST(TimestepAdaptivityTest, GetBeginIndex)

@@ -61,13 +61,13 @@ namespace ADAPTER
     int Solve() override;
 
     //! apply displacements at the free surface nodes
-    void ApplyFreeSurfaceDisplacements(Teuchos::RCP<const Epetra_Vector> fsdisp);
+    void apply_free_surface_displacements(Teuchos::RCP<const Epetra_Vector> fsdisp);
 
     //! apply displacements at the ale update condition nodes
-    void ApplyAleUpdateDisplacements(Teuchos::RCP<const Epetra_Vector> audisp);
+    void apply_ale_update_displacements(Teuchos::RCP<const Epetra_Vector> audisp);
 
     //! apply FSI interface displacements (required for staggered FSI)
-    void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
+    void apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
    private:
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;

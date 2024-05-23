@@ -122,7 +122,7 @@ namespace FLD
       /*!
       \brief export and set boundary values
       */
-      void ExportAndSetBoundaryValues(
+      void export_and_set_boundary_values(
           Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name);
 
       /*!
@@ -189,25 +189,25 @@ namespace FLD
       /*!
       \brief calculates the center of mass
       */
-      void CenterOfMassCalculation(Teuchos::RCP<std::vector<double>> coords,
+      void center_of_mass_calculation(Teuchos::RCP<std::vector<double>> coords,
           Teuchos::RCP<std::vector<double>> normal, std::string ds_condname);
 
 
       /*!
       \brief calculates the local radii of all nodes
       */
-      void EvalLocalNormalizedRadii(std::string ds_condname, std::string dl_condname);
+      void eval_local_normalized_radii(std::string ds_condname, std::string dl_condname);
 
       /*!
       \brief get the node row map of the womersley condition
       */
-      void BuildConditionNodeRowMap(Teuchos::RCP<DRT::Discretization> dis, std::string condname,
+      void build_condition_node_row_map(Teuchos::RCP<DRT::Discretization> dis, std::string condname,
           int condid, int condnum, Teuchos::RCP<Epetra_Map>& cond_noderowmap);
 
       /*!
       \brief get the dof row map of the womersley condition
       */
-      void BuildConditionDofRowMap(Teuchos::RCP<DRT::Discretization> dis,
+      void build_condition_dof_row_map(Teuchos::RCP<DRT::Discretization> dis,
           const std::string condname, int condid, int condnum,
           Teuchos::RCP<Epetra_Map>& cond_dofrowmap);
 
@@ -276,19 +276,20 @@ namespace FLD
       /*!
       \brief evaluate the traction velocity component
       */
-      void EvaluateTractionVelocityComp(Teuchos::ParameterList eleparams, std::string ds_condname,
-          double flowrate, int condid, double time, double theta, double dta);
+      void evaluate_traction_velocity_comp(Teuchos::ParameterList eleparams,
+          std::string ds_condname, double flowrate, int condid, double time, double theta,
+          double dta);
 
       /*!
       \brief export and set boundary values
       */
-      void ExportAndSetBoundaryValues(
+      void export_and_set_boundary_values(
           Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name);
 
       /*!
       \brief reset traction velocity components
       */
-      void ResetTractionVelocityComp();
+      void reset_traction_velocity_comp();
 
       /*!
       \brief Calculate the Flowrate on a boundary

@@ -39,12 +39,12 @@ namespace IO
             std::move(parameters), discretization->Comm(), discretization->Name()))),
         element_filter_(std::move(element_filter))
   {
-    SetGeometryFromDiscretization();
+    set_geometry_from_discretization();
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::SetGeometryFromDiscretization()
+  void DiscretizationVisualizationWriterMesh::set_geometry_from_discretization()
   {
     // Todo assume 3D for now
     const unsigned int num_spatial_dimensions = 3;
@@ -60,7 +60,7 @@ namespace IO
     // do not need to store connectivity indices here because we create a
     // contiguous array by the order in which we fill the coordinates (otherwise
     // need to adjust order of filling in the coordinates).
-    auto& visualization_data = visualization_manager_->GetVisualizationData();
+    auto& visualization_data = visualization_manager_->get_visualization_data();
 
     std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
     point_coordinates.clear();
@@ -84,7 +84,7 @@ namespace IO
       if (element_filter_(ele))
       {
         pointcounter +=
-            ele->AppendVisualizationGeometry(*discretization_, cell_types, point_coordinates);
+            ele->append_visualization_geometry(*discretization_, cell_types, point_coordinates);
         cell_offsets.push_back(pointcounter);
       }
       else
@@ -130,12 +130,12 @@ namespace IO
     discretization_->Comm().MaxAll(&map_changed, &map_changed_allproc, 1);
 
     // reset geometry of visualization writer
-    if (map_changed_allproc) SetGeometryFromDiscretization();
+    if (map_changed_allproc) set_geometry_from_discretization();
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::AppendDofBasedResultDataVector(
+  void DiscretizationVisualizationWriterMesh::append_dof_based_result_data_vector(
       const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
       unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
       const std::string& resultname)
@@ -167,9 +167,9 @@ namespace IO
     {
       if (element_filter_(ele))
       {
-        pointcounter +=
-            ele->AppendVisualizationDofBasedResultDataVector(*discretization_, result_data_dofbased,
-                result_num_dofs_per_node, read_result_data_from_dofindex, point_result_data);
+        pointcounter += ele->append_visualization_dof_based_result_data_vector(*discretization_,
+            result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
+            point_result_data);
       }
     }
 
@@ -180,13 +180,13 @@ namespace IO
           result_num_dofs_per_node * pointcounter, point_result_data.size());
     }
 
-    visualization_manager_->GetVisualizationData().SetPointDataVector(
+    visualization_manager_->get_visualization_data().SetPointDataVector(
         resultname, point_result_data, result_num_dofs_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::AppendNodeBasedResultDataVector(
+  void DiscretizationVisualizationWriterMesh::append_node_based_result_data_vector(
       const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
       unsigned int result_num_components_per_node, const std::string& resultname)
   {
@@ -254,13 +254,13 @@ namespace IO
           result_num_components_per_node * pointcounter, point_result_data.size());
     }
 
-    visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
         resultname, point_result_data, result_num_components_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::AppendElementBasedResultDataVector(
+  void DiscretizationVisualizationWriterMesh::append_element_based_result_data_vector(
       const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
       unsigned int result_num_components_per_element, const std::string& resultname)
   {
@@ -313,7 +313,7 @@ namespace IO
           result_num_components_per_element * cellcounter, cell_result_data.size());
     }
 
-    visualization_manager_->GetVisualizationData().SetCellDataVector(
+    visualization_manager_->get_visualization_data().SetCellDataVector(
         resultname, cell_result_data, result_num_components_per_element);
   }
 
@@ -332,7 +332,7 @@ namespace IO
     }
 
     // Pass data to the output writer.
-    visualization_manager_->GetVisualizationData().SetCellDataVector(
+    visualization_manager_->get_visualization_data().SetCellDataVector(
         resultname, owner_of_row_elements, 1);
   }
 
@@ -350,16 +350,16 @@ namespace IO
     }
 
     // Pass data to the output writer.
-    visualization_manager_->GetVisualizationData().SetCellDataVector(
+    visualization_manager_->get_visualization_data().SetCellDataVector(
         resultname, gid_of_row_elements, 1);
   }
 
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::AppendElementGhostingInformation()
+  void DiscretizationVisualizationWriterMesh::append_element_ghosting_information()
   {
-    IO::AppendElementGhostingInformation(
+    IO::append_element_ghosting_information(
         *discretization_, *visualization_manager_, element_filter_);
   }
 
@@ -391,7 +391,7 @@ namespace IO
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
     }
 
-    visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
         resultname, gid_of_nodes, 1);
   }
 
@@ -405,7 +405,7 @@ namespace IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void AppendElementGhostingInformation(const DRT::Discretization& discretization,
+  void append_element_ghosting_information(const DRT::Discretization& discretization,
       VisualizationManager& visualization_manager,
       const std::function<bool(const DRT::Element* ele)>& element_predicate)
   {
@@ -452,7 +452,7 @@ namespace IO
       }
     }
 
-    visualization_manager.GetVisualizationData().SetCellDataVector(
+    visualization_manager.get_visualization_data().SetCellDataVector(
         "element_ghosting", ghosted_elements, n_proc);
   }
 }  // namespace IO

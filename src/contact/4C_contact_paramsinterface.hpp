@@ -67,7 +67,7 @@ namespace CONTACT
     virtual double GetStepLength() const = 0;
 
     //! get number of linear system corrections (modified Newton approach)
-    virtual int GetNumberOfModifiedNewtonCorrections() const = 0;
+    virtual int get_number_of_modified_newton_corrections() const = 0;
 
     //! get the is_default_step indicator
     virtual bool IsDefaultStep() const = 0;
@@ -85,10 +85,10 @@ namespace CONTACT
     virtual std::string GetOutputFilePath() const = 0;
 
     //! get the variational approach type
-    virtual enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const = 0;
+    virtual enum INPAR::CONTACT::VariationalApproach get_variational_approach_type() const = 0;
 
     //! set the variational approach type
-    virtual void SetVariationalApproachType(
+    virtual void set_variational_approach_type(
         const enum INPAR::CONTACT::VariationalApproach var_type) = 0;
 
     //! set the coupling approach mode

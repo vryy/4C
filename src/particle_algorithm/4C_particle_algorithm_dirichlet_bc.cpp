@@ -51,7 +51,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -63,25 +63,25 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::InsertParticleStatesO
   }
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::SetParticleReferencePosition() const
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::set_particle_reference_position() const
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types subjected to dirichlet boundary conditions
   for (auto& particleType : typessubjectedtodirichletbc_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
     container->UpdateState(0.0, PARTICLEENGINE::ReferencePosition, 1.0, PARTICLEENGINE::Position);
   }
 }
 
-void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoundaryCondition(
+void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::evaluate_dirichlet_boundary_condition(
     const double& evaltime, const bool evalpos, const bool evalvel, const bool evalacc) const
 {
   // degree of maximal function derivative
@@ -93,7 +93,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
 
   // get bounding box dimensions
   CORE::LINALG::Matrix<3, 2> boundingbox =
-      particleengineinterface_->DomainBoundingBoxCornerPositions();
+      particleengineinterface_->domain_bounding_box_corner_positions();
 
   // get bin size
   const double* binsize = particleengineinterface_->BinSize();
@@ -103,7 +103,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types subjected to dirichlet boundary conditions
   for (auto& typeIt : dirichletbctypetofunctid_)
@@ -113,7 +113,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -149,17 +149,17 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
       {
         // evaluate function, first and second time derivative
         functtimederiv =
-            function.EvaluateTimeDerivative(&(refpos[statedim * i]), evaltime, deg, dim);
+            function.evaluate_time_derivative(&(refpos[statedim * i]), evaltime, deg, dim);
 
         // set position state
         if (evalpos)
         {
           // check for periodic boundary condition in current spatial direction
-          if (particleengineinterface_->HavePeriodicBoundaryConditionsInSpatialDirection(dim))
+          if (particleengineinterface_->have_periodic_boundary_conditions_in_spatial_direction(dim))
           {
             // length of binning domain in a spatial direction
             const double binningdomainlength =
-                particleengineinterface_->LengthOfBinningDomainInASpatialDirection(dim);
+                particleengineinterface_->length_of_binning_domain_in_a_spatial_direction(dim);
 
             // get displacement from reference position canceling out multiples of periodic length
             // in current spatial direction

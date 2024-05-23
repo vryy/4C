@@ -40,7 +40,7 @@ void MAT::PAR::PoroLawLinear::ComputePorosity(const double& refporosity, const d
   if (dphi_dphiref) *dphi_dphiref = 2.0 - J;
 }
 
-void MAT::PAR::PoroLawLinear::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+void MAT::PAR::PoroLawLinear::constitutive_derivatives(const Teuchos::ParameterList& params,
     const double& press, const double& J, const double& porosity, const double& refporosity,
     double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
@@ -130,7 +130,7 @@ void MAT::PAR::PoroLawNeoHooke::ComputePorosity(const double& refporosity, const
   }
 }
 
-void MAT::PAR::PoroLawNeoHooke::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+void MAT::PAR::PoroLawNeoHooke::constitutive_derivatives(const Teuchos::ParameterList& params,
     const double& press, const double& J, const double& porosity, const double& refporosity,
     double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
@@ -180,7 +180,7 @@ void MAT::PAR::PoroLawConstant::ComputePorosity(const double& refporosity, const
   if (dphi_dphiref) *dphi_dphiref = 1.0;
 }
 
-void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+void MAT::PAR::PoroLawConstant::constitutive_derivatives(const Teuchos::ParameterList& params,
     const double& press, const double& J, const double& porosity, const double& refporosity,
     double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
@@ -216,7 +216,7 @@ void MAT::PAR::PoroLawIncompSkeleton::ComputePorosity(const double& refporosity,
   if (dphi_dphiref) *dphi_dphiref = 1.0 / J;
 }
 
-void MAT::PAR::PoroLawIncompSkeleton::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+void MAT::PAR::PoroLawIncompSkeleton::constitutive_derivatives(const Teuchos::ParameterList& params,
     const double& press, const double& J, const double& porosity, const double& refporosity,
     double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
@@ -253,7 +253,7 @@ void MAT::PAR::PoroLawLinBiot::ComputePorosity(const double& refporosity, const 
   if (dphi_dphiref) *dphi_dphiref = 1.0;
 }
 
-void MAT::PAR::PoroLawLinBiot::ConstitutiveDerivatives(const Teuchos::ParameterList& params,
+void MAT::PAR::PoroLawLinBiot::constitutive_derivatives(const Teuchos::ParameterList& params,
     const double& press, const double& J, const double& porosity, const double& refporosity,
     double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref, double* W)
 {
@@ -282,10 +282,10 @@ void MAT::PAR::PoroLawDensityDependent::ComputePorosity(const double& refporosit
     double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref)
 {
   // compute relation of reference to current density
-  const double reldensity = density_law_->ComputeRefDensityToCurDensity(press);
-  const double reldensityderiv = density_law_->ComputeRefDensityToCurDensityDerivative(press);
+  const double reldensity = density_law_->compute_ref_density_to_cur_density(press);
+  const double reldensityderiv = density_law_->compute_ref_density_to_cur_density_derivative(press);
   const double reldensityderivderiv =
-      density_law_->ComputeRefDensityToCurDensitySecondDerivative(press);
+      density_law_->compute_ref_density_to_cur_density_second_derivative(press);
 
   // compute porosity
   porosity = 1.0 - reldensity * (1.0 - refporosity) / J;
@@ -298,14 +298,14 @@ void MAT::PAR::PoroLawDensityDependent::ComputePorosity(const double& refporosit
   if (dphi_dphiref) *dphi_dphiref = reldensity / J;
 }
 
-void MAT::PAR::PoroLawDensityDependent::ConstitutiveDerivatives(
+void MAT::PAR::PoroLawDensityDependent::constitutive_derivatives(
     const Teuchos::ParameterList& params, const double& press, const double& J,
     const double& porosity, const double& refporosity, double* dW_dp, double* dW_dphi,
     double* dW_dJ, double* dW_dphiref, double* W)
 {
   // compute relation of reference to current density
-  const double reldensity = density_law_->ComputeRefDensityToCurDensity(press);
-  const double reldensityderiv = density_law_->ComputeRefDensityToCurDensityDerivative(press);
+  const double reldensity = density_law_->compute_ref_density_to_cur_density(press);
+  const double reldensityderiv = density_law_->compute_ref_density_to_cur_density_derivative(press);
 
   if (W) *W = porosity - 1.0 + reldensity * (1.0 - refporosity) / J;
   if (dW_dp) *dW_dp = reldensityderiv * (1.0 - refporosity) / J;

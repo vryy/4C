@@ -109,44 +109,44 @@ namespace BEAMINTERACTION
     /**
      * \brief Get number of active contact point pairs on this element pair. Not yet implemented.
      */
-    unsigned int GetNumAllActiveContactPointPairs() const override
+    unsigned int get_num_all_active_contact_point_pairs() const override
     {
-      FOUR_C_THROW("GetNumAllActiveContactPointPairs not yet implemented!");
+      FOUR_C_THROW("get_num_all_active_contact_point_pairs not yet implemented!");
       return 0;
     };
 
     /**
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
-    void GetAllActiveContactPointCoordsElement1(
+    void get_all_active_contact_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      FOUR_C_THROW("GetAllActiveContactPointCoordsElement1 not yet implemented!");
+      FOUR_C_THROW("get_all_active_contact_point_coords_element1 not yet implemented!");
     }
 
     /**
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
-    void GetAllActiveContactPointCoordsElement2(
+    void get_all_active_contact_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      FOUR_C_THROW("GetAllActiveContactPointCoordsElement2 not yet implemented!");
+      FOUR_C_THROW("get_all_active_contact_point_coords_element2 not yet implemented!");
     }
 
     /**
      * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
      */
-    void GetAllActiveContactForces(std::vector<double>& forces) const override
+    void get_all_active_contact_forces(std::vector<double>& forces) const override
     {
-      FOUR_C_THROW("GetAllActiveContactForces not yet implemented!");
+      FOUR_C_THROW("get_all_active_contact_forces not yet implemented!");
     }
 
     /**
      * \brief Get all (scalar) gap values of this contact pair. Not yet implemented.
      */
-    void GetAllActiveContactGaps(std::vector<double>& gaps) const override
+    void get_all_active_contact_gaps(std::vector<double>& gaps) const override
     {
-      FOUR_C_THROW("GetAllActiveContactGaps not yet implemented!");
+      FOUR_C_THROW("get_all_active_contact_gaps not yet implemented!");
     }
 
     /**
@@ -166,7 +166,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Print this beam contact element pair to screen.
      */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
+    void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
 
    private:
     /**
@@ -178,7 +178,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssemblePositionalCoupling(
+    void evaluate_and_assemble_positional_coupling(
         const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
@@ -193,7 +193,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssembleRotationalCoupling(
+    void evaluate_and_assemble_rotational_coupling(
         const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,

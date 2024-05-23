@@ -37,7 +37,7 @@ void lubrication_dyn(int restart)
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& lubricationdyn =
-      GLOBAL::Problem::Instance()->LubricationDynamicParams();
+      GLOBAL::Problem::Instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
   Teuchos::RCP<DRT::Discretization> lubricationdis =
@@ -81,7 +81,7 @@ void lubrication_dyn(int restart)
   (lubricationonly->LubricationField())->TimeLoop();
 
   // perform the result test if required
-  GLOBAL::Problem::Instance()->AddFieldTest(lubricationonly->CreateLubricationFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(lubricationonly->create_lubrication_field_test());
   GLOBAL::Problem::Instance()->TestAll(comm);
 
   return;

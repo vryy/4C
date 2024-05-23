@@ -48,13 +48,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -179,7 +179,7 @@ namespace DRT
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool isHigherOrderElement(const CORE::FE::CellType distype) const
+      bool is_higher_order_element(const CORE::FE::CellType distype) const
       {
         bool hoel = true;
         switch (distype)
@@ -206,7 +206,7 @@ namespace DRT
         \param x     (out)  : nodal coords in spatial frame
         \param disp  (int)  : displacements
       */
-      inline void SpatialConfiguration(
+      inline void spatial_configuration(
           CORE::LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
       {
         const int numnode = NumNode();
@@ -267,7 +267,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -393,7 +393,7 @@ namespace DRT
       CORE::FE::GaussRule1D getOptimalGaussrule(const CORE::FE::CellType& distype);
 
       //! integrate shape functions over a line
-      void IntegrateShapeFunction(Teuchos::ParameterList& params,
+      void integrate_shape_function(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
 

@@ -62,7 +62,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void Output() = 0;
 
     //! Initialize the linear solver
-    virtual void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) = 0;
+    virtual void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) = 0;
 
     //! solve linear system of equations
     virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
@@ -83,7 +83,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void Evaluate() = 0;
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+    virtual Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(
         const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     // return arterial network time integrator
@@ -101,10 +101,10 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const
     {
       FOUR_C_THROW(
-          "ArteryPorofluidSysmat() not implemented in base class, wrong mesh tying object?");
+          "artery_porofluid_sysmat() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
@@ -132,10 +132,10 @@ namespace POROFLUIDMULTIPHASE
     virtual void ApplyMeshMovement() const = 0;
 
     //! return blood vessel volume fraction
-    virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction()
+    virtual Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction()
     {
       FOUR_C_THROW(
-          "BloodVesselVolumeFraction() not implemented in base class, wrong mesh tying object?");
+          "blood_vessel_volume_fraction() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 

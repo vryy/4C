@@ -198,7 +198,7 @@ namespace MAT
      *  \param[out] Pa Active nominal stress
      *  \param[out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      */
-    void EvaluateActiveNominalStress(
+    void evaluate_active_nominal_stress(
         Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa);
 
     /*!
@@ -211,7 +211,7 @@ namespace MAT
      *  \param[out] omegaa Activation level
      *  \param[out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
      */
-    void EvaluateActivationLevel(const double lambdaM, const double Pa, const double derivPa,
+    void evaluate_activation_level(const double lambdaM, const double Pa, const double derivPa,
         double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters

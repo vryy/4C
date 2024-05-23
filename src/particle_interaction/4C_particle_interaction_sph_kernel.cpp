@@ -35,7 +35,7 @@ void PARTICLEINTERACTION::SPHKernelBase::Setup()
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
+void PARTICLEINTERACTION::SPHKernelBase::kernel_space_dimension(int& dim) const
 {
   switch (kernelspacedim_)
   {
@@ -80,7 +80,7 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::SmoothingLength(const double& 
   return (0.5 * support);
 }
 
-double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const double& inv_h) const
+double PARTICLEINTERACTION::SPHKernelCubicSpline::normalization_constant(const double& inv_h) const
 {
   switch (kernelspacedim_)
   {
@@ -110,7 +110,7 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
 
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W0(const double& support) const
 {
-  return NormalizationConstant(2.0 / support);
+  return normalization_constant(2.0 / support);
 }
 
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const double& support) const
@@ -119,9 +119,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const dou
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (1.0 - 1.5 * UTILS::Pow<2>(q) + 0.75 * UTILS::Pow<3>(q)) * NormalizationConstant(inv_h);
+    return (1.0 - 1.5 * UTILS::Pow<2>(q) + 0.75 * UTILS::Pow<3>(q)) * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (0.25 * UTILS::Pow<3>(2.0 - q)) * NormalizationConstant(inv_h);
+    return (0.25 * UTILS::Pow<3>(2.0 - q)) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -133,9 +133,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 * q + 2.25 * UTILS::Pow<2>(q)) * inv_h * NormalizationConstant(inv_h);
+    return (-3.0 * q + 2.25 * UTILS::Pow<2>(q)) * inv_h * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (-0.75 * UTILS::Pow<2>(2.0 - q)) * inv_h * NormalizationConstant(inv_h);
+    return (-0.75 * UTILS::Pow<2>(2.0 - q)) * inv_h * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -147,9 +147,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::d2Wdrij2(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 + 4.5 * q) * UTILS::Pow<2>(inv_h) * NormalizationConstant(inv_h);
+    return (-3.0 + 4.5 * q) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (1.5 * (2.0 - q)) * UTILS::Pow<2>(inv_h) * NormalizationConstant(inv_h);
+    return (1.5 * (2.0 - q)) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -167,7 +167,8 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::SmoothingLength(const double
   return 0.3333333333333333 * support;
 }
 
-double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const double& inv_h) const
+double PARTICLEINTERACTION::SPHKernelQuinticSpline::normalization_constant(
+    const double& inv_h) const
 {
   switch (kernelspacedim_)
   {
@@ -198,7 +199,7 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
 
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W0(const double& support) const
 {
-  return 66.0 * NormalizationConstant(3.0 / support);
+  return 66.0 * normalization_constant(3.0 / support);
 }
 
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
@@ -209,11 +210,11 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
 
   if (q < 1.0)
     return (UTILS::Pow<5>(3.0 - q) - 6.0 * UTILS::Pow<5>(2.0 - q) + 15.0 * UTILS::Pow<5>(1.0 - q)) *
-           NormalizationConstant(inv_h);
+           normalization_constant(inv_h);
   else if (q < 2.0)
-    return (UTILS::Pow<5>(3.0 - q) - 6.0 * UTILS::Pow<5>(2.0 - q)) * NormalizationConstant(inv_h);
+    return (UTILS::Pow<5>(3.0 - q) - 6.0 * UTILS::Pow<5>(2.0 - q)) * normalization_constant(inv_h);
   else if (q < 3.0)
-    return UTILS::Pow<5>(3.0 - q) * NormalizationConstant(inv_h);
+    return UTILS::Pow<5>(3.0 - q) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -227,12 +228,12 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
   if (q < 1.0)
     return (-5.0 * UTILS::Pow<4>(3.0 - q) + 30.0 * UTILS::Pow<4>(2.0 - q) -
                75.0 * UTILS::Pow<4>(1.0 - q)) *
-           inv_h * NormalizationConstant(inv_h);
+           inv_h * normalization_constant(inv_h);
   else if (q < 2.0)
     return (-5.0 * UTILS::Pow<4>(3.0 - q) + 30.0 * UTILS::Pow<4>(2.0 - q)) * inv_h *
-           NormalizationConstant(inv_h);
+           normalization_constant(inv_h);
   else if (q < 3.0)
-    return (-5.0 * UTILS::Pow<4>(3.0 - q)) * inv_h * NormalizationConstant(inv_h);
+    return (-5.0 * UTILS::Pow<4>(3.0 - q)) * inv_h * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -246,12 +247,12 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
   if (q < 1.0)
     return (20.0 * UTILS::Pow<3>(3.0 - q) - 120.0 * UTILS::Pow<3>(2.0 - q) +
                300.0 * UTILS::Pow<3>(1.0 - q)) *
-           UTILS::Pow<2>(inv_h) * NormalizationConstant(inv_h);
+           UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
   else if (q < 2.0)
     return (20.0 * UTILS::Pow<3>(3.0 - q) - 120.0 * UTILS::Pow<3>(2.0 - q)) * UTILS::Pow<2>(inv_h) *
-           NormalizationConstant(inv_h);
+           normalization_constant(inv_h);
   else if (q < 3.0)
-    return (20.0 * UTILS::Pow<3>(3.0 - q)) * UTILS::Pow<2>(inv_h) * NormalizationConstant(inv_h);
+    return (20.0 * UTILS::Pow<3>(3.0 - q)) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
   else
     return 0.0;
 }

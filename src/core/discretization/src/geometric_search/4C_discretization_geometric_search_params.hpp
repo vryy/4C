@@ -33,18 +33,18 @@ namespace CORE::GEOMETRICSEARCH
      *  Beams radius is multiplied with the factor and then the bounding box only depending on
      *  the beam centerline is extended in all directions (+ and -) by that value.
      */
-    double GetBeamBoundingVolumeScaling() const { return beam_radius_extension_factor_; }
+    double get_beam_bounding_volume_scaling() const { return beam_radius_extension_factor_; }
 
     /*! \brief Returns sphere bounding volume extension factor
      *
      * Center of the sphere is extended by the factor times the sphere radius.
      */
-    double GetSphereBoundingVolumeScaling() const { return sphere_radius_extension_factor_; }
+    double get_sphere_bounding_volume_scaling() const { return sphere_radius_extension_factor_; }
 
     /*!
      * \brief Returns a flag indicating if visualization output should be written or not
      */
-    bool GetWriteVisualizationFlag() const { return write_visualization_; }
+    bool get_write_visualization_flag() const { return write_visualization_; }
 
     /*! \brief verbosity level of the geometric search algorithm
      */

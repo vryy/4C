@@ -99,7 +99,7 @@ namespace SCATRA
     );
 
     //! provide global state vectors for element evaluation
-    void AddTimeIntegrationSpecificVectors() const override;
+    void add_time_integration_specific_vectors() const override;
 
     //! compute time step size
     void ComputeTimeStepSize(double& dt) override;
@@ -111,7 +111,7 @@ namespace SCATRA
     const CORE::LINALG::MultiMapExtractor& BlockMapsSlave() const { return *blockmaps_slave_; };
 
     //! compute time derivatives of discrete state variables
-    void ComputeTimeDerivative() const override;
+    void compute_time_derivative() const override;
 
     void CondenseMatAndRHS(const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
@@ -167,14 +167,14 @@ namespace SCATRA
     //! perform initialization of scatra-scatra interface coupling
     void InitMeshtying() override;
 
-    bool SystemMatrixInitializationNeeded() const override { return false; }
+    bool system_matrix_initialization_needed() const override { return false; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
-          "'SystemMatrixInitializationNeeded()' to return true");
+          "'system_matrix_initialization_needed()' to return true");
       // dummy return
       return Teuchos::null;
     }
@@ -187,7 +187,7 @@ namespace SCATRA
 
     //! return flag for evaluation of scatra-scatra interface coupling involving interface layer
     //! growth
-    const INPAR::S2I::GrowthEvaluation& IntLayerGrowthEvaluation() const
+    const INPAR::S2I::GrowthEvaluation& int_layer_growth_evaluation() const
     {
       return intlayergrowth_evaluation_;
     };
@@ -195,7 +195,7 @@ namespace SCATRA
     //! return the slave-side scatra-scatra interface kinetics conditions applied to a mesh tying
     //! interface
     const std::map<const int, CORE::Conditions::Condition* const>&
-    KineticsConditionsMeshtyingSlaveSide() const
+    kinetics_conditions_meshtying_slave_side() const
     {
       return kinetics_conditions_meshtying_slaveside_;
     }
@@ -222,7 +222,7 @@ namespace SCATRA
     const CORE::LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
-    DRT::Discretization& MortarDiscretization(const int& condid) const;
+    DRT::Discretization& mortar_discretization(const int& condid) const;
 
     //! output solution for post-processing
     void Output() const override;
@@ -236,7 +236,7 @@ namespace SCATRA
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const override;
 
     //! set general parameters for element evaluation
-    void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const override;
+    void set_element_general_parameters(Teuchos::ParameterList& parameters) const override;
 
     /*!
      * \brief Method sets the scatra-scatra interface condition specific values to the scatra
@@ -248,7 +248,7 @@ namespace SCATRA
      * @param[in] s2icondition Scatra-scatra interface condition of which parameters are read and
      * stored to the parameter class
      */
-    void SetConditionSpecificScaTraParameters(CORE::Conditions::Condition& s2icondition) const;
+    void set_condition_specific_sca_tra_parameters(CORE::Conditions::Condition& s2icondition) const;
 
     /*!
      * \brief Writes S2IKinetics condition specific parameters to parameter list that is stored to
@@ -258,7 +258,7 @@ namespace SCATRA
      *                                    stored to the parameter list
      * @param[out] s2icouplingparameters  parameter list filled with condition specific parameters
      */
-    static void WriteS2IKineticsSpecificScaTraParametersToParameterList(
+    static void write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
         CORE::Conditions::Condition& s2ikinetics_cond,
         Teuchos::ParameterList& s2icouplingparameters);
 
@@ -289,10 +289,10 @@ namespace SCATRA
     void OutputInterfaceFlux() const;
 
    protected:
-    void EquipExtendedSolverWithNullSpaceInfo() const override;
+    void equip_extended_solver_with_null_space_info() const override;
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
 
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> interfacemaps_;
@@ -487,11 +487,11 @@ namespace SCATRA
     MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
 
     //! build map extractors associated with blocks of global system matrix
-    void BuildBlockMapExtractors();
+    void build_block_map_extractors();
 
     //! evaluate and assemble all contributions due to capacitive fluxes at the scatra-scatra
     //! interface
-    void EvaluateAndAssembleCapacitiveContributions();
+    void evaluate_and_assemble_capacitive_contributions();
 
     /*!
      * @brief  evaluate single mortar integration cell
@@ -563,7 +563,7 @@ namespace SCATRA
      * @param elevector1 element vector 1
      * @param elevector2 element vector 2
      */
-    void EvaluateMortarElement(const DRT::Discretization& idiscret, MORTAR::Element& element,
+    void evaluate_mortar_element(const DRT::Discretization& idiscret, MORTAR::Element& element,
         const INPAR::SCATRA::ImplType& impltype, DRT::Element::LocationArray& la,
         const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elematrix1,
         CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseMatrix& elematrix3,
@@ -682,8 +682,9 @@ namespace SCATRA
      * @param systemvector2      system vector 2
      * @param vector2_side       interface side associated with system vector 2
      */
-    void EvaluateMortarElements(const Epetra_Map& ielecolmap, const Epetra_IntVector& ieleimpltypes,
-        const DRT::Discretization& idiscret, const Teuchos::ParameterList& params,
+    void evaluate_mortar_elements(const Epetra_Map& ielecolmap,
+        const Epetra_IntVector& ieleimpltypes, const DRT::Discretization& idiscret,
+        const Teuchos::ParameterList& params,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix1,
         const INPAR::S2I::InterfaceSides matrix1_side_rows,
         const INPAR::S2I::InterfaceSides matrix1_side_cols,
@@ -717,7 +718,7 @@ namespace SCATRA
     //! flag indicating that mesh tying for different conditions should be setup independently
     const bool indepedent_setup_of_conditions_;
 
-  };  // class MeshtyingStrategyS2I
+  };  // class meshtying_strategy_s2_i
 
 
   class MortarCellInterface
@@ -762,7 +763,7 @@ namespace SCATRA
         ) = 0;
 
     //! evaluate single mortar element
-    virtual void EvaluateMortarElement(
+    virtual void evaluate_mortar_element(
         const DRT::Discretization& idiscret,          //!< interface discretization
         MORTAR::Element& element,                     //!< mortar element
         DRT::Element::LocationArray& la,              //!< location array
@@ -849,16 +850,16 @@ namespace SCATRA
         ) override;
 
     //! evaluate single mortar element
-    void EvaluateMortarElement(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::Element& element,                                    //!< mortar element
-        DRT::Element::LocationArray& la,                             //!< location array
-        const Teuchos::ParameterList& params,                        //!< parameter list
-        CORE::LINALG::SerialDenseMatrix& elematrix1,                 //!< element matrix 1
-        CORE::LINALG::SerialDenseMatrix& elematrix2,                 //!< element matrix 2
-        CORE::LINALG::SerialDenseMatrix& elematrix3,                 //!< element matrix 3
-        CORE::LINALG::SerialDenseMatrix& elematrix4,                 //!< element matrix 4
-        CORE::LINALG::SerialDenseVector& elevector1,                 //!< element vector 1
-        CORE::LINALG::SerialDenseVector& elevector2                  //!< element vector 2
+    void evaluate_mortar_element(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::Element& element,                                      //!< mortar element
+        DRT::Element::LocationArray& la,                               //!< location array
+        const Teuchos::ParameterList& params,                          //!< parameter list
+        CORE::LINALG::SerialDenseMatrix& elematrix1,                   //!< element matrix 1
+        CORE::LINALG::SerialDenseMatrix& elematrix2,                   //!< element matrix 2
+        CORE::LINALG::SerialDenseMatrix& elematrix3,                   //!< element matrix 3
+        CORE::LINALG::SerialDenseMatrix& elematrix4,                   //!< element matrix 4
+        CORE::LINALG::SerialDenseVector& elevector1,                   //!< element vector 1
+        CORE::LINALG::SerialDenseVector& elevector2                    //!< element vector 2
         ) override;
 
    protected:
@@ -883,12 +884,12 @@ namespace SCATRA
     );
 
     //! evaluate mortar matrices
-    void EvaluateMortarMatrices(MORTAR::IntCell& cell,  //!< mortar integration cell
-        MORTAR::Element& slaveelement,                  //!< slave-side mortar element
-        MORTAR::Element& masterelement,                 //!< master-side mortar element
-        CORE::LINALG::SerialDenseMatrix& D,             //!< mortar matrix D
-        CORE::LINALG::SerialDenseMatrix& M,             //!< mortar matrix M
-        CORE::LINALG::SerialDenseMatrix& E              //!< mortar matrix E
+    void evaluate_mortar_matrices(MORTAR::IntCell& cell,  //!< mortar integration cell
+        MORTAR::Element& slaveelement,                    //!< slave-side mortar element
+        MORTAR::Element& masterelement,                   //!< master-side mortar element
+        CORE::LINALG::SerialDenseMatrix& D,               //!< mortar matrix D
+        CORE::LINALG::SerialDenseMatrix& M,               //!< mortar matrix M
+        CORE::LINALG::SerialDenseMatrix& E                //!< mortar matrix E
     );
 
     //! evaluate and assemble interface linearizations and residuals
@@ -913,7 +914,7 @@ namespace SCATRA
     );
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
-    virtual void EvaluateConditionNTS(
+    virtual void evaluate_condition_nts(
         CORE::Conditions::Condition& condition,  //!< scatra-scatra interface coupling condition
         const MORTAR::Node& slavenode,           //!< slave-side node
         const double&
@@ -938,7 +939,8 @@ namespace SCATRA
 
     //! evaluate and assemble lumped interface area fractions associated with slave-side element
     //! nodes
-    void EvaluateNodalAreaFractions(MORTAR::Element& slaveelement,  //!< slave-side mortar element
+    void evaluate_nodal_area_fractions(
+        MORTAR::Element& slaveelement,  //!< slave-side mortar element
         CORE::LINALG::SerialDenseVector&
             areafractions  //!< lumped interface area fractions associated
                            //!< with slave-side element nodes
@@ -983,7 +985,7 @@ namespace SCATRA
 
     //! evaluate slave-side and master-side shape functions and domain integration factor at cell
     //! integration point
-    double EvalShapeFuncAndDomIntFacAtIntPoint(
+    double eval_shape_func_and_dom_int_fac_at_int_point(
         MORTAR::Element& slaveelement,                               //!< slave-side mortar element
         MORTAR::Element& masterelement,                              //!< master-side mortar element
         MORTAR::IntCell& cell,                                       //!< mortar integration cell
@@ -993,15 +995,16 @@ namespace SCATRA
 
     //! evaluate slave-side shape functions and domain integration factor at element integration
     //! point
-    double EvalShapeFuncAndDomIntFacAtIntPoint(MORTAR::Element& element,  //!< mortar element
-        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,       //!< quadrature rule
-        const int iquad  //!< ID of integration point
+    double eval_shape_func_and_dom_int_fac_at_int_point(
+        MORTAR::Element& element,                                    //!< mortar element
+        const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
+        const int iquad                                              //!< ID of integration point
     );
 
     //! evaluate shape functions at position of slave-side node
-    void EvalShapeFuncAtSlaveNode(const MORTAR::Node& slavenode,  //!< slave-side node
-        MORTAR::Element& slaveelement,                            //!< slave-side element
-        MORTAR::Element& masterelement                            //!< master-side element
+    void eval_shape_func_at_slave_node(const MORTAR::Node& slavenode,  //!< slave-side node
+        MORTAR::Element& slaveelement,                                 //!< slave-side element
+        MORTAR::Element& masterelement                                 //!< master-side element
     );
 
     //! pointer to scatra boundary parameter list
@@ -1122,7 +1125,7 @@ namespace SCATRA
      * @param assembler_pid_master  ID of processor performing master-side matrix and vector
      *                              assembly
      */
-    void AssembleCellMatricesAndVectors(DRT::Element::LocationArray& la_slave,
+    void assemble_cell_matrices_and_vectors(DRT::Element::LocationArray& la_slave,
         DRT::Element::LocationArray& la_master, const int assembler_pid_master) const;
 
     //! bool flag for assembly of system matrix 1
@@ -1162,7 +1165,7 @@ namespace SCATRA
     CORE::LINALG::SerialDenseVector& CellVector2() { return cellvector2_; };
 
     //! initialize cell matrices and vectors
-    void InitCellMatricesAndVectors(
+    void init_cell_matrices_and_vectors(
         DRT::Element::LocationArray& la_slave,  //!< slave-side location array
         DRT::Element::LocationArray& la_master  //!< master-side location array
     );

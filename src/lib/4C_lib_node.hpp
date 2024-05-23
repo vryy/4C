@@ -302,7 +302,7 @@ namespace DRT
     \brief Clear vector of pointers to my elements
 
     */
-    inline void ClearMyElementTopology() { element_.clear(); }
+    inline void clear_my_element_topology() { element_.clear(); }
 
     /*!
     \brief Add an element to my vector of pointers to elements

@@ -197,8 +197,8 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                    cmat,                   //!< elasto-plastic material tangent
+    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                       cmat,                //!< elasto-plastic material tangent
         double Dgamma,                                      //!< plastic multiplier
         double G,                                           //!< shear modulus
         double q,                                           //!< effective stress
@@ -209,15 +209,15 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic2(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                     cmat,               //!< elasto-plastic material tangent
+    void setup_cmat_elasto_plastic2(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                        cmat,            //!< elasto-plastic material tangent
         double Dgamma,                                   //!< plastic multiplier
         double q,                                        //!< effective stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow  //!< unit flow vector
     );
 
-    void SetupContinuumCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                             cmat,       //!< elasto-plastic material tangent
+    void setup_continuum_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                                 cmat,   //!< elasto-plastic material tangent
         double Dgamma,                                   //!< plastic multiplier
         double q,                                        //!< effective stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow  //!< unit flow vector

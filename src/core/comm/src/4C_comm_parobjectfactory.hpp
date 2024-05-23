@@ -122,13 +122,13 @@ namespace CORE::COMM
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// setup definition of element input file lines
-    void SetupElementDefinition(
+    void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions);
 
    private:
     void Register(ParObjectType* object_type);
 
-    void FinalizeRegistration();
+    void finalize_registration();
 
     ParObjectFactory() = default;
 

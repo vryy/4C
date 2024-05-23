@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-size_t IO::VisualizationData::GetPointCoordinatesNumberOfPoints() const
+size_t IO::VisualizationData::get_point_coordinates_number_of_points() const
 {
   // Check if number of entries is consistent
   if (point_coordinates_.size() % n_dim_ != 0)
@@ -62,10 +62,10 @@ void IO::VisualizationData::ResetContainer()
 /**
  *
  */
-void IO::VisualizationData::ConsistencyCheckAndCompleteData()
+void IO::VisualizationData::consistency_check_and_complete_data()
 {
-  CompleteCellConnectivity();
-  CompleteFaceConnectivity();
+  complete_cell_connectivity();
+  complete_face_connectivity();
   ConsistencyCheck();
 }
 
@@ -74,8 +74,8 @@ void IO::VisualizationData::ConsistencyCheckAndCompleteData()
  */
 void IO::VisualizationData::ConsistencyCheck() const
 {
-  // Check basic point coordinates consistency (is done with GetPointCoordinatesNumberOfPoints)
-  const auto n_points = GetPointCoordinatesNumberOfPoints();
+  // Check basic point coordinates consistency (is done with get_point_coordinates_number_of_points)
+  const auto n_points = get_point_coordinates_number_of_points();
 
   // Check basic cell consistency
   const auto n_cells = cell_types_.size();
@@ -95,7 +95,7 @@ void IO::VisualizationData::ConsistencyCheck() const
   {
     FOUR_C_THROW(
         "Error in the consistency check for the face connectivity and offsets. Did you call "
-        "CompleteFaceConnectivity?");
+        "complete_face_connectivity?");
   }
 
   // Check consistency of point and cell data
@@ -103,7 +103,7 @@ void IO::VisualizationData::ConsistencyCheck() const
       [&](const auto& data, const std::string& data_name, const auto& n_items)
   {
     const auto map_item = GetDataMapItem(data, data_name);
-    const auto size = GetDataVectorSize(GetDataVectorFromMapItem(map_item));
+    const auto size = GetDataVectorSize(get_data_vector_from_map_item(map_item));
     const auto n_dim = GetDataDimension(map_item);
     if (size % n_dim != 0)
       FOUR_C_THROW("The size of the data vector %s (%d) is not a multiple of the dimension (%d)!",
@@ -126,11 +126,11 @@ void IO::VisualizationData::ConsistencyCheck() const
 /**
  *
  */
-void IO::VisualizationData::CompleteCellConnectivity()
+void IO::VisualizationData::complete_cell_connectivity()
 {
   if (cell_connectivity_.size() == 0 && cell_offsets_.size() > 0)
   {
-    const auto n_points = GetPointCoordinatesNumberOfPoints();
+    const auto n_points = get_point_coordinates_number_of_points();
     cell_connectivity_.reserve(n_points);
     for (size_t i_point = 0; i_point < n_points; ++i_point) cell_connectivity_.push_back(i_point);
   }
@@ -139,7 +139,7 @@ void IO::VisualizationData::CompleteCellConnectivity()
 /**
  *
  */
-void IO::VisualizationData::CompleteFaceConnectivity()
+void IO::VisualizationData::complete_face_connectivity()
 {
   const int vtk_polyhedron_cell_id = polyhedron_cell_type;
   const size_t n_polyhedron =

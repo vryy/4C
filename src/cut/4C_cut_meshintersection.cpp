@@ -117,11 +117,11 @@ void CORE::GEO::CUT::MeshIntersection::BuildSelfCutTree()
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::BuildStaticSearchTree()
+void CORE::GEO::CUT::MeshIntersection::build_static_search_tree()
 {
   Mesh& m = NormalMesh();
 
-  m.BuildStaticSearchTree();
+  m.build_static_search_tree();
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -166,7 +166,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
     fflush(stdout);
   }
 
-  BuildStaticSearchTree();
+  build_static_search_tree();
 
   if (mypid == 0)
   {
@@ -196,7 +196,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
     fflush(stdout);
   }
 
-  Cut_CollisionDetection(include_inner, screenoutput);
+  cut_collision_detection(include_inner, screenoutput);
 
   if (mypid == 0)
   {
@@ -211,7 +211,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
     fflush(stdout);
   }
 
-  Cut_MeshIntersection(screenoutput);
+  cut_mesh_intersection(screenoutput);
 
   if (mypid == 0)
   {
@@ -231,7 +231,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
       fflush(stdout);
     }
 
-    Cut_Positions_Dofsets(include_inner, screenoutput);
+    cut_positions_dofsets(include_inner, screenoutput);
 
     if (mypid == 0)
     {
@@ -256,7 +256,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
   }
 
   // DumpGmshVolumeCells("CUT_vc", true);
-  // DumpGmshIntegrationCells("CUT_intcells");
+  // dump_gmsh_integration_cells("CUT_intcells");
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -288,11 +288,12 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
  * detects if a side of the cut mesh possibly collides with an element of the background mesh     *
  *                                                                                    wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::Cut_CollisionDetection(bool include_inner, bool screenoutput)
+void CORE::GEO::CUT::MeshIntersection::cut_collision_detection(
+    bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 3/6 --- Cut_CollisionDetection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 3/6 --- cut_collision_detection");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 3/6 Cut_CollisionDetection ...";
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 3/6 cut_collision_detection ...";
 
   Mesh& m = NormalMesh();
 
@@ -305,11 +306,11 @@ void CORE::GEO::CUT::MeshIntersection::Cut_CollisionDetection(bool include_inner
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection(bool screenoutput)
+void CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 Cut_MeshIntersection ...";
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 cut_mesh_intersection ...";
 
   //----------------------------------------------------------
 
@@ -320,17 +321,17 @@ void CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection(bool screenoutput)
   m.MakeFacets();
   m.MakeVolumeCells();
 
-}  // CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection
+}  // CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection
 
 /*------------------------------------------------------------------------------------------------*
  * Routine for deciding the inside-outside position. This creates the dofset data,                *
  * also in parallel                                                                  schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets(bool include_inner, bool screenoutput)
+void CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (serial)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets (serial)");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets ...";
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 5/6 cut_positions_dofsets ...";
 
   //----------------------------------------------------------
 
@@ -349,7 +350,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets(bool include_inner,
     m.FindNodalDOFSets(include_inner);
   }
 
-}  // CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets
+}  // CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets
 
 
 /*--------------------------------------------------------------------------------------*

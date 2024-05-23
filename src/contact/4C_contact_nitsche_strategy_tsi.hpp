@@ -74,7 +74,7 @@ namespace CONTACT
       */
     void Setup(bool redistributed, bool init) override;
 
-    void UpdateTraceIneqEtimates() override;
+    void update_trace_ineq_etimates() override;
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
@@ -93,7 +93,7 @@ namespace CONTACT
       return CONTACT::AbstractStrategy::RedistributeContact(dis, vel);
     }
 
-    void EnableRedistribution() { fix_redistribution_ = false; }
+    void enable_redistribution() { fix_redistribution_ = false; }
 
     // don't want = operator and cctor
     NitscheStrategyTsi operator=(const NitscheStrategyTsi& old) = delete;
@@ -109,7 +109,7 @@ namespace CONTACT
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void CompleteMatrixBlockPtr(
+    void complete_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     // do not reditribute (during constructor phase)

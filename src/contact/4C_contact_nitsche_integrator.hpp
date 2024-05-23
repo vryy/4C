@@ -183,7 +183,7 @@ namespace CONTACT
         const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
-    void IntegrateAdjointTest(double fac, double jac,
+    void integrate_adjoint_test(double fac, double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, double wgt, double test,
         const CORE::GEN::Pairedvector<int, double>& deriv_test, MORTAR::Element& moEle,
         CORE::LINALG::SerialDenseVector& adjoint_test,

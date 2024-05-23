@@ -196,7 +196,7 @@ namespace CORE::Conditions
     \note These are not elements from the condition geometry. Rather the
     gids of actual discretization elements are listed.
    */
-  Teuchos::RCP<std::set<int>> ConditionedElementMap(
+  Teuchos::RCP<std::set<int>> conditioned_element_map(
       const DRT::Discretization& dis, const std::string& condname);
 
   /*!

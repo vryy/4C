@@ -97,7 +97,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[out] particlestatestotypes map of particle types and corresponding states
      */
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
@@ -122,14 +122,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    virtual void PreInteractionRoutine() = 0;
+    virtual void pre_interaction_routine() = 0;
 
     /*!
      * \brief time integration scheme specific post-interaction routine
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    virtual void PostInteractionRoutine() = 0;
+    virtual void post_interaction_routine() = 0;
 
    private:
     /*!
@@ -137,21 +137,21 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void InitDirichletBoundaryCondition();
+    void init_dirichlet_boundary_condition();
 
     /*!
      * \brief init temperature boundary condition handler
      *
      * \author Sebastian Fuchs \date 09/2018
      */
-    void InitTemperatureBoundaryCondition();
+    void init_temperature_boundary_condition();
 
     /*!
      * \brief add initial random noise to particle position
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    void AddInitialRandomNoiseToPosition();
+    void add_initial_random_noise_to_position();
 
    protected:
     //! particle simulation parameter list
@@ -219,14 +219,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void PreInteractionRoutine() override;
+    void pre_interaction_routine() override;
 
     /*!
      * \brief time integration scheme specific post-interaction routine
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void PostInteractionRoutine() override;
+    void post_interaction_routine() override;
   };
 
   /*!
@@ -265,14 +265,14 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void PreInteractionRoutine() override;
+    void pre_interaction_routine() override;
 
     /*!
      * \brief time integration scheme specific post-interaction routine
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void PostInteractionRoutine() override;
+    void post_interaction_routine() override;
 
    private:
     //! half time step size

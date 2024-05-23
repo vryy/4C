@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
   str_data_ptr_ = str_data_ptr;
 
   const Teuchos::ParameterList& browndyn_params_list =
-      GLOBAL::Problem::Instance()->BrownianDynamicsParams();
+      GLOBAL::Problem::Instance()->brownian_dynamics_params();
 
   // viscosity
   viscosity_ = browndyn_params_list.get<double>("VISCOSITY");
@@ -124,7 +124,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDynData::ResizeRandomForceMVector(
+void STR::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
     Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement)
 {
   CheckInitSetup();

@@ -66,13 +66,13 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
-  const CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
+  const CORE::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
   auto output_control = problem.OutputControlFile();
 
   // the basic mesh reader. now add desired node and element readers to it!
   IO::MeshReader meshreader(reader, "--NODE COORDS",
-      {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
-          .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+      {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
+          .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
           .io_parameters = Problem::Instance()->IOParams()});
 
   switch (problem.GetProblemType())
@@ -254,7 +254,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           CORE::UTILS::IntegralValue<IO::GeometryType>(
-              problem.StructuralDynamicParams(), "GEOMETRY"),
+              problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
       if (CORE::UTILS::IntegralValue<int>(
@@ -566,10 +566,11 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           CORE::UTILS::IntegralValue<IO::GeometryType>(
-              problem.StructuralDynamicParams(), "GEOMETRY"),
+              problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
       meshreader.AddAdvancedReader(thermdis, reader, "THERMO",
-          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.ThermalDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(
+              problem.thermal_dynamic_params(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -625,7 +626,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           CORE::UTILS::IntegralValue<IO::GeometryType>(
-              problem.StructuralDynamicParams(), "GEOMETRY"),
+              problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -857,7 +858,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
-              problem.PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
+              problem.poro_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         arterydis->SetWriter(
@@ -907,7 +908,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
-              problem.PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING"))
+              problem.poro_multi_phase_scatra_dynamic_params(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         arterydis->SetWriter(
@@ -952,7 +953,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
-              problem.PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
+              problem.poro_fluid_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         arterydis->SetWriter(
@@ -1538,7 +1539,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         // create discretization writer - in constructor set into and owned by corresponding
         // discret
         dis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis_micro,
-            micro_problem->OutputControlFile(), micro_problem->SpatialApproximationType())));
+            micro_problem->OutputControlFile(), micro_problem->spatial_approximation_type())));
 
         micro_problem->AddDis(micro_dis_name, dis_micro);
 
@@ -1556,8 +1557,8 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         ReadMaterials(*micro_problem, micro_reader);
 
         IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
-            {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
-                .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+            {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
+                .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
                 .io_parameters = Problem::Instance()->IOParams()});
 
         if (micro_dis_name == "structure")
@@ -1593,10 +1594,10 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         // set the problem number from which to call materials again to zero
         // (i.e. macro problem), cf. MAT::Factory!
-        problem.Materials()->ResetReadFromProblem();
+        problem.Materials()->reset_read_from_problem();
       }
     }
-    problem.Materials()->ResetReadFromProblem();
+    problem.Materials()->reset_read_from_problem();
   }
 }
 
@@ -1671,7 +1672,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis_micro,
-        micro_problem->OutputControlFile(), micro_problem->SpatialApproximationType())));
+        micro_problem->OutputControlFile(), micro_problem->spatial_approximation_type())));
 
     micro_problem->AddDis("structure", structdis_micro);
 
@@ -1689,8 +1690,8 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     ReadMaterials(*micro_problem, micro_reader);
 
     IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
-        {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
-            .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+        {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
+            .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
             .io_parameters = Problem::Instance()->IOParams()});
     micromeshreader.AddElementReader(
         IO::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
@@ -1712,7 +1713,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     // set the problem number from which to call materials again to zero
     // (i.e. macro problem), cf. MAT::Factory!
-    problem.Materials()->ResetReadFromProblem();
+    problem.Materials()->reset_read_from_problem();
   }
 }
 
@@ -1948,7 +1949,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   problem.SetProblemType(CORE::UTILS::IntegralValue<GLOBAL::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
-  problem.SetSpatialApproximationType(
+  problem.set_spatial_approximation_type(
       CORE::UTILS::IntegralValue<CORE::FE::ShapeFunctionType>(type, "SHAPEFCT"));
 
   int restart_step = problem.Restart();
@@ -2055,7 +2056,7 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
   for (auto& m : coconstlawlist)
   {
     // read contact constitutive law from DAT file of type
-    m->Read(problem, reader, problem.ContactConstitutiveLaws());
+    m->Read(problem, reader, problem.contact_constitutive_laws());
   }
 
   // check if every contact constitutive law was identified
@@ -2085,14 +2086,14 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
       }
 
       // processed?
-      if (problem.ContactConstitutiveLaws()->Find(coconstlawid) == -1)
+      if (problem.contact_constitutive_laws()->Find(coconstlawid) == -1)
         FOUR_C_THROW("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
             coconstlawid, name.c_str());
     }
   }
 
   // make fast access parameters
-  problem.ContactConstitutiveLaws()->MakeParameters();
+  problem.contact_constitutive_laws()->MakeParameters();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2135,7 +2136,7 @@ void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 
   GlobalLegacyModuleCallbacks().AttachResultLines(lines);
 
-  problem.GetResultTestManager().SetParsedLines(lines.Read(reader));
+  problem.get_result_test_manager().SetParsedLines(lines.Read(reader));
 }
 
 /*----------------------------------------------------------------------*/
@@ -2284,7 +2285,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
-  CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
 
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to

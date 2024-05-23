@@ -137,7 +137,7 @@ namespace IO
     void WriteHeader(
         const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx);
 
-    void InsertRestartBackReference(int restart, const std::string& outputname);
+    void insert_restart_back_reference(int restart, const std::string& outputname);
 
    private:
     std::string problemtype_;

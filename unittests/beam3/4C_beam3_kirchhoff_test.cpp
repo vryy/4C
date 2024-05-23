@@ -68,8 +68,8 @@ namespace
       rotrefe[7] = -0.14845112617443665;
       rotrefe[8] = -0.628849061811312;
 
-      testele_->SetUpInitialRotations(rotrefe);
-      testele_->SetUpReferenceGeometry(xrefe_setup);
+      testele_->set_up_initial_rotations(rotrefe);
+      testele_->set_up_reference_geometry(xrefe_setup);
     }
 
    protected:

@@ -76,8 +76,8 @@ namespace DRT
           ) override;
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
-      void SysmatODThermoScatra(DRT::Element* ele,  //!< current element
-          CORE::LINALG::SerialDenseMatrix& emat     //!< element matrix
+      void sysmat_od_thermo_scatra(DRT::Element* ele,  //!< current element
+          CORE::LINALG::SerialDenseMatrix& emat        //!< element matrix
       );
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
@@ -123,10 +123,10 @@ namespace DRT
           ) override;
 
       //! extract quantities for element evaluation
-      void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                  //!< parameter list
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void extract_element_and_node_values(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                      //!< parameter list
+          DRT::Discretization& discretization,                 //!< discretization
+          DRT::Element::LocationArray& la                      //!< location array
           ) override;
 
       //! get material parameters
@@ -152,7 +152,7 @@ namespace DRT
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get thermo diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> DiffManager()
@@ -209,11 +209,13 @@ namespace DRT
         // no deformation available in this code part
         const double dummy_detF(1.0);
         // evaluate material
-        ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration, faraday, frt, dummy_detF);
-        ocpderiv_ = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
+        ocp_ =
+            matelectrode->compute_open_circuit_potential(concentration, faraday, frt, dummy_detF);
+        ocpderiv_ = matelectrode->compute_d_open_circuit_potential_d_concentration(
             concentration, faraday, frt, dummy_detF);
-        ocpderiv2_ = matelectrode->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
-            concentration, faraday, frt, dummy_detF);
+        ocpderiv2_ =
+            matelectrode->compute_d2_open_circuit_potential_d_concentration_d_concentration(
+                concentration, faraday, frt, dummy_detF);
       };
 
       //! return half cell open circuit potential

@@ -41,7 +41,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<81, 81> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<81, 81> elemat2(elemat2_epetra.values(), true);
@@ -540,7 +540,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& par
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
   const auto* val = &condition.parameters().Get<std::vector<double>>("val");
@@ -908,7 +908,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     // call material law
     CORE::LINALG::Matrix<6, 6> cmat(true);
     CORE::LINALG::Matrix<6, 1> stress(true);
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::nurbs27>(funct, params);
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 

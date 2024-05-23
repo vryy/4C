@@ -52,14 +52,14 @@ class StruResultTest : public CORE::UTILS::ResultTest
   /*!
   \brief Test special quantities of structure discretization / time integration
 
-  See GetSpecialResultForTesting() for a list and extraction mechanisms of special results to be
+  See get_special_result_for_testing() for a list and extraction mechanisms of special results to be
   tested.
   */
   void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
 
  private:
   //! Extract specified quantity from the structure field
-  double GetSpecialResultForTesting(const std::string& quantity);
+  double get_special_result_for_testing(const std::string& quantity);
 
   //! Structure time integrator
   Teuchos::RCP<STR::TimInt> timeintegrator_;

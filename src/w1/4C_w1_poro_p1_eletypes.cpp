@@ -54,11 +54,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create(const int 
   return ele;
 }
 
-void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad4PoroP1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
-  WallQuad4PoroType::SetupElementDefinition(definitions_wallporo);
+  WallQuad4PoroType::setup_element_definition(definitions_wallporo);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLQ4PORO"];
 
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition(
   defs["QUAD4"] = defs_wallporo["QUAD4"];
 }
 
-void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::WallQuad4PoroP1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -132,11 +132,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create(const int 
   return ele;
 }
 
-void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad9PoroP1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
-  WallQuad9PoroType::SetupElementDefinition(definitions_wallporo);
+  WallQuad9PoroType::setup_element_definition(definitions_wallporo);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLQ9PORO"];
 
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition(
   defs["QUAD9"] = defs_wallporo["QUAD9"];
 }
 
-void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::WallQuad9PoroP1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -211,11 +211,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroP1Type::Create(const int i
   return ele;
 }
 
-void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::WallTri3PoroP1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wallporo;
-  WallTri3PoroType::SetupElementDefinition(definitions_wallporo);
+  WallTri3PoroType::setup_element_definition(definitions_wallporo);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wallporo = definitions_wallporo["WALLT3PORO"];
 
@@ -224,7 +224,7 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition(
   defs["TRI3"] = defs_wallporo["TRI3"];
 }
 
-void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::WallTri3PoroP1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;

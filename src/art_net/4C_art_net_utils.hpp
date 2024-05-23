@@ -73,7 +73,7 @@ namespace ART
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! exchange material pointers of discretizations
-    void AssignMaterialPointers(
+    void assign_material_pointers(
         const std::string& artery_disname, const std::string& scatra_disname);
 
     //! set material pointers

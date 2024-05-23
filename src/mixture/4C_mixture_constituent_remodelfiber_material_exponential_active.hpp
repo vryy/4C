@@ -42,8 +42,8 @@ namespace MIXTURE
       explicit RemodelFiberMaterialExponentialActive(
           const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-      [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>> CreateRemodelFiberMaterial()
-          const override;
+      [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
+      create_remodel_fiber_material() const override;
 
       MIXTURE::PAR::ExponentialFiberParameters passive_params_;
 
@@ -70,7 +70,7 @@ namespace MIXTURE
 
     [[nodiscard]] T GetDCauchyStressDI4(T I4) const final;
 
-    [[nodiscard]] T GetDCauchyStressDI4DI4(T I4) const final;
+    [[nodiscard]] T get_d_cauchy_stress_d_i4_d_i4(T I4) const final;
 
    private:
     const PAR::RemodelFiberMaterialExponentialActive<T>* params_;

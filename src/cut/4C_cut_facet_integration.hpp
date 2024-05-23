@@ -76,13 +76,14 @@ namespace CORE::GEO
       \brief Generate Gaussian points over the considered facet by triangulating it. This is used
       when DirectDivergence option is used for Gauss point generation
       */
-      void DivergenceIntegrationRule(Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp);
+      void divergence_integration_rule(
+          Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp);
 
       /*!
       \brief Generate Gaussian points over the considered facet by triangulating it. This is used
       when DirectDivergence option is used for Gauss point generation
       */
-      void DivergenceIntegrationRuleNew(
+      void divergence_integration_rule_new(
           Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp);
 
      private:
@@ -107,19 +108,19 @@ namespace CORE::GEO
       /*!
       \brief Perform integration of base functions over boundarycells
       */
-      void BoundaryFacetIntegration(const std::vector<std::vector<double>> &cornersLocal,
+      void boundary_facet_integration(const std::vector<std::vector<double>> &cornersLocal,
           double &facet_integ, CORE::GEO::CUT::ProjectionDirection intType);
 
       /*!
       \brief Generate boundary cells for the considered facet. May need to perform triangulatio
       */
-      void GenerateDivergenceCells(
+      void generate_divergence_cells(
           bool divergenceRule, Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
 
       /*!
       \brief Generate boundary cells for the considered facet. May need to perform triangulatio
       */
-      void GenerateDivergenceCellsNew(bool divergenceRule, Mesh &mesh,
+      void generate_divergence_cells_new(bool divergenceRule, Mesh &mesh,
           std::list<Teuchos::RCP<BoundaryCell>> &divCells,
           const std::vector<Point *> &cornersGlobal);
 

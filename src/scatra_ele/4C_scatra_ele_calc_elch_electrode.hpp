@@ -83,7 +83,7 @@ namespace DRT
           ) override;
 
       //! calculate contributions to element matrix and residual (outside loop over all scalars)
-      void CalcMatAndRhsOutsideScalarLoop(
+      void calc_mat_and_rhs_outside_scalar_loop(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
@@ -92,8 +92,8 @@ namespace DRT
           ) override;
 
       //! compute additional flux terms across Dirichlet boundaries
-      void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,                                      //!< location vector
+      void correction_for_flux_across_dc(DRT::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,                                          //!< location vector
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
           ) override{};
@@ -141,7 +141,7 @@ namespace DRT
       );
 
       //! CalcMat: potential equation div i with inserted current - ohmic overpotential
-      void CalcMatPotEquDiviOhm(
+      void calc_mat_pot_equ_divi_ohm(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
@@ -158,11 +158,11 @@ namespace DRT
        * @param[in] rhsfac    time-integration factor for rhs times domain-integration factor
        * @param[in] vdiv      divergence of velocity
        */
-      void CalcRhsConservativePartOfConvectiveTerm(CORE::LINALG::SerialDenseVector& erhs,
+      void calc_rhs_conservative_part_of_convective_term(CORE::LINALG::SerialDenseVector& erhs,
           const int k, const double rhsfac, const double vdiv);
 
       //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
-      virtual void CalcRhsPotEquDiviOhm(
+      virtual void calc_rhs_pot_equ_divi_ohm(
           CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1./F
@@ -188,7 +188,7 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      void CheckElchElementParameter(DRT::Element* ele  //!< current element
+      void check_elch_element_parameter(DRT::Element* ele  //!< current element
           ) override;
 
       //! get conductivity
@@ -201,7 +201,7 @@ namespace DRT
           ) override;
 
       //! calculate electrode state of charge and C rate
-      virtual void CalculateElectrodeSOCAndCRate(
+      virtual void calculate_electrode_soc_and_c_rate(
           const DRT::Element* const& ele,             //!< the element we are dealing with
           const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la,            //!< location array
@@ -214,7 +214,7 @@ namespace DRT
       //! \param discretization   discretization
       //! \param la               location array
       //! \param conc             result vector for scalar integrals to be computed
-      virtual void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+      virtual void calculate_mean_electrode_concentration(const DRT::Element* const& ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseVector& conc);
 
@@ -225,13 +225,13 @@ namespace DRT
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
-      void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
-          Teuchos::ParameterList& params,                             //!< parameter list
+      void cal_error_compared_to_analyt_solution(const DRT::Element* ele,  //!< element
+          Teuchos::ParameterList& params,                                  //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
           ) override;
 
       //! set internal variables for electrodes
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! get diffusion manager for electrodes
       Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager()
@@ -270,25 +270,25 @@ namespace DRT
       /*========================================================================*/
 
       //! Set derivative of diffusion coefficients with respect to concentrations
-      void SetConcDerivIsoDiffCoef(const double concderivdiff, const int k, const int iscal)
+      void set_conc_deriv_iso_diff_coef(const double concderivdiff, const int k, const int iscal)
       {
         (concderivdiff_[k])[iscal] = concderivdiff;
       };
 
       //! Set derivative of diffusion coefficient with respect to concentrations
-      void SetTempDerivIsoDiffCoef(const double tempderivdiff, const int k, const int iscal)
+      void set_temp_deriv_iso_diff_coef(const double tempderivdiff, const int k, const int iscal)
       {
         (tempderivdiff_[k])[iscal] = tempderivdiff;
       };
 
       //! Access routine for derivative of diffusion coefficients with respect to concentrations
-      double GetConcDerivIsoDiffCoef(const int k, const int iscal)
+      double get_conc_deriv_iso_diff_coef(const int k, const int iscal)
       {
         return (concderivdiff_[k])[iscal];
       };
 
       //! Access routine for derivative of diffusion coefficients with respect to concentrations
-      double GetTempDerivIsoDiffCoef(const int k, const int iscal)
+      double get_temp_deriv_iso_diff_coef(const int k, const int iscal)
       {
         return (tempderivdiff_[k])[iscal];
       };
@@ -322,7 +322,7 @@ namespace DRT
       /*========================================================================*/
 
       //! print transport parameters to screen
-      virtual void OutputTransportParams(const int numscal)
+      virtual void output_transport_params(const int numscal)
       {
         for (int k = 0; k < numscal; ++k)
           std::cout << "diffusion coefficient " << k << ":   " << diff_[k] << std::endl;
@@ -394,7 +394,7 @@ namespace DRT
 
 
       //! compute and set internal electrode-specific variables
-      void SetInternalVariablesElchElectrode(
+      void set_internal_variables_elch_electrode(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
@@ -409,11 +409,11 @@ namespace DRT
       )
       {
         // set internal variables in base variable manager
-        vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist);
+        vmelch::set_internal_variables_elch(funct, derxy, ephinp, ephin, econvelnp, ehist);
       };
 
       //! compute and set internal electrode-specific variables for evaluation of SOC and Crate
-      void SetInternalVariablesElchElectrodeSOCAndCRate(
+      void set_internal_variables_elch_electrode_soc_and_c_rate(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
@@ -431,7 +431,8 @@ namespace DRT
         // non constant temperatures,
         const bool do_setfrt = false;
         // set internal variables in base variable manager
-        vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist, do_setfrt);
+        vmelch::set_internal_variables_elch(
+            funct, derxy, ephinp, ephin, econvelnp, ehist, do_setfrt);
       };
 
       //! return constant parameter 1./F

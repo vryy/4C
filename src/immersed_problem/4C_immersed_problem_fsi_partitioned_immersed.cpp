@@ -45,7 +45,7 @@ void FSI::PartitionedImmersed::SetupCoupling(
 }
 
 
-void FSI::PartitionedImmersed::ExtractPreviousInterfaceSolution()
+void FSI::PartitionedImmersed::extract_previous_interface_solution()
 {
   // not necessary in immersed fsi.
   // overrides version in fsi_paritioned with "do nothing".
