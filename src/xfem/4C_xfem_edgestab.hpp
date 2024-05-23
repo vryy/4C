@@ -26,7 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class AssembleStrategy;
   class Discretization;
   class DiscretizationFaces;
   class Element;
@@ -37,6 +36,11 @@ namespace DRT
     class FluidIntFace;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+namespace CORE::FE
+{
+  class AssembleStrategy;
+}
 
 namespace CORE::MAT
 {

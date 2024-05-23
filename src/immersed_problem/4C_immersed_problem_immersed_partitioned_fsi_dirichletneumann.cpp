@@ -837,13 +837,13 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::calc_fluid_tractions_on_s
   // set the states needed for evaluation
   SetStatesStructOP();
 
-  DRT::AssembleStrategy struct_bdry_strategy(0,  // struct dofset for row
-      0,                                         // struct dofset for column
-      Teuchos::null,                             // matrix 1
-      Teuchos::null,                             //
-      struct_bdry_traction_,                     // vector 1
-      Teuchos::null,                             //
-      Teuchos::null                              //
+  CORE::FE::AssembleStrategy struct_bdry_strategy(0,  // struct dofset for row
+      0,                                              // struct dofset for column
+      Teuchos::null,                                  // matrix 1
+      Teuchos::null,                                  //
+      struct_bdry_traction_,                          // vector 1
+      Teuchos::null,                                  //
+      Teuchos::null                                   //
   );
   if (myrank_ == 0)
   {
@@ -898,13 +898,13 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::calc_artificial_velocity()
     PrepareFluidOp();
 
     // calc the fluid velocity from the structural displacements
-    DRT::AssembleStrategy fluid_vol_strategy(0,  // struct dofset for row
-        0,                                       // struct dofset for column
-        Teuchos::null,                           // matrix 1
-        Teuchos::null,                           //
-        fluid_artificial_velocity_,              // vector 1
-        Teuchos::null,                           //
-        Teuchos::null                            //
+    CORE::FE::AssembleStrategy fluid_vol_strategy(0,  // struct dofset for row
+        0,                                            // struct dofset for column
+        Teuchos::null,                                // matrix 1
+        Teuchos::null,                                //
+        fluid_artificial_velocity_,                   // vector 1
+        Teuchos::null,                                //
+        Teuchos::null                                 //
     );
 
     if (myrank_ == 0)
@@ -984,13 +984,13 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::correct_interface_velocit
     params.set<int>("intpoints_fluid_bound", degree_gp_fluid_bound_);
 
     // calc the fluid velocity from the structural displacements
-    DRT::AssembleStrategy fluid_vol_strategy(0,  // struct dofset for row
-        0,                                       // struct dofset for column
-        Teuchos::null,                           // matrix 1
-        Teuchos::null,                           //
-        fluid_artificial_velocity_,              // vector 1
-        Teuchos::null,                           //
-        Teuchos::null                            //
+    CORE::FE::AssembleStrategy fluid_vol_strategy(0,  // struct dofset for row
+        0,                                            // struct dofset for column
+        Teuchos::null,                                // matrix 1
+        Teuchos::null,                                //
+        fluid_artificial_velocity_,                   // vector 1
+        Teuchos::null,                                //
+        Teuchos::null                                 //
     );
 
     set_states_velocity_correction();

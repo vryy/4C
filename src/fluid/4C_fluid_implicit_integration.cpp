@@ -28,6 +28,7 @@
 #include "4C_comm_utils.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_fluid_DbcHDG.hpp"
 #include "4C_fluid_ele.hpp"
@@ -53,7 +54,6 @@
 #include "4C_io_control.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_lib_locsys.hpp"
@@ -1150,7 +1150,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     if (sysmat == Teuchos::null) FOUR_C_THROW("expected Sparse Matrix");
     //------------------------------------------------------------
-    DRT::AssembleStrategy strategy(
+    CORE::FE::AssembleStrategy strategy(
         0, 0, sysmat, Teuchos::null, residual_col, Teuchos::null, Teuchos::null);
 
     DRT::Element::LocationArray la(1);

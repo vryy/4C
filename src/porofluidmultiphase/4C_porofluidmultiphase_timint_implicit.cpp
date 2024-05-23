@@ -10,13 +10,13 @@
 
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_l2_projection.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
@@ -966,10 +966,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_struct_coupling_mat(
   add_time_integration_specific_vectors();
 
   // create strategy for assembly of solid pressure
-  DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-      1,                                  // structdofset for column
-      k_fs,                               // fluid-mechanical matrix
-      Teuchos::null,                      // no other matrix or vectors
+  CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+      1,                                       // structdofset for column
+      k_fs,                                    // fluid-mechanical matrix
+      Teuchos::null,                           // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // Evaluate coupling matrix
@@ -1010,10 +1010,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_scatra_coupling_mat(
   add_time_integration_specific_vectors();
 
   // create strategy for assembly of solid pressure
-  DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-      3,                                  // scatradofset for column
-      k_pfs,                              // fluid-scatra matrix
-      Teuchos::null,                      // no other matrix or vectors
+  CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+      3,                                       // scatradofset for column
+      k_pfs,                                   // fluid-scatra matrix
+      Teuchos::null,                           // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // Evaluate coupling matrix
@@ -1307,7 +1307,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_solid_pressures()
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
 
   // create strategy for assembly of solid pressure
-  DRT::AssembleStrategy strategysolidpressure(
+  CORE::FE::AssembleStrategy strategysolidpressure(
       nds_solidpressure_, 0, Teuchos::null, Teuchos::null, solidpressure_, counter, Teuchos::null);
 
   // call loop over elements
@@ -1403,7 +1403,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
       CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
 
   // create strategy for assembly of porosity
-  DRT::AssembleStrategy strategyporosity(
+  CORE::FE::AssembleStrategy strategyporosity(
       nds_solidpressure_, 0, Teuchos::null, Teuchos::null, porosity_, counter, Teuchos::null);
 
   // call loop over elements

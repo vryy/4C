@@ -14,9 +14,9 @@
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_structure.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -619,9 +619,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
     // build specific assemble strategy for mechanical-fluid system matrix
     // from the point of view of StructureField:
     // structdofset = 0, fluiddofset = 1
-    DRT::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
-        1,                                          // structuredofset for column
-        k_sps,                                      // scatra-structure coupling matrix
+    CORE::FE::AssembleStrategy scatrastrategy_struct(0,  // scatradofset for row
+        1,                                               // structuredofset for column
+        k_sps,                                           // scatra-structure coupling matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     ScatraAlgo()->ScaTraField()->Discretization()->Evaluate(sparams_struct, scatrastrategy_struct);
@@ -665,9 +665,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
-      2,                                         // fluiddofset for column
-      k_spf,                                     // scatra-structure coupling matrix
+  CORE::FE::AssembleStrategy scatrastrategy_fluid(0,  // scatradofset for row
+      2,                                              // fluiddofset for column
+      k_spf,                                          // scatra-structure coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   ScatraAlgo()->ScaTraField()->Discretization()->Evaluate(sparams_fluid, scatrastrategy_fluid);
@@ -1629,9 +1629,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       2, "one_d_artery_pressure", PoroField()->FluidField()->ArtNetTimInt()->Pressurenp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
-  DRT::AssembleStrategy artscatrastrategy_artery(0,  // scatradofset for row
-      2,                                             // arterydofset for column
-      k_asa,                                         // scatra-artery coupling matrix
+  CORE::FE::AssembleStrategy artscatrastrategy_artery(0,  // scatradofset for row
+      2,                                                  // arterydofset for column
+      k_asa,                                              // scatra-artery coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   scatramsht_->ArtScatraField()->Discretization()->Evaluate(

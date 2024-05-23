@@ -22,9 +22,9 @@
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_contact_node.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_elements_paramsminimal.hpp"
 #include "4C_lib_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
@@ -1916,10 +1916,10 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of StructureField:
   // structdofset = 0, thermdofset = 1
-  DRT::AssembleStrategy structuralstrategy(0,  // structdofset for row
-      1,                                       // thermdofset for column
-      k_st,                                    // build mechanical-thermal matrix
-      Teuchos::null,                           // no other matrix or vectors
+  CORE::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
+      1,                                            // thermdofset for column
+      k_st,                                         // build mechanical-thermal matrix
+      Teuchos::null,                                // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
 
@@ -2068,10 +2068,10 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
   // thermdofset = 0, structdofset = 1
-  DRT::AssembleStrategy thermostrategy(0,  // thermdofset for row
-      1,                                   // structdofset for column
-      k_ts,                                // thermal-mechanical matrix
-      Teuchos::null,                       // no other matrix or vectors
+  CORE::FE::AssembleStrategy thermostrategy(0,  // thermdofset for row
+      1,                                        // structdofset for column
+      k_ts,                                     // thermal-mechanical matrix
+      Teuchos::null,                            // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the thermal-mechanical system matrix on the thermal element
@@ -2164,10 +2164,10 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:
     // thermdofset = 0, structdofset = 1
-    DRT::AssembleStrategy thermostrategy(0,  // thermdofset for row
-        1,                                   // structdofset for column
-        k_ts,                                // thermal-mechanical matrix
-        Teuchos::null,                       // no other matrix or vectors
+    CORE::FE::AssembleStrategy thermostrategy(0,  // thermdofset for row
+        1,                                        // structdofset for column
+        k_ts,                                     // thermal-mechanical matrix
+        Teuchos::null,                            // no other matrix or vectors
         Teuchos::null, Teuchos::null, Teuchos::null);
 
     // evaluate the thermal-mechanical system matrix on the thermal element

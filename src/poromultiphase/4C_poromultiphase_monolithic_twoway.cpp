@@ -12,10 +12,10 @@
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 #include "4C_adapter_str_wrapper.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_elements_paramsminimal.hpp"
 #include "4C_lib_locsys.hpp"
 #include "4C_linalg_equilibrate.hpp"
@@ -562,9 +562,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyStrCouplMatrix(
     // build specific assemble strategy for mechanical-fluid system matrix
     // from the point of view of StructureField:
     // structdofset = 0, fluiddofset = 1
-    DRT::AssembleStrategy structuralstrategy(0,  // structdofset for row
-        1,                                       // fluiddofset for column
-        k_sf,                                    // mechanical-fluid coupling matrix
+    CORE::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
+        1,                                            // fluiddofset for column
+        k_sf,                                         // mechanical-fluid coupling matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     // evaluate the mechanical-fluid system matrix on the structural element

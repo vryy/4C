@@ -11,7 +11,7 @@
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -69,7 +69,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   thermo_->ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of thermo-structure matrix block
-  DRT::AssembleStrategy strategyscatrastructure(
+  CORE::FE::AssembleStrategy strategyscatrastructure(
       0,  // row assembly based on number of dofset associated with thermo dofs on thermo
           // discretization
       1,  // column assembly based on number of dofset associated with structural dofs on thermo
@@ -170,7 +170,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
   structure_->Discretization()->SetState("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-thermo matrix block
-  DRT::AssembleStrategy strategystructurescatra(
+  CORE::FE::AssembleStrategy strategystructurescatra(
       0,  // row assembly based on number of dofset associated with structure dofs on structural
           // discretization
       2,  // column assembly based on number of dofset associated with thermo dofs on structural
@@ -306,7 +306,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   }
 
   // create strategy for assembly of auxiliary system matrix
-  DRT::AssembleStrategy strategyscatrastructures2i(
+  CORE::FE::AssembleStrategy strategyscatrastructures2i(
       0,  // row assembly based on number of dofset associated with thermo dofs on
           // thermo discretization
       1,  // column assembly based on number of dofset associated with structural dofs on

@@ -13,11 +13,11 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -402,7 +402,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
           "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
 
       // dscatra_dscatra, dscatra_dmanifold (on scatra side)
-      DRT::AssembleStrategy strategyscatra(0, 0, systemmatrix_scatra_cond_,
+      CORE::FE::AssembleStrategy strategyscatra(0, 0, systemmatrix_scatra_cond_,
           matrix_scatra_manifold_cond_on_scatra_side, rhs_scatra_cond_, Teuchos::null,
           Teuchos::null);
 
@@ -431,7 +431,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateBulkSide(
       auto matrix_scatra_structure_cond_slave_side_disp_evaluate =
           Teuchos::rcp(new CORE::LINALG::SparseMatrix(*full_map_scatra_, 27, false, true));
 
-      DRT::AssembleStrategy strategyscatra(0, 1,
+      CORE::FE::AssembleStrategy strategyscatra(0, 1,
           matrix_scatra_structure_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 

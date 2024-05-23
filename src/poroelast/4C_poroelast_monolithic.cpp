@@ -17,12 +17,12 @@
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"
 #include "4C_contact_nitsche_strategy_poro.hpp"
 #include "4C_discretization_condition_utils.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_elements_paramsminimal.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -1014,9 +1014,9 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<CORE::LINALG::Spars
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy structuralstrategy(0,  // structdofset for row
-      1,                                       // fluiddofset for column
-      k_sf,                                    // mechanical-fluid coupling matrix
+  CORE::FE::AssembleStrategy structuralstrategy(0,  // structdofset for row
+      1,                                            // fluiddofset for column
+      k_sf,                                         // mechanical-fluid coupling matrix
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the mechanical-fluid system matrix on the structural element
@@ -1072,10 +1072,10 @@ void POROELAST::Monolithic::apply_fluid_coupl_matrix(
   // build specific assemble strategy for the fluid-mechanical system matrix
   // from the point of view of FluidField:
   // fluiddofset = 0, structdofset = 1
-  DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
-      1,                                  // structdofset for column
-      k_fs,                               // fluid-mechanical matrix
-      Teuchos::null,                      // no other matrix or vectors
+  CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+      1,                                       // structdofset for column
+      k_fs,                                    // fluid-mechanical matrix
+      Teuchos::null,                           // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the fluid-mechanical system matrix on the fluid element

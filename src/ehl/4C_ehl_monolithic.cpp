@@ -22,10 +22,10 @@
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
@@ -1462,10 +1462,10 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
   // build specific assemble strategy for the lubrication-mechanical system matrix
   // from the point of view of lubrication_->LubricationField:
   // thermdofset = 0, structdofset = 1
-  DRT::AssembleStrategy lubricationstrategy(0,  // pressure dofset for row
-      1,                                        // displacement dofset for column
-      matheight,                                // lubrication-mechanical matrix
-      matvel,                                   // no other matrix or vectors
+  CORE::FE::AssembleStrategy lubricationstrategy(0,  // pressure dofset for row
+      1,                                             // displacement dofset for column
+      matheight,                                     // lubrication-mechanical matrix
+      matvel,                                        // no other matrix or vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the lubrication-mechanical system matrix on the lubrication element

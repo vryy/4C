@@ -12,12 +12,12 @@
 
 #include "4C_loma_algorithm.hpp"
 
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_timint_loma.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -736,8 +736,8 @@ void LOMA::Algorithm::evaluate_loma_od_block_mat_fluid(
   // build specific assemble strategy for this off-diagonal matrix block,
   // which is assembled in fluid solver
   // fluid dof set = 0, scatra dof set = 1
-  DRT::AssembleStrategy fluidstrategy(0,  // rows: fluid dof set
-      1,                                  // columns: scatra dof set
+  CORE::FE::AssembleStrategy fluidstrategy(0,  // rows: fluid dof set
+      1,                                       // columns: scatra dof set
       mat_fs, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate off-diagonal matrix block entries for fluid element

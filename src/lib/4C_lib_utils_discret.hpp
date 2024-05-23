@@ -38,9 +38,14 @@ namespace CORE::LINALG
 {
   class MapExtractor;
 }  // namespace CORE::LINALG
-namespace DRT
+
+namespace CORE::FE
 {
   class AssembleStrategy;
+}
+
+namespace DRT
+{
   class Discretization;
   class DiscretizationFaces;
   namespace UTILS
@@ -102,7 +107,7 @@ namespace DRT
      *                              discretization column map ( optional )
      */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        DRT::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
+        CORE::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *

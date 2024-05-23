@@ -20,6 +20,7 @@
 #include "4C_scatra_timint_implicit.hpp"
 
 #include "4C_discretization_condition_selector.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 #include "4C_global_data.hpp"
@@ -27,7 +28,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_periodicbc.hpp"
 #include "4C_lib_utils_gid_vector.hpp"
 #include "4C_linalg_krylov_projector.hpp"
@@ -3662,8 +3662,8 @@ void SCATRA::ScaTraTimIntImpl::calc_mean_micro_concentration()
       "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // evaluate nodal mean concentration of micro discretizations
-  DRT::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null, phinp_micro_,
-      Teuchos::null, Teuchos::null);
+  CORE::FE::AssembleStrategy strategy(NdsMicro(), NdsMicro(), Teuchos::null, Teuchos::null,
+      phinp_micro_, Teuchos::null, Teuchos::null);
   discret_->Evaluate(eleparams, strategy);
 
   // copy states from first dof of MAT_Electrode

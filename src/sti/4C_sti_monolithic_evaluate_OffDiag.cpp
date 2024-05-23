@@ -11,7 +11,7 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -74,7 +74,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
   ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-thermo matrix block
-  DRT::AssembleStrategy strategyscatrathermo(
+  CORE::FE::AssembleStrategy strategyscatrathermo(
       0,  // row assembly based on number of dofset associated with scatra dofs on scatra
           // discretization
       2,  // column assembly based on number of dofset associated with thermo dofs on scatra
@@ -134,7 +134,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
   ThermoField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of thermo-scatra matrix block
-  DRT::AssembleStrategy strategythermoscatra(
+  CORE::FE::AssembleStrategy strategythermoscatra(
       0,  // row assembly based on number of dofset associated with thermo dofs on thermo
           // discretization
       2,  // column assembly based on number of dofset associated with scatra dofs on thermo
@@ -294,7 +294,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of auxiliary system matrix
-  DRT::AssembleStrategy strategyscatrathermos2i(
+  CORE::FE::AssembleStrategy strategyscatrathermos2i(
       0,            // row assembly based on number of dofset associated with scatra dofs on scatra
                     // discretization
       2,            // column assembly based on number of dofset associated with thermo dofs on
@@ -473,7 +473,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
       "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
 
   // create strategy for assembly of auxiliary system matrices
-  DRT::AssembleStrategy strategythermoscatras2i(
+  CORE::FE::AssembleStrategy strategythermoscatras2i(
       0,              // row assembly based on number of dofset associated with thermo dofs on
                       // thermo discretization
       2,              // column assembly based on number of dofset associated with scatra dofs on

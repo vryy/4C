@@ -11,7 +11,7 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_lib_assemblestrategy.hpp"
+#include "4C_discretization_fem_general_assemblestrategy.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_matrixtransform.hpp"
@@ -79,7 +79,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
   ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-structure matrix block
-  DRT::AssembleStrategy strategyscatrastructure(
+  CORE::FE::AssembleStrategy strategyscatrastructure(
       0,  // row assembly based on number of dofset associated with scalar transport dofs on
       // scalar transport discretization
       1,  // column assembly based on number of dofset associated with structural dofs on scalar
@@ -117,7 +117,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
   scatra_manifold_->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-structure matrix block
-  DRT::AssembleStrategy strategyscatrastructure(
+  CORE::FE::AssembleStrategy strategyscatrastructure(
       0,  // row assembly based on number of dofset associated with scalar transport dofs on
       // scalar transport discretization
       1,  // column assembly based on number of dofset associated with structural dofs on scalar
@@ -207,7 +207,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
   structure_->Discretization()->SetState("displacement", structure_->Dispnp());
 
   // create strategy for assembly of structure-scatra matrix block
-  DRT::AssembleStrategy strategystructurescatra(
+  CORE::FE::AssembleStrategy strategystructurescatra(
       0,  // row assembly based on number of dofset associated with structure dofs on structural
       // discretization
       1,  // column assembly based on number of dofset associated with scalar transport dofs on
@@ -374,7 +374,7 @@ void SSI::ScatraStructureOffDiagCoupling::
   }
 
   // create strategy for assembly of auxiliary system matrix
-  DRT::AssembleStrategy strategyscatras2istructure(
+  CORE::FE::AssembleStrategy strategyscatras2istructure(
       0,  // row assembly based on number of dofset associated with scalar transport dofs on
       // scalar transport discretization
       1,  // column assembly based on number of dofset associated with structural dofs on
@@ -608,7 +608,7 @@ void SSI::ScatraStructureOffDiagCoupling::
   }
 
   // create strategy for assembly of auxiliary system matrix
-  DRT::AssembleStrategy strategyscatrastructures2i(
+  CORE::FE::AssembleStrategy strategyscatrastructures2i(
       0,  // row assembly based on number of dofset associated with scalar transport dofs on
           // scalar transport discretization
       1,  // column assembly based on number of dofset associated with structural dofs on

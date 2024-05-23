@@ -254,7 +254,7 @@ void IMMERSED::ImmersedBase::remove_dirichlet_from_fluid(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Discretization> dis, DRT::AssembleStrategy* strategy,
+    Teuchos::RCP<DRT::Discretization> dis, CORE::FE::AssembleStrategy* strategy,
     std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
     std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action,
@@ -362,7 +362,7 @@ void IMMERSED::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const DRT::Discretization> idis,
-    DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
+    CORE::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
     std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
     bool evaluateonlyboundary)
@@ -423,7 +423,7 @@ void IMMERSED::ImmersedBase::evaluate_sca_tra_with_internal_communication(
 /// proc as the interpolating element providing this quantity.  rauch 05/14
 void IMMERSED::ImmersedBase::evaluate_interpolation_condition(
     Teuchos::RCP<DRT::Discretization> evaldis, Teuchos::ParameterList& params,
-    DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
+    CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (!(evaldis->Filled())) FOUR_C_THROW("FillComplete() was not called");
