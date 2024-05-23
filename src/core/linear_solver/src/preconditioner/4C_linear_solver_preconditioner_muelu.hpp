@@ -61,9 +61,6 @@ namespace CORE::LINEAR_SOLVER
     //! linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const final { return P_; }
 
-    //! return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const override { return "MueLu Parameters"; }
-
    private:
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<Epetra_CrsMatrix> pmatrix_;
@@ -102,9 +99,6 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    //! return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const override { return "MueLu (Fluid) Parameters"; }
-
    private:
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
@@ -132,9 +126,6 @@ namespace CORE::LINEAR_SOLVER
      */
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
-
-    // return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const override { return "MueLu (TSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only
@@ -180,9 +171,6 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
 
-    /// return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const override { return "MueLu (Contact) Parameters"; }
-
    private:
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
@@ -222,9 +210,6 @@ namespace CORE::LINEAR_SOLVER
     void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
-    /// return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const final { return "MueLu (BeamSolid) Parameters"; }
-
    private:
     //! system of equations used for preconditioning used by P_ only
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
@@ -252,9 +237,6 @@ namespace CORE::LINEAR_SOLVER
      */
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
-
-    // return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string get_parameter_list_name() const override { return "MueLu (FSI) Parameters"; }
 
    private:
     //! system of equations used for preconditioning used by P_ only

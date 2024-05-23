@@ -45,8 +45,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
 
-    std::string get_parameter_list_name() const override { return "AMGnxn Parameters"; }
-
    private:
     // Private variables
     Teuchos::RCP<Epetra_Operator> p_;                      // The underlying preconditioner object
