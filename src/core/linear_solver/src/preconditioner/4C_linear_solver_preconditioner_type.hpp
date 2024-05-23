@@ -79,9 +79,6 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
 
-    /// return name of sublist in paramterlist which contains parameters for preconditioner
-    virtual std::string get_parameter_list_name() const = 0;
-
    protected:
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
     Epetra_LinearProblem lp_;
