@@ -87,13 +87,13 @@ namespace FSI
 
 
     /// block Gauss-Seidel smoother within one level (explicit off-diagonals)
-    virtual void ExplicitBlockGaussSeidelSmoother(const int level, MLAPI::MultiVector& mlsy,
+    virtual void explicit_block_gauss_seidel_smoother(const int level, MLAPI::MultiVector& mlsy,
         MLAPI::MultiVector& mlfy, MLAPI::MultiVector& mlay, const MLAPI::MultiVector& mlsx,
         const MLAPI::MultiVector& mlfx, const MLAPI::MultiVector& mlax, const bool amgsolve) const;
 
 
     /// iterate on the field individual blocks within the block Gauss Seidel smoother
-    virtual void LocalBlockRichardson(const int iterations, const double omega, const int level,
+    virtual void local_block_richardson(const int iterations, const double omega, const int level,
         const bool amgsolve, const int nlevel, MLAPI::MultiVector& z, const MLAPI::MultiVector& b,
         const std::vector<MLAPI::Operator>& A,
         const std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S,
@@ -112,9 +112,9 @@ namespace FSI
     void RAPoffdiagonals();
 
     /// build Schur Complement operator from fluid block
-    void SchurComplementOperator(MLAPI::Operator& Schur, MLAPI::Operator& Ass, MLAPI::Operator& Aff,
-        MLAPI::Operator& Aaa, MLAPI::Operator& Asf, MLAPI::Operator& Afs, MLAPI::Operator& Afa,
-        MLAPI::Operator& Aaf, const double omega, const bool structuresplit);
+    void schur_complement_operator(MLAPI::Operator& Schur, MLAPI::Operator& Ass,
+        MLAPI::Operator& Aff, MLAPI::Operator& Aaa, MLAPI::Operator& Asf, MLAPI::Operator& Afs,
+        MLAPI::Operator& Afa, MLAPI::Operator& Aaf, const double omega, const bool structuresplit);
 
     //! Operator to analyze multigrid settings of a single field
     class AnalyzeBest

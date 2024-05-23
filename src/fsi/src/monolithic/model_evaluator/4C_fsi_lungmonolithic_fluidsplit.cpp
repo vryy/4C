@@ -137,7 +137,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
   GeneralSetup();
 
   // create combined map
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   FluidField()->UseBlockMatrix(true);
 
@@ -153,7 +153,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithicFluidSplit::CreateCombinedDofRowMap()
+void FSI::LungMonolithicFluidSplit::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
@@ -213,7 +213,7 @@ void FSI::LungMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   CORE::LINALG::SparseMatrix& fgg = blockf->Matrix(1, 1);
   CORE::LINALG::SparseMatrix& fGg = blockf->Matrix(3, 1);
 
-  Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+  Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_interface_veln();
   double timescale = FluidField()->TimeScaling();
 
   Teuchos::RCP<ADAPTER::FluidLung> fluidfield =
@@ -272,8 +272,8 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
+  const CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   /*----------------------------------------------------------------------*/
@@ -544,7 +544,7 @@ void FSI::LungMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   fox = fluidfield->FSIInterface()->ExtractOtherVector(fox);
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
-  FluidField()->DisplacementToVelocity(fcx);
+  FluidField()->displacement_to_velocity(fcx);
 
   Teuchos::RCP<Epetra_Vector> f = fluidfield->FSIInterface()->InsertOtherVector(fox);
   FluidField()->Interface()->InsertFSICondVector(fcx, f);

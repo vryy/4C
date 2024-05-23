@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
         CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
         CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -143,7 +143,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
         CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
         CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
@@ -161,7 +161,7 @@ namespace BEAMINTERACTION
      * @param psi_solid (out) Rotation vector on solid surface.
      */
     template <typename scalar_type_rot_vec>
-    void GetSurfaceRotationVector(const CORE::LINALG::Matrix<3, 1, double>& xi,
+    void get_surface_rotation_vector(const CORE::LINALG::Matrix<3, 1, double>& xi,
         const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
         const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
         const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
@@ -174,8 +174,8 @@ namespace BEAMINTERACTION
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */
-    void GetPairRotationalGIDs(const DRT::Discretization& discret, std::vector<int>& gid_surface,
-        CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
+    void get_pair_rotational_gi_ds(const DRT::Discretization& discret,
+        std::vector<int>& gid_surface, CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 
   /**

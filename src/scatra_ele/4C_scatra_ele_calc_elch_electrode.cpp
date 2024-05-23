@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
   my::ComputeRhsInt(rhsint, 1., 1., VarManager()->Hist(k));
-  my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+  my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 3c) element rhs: standard Galerkin diffusion term
   my::CalcRHSDiff(erhs, k, rhsfac);
@@ -116,29 +116,30 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
   // 3d) element rhs: conservative part of convective term, needed for deforming electrodes,
   //                  i.e., for scalar-structure interaction
   if (my::scatrapara_->IsConservative())
-    CalcRhsConservativePartOfConvectiveTerm(erhs, k, rhsfac, vdiv);
+    calc_rhs_conservative_part_of_convective_term(erhs, k, rhsfac, vdiv);
 
   //----------------------------------------------------------------------------
   // 4) element matrix: stationary terms arising from potential equation
   // 5) element right hand side vector (negative residual of nonlinear problem):
   //    terms arising from potential equation
   //----------------------------------------------------------------------------
-  // see function CalcMatAndRhsOutsideScalarLoop()
+  // see function calc_mat_and_rhs_outside_scalar_loop()
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
-    const double timefacfac, const double rhsfac)
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::calc_mat_and_rhs_outside_scalar_loop(CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const double fac, const double timefacfac,
+    const double rhsfac)
 {
   //--------------------------------------------------------------------
   // 4) element matrix: stationary terms arising from potential equation
   //--------------------------------------------------------------------
 
   // element matrix: standard Galerkin terms from potential equation
-  CalcMatPotEquDiviOhm(emat, timefacfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
+  calc_mat_pot_equ_divi_ohm(emat, timefacfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
 
   //----------------------------------------------------------------------------
   // 5) element right hand side vector (negative residual of nonlinear problem):
@@ -146,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
   //----------------------------------------------------------------------------
 
   // element rhs: standard Galerkin terms from potential equation
-  CalcRhsPotEquDiviOhm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
+  calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
 
   // safety check
   if (my::bodyforce_[my::numscal_].Dot(my::funct_) != 0.0)
@@ -192,11 +193,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawfrhs_gradphi(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi, vi);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradphi, gradphi, vi);
 
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          scalar * timefacfac * DiffManager()->GetConcDerivIsoDiffCoef(k, k) * laplawfrhs_gradphi *
-          my::funct_(ui);
+          scalar * timefacfac * DiffManager()->get_conc_deriv_iso_diff_coef(k, k) *
+          laplawfrhs_gradphi * my::funct_(ui);
     }
   }
 }
@@ -204,7 +205,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquDiviOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_pot_equ_divi_ohm(
     CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // linearization of the ohmic term
       //
@@ -225,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
       for (int iscal = 0; iscal < my::numscal_; ++iscal)
       {
         double laplawfrhs_gradpot(0.);
-        my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);
+        my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
         // linearization of the ohmic term with respect to conductivity
         //
@@ -243,7 +244,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::CalcRhsConservativePartOfConvectiveTerm(CORE::LINALG::SerialDenseVector& erhs,
+    probdim>::calc_rhs_conservative_part_of_convective_term(CORE::LINALG::SerialDenseVector& erhs,
     const int k, const double rhsfac, const double vdiv)
 {
   double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
@@ -253,14 +254,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquDiviOhm(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_rhs_pot_equ_divi_ohm(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     double laplawfrhs_gradpot(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
         scalar * rhsfac * invf * DiffManager()->GetCond() * laplawfrhs_gradpot;

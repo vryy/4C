@@ -109,7 +109,7 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
 
       // Is this facet a LevelSetSide or is it Triangulated
       // add this to triangulated and the new nodes to nodemap
-      if (f->BelongsToLevelSetSide() or f->IsTriangulated())
+      if (f->belongs_to_level_set_side() or f->IsTriangulated())
       {
         triangulated.push_back(f);
         PointSet points;
@@ -297,7 +297,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* elemen
 
   MapVolumeCells(parent_mesh, element, parent_cells, cellmap);
 
-  mesh_.CreateIntegrationCells(count, tetcellsonly);
+  mesh_.create_integration_cells(count, tetcellsonly);
 
   Fill(parent_mesh, element, parent_cells, cellmap);
 }

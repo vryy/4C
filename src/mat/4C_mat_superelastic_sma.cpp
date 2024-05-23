@@ -628,15 +628,15 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         bool accept = false;
 
         // Compute local Newton step
-        LoadingData loading = ComputeLocalNewtonLoading(
+        LoadingData loading = compute_local_newton_loading(
             xi_s_tmp, logarithmic_strain_volumetric, logarithmic_strain_deviatoric_norm, matdata);
         loading.drucker_prager_AS_last = drucker_prager_loading_AS_last;
         loading.drucker_prager_SA_last = drucker_prager_loading_SA_last;
         loading.drucker_prager_last = druckerpragerloadinglast;
         loading.H_AS = H_AS;
         loading.H_SA = H_SA;
-        R_k = ComputeLocalNewtonResidual(lambda_S, xi_s_tmp, loading, matdata);
-        d_R_d_lambda = ComputeLocalNewtonJacobian(lambda_S, xi_s_tmp, loading, matdata);
+        R_k = compute_local_newton_residual(lambda_S, xi_s_tmp, loading, matdata);
+        d_R_d_lambda = compute_local_newton_jacobian(lambda_S, xi_s_tmp, loading, matdata);
         d_R_d_lambda_inv.Invert(d_R_d_lambda);
         res_vec.MultiplyNN(d_R_d_lambda_inv, R_k);  // Eqn. 57
 
@@ -649,14 +649,14 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         {
           lambda_S_p.Update(1.0, lambda_S, -gamma * damping, res_vec);  // Eqn. 57
           double xi_s_p = xi_S + lambda_S_p(0) + lambda_S_p(1);
-          LoadingData loading_p = ComputeLocalNewtonLoading(
+          LoadingData loading_p = compute_local_newton_loading(
               xi_s_p, logarithmic_strain_volumetric, logarithmic_strain_deviatoric_norm, matdata);
           loading_p.drucker_prager_AS_last = drucker_prager_loading_AS_last;
           loading_p.drucker_prager_SA_last = drucker_prager_loading_SA_last;
           loading_p.drucker_prager_last = druckerpragerloadinglast;
           loading_p.H_AS = H_AS;
           loading_p.H_SA = H_SA;
-          R_p = ComputeLocalNewtonResidual(lambda_S_p, xi_s_p, loading_p, matdata);
+          R_p = compute_local_newton_residual(lambda_S_p, xi_s_p, loading_p, matdata);
 
           fp = std::pow(R_p(0), 2.0) + std::pow(R_p(1), 2.0);
 
@@ -903,7 +903,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     cmat_eul.Update(1.0, cmat_eul_4, 1.0);
 
 
-    Pullback4thTensorVoigt(cauchy_green_jacobian, deformation_gradient_invert, cmat_eul, cmat);
+    pullback4th_tensor_voigt(cauchy_green_jacobian, deformation_gradient_invert, cmat_eul, cmat);
   }
   else
   {
@@ -1026,7 +1026,7 @@ void MAT::SuperElasticSMA::VisNames(std::map<std::string, int>& names)
   names["druckerprager"] = 1;        // scalar
 }  // VisNames()
 
-CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::ComputeLocalNewtonResidual(
+CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::compute_local_newton_residual(
     CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
   CORE::LINALG::Matrix<2, 1> R;
@@ -1053,7 +1053,7 @@ CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::ComputeLocalNewtonResidual(
   return R;
 }
 
-CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::ComputeLocalNewtonJacobian(
+CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::compute_local_newton_jacobian(
     CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
   CORE::LINALG::Matrix<2, 2> d_R_d_lambda;
@@ -1105,7 +1105,7 @@ CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::ComputeLocalNewtonJacobian(
   return d_R_d_lambda;
 }
 
-MAT::SuperElasticSMA::LoadingData MAT::SuperElasticSMA::ComputeLocalNewtonLoading(
+MAT::SuperElasticSMA::LoadingData MAT::SuperElasticSMA::compute_local_newton_loading(
     double xi_S, double log_strain_vol, double log_strain_dev_norm, Material mat_data)
 {
   LoadingData loading;
@@ -1187,7 +1187,7 @@ double MAT::SuperElasticSMA::Idev(int i, int j, int k, int l)
 /*---------------------------------------------------------------------*
  | Pullback of material tangent                          hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
+void MAT::SuperElasticSMA::pullback4th_tensor_voigt(const double jacobian,
     const CORE::LINALG::Matrix<3, 3>& defgrdinv, const CORE::LINALG::Matrix<6, 6>& cmatEul,
     CORE::LINALG::Matrix<6, 6>* cmatLag)
 {

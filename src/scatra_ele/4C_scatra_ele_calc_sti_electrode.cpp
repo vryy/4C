@@ -68,14 +68,14 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate overall integration factors
     double timefacfac = my::scatraparatimint_->TimeFac() * fac;
     double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
 
     // evaluate internal variables at current integration point
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // evaluate material parameters at current integration point
     GetMaterialParams(ele, dummyvec, densnp, densam, dummy, iquad);
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     // need to adapt history value to time integration scheme first
     double rhsint(0.0);
     my::ComputeRhsInt(rhsint, densam[0], densnp[0], my::scatravarmanager_->Hist(0));
-    my::CalcRHSHistAndSource(erhs, 0, fac, rhsint);
+    my::calc_rhs_hist_and_source(erhs, 0, fac, rhsint);
 
     // matrix and vector contributions arising from diffusion term
     my::CalcMatDiff(emat, 0, timefacfac);
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
       // gradient of shape function times derivative of square of ionic flux density w.r.t.
       // temperature gradient
       double dn2_dgradT_ui(0.);
-      my::GetLaplacianWeakFormRHS(dn2_dgradT_ui, dn2_dgradT, ui);
+      my::get_laplacian_weak_form_rhs(dn2_dgradT_ui, dn2_dgradT, ui);
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. thermo dofs
       emat(vi, ui) += timefacfac * my::funct_(vi) * F * diffmanagerstielectrode_->GetOCPDeriv() /
@@ -229,25 +229,25 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
   {
     // gradient of test function times ionic flux density
     double laplawfrhs_n_vi(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_n_vi, n, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_n_vi, n, vi);
 
     // gradient of test function times derivative of ionic flux density w.r.t. temperature
     double laplawfrhs_dndT(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_dndT, dn_dT, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_dndT, dn_dT, vi);
 
     for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       // gradient of shape function times gradient of test function
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, vi, ui);
+      my::get_laplacian_weak_form(laplawf, vi, ui);
 
       // gradient of shape function times gradient of temperature
       double laplawfrhs_gradtemp(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, gradtemp, ui);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradtemp, gradtemp, ui);
 
       // gradient of shape function times gradient of ionic flux density
       double laplawfrhs_n_ui(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_n_ui, n, ui);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_n_ui, n, ui);
 
       // linearizations of Soret effect term in thermo residuals w.r.t. thermo dofs
       emat(vi, ui) += timefacfac * my::funct_(vi) * F * concentration * soret *
@@ -292,7 +292,7 @@ int DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::EvaluateActionOD(
   {
     case SCATRA::Action::calc_scatra_mono_odblock_thermoscatra:
     {
-      SysmatODThermoScatra(ele, elemat1_epetra);
+      sysmat_od_thermo_scatra(ele, elemat1_epetra);
 
       break;
     }
@@ -316,7 +316,7 @@ int DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::EvaluateActionOD(
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
     DRT::Element* ele,                     //!< current element
     CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
@@ -329,10 +329,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate internal variables at current integration point
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // evaluate material parameters at current integration point
     double dummy(0.);
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
     {
       // gradient of shape function times gradient of electric potential
       double laplawfrhs_gradpot(0.0);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, ui);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, ui);
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. concentration dofs
       emat(vi, ui * 2) -= timefacfac * my::funct_(vi) *
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
+  const double& diffcoeffderiv = diffmanagerstielectrode_->get_conc_deriv_iso_diff_coef(0, 0);
   const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
   const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
@@ -429,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
       // gradient of shape function times derivative of square of ionic flux density w.r.t.
       // concentration gradient
       double dn2_dgradc_ui(0.);
-      my::GetLaplacianWeakFormRHS(dn2_dgradc_ui, dn2_dgradc, ui);
+      my::get_laplacian_weak_form_rhs(dn2_dgradc_ui, dn2_dgradc, ui);
 
       // intermediate terms
       const double term1 = diffmanagerstielectrode_->GetOCPDeriv2() * n2 * my::funct_(ui);
@@ -463,7 +463,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
+  const double& diffcoeffderiv = diffmanagerstielectrode_->get_conc_deriv_iso_diff_coef(0, 0);
   const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
   const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
@@ -484,21 +484,21 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
   {
     // gradient of test function times ionic flux density
     double laplawfrhs_n(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_n, n, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_n, n, vi);
 
     // gradient of test function times derivative of ionic flux density w.r.t. concentration
     double laplawfrhs_dndc(0.);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_dndc, dn_dc, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_dndc, dn_dc, vi);
 
     for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       // gradient of shape function times gradient of test function
       double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf, vi, ui);
+      my::get_laplacian_weak_form(laplawf, vi, ui);
 
       // gradient of shape function times temperature gradient
       double laplawfrhs_gradtemp(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, gradtemp, ui);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradtemp, gradtemp, ui);
 
       // linearizations of Soret effect term in thermo residuals w.r.t. concentration dofs
       emat(vi, ui * 2) +=
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node_values(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
     DRT::Discretization& discretization,  //!< discretization
@@ -537,10 +537,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ExtractElementAndNodeVal
 )
 {
   // call base class routine to extract thermo-related quantities
-  my::ExtractElementAndNodeValues(ele, params, discretization, la);
+  my::extract_element_and_node_values(ele, params, discretization, la);
 
   // call base class routine to extract scatra-related quantities
-  mystielch::ExtractElementAndNodeValues(ele, params, discretization, la);
+  mystielch::extract_element_and_node_values(ele, params, discretization, la);
 }
 
 
@@ -615,10 +615,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatFourier(
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
-  VarManager()->SetInternalVariablesSTIElch(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
+  VarManager()->set_internal_variables_sti_elch(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mystielch::econcnp_, mystielch::epotnp_, my::econvelnp_, my::ehist_);
 }
 

@@ -88,7 +88,7 @@ namespace POROMULTIPHASESCATRA
     virtual void BuildCombinedDBCMap();
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces();
+    virtual void build_block_null_spaces();
 
     //! create the linear solver
     void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
@@ -122,7 +122,7 @@ namespace POROMULTIPHASESCATRA
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
      of 3D field
      */
-    void Extract3DFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract3_d_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 
@@ -146,7 +146,7 @@ namespace POROMULTIPHASESCATRA
     bool Converged();
 
     //! build norms
-    virtual void BuildConvergenceNorms();
+    virtual void build_convergence_norms();
 
     //! output
     void NewtonOutput();
@@ -155,37 +155,37 @@ namespace POROMULTIPHASESCATRA
     void NewtonErrorCheck();
 
     //! update the single fields after convergence
-    void UpdateFieldsAfterConvergence();
+    void update_fields_after_convergence();
 
     //! update the scatra field
     virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> PoroFluidScatraCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> poro_fluid_scatra_coupling_matrix();
 
     //! return scatra structure coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ScatraStructCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra_struct_coupling_matrix();
 
     //! return scatra fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ScatraPoroFluidCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra_poro_fluid_coupling_matrix();
 
     //! evaluate scatra field
     virtual void EvaluateScatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
-    void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs);
+    void apply_poro_fluid_scatra_coupl_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs);
 
     //! evaluate scatra-structure coupling sparse matrix
-    void ApplyScatraStructCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_sps);
+    void apply_scatra_struct_coupl_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_sps);
 
     //! evaluate scatra-porofluid coupling sparse matrix
-    void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_spf);
+    void apply_scatra_poro_fluid_coupl_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_spf);
 
     // update the single fields after convergence
-    void PrintStructureDisabledInfo();
+    void print_structure_disabled_info();
 
     //! FD-Check
-    void PoroMultiPhaseScaTraFDCheck();
+    void poro_multi_phase_sca_tra_fd_check();
 
     //! convergence tolerance (increment)
     double ittolinc_;
@@ -337,16 +337,16 @@ namespace POROMULTIPHASESCATRA
     void SetupSystem() override;
 
     //! return arteryscatra-artery coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> artery_scatra_artery_coupling_matrix();
 
     //! evaluate arteryscatra-artery coupling sparse matrix
-    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_asa);
+    void apply_artery_scatra_artery_coupl_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_asa);
 
     //! build the block null spaces
-    void BuildBlockNullSpaces() override;
+    void build_block_null_spaces() override;
 
     //! build norms for convergence check
-    void BuildConvergenceNorms() override;
+    void build_convergence_norms() override;
 
     //! dof row map (not splitted), only artery and porofluid
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;

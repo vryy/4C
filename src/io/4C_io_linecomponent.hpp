@@ -119,7 +119,7 @@ namespace INPUT
 
     void Describe(std::ostream& stream) override;
 
-    std::vector<std::string> WriteReadTheDocsTableRow() const;
+    std::vector<std::string> write_read_the_docs_table_row() const;
 
     std::string WriteReadTheDocs() override;
 
@@ -382,7 +382,7 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    std::vector<std::string> WriteReadTheDocsLines();
+    std::vector<std::string> write_read_the_docs_lines();
 
     Teuchos::Array<std::string> GetOptions() override;
 

@@ -37,7 +37,7 @@ namespace FSI
     };
 
     //! override version of fsi partitioned
-    void ExtractPreviousInterfaceSolution() override;
+    void extract_previous_interface_solution() override;
 
     //! Implement pure virtual functions (again overloaded by corresponding partitioned subclass in
     //! immersed_problem)

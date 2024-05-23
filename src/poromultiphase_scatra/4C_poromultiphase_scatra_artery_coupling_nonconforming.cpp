@@ -45,11 +45,11 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       porofluidprob_(false),
       has_varying_diam_(false),
       delete_free_hanging_eles_(CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
       delete_free_hanging_eles_threshold_(GLOBAL::Problem::Instance()
-                                              ->PoroFluidMultiPhaseDynamicParams()
+                                              ->poro_fluid_multi_phase_dynamic_params()
                                               .sublist("ARTERY COUPLING")
                                               .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
       coupling_method_(
@@ -73,7 +73,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   }
 
   // fill the vectors
-  FillFunctionAndScaleVectors();
+  fill_function_and_scale_vectors();
 
   // initialize phinp for continuous dis
   phinp_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
@@ -112,7 +112,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   fe_rhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
 
   // check global map extractor
-  globalex_->CheckForValidMapExtractor();
+  globalex_->check_for_valid_map_extractor();
 }
 
 /*----------------------------------------------------------------------*
@@ -122,21 +122,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
   // get the coupling method
   auto arterycoupl =
       CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-          GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "ARTERY_COUPLING_METHOD");
 
   // create the pairs
   if (arterycoupl == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
   {
-    GetCouplingIdsfromInput();
+    get_coupling_idsfrom_input();
     if (couplingnodes_ntp_.size() == 0)
       FOUR_C_THROW("No 1D Coupling Node Ids found for NTP Coupling");
-    CreateCouplingPairsNTP();
+    create_coupling_pairs_ntp();
   }
   else
   {
-    CreateCouplingPairsLineSurfBased();
+    create_coupling_pairs_line_surf_based();
   }
 
 
@@ -146,7 +146,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplingIdsfromInput()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupling_idsfrom_input()
 {
   // get 1D coupling IDs from Input
   std::vector<CORE::Conditions::Condition*> artCoupcond;
@@ -182,13 +182,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
     // set the right-hand side time factors (we assume constant time step size here)
     SetTimeFacRhs();
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-      coupl_elepairs_[i]->SetupFluidManagersAndMaterials(
+      coupl_elepairs_[i]->setup_fluid_managers_and_materials(
           contdis_->Name(), timefacrhs_art_, timefacrhs_cont_);
     porofluidmanagersset_ = true;
   }
 
   // evaluate and assemble the pairs
-  EvaluateCouplingPairs(sysmat, rhs);
+  evaluate_coupling_pairs(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*
@@ -208,8 +208,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 
   // apply DBCs
   // 1) on vector
-  CORE::LINALG::ApplyDirichletToSystem(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
-  CORE::LINALG::ApplyDirichletToSystem(*rhs, *zeros_art_, *(dbcmap_art));
+  CORE::LINALG::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*rhs, *zeros_art_, *(dbcmap_art));
   // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
@@ -232,10 +232,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
-    CreateCouplingPairsLineSurfBased()
+    create_coupling_pairs_line_surf_based()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
+      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+          "ARTERY COUPLING");
   // loop over pairs found by search
   std::map<int, std::set<int>>::const_iterator nearbyeleiter;
   int numactive_pairs = 0;
@@ -264,7 +265,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
         // construct, init and setup coupling pairs
         Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
             POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
-                CreateNewArteryCouplingPair(ele_ptrs);
+                create_new_artery_coupling_pair(ele_ptrs);
         newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
             coupleddofs_art_, scale_vec_, funct_vec_, condname_,
             couplingparams_.get<double>("PENALTY"));
@@ -295,10 +296,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCouplingPairsNTP()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_coupling_pairs_ntp()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
+      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+          "ARTERY COUPLING");
 
   int numactive_pairs = std::accumulate(nearbyelepairs_.begin(), nearbyelepairs_.end(), 0,
       [](int a, auto b) { return a + (static_cast<int>(b.second.size())); });
@@ -333,7 +335,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
               (coupcond[j])->parameters().Get<std::string>("coupling_type");
 
           // recompute coupling dofs
-          RecomputeCoupledDOFsForNTP(coupcond, j);
+          recompute_coupled_do_fs_for_ntp(coupcond, j);
 
           // get penalty parameter
           const auto penalty = coupcond[j]->parameters().Get<double>("PENALTY");
@@ -354,7 +356,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
               // construct, init and setup coupling pairs
               Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
                   newpair = POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
-                      CreateNewArteryCouplingPair(ele_ptrs);
+                      create_new_artery_coupling_pair(ele_ptrs);
               newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
                   coupleddofs_art_, scale_vec_, funct_vec_, condname_, penalty,
                   coupling_element_type_, eta_ntp);
@@ -418,7 +420,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCouplingPairs(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_coupling_pairs(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // reset
@@ -453,7 +455,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
       FOUR_C_THROW(
           "evaluation in current configuration wanted but solid phase velocity not available!");
-    if (has_varying_diam_) ResetIntegratedDiamToZero();
+    if (has_varying_diam_) reset_integrated_diam_to_zero();
   }
   else if (contdis_->Name() == "scatra")
   {
@@ -471,7 +473,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     coupl_elepairs_[i]->ResetState(contdis_, arterydis_);
 
     // get the segment lengths
-    const std::vector<double> seglengths = GetEleSegmentLengths(coupl_elepairs_[i]->Ele1GID());
+    const std::vector<double> seglengths = get_ele_segment_lengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
     const double integrated_diam = coupl_elepairs_[i]->Evaluate(&(eleforce[0]), &(eleforce[1]),
@@ -479,7 +481,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
         &Kappa_ele, seglengths);
 
     // assemble
-    FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
+    fe_assemble_ele_force_stiff_into_system_vector_matrix(coupl_elepairs_[i]->Ele1GID(),
         coupl_elepairs_[i]->Ele2GID(), integrated_diam, eleforce, elestiff, sysmat, rhs);
 
     // in case of MP, assemble D, M and Kappa
@@ -493,8 +495,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   // and evaluate additional linearization of (integrated) element diameters
   if (contdis_->Name() == "porofluid" && has_varying_diam_)
   {
-    SetArteryDiamInMaterial();
-    EvaluateAdditionalLinearizationofIntegratedDiam();
+    set_artery_diam_in_material();
+    evaluate_additional_linearizationof_integrated_diam();
   }
 
   if (fe_rhs_->GlobalAssemble(Add, false) != 0)
@@ -514,13 +516,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   // assemble D and M contributions into global force and stiffness
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
-    SumDMIntoGlobalForceStiff(sysmat, rhs);
+    sum_dm_into_global_force_stiff(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
-    FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
+    fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid, const int& ele2gid,
         const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
@@ -573,8 +575,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoGlobalForceStiff(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+    sum_dm_into_global_force_stiff(
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // invert
   InvertKappa();
@@ -658,7 +661,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKapp
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArteryCouplingPair(
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_artery_coupling_pair(
     std::vector<DRT::Element const*> const& ele_ptrs)
 {
   const CORE::FE::CellType distypeart = ele_ptrs[0]->Shape();
@@ -764,7 +767,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupVecto
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ExtractSingleFieldVectors(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::extract_single_field_vectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
     Teuchos::RCP<const Epetra_Vector>& vec_art)
 {
@@ -804,7 +807,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutio
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::BloodVesselVolumeFraction()
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Not implemented in base class");
   return Teuchos::null;
@@ -812,7 +815,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::BloodVesselVolu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCouplingMethod() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::print_out_coupling_method()
+    const
 {
   std::string name;
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
@@ -834,7 +838,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FillFunctionAndScaleVectors()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+    fill_function_and_scale_vectors()
 {
   scale_vec_.resize(2);
   funct_vec_.resize(2);

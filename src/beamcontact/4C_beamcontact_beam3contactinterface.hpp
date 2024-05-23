@@ -153,12 +153,12 @@ namespace CONTACT
     /*!
       \Get energy of perp penalty contact without transition factor contribution.
     */
-    virtual double GetUnscaledPerpEnergy() = 0;
+    virtual double get_unscaled_perp_energy() = 0;
 
     /*!
       \Get energy of parallel penalty contact without transition factor contribution.
     */
-    virtual double GetUnscaledParallelEnergy() = 0;
+    virtual double get_unscaled_parallel_energy() = 0;
 
     virtual bool FirstTimeStep() = 0;
 
@@ -201,7 +201,7 @@ namespace CONTACT
     /*!
       \brief Update of class variables at the end of a time step
     */
-    virtual void UpdateClassVariablesStep() = 0;
+    virtual void update_class_variables_step() = 0;
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
@@ -212,7 +212,7 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    virtual void UpdateEleSmoothTangents(
+    virtual void update_ele_smooth_tangents(
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) = 0;
 
   };  // class Beam3contactinterface

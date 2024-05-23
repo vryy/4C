@@ -60,7 +60,7 @@ namespace STR
       /*!
        * \brief Returns whether the material iterative prestress algorithm reached a converged state
        */
-      bool IsMaterialIterativePrestressConverged() const;
+      bool is_material_iterative_prestress_converged() const;
 
       /// Absolute displacement norm used for the convergence check of the prestress state
       double absolute_displacement_norm_;

@@ -62,7 +62,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
   if (comm.MyPID() == 0) printheartlogo();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access the fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -106,7 +106,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
               GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -148,8 +148,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
           // binning strategy is created and parallel redistribution is performed
           binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
           binningstrategy->Init(dis);
-          binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-              dis, stdelecolmap, stdnodecolmap);
+          binningstrategy
+              ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+                  dis, stdelecolmap, stdnodecolmap);
         }
       }
 
@@ -176,7 +177,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform the result test if required
-      GLOBAL::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(scatraonly->create_sca_tra_field_test());
       GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
@@ -191,7 +192,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       const INPAR::SCATRA::FieldCoupling fieldcoupling =
           CORE::UTILS::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-              GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
+              GLOBAL::Problem::Instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes() == 0)
@@ -254,7 +255,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
         if (scatradis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
 
-        // call AssignDegreesOfFreedom also for auxiliary dofsets
+        // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
         // 1. fluid dofs
         // 2. scatra dofs
@@ -287,8 +288,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
             /// binning strategy is created and parallel redistribution is performed
             binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
             binningstrategy->Init(dis);
-            binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-                dis, stdelecolmap, stdnodecolmap);
+            binningstrategy
+                ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+                    dis, stdelecolmap, stdnodecolmap);
           }
         }
       }
@@ -339,7 +341,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // perform the result test
       GLOBAL::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(algo->create_sca_tra_field_test());
       GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;

@@ -28,7 +28,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),
       evaluate_in_ref_config_(CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "EVALUATE_IN_REF_CONFIG")),
       comm_(arterydis->Comm())
@@ -83,7 +83,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::RecomputeCoupledDOFsForNTP(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_do_fs_for_ntp(
     std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode)
 {
   coupleddofs_art_ =

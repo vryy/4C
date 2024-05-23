@@ -65,7 +65,7 @@ namespace PARTICLEALGORITHM
      * \brief generate particles
      *
      * Generate initial particles in addition to particles read in from input file. Add all
-     * generated particles to the vector using the function AddGeneratedParticle().
+     * generated particles to the vector using the function add_generated_particle().
      *
      * \note Either generate particles only on one processor or be sure that particles are not
      *       generated twice (or even more) on different processors.
@@ -96,7 +96,7 @@ namespace PARTICLEALGORITHM
      * \param[in]  particletype       particle type enum
      * \param[out] particlesgenerated particle objects generated
      */
-    void AddGeneratedParticle(const std::vector<double>& position,
+    void add_generated_particle(const std::vector<double>& position,
         const PARTICLEENGINE::TypeEnum particletype,
         std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const;
 

@@ -362,7 +362,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+    if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
+        CORE::FE::ShapeFunctionType::hdg)
     {
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
@@ -439,7 +440,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+    if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
+        CORE::FE::ShapeFunctionType::hdg)
     {
       switch (timintscheme)
       {
@@ -567,7 +569,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
           "ELCH", true);  // internal CheapSIMPLE modus for ML null space computation
 
       // add Inverse1 block for velocity dofs
-      // tell Inverse1 block about NodalBlockInformation
+      // tell Inverse1 block about nodal_block_information
       // In contrary to contact/meshtying problems this is necessary here, since we originally have
       // built the null space for the whole problem (velocity and pressure dofs). However, if we
       // split the matrix into velocity and pressure block, we have to adapt the null space
@@ -575,7 +577,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       // subblock for the velocities. The pressure null space is trivial to be built using a
       // constant vector
       auto& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-      inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+      inv1.sublist("nodal_block_information") = solver->Params().sublist("nodal_block_information");
     }
   }
 
@@ -584,9 +586,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::ScaTraBaseAlgorithm::create_sca_tra_field_test()
 {
-  return scatra_->CreateScaTraFieldTest();
+  return scatra_->create_sca_tra_field_test();
 }
 
 /*----------------------------------------------------------------------*/

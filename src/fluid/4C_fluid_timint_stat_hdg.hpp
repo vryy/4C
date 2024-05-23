@@ -56,13 +56,13 @@ namespace FLD
        */
     void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /*!
       \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
@@ -74,7 +74,7 @@ namespace FLD
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
 
     */
-    void ClearStateAssembleMatAndRHS() override;
+    void clear_state_assemble_mat_and_rhs() override;
 
     /*!
     \brief set initial flow field for analytical test problems
@@ -90,7 +90,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTimeParameter() override;
+    void set_element_time_parameter() override;
 
     //@}
 

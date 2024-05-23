@@ -137,7 +137,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
     INPAR::CUT::CutFloattype floattype>
 void CORE::GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
-    floattype>::ConstructBoundingBox()
+    floattype>::construct_bounding_box()
 {
   bbside_ = Teuchos::rcp(BoundingBox::Create());
 
@@ -180,7 +180,7 @@ bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, flo
 template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
     INPAR::CUT::CutFloattype floattype>
 bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
-    floattype>::IsGivenPointWithinElement()
+    floattype>::is_given_point_within_element()
 {
   // If the given point is outside the side's bounding box, no need to perform
   // the complex calculations
@@ -287,27 +287,27 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      return CreateConcretePosition<CORE::FE::CellType::line2>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::line2>(element, point, floattype);
     case CORE::FE::CellType::tri3:
-      return CreateConcretePosition<CORE::FE::CellType::tri3>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri3>(element, point, floattype);
     case CORE::FE::CellType::tri6:
-      return CreateConcretePosition<CORE::FE::CellType::tri6>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri6>(element, point, floattype);
     case CORE::FE::CellType::quad4:
-      return CreateConcretePosition<CORE::FE::CellType::quad4>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad4>(element, point, floattype);
     case CORE::FE::CellType::quad8:
-      return CreateConcretePosition<CORE::FE::CellType::quad8>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad8>(element, point, floattype);
     case CORE::FE::CellType::quad9:
-      return CreateConcretePosition<CORE::FE::CellType::quad9>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad9>(element, point, floattype);
     case CORE::FE::CellType::hex8:
-      return CreateConcretePosition<CORE::FE::CellType::hex8>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex8>(element, point, floattype);
     case CORE::FE::CellType::hex20:
-      return CreateConcretePosition<CORE::FE::CellType::hex20>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex20>(element, point, floattype);
     case CORE::FE::CellType::tet4:
-      return CreateConcretePosition<CORE::FE::CellType::tet4>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::tet4>(element, point, floattype);
     case CORE::FE::CellType::pyramid5:
-      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::pyramid5>(element, point, floattype);
     case CORE::FE::CellType::wedge6:
-      return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, point, floattype);
+      return create_concrete_position<CORE::FE::CellType::wedge6>(element, point, floattype);
     default:
       FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -326,27 +326,27 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      return CreateConcretePosition<CORE::FE::CellType::line2>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::line2>(element, xyz, floattype);
     case CORE::FE::CellType::tri3:
-      return CreateConcretePosition<CORE::FE::CellType::tri3>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri3>(element, xyz, floattype);
     case CORE::FE::CellType::tri6:
-      return CreateConcretePosition<CORE::FE::CellType::tri6>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri6>(element, xyz, floattype);
     case CORE::FE::CellType::quad4:
-      return CreateConcretePosition<CORE::FE::CellType::quad4>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad4>(element, xyz, floattype);
     case CORE::FE::CellType::quad8:
-      return CreateConcretePosition<CORE::FE::CellType::quad8>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad8>(element, xyz, floattype);
     case CORE::FE::CellType::quad9:
-      return CreateConcretePosition<CORE::FE::CellType::quad9>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad9>(element, xyz, floattype);
     case CORE::FE::CellType::hex8:
-      return CreateConcretePosition<CORE::FE::CellType::hex8>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex8>(element, xyz, floattype);
     case CORE::FE::CellType::hex20:
-      return CreateConcretePosition<CORE::FE::CellType::hex20>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex20>(element, xyz, floattype);
     case CORE::FE::CellType::tet4:
-      return CreateConcretePosition<CORE::FE::CellType::tet4>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tet4>(element, xyz, floattype);
     case CORE::FE::CellType::pyramid5:
-      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::pyramid5>(element, xyz, floattype);
     case CORE::FE::CellType::wedge6:
-      return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::wedge6>(element, xyz, floattype);
     default:
       FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -364,27 +364,27 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      return CreateConcretePosition<CORE::FE::CellType::line2>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::line2>(xyze, xyz, floattype);
     case CORE::FE::CellType::tri3:
-      return CreateConcretePosition<CORE::FE::CellType::tri3>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri3>(xyze, xyz, floattype);
     case CORE::FE::CellType::tri6:
-      return CreateConcretePosition<CORE::FE::CellType::tri6>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri6>(xyze, xyz, floattype);
     case CORE::FE::CellType::quad4:
-      return CreateConcretePosition<CORE::FE::CellType::quad4>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad4>(xyze, xyz, floattype);
     case CORE::FE::CellType::quad8:
-      return CreateConcretePosition<CORE::FE::CellType::quad8>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad8>(xyze, xyz, floattype);
     case CORE::FE::CellType::quad9:
-      return CreateConcretePosition<CORE::FE::CellType::quad9>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad9>(xyze, xyz, floattype);
     case CORE::FE::CellType::hex8:
-      return CreateConcretePosition<CORE::FE::CellType::hex8>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex8>(xyze, xyz, floattype);
     case CORE::FE::CellType::hex20:
-      return CreateConcretePosition<CORE::FE::CellType::hex20>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex20>(xyze, xyz, floattype);
     case CORE::FE::CellType::tet4:
-      return CreateConcretePosition<CORE::FE::CellType::tet4>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tet4>(xyze, xyz, floattype);
     case CORE::FE::CellType::pyramid5:
-      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::pyramid5>(xyze, xyz, floattype);
     case CORE::FE::CellType::wedge6:
-      return CreateConcretePosition<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
       FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -412,27 +412,27 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
   switch (distype)
   {
     case CORE::FE::CellType::line2:
-      return CreateConcretePosition<CORE::FE::CellType::line2>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::line2>(nodes, xyz, floattype);
     case CORE::FE::CellType::tri3:
-      return CreateConcretePosition<CORE::FE::CellType::tri3>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri3>(nodes, xyz, floattype);
     case CORE::FE::CellType::tri6:
-      return CreateConcretePosition<CORE::FE::CellType::tri6>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tri6>(nodes, xyz, floattype);
     case CORE::FE::CellType::quad4:
-      return CreateConcretePosition<CORE::FE::CellType::quad4>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad4>(nodes, xyz, floattype);
     case CORE::FE::CellType::quad8:
-      return CreateConcretePosition<CORE::FE::CellType::quad8>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad8>(nodes, xyz, floattype);
     case CORE::FE::CellType::quad9:
-      return CreateConcretePosition<CORE::FE::CellType::quad9>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::quad9>(nodes, xyz, floattype);
     case CORE::FE::CellType::hex8:
-      return CreateConcretePosition<CORE::FE::CellType::hex8>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex8>(nodes, xyz, floattype);
     case CORE::FE::CellType::hex20:
-      return CreateConcretePosition<CORE::FE::CellType::hex20>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::hex20>(nodes, xyz, floattype);
     case CORE::FE::CellType::tet4:
-      return CreateConcretePosition<CORE::FE::CellType::tet4>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::tet4>(nodes, xyz, floattype);
     case CORE::FE::CellType::pyramid5:
-      return CreateConcretePosition<CORE::FE::CellType::pyramid5>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::pyramid5>(nodes, xyz, floattype);
     case CORE::FE::CellType::wedge6:
-      return CreateConcretePosition<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
+      return create_concrete_position<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
       FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);

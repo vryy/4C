@@ -49,7 +49,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat2(elemat2_epetra.values(), true);
@@ -608,12 +608,12 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
   }
   else if (eastype_ == soh8_eassosh8)
   {
-    EasUpdateIncrementally<NUMEAS_SOSH8_>(
+    eas_update_incrementally<NUMEAS_SOSH8_>(
         oldfeas, oldKaainv, oldKad, oldKap, feas, Kaa, Kad, Kap, alpha, M, easdata_, dispi, presi);
   }
   else if (eastype_ == soh8_easa)
   {
-    EasUpdateIncrementally<NUMEAS_A_>(
+    eas_update_incrementally<NUMEAS_A_>(
         oldfeas, oldKaainv, oldKad, oldKap, feas, Kaa, Kad, Kap, alpha, M, easdata_, dispi, presi);
   }
   else
@@ -671,7 +671,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
   {
     jac0 = Teuchos::rcp(new CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>(false));
     axmetr0 = Teuchos::rcp(new CORE::LINALG::Matrix<NUMDIM_, 1>(false));
-    AxialMetricsAtOrigin(xrefe, *jac0, *axmetr0);
+    axial_metrics_at_origin(xrefe, *jac0, *axmetr0);
     hths = Teuchos::rcp(new double((*axmetr0)(2) / (*axmetr0)(1)));
     hthr = Teuchos::rcp(new double((*axmetr0)(2) / (*axmetr0)(0)));
   }
@@ -1054,14 +1054,14 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
     else if (eastype_ == soh8_eassosh8)
     {
       // map local M to global, also enhancement is refered to element origin
-      EasMaterialiseShapeFcts<NUMEAS_SOSH8_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
+      eas_materialise_shape_fcts<NUMEAS_SOSH8_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       EasAddStrain<NUMEAS_SOSH8_>(glstrain, M, alpha);
     }
     else if (eastype_ == soh8_easa)
     {
       // map local M to global, also enhancement is refered to element origin
-      EasMaterialiseShapeFcts<NUMEAS_A_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
+      eas_materialise_shape_fcts<NUMEAS_A_>(M, detJ0, detJ, T0invT, M_GP->at(gp));
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       EasAddStrain<NUMEAS_A_>(glstrain, M, alpha);
     }
@@ -1293,11 +1293,11 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
         const double effpressure = prshfct.Dot(pres);  // pN*ep'
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
         CORE::LINALG::Matrix<NUMDFGR_, 1> tinvdefgrad_vct;
-        Matrix2TensorToVector9Voigt_Inconsistent(tinvdefgrad_vct, invdefgrad, true);
+        matrix2_tensor_to_vector9_voigt_inconsistent(tinvdefgrad_vct, invdefgrad, true);
 
         // derivative of WmT := F^{-T}_{,F} in Voigt vector notation
         CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_> WmT;
-        InvVector9VoigtDiffByItself(WmT, invdefgrad, true);
+        inv_vector9_voigt_diff_by_itself(WmT, invdefgrad, true);
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0, tinvdefgrad_vct, tinvdefgrad_vct, 1.0);
 
@@ -1341,15 +1341,15 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_> rgtstrDbydisp;  // ...U^d_{,d}
           {
             // U^{d;-1}_{,U}
-            InvVector6VoigtDiffByItself(invrgtstrDbyrgtstrD, invrgtstrD);
+            inv_vector6_voigt_diff_by_itself(invrgtstrDbyrgtstrD, invrgtstrD);
 
             // C^d_{,U^d} = (U^d . U^d)_{,U^d}
-            SqVector6VoigtDiffByItself(
+            sq_vector6_voigt_diff_by_itself(
                 rcgDbyrgtstrD, rgtstrD, CORE::LINALG::VOIGT::NotationType::strain);
 
             // displ-based deformation gradient as Voigt matrix
             CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_> defgradDm;
-            Matrix2TensorToMatrix6x9Voigt(defgradDm, defgradD, true);
+            matrix2_tensor_to_matrix6x9_voigt(defgradDm, defgradD, true);
 
             // C^d_{,d} = 2 * Fm^d * Boplin, 6x24
             CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_> rcgDbydisp;
@@ -1381,7 +1381,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
             // derivative of ass. right Cauchy-Green with respect to ass. material stretch tensor
             // C^{ass}_{,U^{ass}}
             CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> rcgbyrgtstr;
-            SqVector6VoigtDiffByItself(
+            sq_vector6_voigt_diff_by_itself(
                 rcgbyrgtstr, rgtstr, CORE::LINALG::VOIGT::NotationType::strain);
 
             // C^{ass}_{,d} = 2 * bop
@@ -1475,13 +1475,13 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
             }
             else if (eastype_ == soh8_eassosh8)
             {
-              EasConstraintAndTangent<NUMEAS_SOSH8_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
+              eas_constraint_and_tangent<NUMEAS_SOSH8_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
                   rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
                   cb, defgradbydisp, prshfct, M);
             }
             else if (eastype_ == soh8_easa)
             {
-              EasConstraintAndTangent<NUMEAS_A_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
+              eas_constraint_and_tangent<NUMEAS_A_>(feas, Kaa, Kad, Kap, defgradD, invrgtstrD,
                   rcgbyrgtstr, detdefgrad, tinvdefgrad_vct, WmT, cmat, stress, effpressure, detJ_w,
                   cb, defgradbydisp, prshfct, M);
             }
@@ -1508,7 +1508,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
                 // C^{ass}_{,U^{ass} U^{ass}} = const
                 int ircgbybyrgtstr[MAT::NUM_STRESS_3D * 6];  // for sparse access
                 CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 6> rcgbybyrgtstr;
-                SqVector6VoigtTwiceDiffByItself(ircgbybyrgtstr, rcgbybyrgtstr);
+                sq_vector6_voigt_twice_diff_by_itself(ircgbybyrgtstr, rcgbybyrgtstr);
 
                 // second derivative of disp-based right Cauchy-Green tensor
                 // w.r.t. to right stretch tensor
@@ -1628,7 +1628,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
                 // U^{d-1}_{,U^d U^d}
                 CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>
                     invrgtstrDbybyrgtstrD;
-                InvVector6VoigtTwiceDiffByItself(invrgtstrDbybyrgtstrD, invrgtstrD);
+                inv_vector6_voigt_twice_diff_by_itself(invrgtstrDbybyrgtstrD, invrgtstrD);
 
                 // second derivative of pure-disp inverse right stretch tensor w.r.t. displacements
                 // U^{d-1}_{CD,dk} = U^{d-1}_{CD,EFGH} U^{d}_{GH,k} U^{d}_{EF,d}
@@ -2019,7 +2019,7 @@ void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRES
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       // push forward
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> defgraddefgradT;
-      Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT, defgrd, true,
+      matrix2_tensor_to_left_right_product_matrix6x6_voigt(defgraddefgradT, defgrd, true,
           CORE::LINALG::VOIGT::NotationType::stress, CORE::LINALG::VOIGT::NotationType::strain);
       // (deviatoric/isochoric) Cauchy stress vector
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cauchyv;
@@ -2078,7 +2078,7 @@ void DRT::ELEMENTS::SoSh8p8::Strain(
       if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
       // create push forward 6x6 matrix
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTdefgrad;
-      Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad, invdefgrd, false,
+      matrix2_tensor_to_left_right_product_matrix6x6_voigt(invdefgradTdefgrad, invdefgrd, false,
           CORE::LINALG::VOIGT::NotationType::strain, CORE::LINALG::VOIGT::NotationType::stress);
       // push forward
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eastrain;

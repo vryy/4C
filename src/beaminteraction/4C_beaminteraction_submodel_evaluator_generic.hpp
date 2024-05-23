@@ -136,13 +136,13 @@ namespace BEAMINTERACTION
       virtual void UpdateStepState(const double& timefac_n) = 0;
 
       //! pre update step element
-      virtual bool PreUpdateStepElement(bool beam_redist) = 0;
+      virtual bool pre_update_step_element(bool beam_redist) = 0;
 
       //! update step element
       virtual void UpdateStepElement(bool repartition_was_done) = 0;
 
       //! post update step element
-      virtual void PostUpdateStepElement() = 0;
+      virtual void post_update_step_element() = 0;
 
       //! get contributions to system energy
       virtual std::map<STR::EnergyType, double> GetEnergy() const = 0;
@@ -151,7 +151,7 @@ namespace BEAMINTERACTION
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
       //! write submodel specific output during runtime
-      virtual void RuntimeOutputStepState() const = 0;
+      virtual void runtime_output_step_state() const = 0;
 
       //! reset routine for model evlaluator
       virtual void ResetStepState() = 0;
@@ -180,20 +180,21 @@ namespace BEAMINTERACTION
       virtual void RunPostIterate(const ::NOX::Solver::Generic& solver) = 0;
 
       //! reset routine for model evlaluator
-      virtual void InitSubmodelDependencies(
+      virtual void init_submodel_dependencies(
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
       virtual void AddBinsToBinColMap(std::set<int>& colbins) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
-      virtual void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const = 0;
+      virtual void add_bins_with_relevant_content_for_ia_discret_col_map(
+          std::set<int>& colbins) const = 0;
 
       //! \brief add subproblem specific contributions to bin col map
-      virtual void GetHalfInteractionDistance(double& half_interaction_distance) = 0;
+      virtual void get_half_interaction_distance(double& half_interaction_distance) = 0;
 
       //! \brief do submodel specific stuff after partitioning
-      virtual bool PostPartitionProblem() { return false; };
+      virtual bool post_partition_problem() { return false; };
 
       //! \brief do submodel specific stuff after setup
       virtual void PostSetup() = 0;
@@ -221,24 +222,25 @@ namespace BEAMINTERACTION
       STR::TIMINT::BaseDataIO const& GInOutput() const;
 
       //! Returns the global state data container
-      STR::MODELEVALUATOR::BeamInteractionDataState& BeamInteractionDataState();
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>& BeamInteractionDataStatePtr();
-      STR::MODELEVALUATOR::BeamInteractionDataState const& BeamInteractionDataState() const;
+      STR::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
+      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
+      beam_interaction_data_state_ptr();
+      STR::MODELEVALUATOR::BeamInteractionDataState const& beam_interaction_data_state() const;
 
-      BEAMINTERACTION::BeamCrosslinkerHandler& BeamCrosslinkerHandler();
-      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& BeamCrosslinkerHandlerPtr();
-      BEAMINTERACTION::BeamCrosslinkerHandler const& BeamCrosslinkerHandler() const;
+      BEAMINTERACTION::BeamCrosslinkerHandler& beam_crosslinker_handler();
+      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
+      BEAMINTERACTION::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
 
       BINSTRATEGY::BinningStrategy& BinStrategy();
       Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
       BINSTRATEGY::BinningStrategy const& BinStrategy() const;
 
       CORE::GEO::MESHFREE::BoundingBox& PeriodicBoundingBox();
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>& PeriodicBoundingBoxPtr();
+      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>& periodic_bounding_box_ptr();
       CORE::GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
 
       BEAMINTERACTION::UTILS::MapExtractor& EleTypeMapExtractor();
-      Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& EleTypeMapExtractorPtr();
+      Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& ele_type_map_extractor_ptr();
       BEAMINTERACTION::UTILS::MapExtractor const& EleTypeMapExtractor() const;
 
       //! @}

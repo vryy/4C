@@ -36,7 +36,7 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
     : params_(params), anisotropy_extension_(params_)
 {
-  anisotropy_extension_.RegisterNeededTensors(
+  anisotropy_extension_.register_needed_tensors(
       FiberAnisotropyExtension<2>::FIBER_VECTORS |
       FiberAnisotropyExtension<2>::STRUCTURAL_TENSOR_STRESS);
 }
@@ -52,16 +52,16 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
   anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::add_stress_aniso_principal(
     const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
     CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  CORE::LINALG::Matrix<6, 1> A1 = anisotropy_extension_.GetStructuralTensor_stress(gp, 0);
-  CORE::LINALG::Matrix<6, 1> A2 = anisotropy_extension_.GetStructuralTensor_stress(gp, 1);
-  CORE::LINALG::Matrix<6, 1> A1A2 = anisotropy_extension_.GetCoupledStructuralTensor_stress(gp);
+  CORE::LINALG::Matrix<6, 1> A1 = anisotropy_extension_.get_structural_tensor_stress(gp, 0);
+  CORE::LINALG::Matrix<6, 1> A2 = anisotropy_extension_.get_structural_tensor_stress(gp, 1);
+  CORE::LINALG::Matrix<6, 1> A1A2 = anisotropy_extension_.get_coupled_structural_tensor_stress(gp);
 
-  double a1a2 = anisotropy_extension_.GetCoupledScalarProduct(gp);
+  double a1a2 = anisotropy_extension_.get_coupled_scalar_product(gp);
 
   double I4 = A1.Dot(rcg);
   double I6 = A2.Dot(rcg);
@@ -127,15 +127,15 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(const double newgamma,
   anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
 MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::CoupAnisoExpoTwoCoupAnisoExtension(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
     : DefaultAnisotropyExtension(params->init_, params->gamma_, params->adapt_angle_ != 0,
-          params->StructuralTensorStrategy(), {0, 1})
+          params->structural_tensor_strategy(), {0, 1})
 {
 }
 
@@ -185,7 +185,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
 }
 
 const CORE::LINALG::Matrix<6, 1>&
-MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_stress(int gp) const
+MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::get_coupled_structural_tensor_stress(int gp) const
 {
   switch (this->GetFiberLocation())
   {
@@ -202,7 +202,7 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_str
   std::abort();
 }
 
-double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledScalarProduct(int gp) const
+double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::get_coupled_scalar_product(int gp) const
 {
   switch (this->GetFiberLocation())
   {

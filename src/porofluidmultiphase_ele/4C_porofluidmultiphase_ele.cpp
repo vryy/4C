@@ -74,7 +74,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
 /*----------------------------------------------------------------------------*
  |  nodal block information to create a null space description    vuong 08/16 |
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::NodalBlockInformation(
+void DRT::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -94,7 +94,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeN
  |  setup the dat file input line definitions for this type of element   |
  |                                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::SetupElementDefinition(
+void DRT::ELEMENTS::PoroFluidMultiPhaseType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
@@ -409,7 +409,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, 
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   return;
 }
 

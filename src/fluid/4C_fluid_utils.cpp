@@ -88,10 +88,10 @@ void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperat
 /*----------------------------------------------------------------------*
  | update and return WSS vector                        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt)
 {
-  Teuchos::RCP<Epetra_Vector> wss = GetWallShearStressesWOAgg(trueresidual);
+  Teuchos::RCP<Epetra_Vector> wss = get_wall_shear_stresses_wo_agg(trueresidual);
 
   switch (wss_type_)
   {
@@ -116,7 +116,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
 /*--------------------------------------------------------------------------*
  | return wss vector (without updating the mean stress vector)   Thon 11/14 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   Teuchos::RCP<Epetra_Vector> wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
@@ -124,10 +124,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
   switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
-      wss = GetWallShearStressesWOAgg(trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(trueresidual);
       break;
     case INPAR::FLUID::wss_aggregation:
-      wss = GetWallShearStressesWOAgg(trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(trueresidual);
       wss = AggreagteStresses(wss);
       break;
     case INPAR::FLUID::wss_mean:
@@ -146,14 +146,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
 /*----------------------------------------------------------------------*
  | return WSS vector always without aggregation        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStressesWOAgg(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
   Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
   // calculate wss from stresses
-  Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
+  Teuchos::RCP<Epetra_Vector> wss = calc_wall_shear_stresses(stresses);
 
   return wss;
 }
@@ -236,7 +236,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
   std::string condstring("FluidStressCalc");
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = integrate_interface_shape(condstring);
 
   // compute traction values at specified nodes; otherwise do not touch the zero values
   for (int i = 0; i < integratedshapefunc->MyLength(); i++)
@@ -255,7 +255,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::IntegrateInterfaceShape(std::string condname)
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape(
+    std::string condname)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -285,7 +286,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::IntegrateInterfaceShape(s
  |  calculate wall sheer stress from stresses at dirichlet boundary     |
  |                                                     Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
     Teuchos::RCP<Epetra_Vector> stresses)
 {
   // -------------------------------------------------------------------
@@ -459,7 +460,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
 
     Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
     // compute the null space,
-    discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
+    discret_->compute_null_space_if_necessary(solver->Params(), true);
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
@@ -1074,7 +1075,7 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> di
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != Teuchos::null)
-    discret->AddMultiVectorToParameterList(eleparams, paraname, projected_velgrad);
+    discret->add_multi_vector_to_parameter_list(eleparams, paraname, projected_velgrad);
 
   return;
 }
@@ -1118,15 +1119,15 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       switch (dim)
       {
         case 3:
-          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<3>(
               *discret, *vel, "vel", numvec, params);
           break;
         case 2:
-          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<2>(
               *discret, *vel, "vel", numvec, params);
           break;
         case 1:
-          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<1>(
               *discret, *vel, "vel", numvec, params);
           break;
         default:

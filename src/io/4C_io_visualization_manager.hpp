@@ -66,7 +66,7 @@ namespace IO
      * @param visualization_data_name (in) Name of the visualization data, if this argument is
      * empty, the default visualization data, i.e., "", will be returned.
      */
-    [[nodiscard]] const VisualizationData& GetVisualizationData(
+    [[nodiscard]] const VisualizationData& get_visualization_data(
         const std::string& visualization_data_name = "") const;
 
     /**
@@ -75,7 +75,7 @@ namespace IO
      * @param visualization_data_name (in) Name of the visualization data, if this argument is
      * empty, the default visualization data, i.e., "", will be returned.
      */
-    [[nodiscard]] VisualizationData& GetVisualizationData(
+    [[nodiscard]] VisualizationData& get_visualization_data(
         const std::string& visualization_data_name = "");
 
     /**
@@ -86,12 +86,12 @@ namespace IO
      *
      * @param visualization_data_name (in) Name of the visualization data
      */
-    VisualizationData& RegisterVisualizationData(const std::string& visualization_data_name);
+    VisualizationData& register_visualization_data(const std::string& visualization_data_name);
 
     /**
      * @brief Check if a given visualization data name already exists
      */
-    [[nodiscard]] bool VisualizationDataExists(const std::string& visualization_data_name) const;
+    [[nodiscard]] bool visualization_data_exists(const std::string& visualization_data_name) const;
 
     /**
      * @brief Clear all visualization data from this container. The registered visualization data
@@ -115,7 +115,7 @@ namespace IO
      *
      * @param visualization_data_name (in) Name of the visualization data
      */
-    [[nodiscard]] std::string GetVisualizationDataNameForOutputFiles(
+    [[nodiscard]] std::string get_visualization_data_name_for_output_files(
         const std::string& visualization_data_name) const;
 
    private:

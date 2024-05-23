@@ -22,21 +22,21 @@ CORE::Dofsets::TransparentDofSet::TransparentDofSet(
   return;
 }
 
-int CORE::Dofsets::TransparentDofSet::AssignDegreesOfFreedom(
+int CORE::Dofsets::TransparentDofSet::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
-  // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  // first, we call the standard assign_degrees_of_freedom from the base class
+  int count = DofSet::assign_degrees_of_freedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for TransparentDofSet");
 
   if (!parallel_)
   {
-    TransferDegreesOfFreedom(*sourcedis_, dis, start);
+    transfer_degrees_of_freedom(*sourcedis_, dis, start);
   }
   else
   {
-    ParallelTransferDegreesOfFreedom(*sourcedis_, dis, start);
+    parallel_transfer_degrees_of_freedom(*sourcedis_, dis, start);
   }
 
   // tell all proxies (again!)
@@ -46,7 +46,7 @@ int CORE::Dofsets::TransparentDofSet::AssignDegreesOfFreedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void CORE::Dofsets::TransparentDofSet::TransferDegreesOfFreedom(
+void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
   if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
@@ -129,7 +129,7 @@ void CORE::Dofsets::TransparentDofSet::TransferDegreesOfFreedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void CORE::Dofsets::TransparentDofSet::ParallelTransferDegreesOfFreedom(
+void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
   if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
@@ -188,7 +188,7 @@ void CORE::Dofsets::TransparentDofSet::ParallelTransferDegreesOfFreedom(
         ReceiveBlock(numproc, myrank, rblock, exporter, request);
 
         // Unpack info from the receive block from the last proc
-        UnpackLocalSourceDofs(gid_to_dofs, rblock);
+        unpack_local_source_dofs(gid_to_dofs, rblock);
       }
 
       // in the last step, we keep everything on this proc
@@ -196,7 +196,7 @@ void CORE::Dofsets::TransparentDofSet::ParallelTransferDegreesOfFreedom(
       {
         // -----------------------
         // do what we wanted to do
-        SetSourceDofsAvailableOnThisProc(gid_to_dofs);
+        set_source_dofs_available_on_this_proc(gid_to_dofs);
 
         // Pack info into block to send
         CORE::COMM::PackBuffer data;
@@ -337,7 +337,7 @@ void CORE::Dofsets::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
+void CORE::Dofsets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     std::map<int, std::vector<int>>& gid_to_dofs)
 {
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
@@ -417,7 +417,7 @@ void CORE::Dofsets::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::UnpackLocalSourceDofs(
+void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
     std::map<int, std::vector<int>>& gid_to_dofs, std::vector<char>& rblock)
 {
   gid_to_dofs.clear();

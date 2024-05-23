@@ -181,7 +181,7 @@ namespace MAT
 
    protected:
     /// calculate anisotropic stress and elasticity tensor
-    virtual void EvaluateAnisotropicStressCmat(CORE::LINALG::Matrix<3, 1>& stress_aniso,
+    virtual void evaluate_anisotropic_stress_cmat(CORE::LINALG::Matrix<3, 1>& stress_aniso,
         CORE::LINALG::Matrix<3, 3>& cmat_aniso, const CORE::LINALG::Matrix<3, 3>& Q_trafo,
         const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
         int gp, int eleGID);

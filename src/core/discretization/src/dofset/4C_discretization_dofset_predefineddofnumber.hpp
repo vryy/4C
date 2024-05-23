@@ -108,7 +108,7 @@ namespace CORE::Dofsets
     }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
@@ -132,7 +132,7 @@ namespace CORE::Dofsets
         FOUR_C_THROW("Redistribution not yet implemented!");
 
       // call base class routine
-      return CORE::Dofsets::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+      return CORE::Dofsets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
     }
 
    protected:

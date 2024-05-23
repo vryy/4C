@@ -157,7 +157,7 @@ template <class T>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTestWithQuantity(
+::NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::get_outer_status_test_with_quantity(
     const NOX::NLN::StatusTest::QuantityType qtype) const
 {
   if (testPtr.is_null())
@@ -166,7 +166,7 @@ template <class T>
     throw "NOX Error";
   }
 
-  return NOX::NLN::AUX::GetOuterStatusTestWithQuantity<T>(*testPtr, qtype);
+  return NOX::NLN::AUX::get_outer_status_test_with_quantity<T>(*testPtr, qtype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -216,7 +216,7 @@ NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::ActiveSet>() 
 template ::NOX::StatusTest::Generic*
 NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>() const;
 template ::NOX::StatusTest::Generic*
-NOX::NLN::Solver::LineSearchBased::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
+NOX::NLN::Solver::LineSearchBased::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormF>(
     const NOX::NLN::StatusTest::QuantityType qtype) const;
 
 FOUR_C_NAMESPACE_CLOSE

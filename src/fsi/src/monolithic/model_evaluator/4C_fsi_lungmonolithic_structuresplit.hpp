@@ -74,7 +74,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    void CreateCombinedDofRowMap() override;
+    void create_combined_dof_row_map() override;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -83,7 +83,7 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    void SetupDBCMapExtractor() override { FOUR_C_THROW("Not implemented, yet."); }
+    void setup_dbc_map_extractor() override { FOUR_C_THROW("Not implemented, yet."); }
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f) override;

@@ -90,12 +90,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns if rotational coupling is activated.
      */
-    inline bool GetIsRotationalCoupling() const { return rotational_coupling_; }
+    inline bool get_is_rotational_coupling() const { return rotational_coupling_; }
 
     /**
      * \brief Returns the penalty parameter for rotational coupling.
      */
-    inline double GetRotationalCouplingPenaltyParameter() const
+    inline double get_rotational_coupling_penalty_parameter() const
     {
       return rotational_coupling_penalty_parameter_;
     }
@@ -103,7 +103,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the type of surface triad construction for rotational coupling.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling GetSurfaceTriadConstruction()
+    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling get_surface_triad_construction()
         const
     {
       return rotational_coupling_triad_construction_;
@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> GetVisualizationOutputParamsPtr();
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> get_visualization_output_params_ptr();
 
    private:
     //! How the coupling should be evaluated.

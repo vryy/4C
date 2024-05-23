@@ -60,7 +60,7 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
   DoneBefore().clear();
 
   // loop over all found master elements
-  for (int nele = 0; nele < NumberSurfaceElements(); ++nele)
+  for (int nele = 0; nele < number_surface_elements(); ++nele)
   {
     // set internal counter
     CurrEle() = nele;
@@ -102,7 +102,7 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     LinearizeVertices(linvertex);
 
     // 11. create intlines
-    CreateIntegrationLines(linvertex);
+    create_integration_lines(linvertex);
 
     // 12. consistent dual shape
     ConsistDualShape();
@@ -285,7 +285,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     double sxi[2] = {0.0, 0.0};
     double sprojalpha = 0.0;
     MORTAR::Projector::Impl(SurfaceElement())
-        ->ProjectGaussPointAuxn3D(globgp, Auxn(), SurfaceElement(), sxi, sprojalpha);
+        ->project_gauss_point_auxn3_d(globgp, Auxn(), SurfaceElement(), sxi, sprojalpha);
 
     // project Gauss point onto slave (parent) element
     double psxi[2] = {0., 0.};
@@ -425,12 +425,12 @@ void CONTACT::LineToSurfaceCoupling3d::IntegrateLine()
   // perform integration
   if (IType() == LineToSurfaceCoupling3d::lts)
   {
-    integrator->IntegrateDerivCell3DAuxPlaneLTS(
+    integrator->integrate_deriv_cell3_d_aux_plane_lts(
         ParentElement(), *LineElement(), SurfaceElement(), IntLine(), Auxn(), Comm());
   }
   else if (IType() == LineToSurfaceCoupling3d::stl)
   {
-    integrator->IntegrateDerivCell3DAuxPlaneSTL(
+    integrator->integrate_deriv_cell3_d_aux_plane_stl(
         ParentElement(), *LineElement(), SurfaceElement(), IntLine(), Auxn(), Comm());
   }
   else
@@ -1307,7 +1307,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 /*----------------------------------------------------------------------*
  |  create integration lines                                 farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(
+void CONTACT::LineToSurfaceCoupling3d::create_integration_lines(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex)
 {
   // get coordinates
@@ -1353,10 +1353,10 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
                   100 + linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
 
   // compute slave linearizations (nsrows)
-  SlaveVertexLinearization(linsnodes);
+  slave_vertex_linearization(linsnodes);
 
   // compute master linearizations (nmrows)
-  MasterVertexLinearization(linmnodes);
+  master_vertex_linearization(linmnodes);
 
   //**********************************************************************
   // Line vertex linearization
@@ -1438,7 +1438,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
       MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
 
       // do lineclip vertex linearization
-      LineclipVertexLinearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
+      lineclip_vertex_linearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
     }
 
     else
@@ -1451,7 +1451,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
+void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
     std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
     MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
@@ -1706,7 +1706,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
   SurfaceElement().LocalToGlobal(loccenter, Auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = SurfaceElement().ComputeUnitNormalAtXi(loccenter, AuxnSurf());
+  Lauxn() = SurfaceElement().compute_unit_normal_at_xi(loccenter, AuxnSurf());
   //
   //  // compute aux normal linearization
   //  SurfaceElement().DerivUnitNormalAtXi(loccenter, GetDerivAuxn());
@@ -1982,7 +1982,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane              farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
+void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
@@ -2003,7 +2003,7 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    FOUR_C_THROW("MasterVertexLinearization called for unknown element type");
+    FOUR_C_THROW("master_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SurfaceElement().NumNode();
@@ -2018,7 +2018,7 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) FOUR_C_THROW("MasterVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("master_vertex_linearization: Null pointer!");
   }
 
   // linearization of the SlaveIntEle spatial coords
@@ -2177,7 +2177,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
+void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
@@ -2198,7 +2198,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    FOUR_C_THROW("SlaveVertexLinearization called for unknown element type");
+    FOUR_C_THROW("slave_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SurfaceElement().NumNode();
@@ -2213,7 +2213,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) FOUR_C_THROW("SlaveVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("slave_vertex_linearization: Null pointer!");
   }
 
   // linearization of the IntEle spatial coords
@@ -2381,9 +2381,9 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = LineSlaveElement()->Nodes();
-  if (!mynodes) FOUR_C_THROW("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
   DRT::Node** mnodes = LineMasterElement()->Nodes();
-  if (!mnodes) FOUR_C_THROW("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
 
   int nnodes = 2;
   int ndof = 3;
@@ -2962,14 +2962,14 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   // calculate slave vector
   Node* ns1 = dynamic_cast<Node*>(LineSlaveElement()->Nodes()[0]);
   Node* ns2 = dynamic_cast<Node*>(LineSlaveElement()->Nodes()[1]);
-  ns1->BuildAveragedEdgeTangent();
-  ns2->BuildAveragedEdgeTangent();
+  ns1->build_averaged_edge_tangent();
+  ns2->build_averaged_edge_tangent();
 
   // calculate slave vector
   Node* nm1 = dynamic_cast<Node*>(LineMasterElement()->Nodes()[0]);
   Node* nm2 = dynamic_cast<Node*>(LineMasterElement()->Nodes()[1]);
-  nm1->BuildAveragedEdgeTangent();
-  nm2->BuildAveragedEdgeTangent();
+  nm1->build_averaged_edge_tangent();
+  nm2->build_averaged_edge_tangent();
 
   double lengths1 = sqrt(ns1->MoData().EdgeTangent()[0] * ns1->MoData().EdgeTangent()[0] +
                          ns1->MoData().EdgeTangent()[1] * ns1->MoData().EdgeTangent()[1] +

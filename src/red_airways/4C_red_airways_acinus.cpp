@@ -55,7 +55,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create(const int id, co
  |                                                             (public) |
  |                                                           roth 10/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition(
+void DRT::ELEMENTS::RedAcinusType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_ACINUS"];
@@ -66,21 +66,21 @@ void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition(
                       .AddNamedString("TYPE")
                       .AddNamedDouble("AcinusVolume")
                       .AddNamedDouble("AlveolarDuctVolume")
-                      .AddOptionalNamedDouble("E1_0")
-                      .AddOptionalNamedDouble("E1_LIN")
-                      .AddOptionalNamedDouble("E1_EXP")
-                      .AddOptionalNamedDouble("TAU")
-                      .AddOptionalNamedDouble("E1_01")
-                      .AddOptionalNamedDouble("E1_LIN1")
-                      .AddOptionalNamedDouble("E1_EXP1")
-                      .AddOptionalNamedDouble("TAU1")
-                      .AddOptionalNamedDouble("E1_02")
-                      .AddOptionalNamedDouble("E1_LIN2")
-                      .AddOptionalNamedDouble("E1_EXP2")
-                      .AddOptionalNamedDouble("TAU2")
-                      .AddOptionalNamedDouble("KAPPA")
-                      .AddOptionalNamedDouble("BETA")
-                      .AddOptionalNamedDouble("Area")
+                      .add_optional_named_double("E1_0")
+                      .add_optional_named_double("E1_LIN")
+                      .add_optional_named_double("E1_EXP")
+                      .add_optional_named_double("TAU")
+                      .add_optional_named_double("E1_01")
+                      .add_optional_named_double("E1_LIN1")
+                      .add_optional_named_double("E1_EXP1")
+                      .add_optional_named_double("TAU1")
+                      .add_optional_named_double("E1_02")
+                      .add_optional_named_double("E1_LIN2")
+                      .add_optional_named_double("E1_EXP2")
+                      .add_optional_named_double("TAU2")
+                      .add_optional_named_double("KAPPA")
+                      .add_optional_named_double("BETA")
+                      .add_optional_named_double("Area")
                       .Build();
 }
 
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
 
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::RedAcinus::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
 {
   //  // update element geometry
   DRT::Node** nodes = Nodes();

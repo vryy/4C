@@ -60,7 +60,7 @@ namespace ADAPTER
     Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
     //! apply interface displacements
-    void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
+    void apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
     {
       interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
     }

@@ -74,7 +74,7 @@ namespace PARTICLEINTERACTION
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
 
@@ -85,30 +85,30 @@ namespace PARTICLEINTERACTION
     void PreEvaluateTimeStep() override;
 
     //! evaluate particle interactions
-    void EvaluateInteractions() override;
+    void evaluate_interactions() override;
 
     //! post evaluate time step
-    void PostEvaluateTimeStep(
+    void post_evaluate_time_step(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) override;
 
     //! maximum interaction distance (on this processor)
-    double MaxInteractionDistance() const override;
+    double max_interaction_distance() const override;
 
     //! distribute interaction history
-    void DistributeInteractionHistory() const override;
+    void distribute_interaction_history() const override;
 
     //! communicate interaction history
-    void CommunicateInteractionHistory() const override;
+    void communicate_interaction_history() const override;
 
     //! set current step size
     void SetCurrentStepSize(const double currentstepsize) override;
 
    private:
     //! init neighbor pair handler
-    void InitNeighborPairHandler();
+    void init_neighbor_pair_handler();
 
     //! init history pair handler
-    void InitHistoryPairHandler();
+    void init_history_pair_handler();
 
     //! init contact handler
     void InitContactHandler();
@@ -117,7 +117,7 @@ namespace PARTICLEINTERACTION
     void InitAdhesionHandler();
 
     //! setup particle interaction writer
-    void SetupParticleInteractionWriter();
+    void setup_particle_interaction_writer();
 
     //! set initial radius
     void SetInitialRadius();
@@ -129,19 +129,20 @@ namespace PARTICLEINTERACTION
     void SetInitialInertia();
 
     //! clear force and moment states of particles
-    void ClearForceAndMomentStates() const;
+    void clear_force_and_moment_states() const;
 
     //! compute acceleration from force and moment
     void ComputeAcceleration() const;
 
     //! evaluate particle energy
-    void EvaluateParticleEnergy() const;
+    void evaluate_particle_energy() const;
 
     //! evaluate particle kinetic energy contribution
-    void EvaluateParticleKineticEnergy(double& kineticenergy) const;
+    void evaluate_particle_kinetic_energy(double& kineticenergy) const;
 
     //! evaluate particle gravitational potential energy contribution
-    void EvaluateParticleGravitationalPotentialEnergy(double& gravitationalpotentialenergy) const;
+    void evaluate_particle_gravitational_potential_energy(
+        double& gravitationalpotentialenergy) const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

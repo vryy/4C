@@ -69,7 +69,7 @@ namespace IO
    *
    * This implementation allows for convenient ways to define the connectivity data for cell and
    * face topologies. For more detail, have a look at the documentation of the methods
-   * \sa CompleteCellConnectivity() and \sa CompleteFaceConnectivity().
+   * \sa complete_cell_connectivity() and \sa complete_face_connectivity().
    */
   class VisualizationData
   {
@@ -100,7 +100,7 @@ namespace IO
     /**
      * @brief Return the number of points in this container
      */
-    [[nodiscard]] size_t GetPointCoordinatesNumberOfPoints() const;
+    [[nodiscard]] size_t get_point_coordinates_number_of_points() const;
 
     /**
      * @brief Return a const reference to the cell types
@@ -220,7 +220,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetPointDataVariant(
         const std::string& data_name) const
     {
-      return GetDataVectorFromMapItem(GetDataMapItem(point_data_, data_name));
+      return get_data_vector_from_map_item(GetDataMapItem(point_data_, data_name));
     }
 
     /**
@@ -261,7 +261,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetCellDataVariant(
         const std::string& data_name) const
     {
-      return GetDataVectorFromMapItem(GetDataMapItem(cell_data_, data_name));
+      return get_data_vector_from_map_item(GetDataMapItem(cell_data_, data_name));
     }
 
     /**
@@ -301,7 +301,7 @@ namespace IO
     [[nodiscard]] const visualization_vector_type_variant& GetFieldDataVariant(
         const std::string& data_name) const
     {
-      return GetDataVectorFromMapItem(GetDataMapItem(field_data_, data_name));
+      return get_data_vector_from_map_item(GetDataMapItem(field_data_, data_name));
     }
 
     /**
@@ -457,7 +457,8 @@ namespace IO
      */
     [[nodiscard]] size_t GetPointDataSize(const std::string& data_name) const
     {
-      return GetDataVectorSize(GetDataVectorFromMapItem(GetDataMapItem(point_data_, data_name)));
+      return GetDataVectorSize(
+          get_data_vector_from_map_item(GetDataMapItem(point_data_, data_name)));
     }
 
     /**
@@ -467,7 +468,8 @@ namespace IO
      */
     [[nodiscard]] size_t GetCellDataSize(const std::string& data_name) const
     {
-      return GetDataVectorSize(GetDataVectorFromMapItem(GetDataMapItem(cell_data_, data_name)));
+      return GetDataVectorSize(
+          get_data_vector_from_map_item(GetDataMapItem(cell_data_, data_name)));
     }
 
     /**
@@ -475,7 +477,7 @@ namespace IO
      *
      * @param data_name (in) Name of the data
      */
-    [[nodiscard]] size_t GetPointDataDimension(const std::string& data_name) const
+    [[nodiscard]] size_t get_point_data_dimension(const std::string& data_name) const
     {
       return GetDataDimension(GetDataMapItem(point_data_, data_name));
     }
@@ -485,7 +487,7 @@ namespace IO
      *
      * @param data_name (in) Name of the data
      */
-    [[nodiscard]] size_t GetCellDataDimension(const std::string& data_name) const
+    [[nodiscard]] size_t get_cell_data_dimension(const std::string& data_name) const
     {
       return GetDataDimension(GetDataMapItem(cell_data_, data_name));
     }
@@ -495,9 +497,10 @@ namespace IO
      *
      * @param data_name (in) Name of the data
      */
-    [[nodiscard]] size_t GetFieldDataDimension(const std::string& data_name) const
+    [[nodiscard]] size_t get_field_data_dimension(const std::string& data_name) const
     {
-      return GetDataVectorSize(GetDataVectorFromMapItem(GetDataMapItem(field_data_, data_name)));
+      return GetDataVectorSize(
+          get_data_vector_from_map_item(GetDataMapItem(field_data_, data_name)));
     }
 
     /**
@@ -514,10 +517,10 @@ namespace IO
      * @brief Complete possibly missing data entries and perform a consistency check
      *
      * This has to be called before writing data to disk that follows the convention described in
-     * \sa CompleteCellConnectivity and \sa CompleteFaceConnectivity. \sa ConsistencyCheck is also
-     * called.
+     * \sa complete_cell_connectivity and \sa complete_face_connectivity. \sa ConsistencyCheck is
+     * also called.
      */
-    void ConsistencyCheckAndCompleteData();
+    void consistency_check_and_complete_data();
 
     /**
      * @brief Perform consistency checks for this data container
@@ -541,7 +544,7 @@ namespace IO
      * that the points for each cell were added to the global points successively. This function
      * then fills up the entries required for the connectivity array.
      */
-    void CompleteCellConnectivity();
+    void complete_cell_connectivity();
 
     /**
      * @brief Check and complete the consistency of the face connectivity and offsets
@@ -560,7 +563,7 @@ namespace IO
      *   only adds the face_offsets_ and face_connectivity_ for the polyhedrons. This function will
      *   then add the missing -1 entries in face_offsets_ for the standard cells.
      */
-    void CompleteFaceConnectivity();
+    void complete_face_connectivity();
 
    private:
     /**
@@ -584,7 +587,7 @@ namespace IO
      * @brief Return the data vector for point and cell data as it is stored in the respective maps,
      * neglecting the number of components
      */
-    [[nodiscard]] const visualization_vector_type_variant& GetDataVectorFromMapItem(
+    [[nodiscard]] const visualization_vector_type_variant& get_data_vector_from_map_item(
         const std::pair<visualization_vector_type_variant, uint8_t>& map_item) const
     {
       return map_item.first;
@@ -595,7 +598,7 @@ namespace IO
      *
      * Since the field data vector is stored directly in the map, nothing has to be changed here
      */
-    [[nodiscard]] const visualization_vector_type_variant& GetDataVectorFromMapItem(
+    [[nodiscard]] const visualization_vector_type_variant& get_data_vector_from_map_item(
         const visualization_vector_type_variant& map_item) const
     {
       return map_item;
@@ -631,7 +634,7 @@ namespace IO
     template <typename T, typename V>
     [[nodiscard]] const T& GetData(const V& data, const std::string& data_name) const
     {
-      auto& data_vector = GetDataVectorFromMapItem(GetDataMapItem(data, data_name));
+      auto& data_vector = get_data_vector_from_map_item(GetDataMapItem(data, data_name));
       try
       {
         return std::get<T>(data_vector);
@@ -769,8 +772,9 @@ namespace IO
     {
       auto clear_visitor = [](auto& data_vector) { data_vector.clear(); };
       // The const_cast can be done here, since we know that the underlying data is not const
-      std::visit(clear_visitor, const_cast<visualization_vector_type_variant&>(
-                                    GetDataVectorFromMapItem(GetDataMapItem(data, data_name))));
+      std::visit(
+          clear_visitor, const_cast<visualization_vector_type_variant&>(
+                             get_data_vector_from_map_item(GetDataMapItem(data, data_name))));
     }
 
     /**

@@ -72,9 +72,9 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::ArteryDofRow
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
-ADAPTER::PoroFluidMultiphaseWrapper::ArteryPorofluidSysmat() const
+ADAPTER::PoroFluidMultiphaseWrapper::artery_porofluid_sysmat() const
 {
-  return porofluid_->ArteryPorofluidSysmat();
+  return porofluid_->artery_porofluid_sysmat();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -161,9 +161,10 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Saturatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracSpecDofs() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::valid_vol_frac_spec_dofs()
+    const
 {
-  return porofluid_->ValidVolFracSpecDofs();
+  return porofluid_->valid_vol_frac_spec_dofs();
 }
 
 /*----------------------------------------------------------------------*/
@@ -175,9 +176,9 @@ Teuchos::RCP<const Epetra_MultiVector> ADAPTER::PoroFluidMultiphaseWrapper::Flux
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::PoroFluidMultiphaseWrapper::GetDofSetNumberOfSolidPressure() const
+int ADAPTER::PoroFluidMultiphaseWrapper::get_dof_set_number_of_solid_pressure() const
 {
-  return porofluid_->GetDofSetNumberOfSolidPressure();
+  return porofluid_->get_dof_set_number_of_solid_pressure();
 }
 
 /*----------------------------------------------------------------------*/
@@ -198,9 +199,9 @@ void ADAPTER::PoroFluidMultiphaseWrapper::Update() { porofluid_->Update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::EvaluateErrorComparedToAnalyticalSol()
+void ADAPTER::PoroFluidMultiphaseWrapper::evaluate_error_compared_to_analytical_sol()
 {
-  porofluid_->EvaluateErrorComparedToAnalyticalSol();
+  porofluid_->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*/
@@ -237,18 +238,18 @@ void ADAPTER::PoroFluidMultiphaseWrapper::UpdateIter(const Teuchos::RCP<const Ep
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructPressuresAndSaturations()
+void ADAPTER::PoroFluidMultiphaseWrapper::reconstruct_pressures_and_saturations()
 {
-  porofluid_->ReconstructPressuresAndSaturations();
+  porofluid_->reconstruct_pressures_and_saturations();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructFlux() { porofluid_->ReconstructFlux(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::CalculatePhaseVelocities()
+void ADAPTER::PoroFluidMultiphaseWrapper::calculate_phase_velocities()
 {
-  porofluid_->CalculatePhaseVelocities();
+  porofluid_->calculate_phase_velocities();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -261,17 +262,17 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::PoroFluidMultiphaseWrapper::Sy
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidStructCouplingMat(
+void ADAPTER::PoroFluidMultiphaseWrapper::assemble_fluid_struct_coupling_mat(
     Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs)
 {
-  return porofluid_->AssembleFluidStructCouplingMat(k_fs);
+  return porofluid_->assemble_fluid_struct_coupling_mat(k_fs);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidScatraCouplingMat(
+void ADAPTER::PoroFluidMultiphaseWrapper::assemble_fluid_scatra_coupling_mat(
     Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs)
 {
-  return porofluid_->AssembleFluidScatraCouplingMat(k_pfs);
+  return porofluid_->assemble_fluid_scatra_coupling_mat(k_pfs);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

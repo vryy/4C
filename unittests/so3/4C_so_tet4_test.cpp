@@ -127,8 +127,8 @@ namespace
     double midpoint[3] = {0.5625, 0.2050, 0.6550};
     for (int i = 0; i < 3; ++i)
     {
-      EXPECT_NEAR(testele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
-      EXPECT_NEAR(copytestele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
+      EXPECT_NEAR(testele_->element_center_refe_coords()[i], midpoint[i], 1e-14);
+      EXPECT_NEAR(copytestele_->element_center_refe_coords()[i], midpoint[i], 1e-14);
     }
   }
 

@@ -38,7 +38,7 @@ STR::MODELEVALUATOR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::build_model_evaluators(
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const
 {
@@ -51,7 +51,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
     switch (*mt_iter)
     {
       case INPAR::STR::model_structure:
-        (*model_map)[*mt_iter] = BuildStructureModelEvaluator();
+        (*model_map)[*mt_iter] = build_structure_model_evaluator();
         break;
       case INPAR::STR::model_springdashpot:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
@@ -64,7 +64,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
         break;
       case INPAR::STR::model_contact:
       {
-        (*model_map)[*mt_iter] = BuildContactModelEvaluator();
+        (*model_map)[*mt_iter] = build_contact_model_evaluator();
         break;
       }
       case INPAR::STR::model_beam_interaction_old:
@@ -115,7 +115,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::Generic>
-STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
+STR::MODELEVALUATOR::Factory::build_contact_model_evaluator() const
 {
   return Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
 }
@@ -123,7 +123,7 @@ STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::Generic>
-STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
+STR::MODELEVALUATOR::Factory::build_structure_model_evaluator() const
 {
   return Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
 }
@@ -131,12 +131,12 @@ STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::BuildModelEvaluators(
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::build_model_evaluators(
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr)
 {
   Factory factory;
-  return factory.BuildModelEvaluators(modeltypes, coupling_model_ptr);
+  return factory.build_model_evaluators(modeltypes, coupling_model_ptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -111,7 +111,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
       // Note: order is important here!!
       Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
 
-      SetAdvancedReactionTerms(
+      set_advanced_reaction_terms(
           k, actmat, GetGpCoord());  // every reaction calculation stuff happens in here!!
     }
   }
@@ -195,9 +195,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
 
   for (int j = 0; j < my::numscal_; j++)
   {
-    const double fac_reac = timefacfac * densnp * (-remanager->GetReaBodyForceDerivMatrix(k, j));
+    const double fac_reac =
+        timefacfac * densnp * (-remanager->get_rea_body_force_deriv_matrix(k, j));
     const double timetaufac_reac =
-        timetaufac * densnp * (-remanager->GetReaBodyForceDerivMatrix(k, j));
+        timetaufac * densnp * (-remanager->get_rea_body_force_deriv_matrix(k, j));
 
     //----------------------------------------------------------------
     // standard Galerkin reactive term
@@ -321,7 +322,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
  |  Set advanced reaction terms and derivatives                       thon 09/14 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::SetAdvancedReactionTerms(
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_reaction_terms(
     const int k,                                            //!< index of current scalar
     const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
     const double* gpcoord                                   //!< current Gauss-point coordinates
@@ -330,34 +331,35 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::SetAdvancedReactionT
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
   remanager->AddToReaBodyForce(
-      matreaclist->CalcReaBodyForceTerm(k, my::scatravarmanager_->Phinp(), gpcoord), k);
+      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord), k);
 
-  matreaclist->CalcReaBodyForceDerivMatrix(
-      k, remanager->GetReaBodyForceDerivVector(k), my::scatravarmanager_->Phinp(), gpcoord);
+  matreaclist->calc_rea_body_force_deriv_matrix(
+      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->Phinp(), gpcoord);
 }
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at ele. center   jhoer 11/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::EvalShapeFuncAndDerivsAtEleCenter()
+double
+DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::eval_shape_func_and_derivs_at_ele_center()
 {
-  const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
+  const double vol = my::eval_shape_func_and_derivs_at_ele_center();
 
   // shape function at element center
   funct_elementcenter_ = my::funct_;
 
   return vol;
 
-}  // ScaTraImpl::EvalShapeFuncAndDerivsAtEleCenter
+}  // ScaTraImpl::eval_shape_func_and_derivs_at_ele_center
 
 /*------------------------------------------------------------------------------*
  | set internal variables                                          vuong 11/14  |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_internal_variables_for_mat_and_rhs()
 {
-  my::SetInternalVariablesForMatAndRHS();
+  my::set_internal_variables_for_mat_and_rhs();
 
   // calculate current Gauss-point coordinates from node coordinates and shape functions
   for (unsigned i = 0; i < nsd_; ++i)

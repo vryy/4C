@@ -104,17 +104,17 @@ namespace ADAPTER
 
     //! Provide local order of accuracy based upon linear test equation
     //! for displacements
-    virtual int MethodOrderOfAccuracyDis() const = 0;
+    virtual int method_order_of_accuracy_dis() const = 0;
 
     //! Provide local order of accuracy based upon linear test equation
     //! for velocities
-    virtual int MethodOrderOfAccuracyVel() const = 0;
+    virtual int method_order_of_accuracy_vel() const = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const = 0;
+    virtual double method_lin_err_coeff_dis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const = 0;
+    virtual double method_lin_err_coeff_vel() const = 0;
 
     //! Provide type of algorithm
     virtual enum AdaEnum MethodAdaptDis() const = 0;
@@ -212,7 +212,7 @@ namespace ADAPTER
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    virtual void IntegrateStepAuxiliar() = 0;
+    virtual void integrate_step_auxiliar() = 0;
 
     /*! \brief Update the auxiliar integrator
      */
@@ -237,7 +237,7 @@ namespace ADAPTER
      *  \note Solution of auxiliary step is already stored in ##locdiserrn_/#locvelerrn_,
      *  so we just need to subtract the solution of the marching TIS.
      */
-    void EvaluateLocalErrorDis();
+    void evaluate_local_error_dis();
 
     /*! \brief Calculate time step size
      *

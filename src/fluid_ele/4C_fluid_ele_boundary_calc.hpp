@@ -112,7 +112,7 @@ namespace DRT
       \param lm (in)            : location vector of this element
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
-      virtual void IntegrateShapeFunction(DRT::ELEMENTS::FluidBoundary* ele,
+      virtual void integrate_shape_function(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
 
@@ -124,7 +124,7 @@ namespace DRT
         \param edispnp  (in)      : Displacement-vector
         \param enormals (in)      : Node normals
       */
-      void ElementMeanCurvature(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void element_mean_curvature(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
           std::vector<double>& enormals);
@@ -137,8 +137,8 @@ namespace DRT
         \param enormals  (in)     : Node normals
         \param curvature (in)     : Interpolated curvature
       */
-      void ElementSurfaceTension(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
+      void element_surface_tension(DRT::ELEMENTS::FluidBoundary* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
           std::vector<double>& enormals, std::vector<double>& ecurvature);
 
@@ -159,7 +159,7 @@ namespace DRT
        \param discretization (in): A reference to the underlying discretization
        \param lm (in)            : location vector of this element
        */
-      void PressureBoundaryIntegral(DRT::ELEMENTS::FluidBoundary* ele,
+      void pressure_boundary_integral(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm);
 
@@ -171,7 +171,7 @@ namespace DRT
        \param discretization (in): A reference to the underlying discretization
        \param lm (in)            : location vector of this element
        */
-      void CenterOfMassCalculation(DRT::ELEMENTS::FluidBoundary* ele,
+      void center_of_mass_calculation(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm);
 
@@ -184,7 +184,7 @@ namespace DRT
       \param lm (in)            : location vector of this element
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
-      void CalcTractionVelocityComponent(DRT::ELEMENTS::FluidBoundary* ele,
+      void calc_traction_velocity_component(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -197,7 +197,7 @@ namespace DRT
       \param lm (in)            : location vector of this element
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
-      void ComputeNeumannUvIntegral(DRT::ELEMENTS::FluidBoundary* ele,
+      void compute_neumann_uv_integral(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -242,7 +242,7 @@ namespace DRT
       \param lm (in)            : location vector of this element
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
-      void ImpedanceIntegration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void impedance_integration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 

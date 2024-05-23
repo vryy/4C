@@ -292,19 +292,19 @@ namespace MAT
     }
 
     // check for constant relative permeability
-    bool HasConstantRelPermeability() const
+    bool has_constant_rel_permeability() const
     {
-      return params_->relpermeabilitylaw_->HasConstantRelPermeability();
+      return params_->relpermeabilitylaw_->has_constant_rel_permeability();
     }
 
     /// return derivative of relative permeabilty w.r.t. saturation
-    double EvaluateDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+    double evaluate_deriv_of_rel_permeability_wrt_saturation(const double saturation) const
     {
-      return params_->relpermeabilitylaw_->GetDerivOfRelPermeabilityWrtSaturation(saturation);
+      return params_->relpermeabilitylaw_->get_deriv_of_rel_permeability_wrt_saturation(saturation);
     }
 
     // check for constant viscosity
-    bool HasConstantViscosity() const { return params_->viscositylaw_->HasConstantViscosity(); }
+    bool has_constant_viscosity() const { return params_->viscositylaw_->has_constant_viscosity(); }
 
     /// return viscosity
     double Viscosity(const double abspressgrad) const
@@ -315,7 +315,7 @@ namespace MAT
     /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
     double ViscosityDeriv(const double abspressgrad) const
     {
-      return params_->viscositylaw_->GetDerivOfViscosityWrtAbsPressGrad(abspressgrad);
+      return params_->viscositylaw_->get_deriv_of_viscosity_wrt_abs_press_grad(abspressgrad);
     }
 
     /// return inverse bulk modulus (compressibility)
@@ -338,15 +338,15 @@ namespace MAT
     double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
-    double EvaluateDerivOfSaturationWrtPressure(
+    double evaluate_deriv_of_saturation_wrt_pressure(
         int phasenum, int doftoderive, const std::vector<double>& pressure) const;
 
     //! evaluate 2nd derivative of saturation with respect to pressure
-    double EvaluateSecondDerivOfSaturationWrtPressure(int phasenum, int firstdoftoderive,
+    double evaluate_second_deriv_of_saturation_wrt_pressure(int phasenum, int firstdoftoderive,
         int seconddoftoderive, const std::vector<double>& pressure) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
-    double EvaluateDerivOfDofWrtPressure(
+    double evaluate_deriv_of_dof_wrt_pressure(
         int phasenum, int doftoderive, const std::vector<double>& state) const;
 
     /// Return quick accessible material parameter data
@@ -440,7 +440,7 @@ namespace MAT
     int NumScal() const { return params_->numscal_; }
 
     /// return scalardependentflux_
-    bool HasAddScalarDependentFlux() const { return params_->scalardependentflux_; }
+    bool has_add_scalar_dependent_flux() const { return params_->scalardependentflux_; }
 
     /// return diffusivities for scalar-dependent flux
     std::vector<double> ScalarDiffs() const { return params_->scalardiffs_; }
@@ -532,7 +532,7 @@ namespace MAT
     double MinVolFrac() const { return params_->min_volfrac_; }
 
     // check for constant viscosity
-    bool HasConstantViscosity() const { return params_->viscositylaw_->HasConstantViscosity(); }
+    bool has_constant_viscosity() const { return params_->viscositylaw_->has_constant_viscosity(); }
 
     /// return viscosity
     double Viscosity(const double abspressgrad) const
@@ -543,7 +543,7 @@ namespace MAT
     /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
     double ViscosityDeriv(const double abspressgrad) const
     {
-      return params_->viscositylaw_->GetDerivOfViscosityWrtAbsPressGrad(abspressgrad);
+      return params_->viscositylaw_->get_deriv_of_viscosity_wrt_abs_press_grad(abspressgrad);
     }
 
    private:

@@ -131,7 +131,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //                    Add vector to current time average
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(const double dt,
+void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const double dt,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> scavec,
     const Teuchos::RCP<Epetra_Vector> scatravec)
 {
@@ -175,7 +175,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(const double 
 
   // increase number of steps included in this sample
   ++curr_n_;
-}  // FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage
+}  // FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average
 
 
 //----------------------------------------------------------------------
@@ -184,7 +184,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(const double 
 //              vector, in space in a homogeneous direction.
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int dim)
+void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const int dim)
 {
   // get a communicator
   const Epetra_Comm& avgcomm = discret_->Comm();
@@ -1002,7 +1002,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection
+}  // FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction
 
 
 //----------------------------------------------------------------------
@@ -1010,7 +1010,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 //           Add vector to time average from previous steps
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
+void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
 {
   // remember time included in this average
   const double old_time = prev_avg_time_;
@@ -1047,7 +1047,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
 
   // reinitialise curr(ent) counter and averages
   TimeReset();
-}  // FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage
+}  // FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average
 
 
 //----------------------------------------------------------------------
@@ -1070,14 +1070,15 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(IO::DiscretizationR
 //      Read previous scatra statistics from a file (for restart)
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra(IO::DiscretizationReader& input)
+void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
+    IO::DiscretizationReader& input)
 {
   if (withscatra_)
   {
     // read previous averaged vector. That's all
     input.ReadVector(prev_avg_scatra_, "averaged_phinp");
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra
+}  // FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra
 
 
 //----------------------------------------------------------------------
@@ -1090,10 +1091,10 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(IO::Discretization
   // loop homogeneous directions, do averaging
   for (unsigned i = 0; i < homdir_.size(); ++i)
   {
-    SpaceAverageInOneDirection(homdir_[i]);
+    space_average_in_one_direction(homdir_[i]);
   }
 
-  AddToTotalTimeAverage();
+  add_to_total_time_average();
 
   if (discret_->Comm().MyPID() == 0)
   {
@@ -1125,12 +1126,12 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
-    TimeResetFluidAvgVectors(*dofrowmap);
+    time_reset_fluid_avg_vectors(*dofrowmap);
   }
   else  // standard fluid case
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    TimeResetFluidAvgVectors(*dofrowmap);
+    time_reset_fluid_avg_vectors(*dofrowmap);
   }
 
   if (withscatra_)
@@ -1152,7 +1153,7 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 //     Clear all statistics vectors based on fluid maps collected in the current period
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra_Map& dofrowmap)
+void FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
   curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
@@ -1161,7 +1162,7 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra
     curr_avg_sca_ = Teuchos::null;
     curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors
+}  // FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors
 
 //----------------------------------------------------------------------
 //
@@ -1173,12 +1174,12 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
-    ResetFluidAvgVectors(*dofrowmap);
+    reset_fluid_avg_vectors(*dofrowmap);
   }
   else  // standard fluid case
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    ResetFluidAvgVectors(*dofrowmap);
+    reset_fluid_avg_vectors(*dofrowmap);
   }
 
   if (withscatra_)
@@ -1200,7 +1201,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 //          Clear all statistics vectors based on fluid maps
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map& dofrowmap)
+void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
   curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
@@ -1221,7 +1222,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map
     prev_avg_sca_ = Teuchos::null;
     prev_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors
+}  // FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors
 
 //----------------------------------------------------------------------
 //

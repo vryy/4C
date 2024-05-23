@@ -40,7 +40,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(const std::ve
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::SoNurbs27(id, owner));
     return ele;
@@ -57,7 +57,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(
 }
 
 
-void DRT::ELEMENTS::NURBS::SoNurbs27Type::NodalBlockInformation(
+void DRT::ELEMENTS::NURBS::SoNurbs27Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -71,10 +71,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::SoNurbs27Type::ComputeNull
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::NURBS::SoNurbs27Type::SetupElementDefinition(
+void DRT::ELEMENTS::NURBS::SoNurbs27Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["NURBS27"] = INPUT::LineDefinition::Builder()
                         .AddIntVector("NURBS27", 27)
@@ -100,7 +100,7 @@ DRT::ELEMENTS::NURBS::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, owner
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;

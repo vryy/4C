@@ -55,7 +55,7 @@ void BeamDiscretizationRuntimeOutputWriter::Initialize(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
+void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretization(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   /*  Note:
@@ -112,7 +112,7 @@ void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust order of filling in the coordinates).
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   point_coordinates.clear();
@@ -185,7 +185,7 @@ void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
       // check if an element is cut by a periodic boundary
       bool shift = false;
       if (periodic_boundingbox_ != Teuchos::null)
-        shift = periodic_boundingbox_->CheckIfShiftBetweenPoints(
+        shift = periodic_boundingbox_->check_if_shift_between_points(
             unshift_interpolated_position, interpolated_position_priorpoint, dummy_shift_in_dim);
 
       // if there is a shift between two consecutive points, double that point and create new cell
@@ -249,10 +249,10 @@ void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendDisplacementField(
+void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   // triads only make sense in 3D
   const unsigned int num_spatial_dimensions = 3;
@@ -341,7 +341,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendDisplacementField(
 void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   // triads only make sense in 3D
   const unsigned int num_spatial_dimensions = 3;
@@ -439,7 +439,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementOwningProcessor()
+void BeamDiscretizationRuntimeOutputWriter::append_element_owning_processor()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -466,7 +466,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementOwningProcessor()
   }
 
   // set the solution vector in the visualization data container
-  visualization_manager_->GetVisualizationData().SetCellDataVector("element_owner", owner, 1);
+  visualization_manager_->get_visualization_data().SetCellDataVector("element_owner", owner, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -498,22 +498,22 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationData().SetCellDataVector("element_gid", gid, 1);
+  visualization_manager_->get_visualization_data().SetCellDataVector("element_gid", gid, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementGhostingInformation()
+void BeamDiscretizationRuntimeOutputWriter::append_element_ghosting_information()
 {
   const auto only_select_beam_elements = [](const DRT::Element* ele)
   { return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele); };
-  IO::AppendElementGhostingInformation(
+  IO::append_element_ghosting_information(
       *discretization_, *visualization_manager_, only_select_beam_elements);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementInternalEnergy()
+void BeamDiscretizationRuntimeOutputWriter::append_element_internal_energy()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -544,13 +544,13 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementInternalEnergy()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationData().SetCellDataVector(
+  visualization_manager_->get_visualization_data().SetCellDataVector(
       "element_internal_energy", e_int, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementKineticEnergy()
+void BeamDiscretizationRuntimeOutputWriter::append_element_kinetic_energy()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -581,13 +581,13 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementKineticEnergy()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationData().SetCellDataVector(
+  visualization_manager_->get_visualization_data().SetCellDataVector(
       "element_kinetic_energy", e_kin, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementFilamentIdAndType()
+void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -628,14 +628,14 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementFilamentIdAndType()
   }
 
   // append the solution vector to the visualization data
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
   visualization_data.SetCellDataVector("ele_filament_id", id, 1);
   visualization_data.SetCellDataVector("ele_filament_type", type, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementCircularCrossSectionRadius()
+void BeamDiscretizationRuntimeOutputWriter::append_element_circular_cross_section_radius()
 {
   // Todo we assume a circular cross-section shape here; generalize this to other shapes
 
@@ -663,20 +663,20 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementCircularCrossSectionRad
 
     // this needs to be done for all cells that make up a cut element
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
-      cross_section_radius.push_back(beamele->GetCircularCrossSectionRadiusForInteractions());
+      cross_section_radius.push_back(beamele->get_circular_cross_section_radius_for_interactions());
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationData().SetCellDataVector(
+  visualization_manager_->get_visualization_data().SetCellDataVector(
       "cross_section_radius", cross_section_radius, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendPointCircularCrossSectionInformationVector(
+void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_information_vector(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   // assume 3D here
   const unsigned int num_spatial_dimensions = 3;
@@ -718,7 +718,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendPointCircularCrossSectionInfor
 
 
     const double circular_cross_section_radius =
-        beamele->GetCircularCrossSectionRadiusForInteractions();
+        beamele->get_circular_cross_section_radius_for_interactions();
 
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
@@ -773,7 +773,8 @@ void BeamDiscretizationRuntimeOutputWriter::AppendPointCircularCrossSectionInfor
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSectionStrainResultants()
+void BeamDiscretizationRuntimeOutputWriter::
+    append_gauss_point_material_cross_section_strain_resultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -829,7 +830,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 
 
     // get GP strain values from previous element evaluation call
-    beamele->GetMaterialStrainResultantsAtAllGPs(axial_strain_GPs_current_element,
+    beamele->get_material_strain_resultants_at_all_g_ps(axial_strain_GPs_current_element,
         shear_strain_2_GPs_current_element, shear_strain_3_GPs_current_element,
         twist_GPs_current_element, curvature_2_GPs_current_element,
         curvature_3_GPs_current_element);
@@ -885,35 +886,36 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
     // store the values of current element in the large vectors collecting data from all elements
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           axial_strain_GPs_current_element, axial_strain_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           shear_strain_2_GPs_current_element, shear_strain_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           shear_strain_3_GPs_current_element, shear_strain_3_GPs_all_row_elements);
 
 
-      InsertVectorValuesAtBackOfOtherVector(twist_GPs_current_element, twist_GPs_all_row_elements);
+      insert_vector_values_at_back_of_other_vector(
+          twist_GPs_current_element, twist_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           curvature_2_GPs_current_element, curvature_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           curvature_3_GPs_current_element, curvature_3_GPs_all_row_elements);
     }
   }
 
 
   int global_num_GPs_per_element_translational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_strains_translational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_strains_translational);
   int global_num_GPs_per_element_rotational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_strains_rotational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_strains_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   visualization_data.SetCellDataVector("axial_strain_GPs", axial_strain_GPs_all_row_elements,
       global_num_GPs_per_element_translational);
@@ -938,15 +940,16 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::
-    AppendGaussPointMaterialCrossSectionStrainResultantsContinuous()
+    append_gauss_point_material_cross_section_strain_resultants_continuous()
 {
-  AppendContinuousStressStrainResultants(StressStrainField::material_strain);
+  append_continuous_stress_strain_resultants(StressStrainField::material_strain);
 }
 
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSectionStressResultants()
+void BeamDiscretizationRuntimeOutputWriter::
+    append_gauss_point_material_cross_section_stress_resultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -1002,7 +1005,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 
 
     // get GP stress values from previous element evaluation call
-    beamele->GetMaterialStressResultantsAtAllGPs(material_axial_force_GPs_current_element,
+    beamele->get_material_stress_resultants_at_all_g_ps(material_axial_force_GPs_current_element,
         material_shear_force_2_GPs_current_element, material_shear_force_3_GPs_current_element,
         material_torque_GPs_current_element, material_bending_moment_2_GPs_current_element,
         material_bending_moment_3_GPs_current_element);
@@ -1071,36 +1074,36 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
     // store the values of current element in the large vectors collecting data from all elements
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           material_axial_force_GPs_current_element, material_axial_force_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           material_shear_force_2_GPs_current_element, material_shear_force_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           material_shear_force_3_GPs_current_element, material_shear_force_3_GPs_all_row_elements);
 
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           material_torque_GPs_current_element, material_torque_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(material_bending_moment_2_GPs_current_element,
+      insert_vector_values_at_back_of_other_vector(material_bending_moment_2_GPs_current_element,
           material_bending_moment_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(material_bending_moment_3_GPs_current_element,
+      insert_vector_values_at_back_of_other_vector(material_bending_moment_3_GPs_current_element,
           material_bending_moment_3_GPs_all_row_elements);
     }
   }
 
 
   int global_num_GPs_per_element_translational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_translational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_stresses_translational);
   int global_num_GPs_per_element_rotational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_rotational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_stresses_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   visualization_data.SetCellDataVector("material_axial_force_GPs",
       material_axial_force_GPs_all_row_elements, global_num_GPs_per_element_translational);
@@ -1125,14 +1128,15 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::
-    AppendGaussPointMaterialCrossSectionStressResultantsContinuous()
+    append_gauss_point_material_cross_section_stress_resultants_continuous()
 {
-  AppendContinuousStressStrainResultants(StressStrainField::material_stress);
+  append_continuous_stress_strain_resultants(StressStrainField::material_stress);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionStressResultants()
+void BeamDiscretizationRuntimeOutputWriter::
+    append_gauss_point_spatial_cross_section_stress_resultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -1188,7 +1192,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionS
 
 
     // get GP stress values from previous element evaluation call
-    beamele->GetSpatialStressResultantsAtAllGPs(spatial_axial_force_GPs_current_element,
+    beamele->get_spatial_stress_resultants_at_all_g_ps(spatial_axial_force_GPs_current_element,
         spatial_shear_force_2_GPs_current_element, spatial_shear_force_3_GPs_current_element,
         spatial_torque_GPs_current_element, spatial_bending_moment_2_GPs_current_element,
         spatial_bending_moment_3_GPs_current_element);
@@ -1256,36 +1260,36 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionS
     // store the values of current element in the large vectors collecting data from all elements
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           spatial_axial_force_GPs_current_element, spatial_axial_force_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           spatial_shear_force_2_GPs_current_element, spatial_shear_force_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           spatial_shear_force_3_GPs_current_element, spatial_shear_force_3_GPs_all_row_elements);
 
 
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           spatial_torque_GPs_current_element, spatial_torque_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(spatial_bending_moment_2_GPs_current_element,
+      insert_vector_values_at_back_of_other_vector(spatial_bending_moment_2_GPs_current_element,
           spatial_bending_moment_2_GPs_all_row_elements);
 
-      InsertVectorValuesAtBackOfOtherVector(spatial_bending_moment_3_GPs_current_element,
+      insert_vector_values_at_back_of_other_vector(spatial_bending_moment_3_GPs_current_element,
           spatial_bending_moment_3_GPs_all_row_elements);
     }
   }
 
 
   int global_num_GPs_per_element_translational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_translational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_stresses_translational);
   int global_num_GPs_per_element_rotational =
-      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_rotational);
+      get_global_number_of_gauss_points_per_beam(num_GPs_per_element_stresses_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   visualization_data.SetCellDataVector("spatial_axial_force_GPs",
       spatial_axial_force_GPs_all_row_elements, global_num_GPs_per_element_translational);
@@ -1309,7 +1313,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionS
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementOrientationParamater(
+void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   /*
@@ -1381,7 +1385,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementOrientationParamater(
 
     // in case of cut elements by a periodic boundary
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           curr_ele_orientation_parameter, orientation_parameter_for_each_element);
   }
 
@@ -1401,10 +1405,10 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementOrientationParamater(
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
-      InsertVectorValuesAtBackOfOtherVector(
+      insert_vector_values_at_back_of_other_vector(
           global_orientation_parameter, orientation_parameter_for_global_network);
 
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   // append the solution vector to the visualization data
   visualization_data.SetCellDataVector(
@@ -1417,7 +1421,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementOrientationParamater(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
+void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   // NOTE: so far force in node 0 is written
@@ -1474,7 +1478,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
 
     beamele->GetPosAtXi(pos_node_1, -1.0, beamelement_displacement_vector);
     beamele->GetPosAtXi(pos_node_2, 1.0, beamelement_displacement_vector);
-    periodic_boundingbox_->GetXiOfIntersection3D(pos_node_1, pos_node_2, xi_intersect, box);
+    periodic_boundingbox_->get_xi_of_intersection3_d(pos_node_1, pos_node_2, xi_intersect, box);
 
     // todo: change from just using first gauss point to linear inter-/extrapolation
     // between two closest gauss points
@@ -1487,7 +1491,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
     {
       if (xi_intersect(dir) > 1.0) continue;
 
-      beamele->GetSpatialForcesAtAllGPs(spatial_x_force_GPs_current_element,
+      beamele->get_spatial_forces_at_all_g_ps(spatial_x_force_GPs_current_element,
           spatial_y_force_2_GPs_current_element, spatial_z_force_3_GPs_current_element);
 
       fint_sum[dir][0] += spatial_x_force_GPs_current_element[0];
@@ -1511,7 +1515,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
       }
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
   visualization_data.SetCellDataVector(
       "sum_spatial_force_rve_crosssection_xdir", sum_spatial_force_rve_crosssection_xdir, 3);
   visualization_data.SetCellDataVector(
@@ -1522,7 +1526,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendElementElasticEnergy()
+void BeamDiscretizationRuntimeOutputWriter::append_element_elastic_energy()
 {
   FOUR_C_THROW("not implemented yet");
 
@@ -1587,7 +1591,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRefLength()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationData().SetCellDataVector("ref_length", ref_lengths, 1);
+  visualization_manager_->get_visualization_data().SetCellDataVector("ref_length", ref_lengths, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1600,7 +1604,7 @@ void BeamDiscretizationRuntimeOutputWriter::WriteToDisk(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::InsertVectorValuesAtBackOfOtherVector(
+void BeamDiscretizationRuntimeOutputWriter::insert_vector_values_at_back_of_other_vector(
     const std::vector<double>& vector_input, std::vector<double>& vector_output)
 {
   vector_output.reserve(vector_output.size() + vector_input.size());
@@ -1610,7 +1614,7 @@ void BeamDiscretizationRuntimeOutputWriter::InsertVectorValuesAtBackOfOtherVecto
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-int BeamDiscretizationRuntimeOutputWriter::GetGlobalNumberOfGaussPointsPerBeam(
+int BeamDiscretizationRuntimeOutputWriter::get_global_number_of_gauss_points_per_beam(
     unsigned int my_num_gp) const
 {
   int my_num_gp_signed = (int)my_num_gp;
@@ -1628,7 +1632,7 @@ int BeamDiscretizationRuntimeOutputWriter::GetGlobalNumberOfGaussPointsPerBeam(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::CalcInterpolationPolynomialCoefficients(
+void BeamDiscretizationRuntimeOutputWriter::calc_interpolation_polynomial_coefficients(
     const CORE::FE::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
     std::vector<double>& polynomial_coefficients) const
 {
@@ -1682,7 +1686,7 @@ void BeamDiscretizationRuntimeOutputWriter::CalcInterpolationPolynomialCoefficie
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double BeamDiscretizationRuntimeOutputWriter::EvaluatePolynomialCoefficients(
+double BeamDiscretizationRuntimeOutputWriter::evaluate_polynomial_coefficients(
     const std::vector<double>& polynomial_coefficients, const double& xi) const
 {
   double interpolated_value = 0.0;
@@ -1693,7 +1697,7 @@ double BeamDiscretizationRuntimeOutputWriter::EvaluatePolynomialCoefficients(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultants(
+void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resultants(
     const StressStrainField stress_strain_field)
 {
   // storage for stress / strain measures at all GPs of current element
@@ -1730,13 +1734,13 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
       switch (stress_strain_field)
       {
         case StressStrainField::material_strain:
-          sr_beam->GetMaterialStrainResultantsAtAllGPs(stress_strain_GPs_current_element[0],
+          sr_beam->get_material_strain_resultants_at_all_g_ps(stress_strain_GPs_current_element[0],
               stress_strain_GPs_current_element[1], stress_strain_GPs_current_element[2],
               stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
               stress_strain_GPs_current_element[5]);
           break;
         case StressStrainField::material_stress:
-          sr_beam->GetMaterialStressResultantsAtAllGPs(stress_strain_GPs_current_element[0],
+          sr_beam->get_material_stress_resultants_at_all_g_ps(stress_strain_GPs_current_element[0],
               stress_strain_GPs_current_element[1], stress_strain_GPs_current_element[2],
               stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
               stress_strain_GPs_current_element[5]);
@@ -1750,12 +1754,12 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
     CORE::FE::GaussRule1D force_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_force);
     for (std::size_t i = 0; i < 3; i++)
-      CalcInterpolationPolynomialCoefficients(
+      calc_interpolation_polynomial_coefficients(
           force_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
     CORE::FE::GaussRule1D moment_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_moment);
     for (std::size_t i = 3; i < 6; i++)
-      CalcInterpolationPolynomialCoefficients(
+      calc_interpolation_polynomial_coefficients(
           moment_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
 
     // loop over the chosen visualization points (equidistant distribution in the element
@@ -1770,7 +1774,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
       // of point data written
       for (std::size_t i = 0; i < 6; i++)
         stress_strain_vector[i].push_back(
-            EvaluatePolynomialCoefficients(stress_strain_coefficients[i], xi));
+            evaluate_polynomial_coefficients(stress_strain_coefficients[i], xi));
     }
   }
 
@@ -1790,7 +1794,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
   for (std::size_t i = 0; i < 6; i++)
     visualization_data.SetPointDataVector(field_names[i], stress_strain_vector[i], 1);
 }

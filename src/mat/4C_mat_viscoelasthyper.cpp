@@ -243,7 +243,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     for (auto& p : potsum_)
     {
       p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(anisotropy_);
+      p->register_anisotropy_extensions(anisotropy_);
     }
 
     // history data 09/13
@@ -329,8 +329,8 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 void MAT::ViscoElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 
   // Setup summands
   for (auto& p : potsum_) p->Setup(numgp, linedef);
@@ -349,7 +349,7 @@ void MAT::ViscoElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
   {
     for (auto& p : potsum_)
     {
-      p->SpecifyViscoFormulation(isovisco_, viscogenmax_, viscogeneralizedgenmax_, viscofract_);
+      p->specify_visco_formulation(isovisco_, viscogenmax_, viscogeneralizedgenmax_, viscofract_);
     }
   }
 
@@ -420,7 +420,7 @@ void MAT::ViscoElastHyper::Update()
     // gauss-point
 
     // numsteps
-    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
     const int numsteps = sdyn.get<int>("NUMSTEP");
     // maximal size of history (in time steps)
     const unsigned int max_hist = numsteps + 1;
@@ -561,7 +561,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodisovisco(true);
       CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stressisomodvolvisco(true);
       CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisomodvolvisco(true);
-      EvaluateIsoViscoModified(stressisomodisovisco, stressisomodvolvisco, cmatisomodisovisco,
+      evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco, cmatisomodisovisco,
           cmatisomodvolvisco, prinv, modinv, modmu, modxi, C_strain, id2, iC_stress, id4,
           modrcgrate);
       stress->Update(1.0, stressisomodisovisco, 1.0);
@@ -575,7 +575,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       // add viscous part coupled
       CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stressisovisco(true);
       CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(true);
-      EvaluateIsoViscoPrincipal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
+      evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
       stress->Update(1.0, stressisovisco, 1.0);
       cmat->Update(1.0, cmatisovisco, 1.0);
     }
@@ -596,7 +596,7 @@ void MAT::ViscoElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q(true);
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
-    EvaluateViscoGeneralizedGenMax(Q, cmatq, params, glstrain, gp, eleGID);
+    evaluate_visco_generalized_gen_max(Q, cmatq, params, glstrain, gp, eleGID);
     stress->Update(1.0, Q, 1.0);
     cmat->Update(1.0, cmatq, 1.0);
   }
@@ -723,7 +723,7 @@ void MAT::ViscoElastHyper::EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& prinv,
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->AddCoefficientsViscoPrincipal(prinv, mu, xi, rateinv, params, gp, eleGID);
+      potsum_[p]->add_coefficients_visco_principal(prinv, mu, xi, rateinv, params, gp, eleGID);
     }
   }
 
@@ -733,7 +733,7 @@ void MAT::ViscoElastHyper::EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& prinv,
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->AddCoefficientsViscoModified(
+      potsum_[p]->add_coefficients_visco_modified(
           modinv, modmu, modxi, modrateinv, params, gp, eleGID);
     }
   }
@@ -743,7 +743,7 @@ void MAT::ViscoElastHyper::EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& prinv,
 /* stress and constitutive tensor for principal viscous materials       */
 /*                                                        pfaller May15 */
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateIsoViscoPrincipal(CORE::LINALG::Matrix<6, 1>& stress,
+void MAT::ViscoElastHyper::evaluate_iso_visco_principal(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<8, 1>& mu,
     CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<6, 6>& id4sharp,
     CORE::LINALG::Matrix<6, 1>& scgrate)
@@ -760,7 +760,7 @@ void MAT::ViscoElastHyper::EvaluateIsoViscoPrincipal(CORE::LINALG::Matrix<6, 1>&
 /*----------------------------------------------------------------------*/
 /* stress and constitutive tensor for decoupled viscous materials 09/13 */
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateIsoViscoModified(
+void MAT::ViscoElastHyper::evaluate_iso_visco_modified(
     CORE::LINALG::Matrix<6, 1>& stressisomodisovisco,
     CORE::LINALG::Matrix<6, 1>& stressisomodvolvisco,
     CORE::LINALG::Matrix<6, 6>& cmatisomodisovisco, CORE::LINALG::Matrix<6, 6>& cmatisomodvolvisco,
@@ -838,7 +838,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
 
   // read material parameters of viscogenmax material
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->ReadMaterialParametersVisco(tau, beta, alpha, solve);
+    potsum_[p]->read_material_parameters_visco(tau, beta, alpha, solve);
 
   if (solve == "OST")
   {
@@ -852,10 +852,10 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
     // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
     // 09/14)
     std::string dyntype =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
     if (dyntype == "OneStepTheta")
       theta = GLOBAL::Problem::Instance()
-                  ->StructuralDynamicParams()
+                  ->structural_dynamic_params()
                   .sublist("ONESTEPTHETA")
                   .get<double>("THETA");
 
@@ -935,7 +935,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6, 1>& Q,
+void MAT::ViscoElastHyper::evaluate_visco_generalized_gen_max(CORE::LINALG::Matrix<6, 1>& Q,
     CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<6, 1>* glstrain, const int gp, const int eleGID)
 {
@@ -956,7 +956,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
 
     if (GeneralizedGenMax != Teuchos::null)
     {
-      GeneralizedGenMax->ReadMaterialParameters(numbranch, matids, solve);
+      GeneralizedGenMax->read_material_parameters(numbranch, matids, solve);
       branchespotsum = GeneralizedGenMax->GetBranchespotsum();
     }
   }
@@ -1042,7 +1042,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
     {
       Teuchos::RCP<MAT::ELASTIC::ViscoPart> ViscoPart =
           Teuchos::rcp_dynamic_cast<MAT::ELASTIC::ViscoPart>(branchpotsum[q]);
-      if (ViscoPart != Teuchos::null) ViscoPart->ReadMaterialParameters(tau);
+      if (ViscoPart != Teuchos::null) ViscoPart->read_material_parameters(tau);
     }
 
     // make sure Qbranch in this branch is empty
@@ -1059,10 +1059,10 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
       // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
       // 09/14)
       std::string dyntype =
-          GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
+          GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
       if (dyntype == "OneStepTheta")
         theta = GLOBAL::Problem::Instance()
-                    ->StructuralDynamicParams()
+                    ->structural_dynamic_params()
                     .sublist("ONESTEPTHETA")
                     .get<double>("THETA");
 
@@ -1116,7 +1116,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
   // update history
   histbranchelaststresscurr_->at(gp) = S;
   histbranchstresscurr_->at(gp) = Qbranch;
-}  // EvaluateViscoGeneralizedGenMax
+}  // evaluate_visco_generalized_gen_max
 
 
 /*----------------------------------------------------------------------*/
@@ -1135,7 +1135,7 @@ void MAT::ViscoElastHyper::EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
   // read material parameters of viscofract-material
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->ReadMaterialParametersVisco(tau, beta, alpha, solve);
+    potsum_[p]->read_material_parameters_visco(tau, beta, alpha, solve);
   }
 
   // safety checks for alpha

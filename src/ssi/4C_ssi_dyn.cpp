@@ -36,11 +36,12 @@ void ssi_drt()
     // 2.- Parameter reading
     auto& ssiparams = const_cast<Teuchos::ParameterList&>(problem->SSIControlParams());
     // access scatra params list
-    auto& scatradyn = const_cast<Teuchos::ParameterList&>(problem->ScalarTransportDynamicParams());
+    auto& scatradyn =
+        const_cast<Teuchos::ParameterList&>(problem->scalar_transport_dynamic_params());
     // access structural dynamic params list which will be possibly modified while creating the time
     // integrator
-    auto& sdyn =
-        const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->StructuralDynamicParams());
+    auto& sdyn = const_cast<Teuchos::ParameterList&>(
+        GLOBAL::Problem::Instance()->structural_dynamic_params());
 
     // introduce additional scatra field on manifold?
     const bool is_scatra_manifold =
@@ -108,10 +109,10 @@ void ssi_drt()
     problem->GetDis("scatra")->FillComplete(true, false, true);
     if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, false, true);
 
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*problem->GetDis("structure"));
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*problem->GetDis("scatra"));
     if (is_scatra_manifold)
-      CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
+      CORE::REBALANCE::UTILS::print_parallel_distribution(*problem->GetDis("scatra_manifold"));
 
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all

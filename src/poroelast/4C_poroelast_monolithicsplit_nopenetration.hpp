@@ -57,10 +57,10 @@ namespace POROELAST
     void ReadRestart(const int step) override;
 
     //! contains text to PrintNewtonIter
-    void PrintNewtonIterTextStream(std::ostringstream& oss) override;
+    void print_newton_iter_text_stream(std::ostringstream& oss) override;
 
     //! contains header to PrintNewtonIter
-    void PrintNewtonIterHeaderStream(std::ostringstream& oss) override;
+    void print_newton_iter_header_stream(std::ostringstream& oss) override;
 
 
    protected:
@@ -72,29 +72,30 @@ namespace POROELAST
         ) override;
 
     //! Evaluate fluid-mechanical system matrix
-    void ApplyFluidCouplMatrix(
+    void apply_fluid_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
         ) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
-    void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x) override;
+    void recover_lagrange_multiplier_after_newton_step(
+        Teuchos::RCP<const Epetra_Vector> x) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    void RecoverLagrangeMultiplierAfterTimeStep() override;
+    void recover_lagrange_multiplier_after_time_step() override;
 
     //! output
     void Output(bool forced_writerestart = false) override;
 
     //! setup of coupling object and system matrices
-    void SetupCouplingAndMatrices() override;
+    void setup_coupling_and_matrices() override;
 
     //! start a new time step
     void PrepareTimeStep() override;
 
     //! convergence check for Newton solver
-    void BuildConvergenceNorms() override;
+    void build_convergence_norms() override;
 
     //!@}
    private:

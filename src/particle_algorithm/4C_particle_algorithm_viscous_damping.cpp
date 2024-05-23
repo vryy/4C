@@ -42,7 +42,7 @@ void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle->GetParticleTypes())
@@ -52,7 +52,7 @@ void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(type, PARTICLEENGINE::Owned);
 
     // apply viscous damping contribution
     container->UpdateState(

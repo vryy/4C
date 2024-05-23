@@ -139,7 +139,7 @@ namespace INPUT
 
   std::string SeparatorComponent::WriteReadTheDocs() { return separator_; }
 
-  std::vector<std::string> SeparatorComponent::WriteReadTheDocsTableRow() const
+  std::vector<std::string> SeparatorComponent::write_read_the_docs_table_row() const
   {
     std::vector<std::string> tablerow;
 
@@ -785,7 +785,7 @@ namespace INPUT
     }
   }
 
-  std::vector<std::string> SwitchComponent::WriteReadTheDocsLines()
+  std::vector<std::string> SwitchComponent::write_read_the_docs_lines()
   {
     std::vector<std::string> all_choices_as_rtd;
     std::transform(choices_.begin(), choices_.end(), std::back_inserter(all_choices_as_rtd),

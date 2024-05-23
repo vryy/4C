@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
      *
      * @param discret (in) Pointer to the discretization.
      */
-    void AddDiscretizationNodalReferencePosition(
+    void add_discretization_nodal_reference_position(
         const Teuchos::RCP<const DRT::Discretization>& discret);
 
     /**
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * @param data_name (in) name of the added data.
      * @param vector (in) Global state vector. The size of this vector has to be 3 * n_nodes.
      */
-    void AddDiscretizationNodalData(
+    void add_discretization_nodal_data(
         const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector);
 
     /**

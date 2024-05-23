@@ -120,10 +120,11 @@ namespace STR
 
       //! @name Model specific interfaces
       //! @{
-      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const = 0;
+      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> get_brownian_dyn_param_interface()
+          const = 0;
 
       //! get pointer to special parameter interface for beam elements
-      virtual Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;
+      virtual Teuchos::RCP<BeamParamsInterface> get_beam_params_interface_ptr() const = 0;
       //! @}
 
       //! @name Access control parameters for the handling of element internal variables (e.g. EAS)
@@ -159,9 +160,9 @@ namespace STR
 
       virtual Teuchos::RCP<std::vector<char>>& StrainDataPtr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& PlasticStrainDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& CouplingStressDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() = 0;
 
       virtual Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() = 0;
 
@@ -172,16 +173,16 @@ namespace STR
       virtual enum INPAR::STR::StrainType GetStrainOutputType() const = 0;
 
       //! get the current plastic strain type
-      virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const = 0;
+      virtual enum INPAR::STR::StrainType get_plastic_strain_output_type() const = 0;
 
       //! get the current coupling stress type
-      virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const = 0;
+      virtual enum INPAR::STR::StressType get_coupling_stress_output_type() const = 0;
 
       virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
-      GaussPointDataOutputManagerPtr() = 0;
+      gauss_point_data_output_manager_ptr() = 0;
 
       //! add contribution to energy of specified type
-      virtual void AddContributionToEnergyType(double value, enum STR::EnergyType type) = 0;
+      virtual void add_contribution_to_energy_type(double value, enum STR::EnergyType type) = 0;
 
       //! add the current partial update norm of the given quantity
       virtual void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
@@ -190,8 +191,9 @@ namespace STR
 
       /*! collects and calculates the solution norm of the previous accepted Newton
        *  step on the current proc */
-      virtual void SumIntoMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
-          const int& numentries, const double* my_old_values, const int& owner) = 0;
+      virtual void sum_into_my_previous_sol_norm(
+          const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& numentries,
+          const double* my_old_values, const int& owner) = 0;
       //! @}
     };  // class ParamsInterface
 
@@ -232,13 +234,14 @@ namespace BROWNIANDYN
 
     /// the way how damping coefficient values for beams are specified
     virtual INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
-    HowBeamDampingCoefficientsAreSpecified() const = 0;
+    how_beam_damping_coefficients_are_specified() const = 0;
 
     /// get prefactors for damping coefficients of beams if they are specified via input file
-    virtual std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile() const = 0;
+    virtual std::vector<double> const& get_beam_damping_coefficient_prefactors_from_input_file()
+        const = 0;
 
     //! get vector holding periodic bounding box object
-    virtual Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
+    virtual Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& get_periodic_bounding_box()
         const = 0;
 
     //! get the current step length

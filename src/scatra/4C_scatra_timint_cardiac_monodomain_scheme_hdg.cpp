@@ -51,7 +51,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::Setup()
 void SCATRA::TimIntCardiacMonodomainHDG::Update()
 {
   // time update of myocard material
-  ElementMaterialTimeUpdate();
+  element_material_time_update();
 
   // Standard Update
   TimIntHDG::Update();
@@ -59,7 +59,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
+void SCATRA::TimIntCardiacMonodomainHDG::element_material_time_update()
 {
   discret_->ClearState(true);
 
@@ -136,7 +136,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
+void SCATRA::TimIntCardiacMonodomainHDG::write_problem_specific_output(
     Teuchos::RCP<Epetra_Vector> interpolatedPhi)
 {
   // Compute and write activation time

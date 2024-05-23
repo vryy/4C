@@ -511,12 +511,12 @@ namespace CONTACT
       inline Deriv1stMap& GetDeriv1st_WGapMa() { return d_wgap_ma_; }
       inline const Deriv1stMap& GetDeriv1st_WGapMa() const { return d_wgap_ma_; }
 
-      inline Teuchos::RCP<Deriv1stMap>& GetDeriv1st_WGapSl_Complete_Ptr()
+      inline Teuchos::RCP<Deriv1stMap>& get_deriv1st_w_gap_sl_complete_ptr()
       {
         return d_wgap_sl_complete_;
       }
 
-      inline Deriv1stMap& GetDeriv1st_WGapSl_Complete()
+      inline Deriv1stMap& get_deriv1st_w_gap_sl_complete()
       {
         if (d_wgap_sl_complete_.is_null())
           FOUR_C_THROW(
@@ -525,7 +525,7 @@ namespace CONTACT
         return *d_wgap_sl_complete_;
       }
 
-      inline const Deriv1stMap& GetDeriv1st_WGapSl_Complete() const
+      inline const Deriv1stMap& get_deriv1st_w_gap_sl_complete() const
       {
         if (d_wgap_sl_complete_.is_null())
           FOUR_C_THROW(
@@ -534,12 +534,12 @@ namespace CONTACT
         return *d_wgap_sl_complete_;
       }
 
-      inline Teuchos::RCP<Deriv1stMap>& GetDeriv1st_WGapMa_Complete_Ptr()
+      inline Teuchos::RCP<Deriv1stMap>& get_deriv1st_w_gap_ma_complete_ptr()
       {
         return d_wgap_ma_complete_;
       }
 
-      inline Deriv1stMap& GetDeriv1st_WGapMa_Complete()
+      inline Deriv1stMap& get_deriv1st_w_gap_ma_complete()
       {
         if (d_wgap_ma_complete_.is_null())
           FOUR_C_THROW(
@@ -548,7 +548,7 @@ namespace CONTACT
         return *d_wgap_ma_complete_;
       }
 
-      inline const Deriv1stMap& GetDeriv1st_WGapMa_Complete() const
+      inline const Deriv1stMap& get_deriv1st_w_gap_ma_complete() const
       {
         if (d_wgap_ma_complete_.is_null())
           FOUR_C_THROW(
@@ -581,11 +581,11 @@ namespace CONTACT
       inline Deriv2ndMap& GetDeriv2nd_Debug() { return debug_.dd_; }
       inline const Deriv2ndMap& GetDeriv2nd_Debug() const { return debug_.dd_; }
 
-      inline Deriv1stVecMap& GetDeriv1st_DebugVec() { return debug_.d_vec_; }
-      inline const Deriv1stVecMap& GetDeriv1st_DebugVec() const { return debug_.d_vec_; }
+      inline Deriv1stVecMap& get_deriv1st_debug_vec() { return debug_.d_vec_; }
+      inline const Deriv1stVecMap& get_deriv1st_debug_vec() const { return debug_.d_vec_; }
 
-      inline Deriv2ndVecMap& GetDeriv2nd_DebugVec() { return debug_.dd_vec_; }
-      inline const Deriv2ndVecMap& GetDeriv2nd_DebugVec() const { return debug_.dd_vec_; }
+      inline Deriv2ndVecMap& get_deriv2nd_debug_vec() { return debug_.dd_vec_; }
+      inline const Deriv2ndVecMap& get_deriv2nd_debug_vec() const { return debug_.dd_vec_; }
 
       /// @}
 
@@ -923,14 +923,14 @@ namespace CONTACT
       weighted_avTangVel_.Clear();
     }
 
-    CORE::LINALG::Matrix<3, 1>& GetWeightedRelTangVel() { return weighted_relTangVel_; }
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetWeightedRelTangVelDeriv()
+    CORE::LINALG::Matrix<3, 1>& get_weighted_rel_tang_vel() { return weighted_relTangVel_; }
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& get_weighted_rel_tang_vel_deriv()
     {
       return deriv_weighted_relTangVel_;
     }
 
-    CORE::LINALG::Matrix<3, 1>& GetWeightedAvTangVel() { return weighted_avTangVel_; }
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetWeightedAvTangVelDeriv()
+    CORE::LINALG::Matrix<3, 1>& get_weighted_av_tang_vel() { return weighted_avTangVel_; }
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& get_weighted_av_tang_vel_deriv()
     {
       return deriv_weighted_avTangVel_;
     }
@@ -1201,7 +1201,7 @@ namespace CONTACT
     /*!
      \brief Build nodal edge tangent
      */
-    void BuildAveragedEdgeTangent();
+    void build_averaged_edge_tangent();
 
     /*!
      \brief Initializes the data container of the node
@@ -1210,7 +1210,7 @@ namespace CONTACT
      is initialized.
 
      */
-    void InitializeDataContainer() override;
+    void initialize_data_container() override;
 
     /*!
      \brief Initializes the data container of the augmented contact node
@@ -1219,7 +1219,8 @@ namespace CONTACT
      quantities/information is initialized.
 
      */
-    void InitializeAugDataContainer(const int slMaElementAreaRatio, const bool isTriangleOnMaster);
+    void initialize_aug_data_container(
+        const int slMaElementAreaRatio, const bool isTriangleOnMaster);
 
     /*!
     \brief Initializes the poro data container of the node
@@ -1228,7 +1229,7 @@ namespace CONTACT
     is initialized. --- Used to initialize PoroDataContainer for master nodes!
 
     */
-    void InitializePoroDataContainer() override;
+    void initialize_poro_data_container() override;
 
     /*!
     \brief Initializes the ehl data container of the node
@@ -1237,12 +1238,12 @@ namespace CONTACT
     is initialized.
 
     */
-    void InitializeEhlDataContainer() override;
+    void initialize_ehl_data_container() override;
 
     /*!
     \brief Initializes the TSI data container of the node
     */
-    virtual void InitializeTSIDataContainer(double t_ref, double t_dam);
+    virtual void initialize_tsi_data_container(double t_ref, double t_dam);
 
     /*!
      \brief Resets the data container of the node

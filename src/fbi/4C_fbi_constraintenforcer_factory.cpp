@@ -31,7 +31,7 @@ Teuchos::RCP<ADAPTER::FBIConstraintenforcer> ADAPTER::ConstraintEnforcerFactory:
       Teuchos::rcp(new ADAPTER::FBIConstraintBridgePenalty());
 
   Teuchos::RCP<FBI::FBIGeometryCoupler> coupler =
-      FBI::GeometryCouplerFactory::CreateGeometryCoupler(fbidyn);
+      FBI::GeometryCouplerFactory::create_geometry_coupler(fbidyn);
 
   return Teuchos::rcp(new ADAPTER::FBIPenaltyConstraintenforcer(bridge, coupler));
 }

@@ -62,7 +62,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetGeneralParameters(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_general_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

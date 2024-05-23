@@ -56,14 +56,14 @@ namespace SSI
     //!
     //! \param structdis   underlying structure discretization
     //! \param scatradis   underlying scatra discretization
-    virtual void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+    virtual void assign_material_pointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     //!
     //! \param scatradis      underlying scatra discretization
     //! \param stress_state   mechanical stress state vector to set
     //! \param nds            number of dofset to write state on
-    virtual void SetMechanicalStressState(DRT::Discretization& scatradis,
+    virtual void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) = 0;
 
     //! \brief set structure mesh displacement on other field
@@ -112,10 +112,10 @@ namespace SSI
 
     void Setup() override;
 
-    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+    void assign_material_pointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    void SetMechanicalStressState(DRT::Discretization& scatradis,
+    void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_statetemp, unsigned nds) override;
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -181,10 +181,10 @@ namespace SSI
 
     void Setup() override;
 
-    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+    void assign_material_pointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    void SetMechanicalStressState(DRT::Discretization& scatradis,
+    void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
@@ -269,10 +269,10 @@ namespace SSI
 
     void Setup() override;
 
-    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+    void assign_material_pointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    void SetMechanicalStressState(DRT::Discretization& scatradis,
+    void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
@@ -345,10 +345,10 @@ namespace SSI
     void Setup() override;
 
 
-    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+    void assign_material_pointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    void SetMechanicalStressState(DRT::Discretization& scatradis,
+    void set_mechanical_stress_state(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");

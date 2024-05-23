@@ -97,7 +97,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
-  EvalReinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
+  eval_reinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
 
   return 0;
 }
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitialization(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization(
     const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -115,12 +115,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
   // --- standard case --------------------------------------------------------
   if (probDim == this->nsd_ele_)
   {
-    EvalReinitializationStd(phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
+    eval_reinitialization_std(
+        phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
   }
   // --- embedded case --------------------------------------------------------
   else
   {
-    EvalReinitializationEmbedded(lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
+    eval_reinitialization_embedded(lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
   }
 }
 
@@ -128,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializationEmbedded(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_embedded(
     const std::vector<int>& lm, DRT::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
@@ -191,18 +192,18 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       {
         case SCATRA::Action::calc_mat_and_rhs:
         {
-          EllipticNewtonSystem(
+          elliptic_newton_system(
               &elemat1_epetra, &elevec1_epetra, el2sysmat_diag_inv, boundaryIntCells);
           break;
         }
         case SCATRA::Action::calc_rhs:
         {
-          EllipticNewtonSystem(nullptr, &elevec1_epetra, el2sysmat_diag_inv, boundaryIntCells);
+          elliptic_newton_system(nullptr, &elevec1_epetra, el2sysmat_diag_inv, boundaryIntCells);
           break;
         }
         case SCATRA::Action::calc_mat:
         {
-          EllipticNewtonSystem(&elemat1_epetra, nullptr, el2sysmat_diag_inv, boundaryIntCells);
+          elliptic_newton_system(&elemat1_epetra, nullptr, el2sysmat_diag_inv, boundaryIntCells);
           break;
         }
         default:
@@ -220,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSystem(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton_system(
     CORE::LINALG::SerialDenseMatrix* emat, CORE::LINALG::SerialDenseVector* erhs,
     const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
     const CORE::GEO::BoundaryIntCellPtrs& bcell)
@@ -233,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     //--------------------------------------------------------------------
     // set all Gauss point quantities
@@ -310,7 +311,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
         {
           const int fui = ui * my::numdofpernode_ + k;
           double laplawf(0.0);
-          my::GetLaplacianWeakForm(laplawf, mat, fui, fvi);
+          my::get_laplacian_weak_form(laplawf, mat, fui, fvi);
 
           (*emat)(fvi, fui) += fac_diff * laplawf;
         }
@@ -335,7 +336,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
   // 3) evaluation of penalty term at initial interface
   //----------------------------------------------------------------
 
-  EvaluateInterfaceTerm(emat, erhs, bcell);
+  evaluate_interface_term(emat, erhs, bcell);
 
   return;
 }
@@ -344,7 +345,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializationStd(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_std(
     const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
@@ -431,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
+  const double vol = my::eval_shape_func_and_derivs_at_ele_center();
 
   //----------------------------------------------------------------------
   // calculation of characteristic element length
@@ -442,7 +443,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
-  const double charelelength = CalcCharEleLengthReinit(vol, gradphizero);
+  const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
 
   //----------------------------------------------------------------------
   // prepare diffusion manager
@@ -525,7 +526,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -614,7 +615,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     if (my::use2ndderiv_)
     {
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-      my::GetLaplacianStrongForm(diff);
+      my::get_laplacian_strong_form(diff);
       diff.putScalar(0.0);
     }
 
@@ -657,7 +658,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
       my::CalcArtificialDiff(vol, 0, 1.0, convelint, gradphinp, conv_phi, scatrares, tau);
 
       if (lsreinitparams_->ArtDiff() == INPAR::SCATRA::artdiff_crosswind)
-        DiffManager()->SetVelocityForCrossWindDiff(convelint);
+        DiffManager()->set_velocity_for_cross_wind_diff(convelint);
 
 #ifdef MODIFIED_EQ
       // recompute tau to get adaption to artificial diffusion
@@ -673,7 +674,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
       if (my::use2ndderiv_)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        my::GetLaplacianStrongForm(diff);
+        my::get_laplacian_strong_form(diff);
         diff.Scale(my::diffmanager_->GetIsotropicDiff(0));
         diff_phi = diff.Dot(my::ephinp_[0]);
       }
@@ -722,7 +723,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatTransConvDiffStab(emat, 0, timetaufac, 1.0, sgconv, diff);
+        my::calc_mat_trans_conv_diff_stab(emat, 0, timetaufac, 1.0, sgconv, diff);
     }
 
 
@@ -749,12 +750,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     // and must not be changed
     my::ComputeRhsInt(rhsint, 1.0, 1.0, hist);
     double rea_phi(0.0);  // dummy
-    my::RecomputeScatraResForRhs(scatrares, 0, diff, 1.0, 1.0, rea_phi, rhsint);
+    my::recompute_scatra_res_for_rhs(scatrares, 0, diff, 1.0, 1.0, rea_phi, rhsint);
     // note: the third function is not required here, since we neither have a subgrid velocity
     //       nor a conservative form
 
     // standard Galerkin transient, old part of rhs and bodyforce term
-    my::CalcRHSHistAndSource(erhs, 0, fac, rhsint);
+    my::calc_rhs_hist_and_source(erhs, 0, fac, rhsint);
 
     // linearization of convective term
     my::CalcRHSConv(erhs, 0, rhsfac);
@@ -769,7 +770,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 
     // linearization of stabilization terms
     if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcRHSTransConvDiffStab(erhs, 0, rhstaufac, 1.0, scatrares, sgconv, diff);
+      my::calc_rhs_trans_conv_diff_stab(erhs, 0, rhstaufac, 1.0, scatrares, sgconv, diff);
 
   }  // end: loop all Gauss points
 
@@ -795,7 +796,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     //--------------------------------------------------------------------
     // set all Gauss point quantities
@@ -902,7 +903,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
   // 3) evaluation of penalty term at initial interface
   //----------------------------------------------------------------
 
-  EvaluateInterfaceTerm(&emat, &erhs, bcell);
+  evaluate_interface_term(&emat, &erhs, bcell);
 
   return;
 }
@@ -918,7 +919,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // compute interface thickness
-  const double epsilon = lsreinitparams_->InterfaceThicknessFac() * charelelength;
+  const double epsilon = lsreinitparams_->interface_thickness_fac() * charelelength;
 
   if (lsreinitparams_->SignType() == INPAR::SCATRA::signtype_nonsmoothed)
   {
@@ -964,7 +965,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::DerivSignFunction(
     double& deriv_sign, const double charelelength, const double phizero)
 {
   // compute interface thickness
-  const double epsilon = lsreinitparams_->InterfaceThicknessFac() * charelelength;
+  const double epsilon = lsreinitparams_->interface_thickness_fac() * charelelength;
 
   if (phizero < -epsilon)
     deriv_sign = 0.0;
@@ -981,7 +982,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::DerivSignFunction(
  |  calculation of characteristic element length        rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLengthReinit(
+double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_char_ele_length_reinit(
     const double vol, const CORE::LINALG::Matrix<nsd_, 1>& gradphizero)
 {
   // define and initialize length
@@ -1075,11 +1076,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
       double laplawf(0.0);
 
       // in case of anisotropic or crosswind diffusion, multiply 'derxy_' with diffusion tensor
-      // inside 'GetLaplacianWeakForm'
+      // inside 'get_laplacian_weak_form'
       if (crosswind)
-        my::GetLaplacianWeakForm(laplawf, DiffManager()->GetCrosswindTensor(), ui, vi);
+        my::get_laplacian_weak_form(laplawf, DiffManager()->GetCrosswindTensor(), ui, vi);
       else
-        my::GetLaplacianWeakForm(laplawf, ui, vi);
+        my::get_laplacian_weak_form(laplawf, ui, vi);
 
       emat(fvi, fui) += fac_diffus * laplawf;
     }
@@ -1120,7 +1121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
 
     double laplawf(0.0);
 
-    this->GetLaplacianWeakFormRHS(laplawf, gradphirhs, vi);
+    this->get_laplacian_weak_form_rhs(laplawf, gradphirhs, vi);
 
     erhs[fvi] -= vrhs * laplawf;
   }
@@ -1134,7 +1135,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
  |                                                     rasthofer 09/14 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTerm(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_interface_term(
     CORE::LINALG::SerialDenseMatrix* emat,       //!< element matrix to calculate
     CORE::LINALG::SerialDenseVector* erhs,       //!< element vector to calculate
     const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
@@ -1186,7 +1187,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
     const CORE::GEO::BoundaryIntCell& cell)
 {
   // get the cut position ( local parent element coordinates )
-  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().values(), true);
+  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(
+      cell.cell_nodal_pos_xi_domain().values(), true);
 
   // --------------------------------------------------------------------------
   // evaluate shape functions at the cut position
@@ -1231,7 +1233,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   if (nsd_ != 3) FOUR_C_THROW("Extend for other dimensions");
   const size_t nsd_cell = 2;  // nsd_-1;
   // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
-  CORE::LINALG::SerialDenseMatrix cellXiDomaintmp = cell.CellNodalPosXiDomain();
+  CORE::LINALG::SerialDenseMatrix cellXiDomaintmp = cell.cell_nodal_pos_xi_domain();
   // cellXiDomaintmp.Print(std::cout);
   // transform to fixed size format
   const CORE::LINALG::Matrix<nsd, numvertices> cellXiDomain(cellXiDomaintmp);

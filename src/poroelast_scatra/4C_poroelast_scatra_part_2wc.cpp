@@ -30,7 +30,7 @@ POROELASTSCATRA::PoroScatraPart2WC::PoroScatraPart2WC(
 {
   if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
 
-  const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->PoroScatraControlParams();
+  const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->poro_scatra_control_params();
   // Get the parameters for the ConvergenceCheck
   itmax_ = params.get<int>("ITEMAX");            // default: =10
   ittol_ = params.get<double>("TOLINC_GLOBAL");  // default: =1e-6
@@ -141,7 +141,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::PrepareTimeStep(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sync!
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   if (printheader) PrintHeader();
 
@@ -173,7 +173,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Update()
   PoroField()->Update();
   ScaTraField()->Update();
 
-  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -182,7 +182,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Update()
 void POROELASTSCATRA::PoroScatraPart2WC::Output()
 {
   PoroField()->Output();
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 }
 
 
@@ -221,7 +221,7 @@ void POROELASTSCATRA::PoroScatraPart2WC::Solve()
 
     // solve scalar transport equation
     DoScatraStep();
-    // ScatraEvaluateSolveIterUpdate();
+    // scatra_evaluate_solve_iter_update();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall

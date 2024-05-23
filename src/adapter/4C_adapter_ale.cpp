@@ -68,7 +68,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   // connect degrees of freedom for coupled nodes
   // ---------------------------------------------------------------------------
   PeriodicBoundaryConditions pbc(actdis);
-  pbc.UpdateDofsForPeriodicBoundaryConditions();
+  pbc.update_dofs_for_periodic_boundary_conditions();
 
   // ---------------------------------------------------------------------------
   // context for output and restart
@@ -97,7 +97,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
 
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   // ---------------------------------------------------------------------------
   // overwrite certain parameters when ALE is part of a multi-field problem

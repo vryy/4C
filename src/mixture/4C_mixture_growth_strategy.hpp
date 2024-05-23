@@ -31,17 +31,17 @@ namespace MIXTURE
       /// constructor
       explicit MixtureGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-      /// Override this method and throw error, as only the CreateGrowthStrategy() should be used.
+      /// Override this method and throw error, as only the create_growth_strategy() should be used.
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
       {
         FOUR_C_THROW(
-            "Cannot create mixture growth strategy from this method. Use CreateGrowthStrategy() "
+            "Cannot create mixture growth strategy from this method. Use create_growth_strategy() "
             "instead.");
         return Teuchos::null;
       }
 
       /// create material instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::MixtureGrowthStrategy> CreateGrowthStrategy() = 0;
+      virtual std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() = 0;
 
       /*!
        * \brief Factory of the mixture growth strategy parameters
@@ -67,19 +67,19 @@ namespace MIXTURE
     MixtureGrowthStrategy(MixtureGrowthStrategy&&) noexcept = default;
     MixtureGrowthStrategy& operator=(MixtureGrowthStrategy&&) noexcept = default;
 
-    virtual void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const {}
+    virtual void pack_mixture_growth_strategy(CORE::COMM::PackBuffer& data) const {}
 
-    virtual void UnpackMixtureGrowthStrategy(
+    virtual void unpack_mixture_growth_strategy(
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
     }
 
-    virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+    virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
     {
       // do nothing in the default case
     }
 
-    [[nodiscard]] virtual bool HasInelasticGrowthDeformationGradient() const = 0;
+    [[nodiscard]] virtual bool has_inelastic_growth_deformation_gradient() const = 0;
 
     /*!
      * @brief Evaluates the inverse growth deformation gradient at the Gausspoint #gp
@@ -92,7 +92,7 @@ namespace MIXTURE
      * @param currentReferenceGrowthScalar (in) : current reference growth scalar
      * @param gp (in) : Gauss point
      */
-    virtual void EvaluateInverseGrowthDeformationGradient(CORE::LINALG::Matrix<3, 3>& iFgM,
+    virtual void evaluate_inverse_growth_deformation_gradient(CORE::LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const = 0;
 
@@ -116,7 +116,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : global element id
      */
-    virtual void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
+    virtual void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
         const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
         const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

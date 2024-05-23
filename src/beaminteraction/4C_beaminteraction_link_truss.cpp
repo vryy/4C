@@ -121,7 +121,7 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
     refpos[3 + i] = GetBindSpotPos2()(i);
   }
 
-  linkele_->SetUpReferenceGeometry(refpos);
+  linkele_->set_up_reference_geometry(refpos);
 
   issetup_ = true;
 }
@@ -184,12 +184,12 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
   CheckInitSetup();
 
   std::map<std::string, std::vector<double>> ele_state;
-  GetDispForElementEvaluation(ele_state);
+  get_disp_for_element_evaluation(ele_state);
 
   CORE::LINALG::SerialDenseVector force(6, true);
   CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
+  linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));
@@ -209,12 +209,12 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateStiff(CORE::LINALG::SerialDenseMatr
   CheckInitSetup();
 
   std::map<std::string, std::vector<double>> ele_state;
-  GetDispForElementEvaluation(ele_state);
+  get_disp_for_element_evaluation(ele_state);
 
   CORE::LINALG::SerialDenseVector force(6, true);
   CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
+  linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -240,12 +240,12 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForceStiff(CORE::LINALG::SerialDens
   CheckInitSetup();
 
   std::map<std::string, std::vector<double>> ele_state;
-  GetDispForElementEvaluation(ele_state);
+  get_disp_for_element_evaluation(ele_state);
 
   CORE::LINALG::SerialDenseVector force(6, true);
   CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
+  linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));
@@ -276,7 +276,7 @@ void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<CORE::LINALG::Matrix
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::FillStateVariablesForElementEvaluation(
+void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation(
     CORE::LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const
 {
   for (unsigned int i = 0; i < 3; ++i)
@@ -288,7 +288,7 @@ void BEAMINTERACTION::BeamLinkTruss::FillStateVariablesForElementEvaluation(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::GetDispForElementEvaluation(
+void BEAMINTERACTION::BeamLinkTruss::get_disp_for_element_evaluation(
     std::map<std::string, std::vector<double>>& ele_state) const
 {
   const auto ref_position = linkele_->X();
@@ -304,9 +304,9 @@ void BEAMINTERACTION::BeamLinkTruss::GetDispForElementEvaluation(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::ScaleLinkerReferenceLength(double scalefac)
+void BEAMINTERACTION::BeamLinkTruss::scale_linker_reference_length(double scalefac)
 {
-  linkele_->ScaleReferenceLength(scalefac);
+  linkele_->scale_reference_length(scalefac);
 }
 
 /*----------------------------------------------------------------------------*
@@ -319,11 +319,11 @@ void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
+double BEAMINTERACTION::BeamLinkTruss::get_current_linker_length() const
 {
   CORE::LINALG::Matrix<6, 1> xcurr;
 
-  FillStateVariablesForElementEvaluation(xcurr);
+  fill_state_variables_for_element_evaluation(xcurr);
 
   CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
   curr_nodal_coords(0) = xcurr(0) - xcurr(3);

@@ -78,14 +78,14 @@ namespace SCATRA
       return Teuchos::null;
     }
 
-    bool SystemMatrixInitializationNeeded() const override { return false; }
+    bool system_matrix_initialization_needed() const override { return false; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
-          "'SystemMatrixInitializationNeeded()' to return true");
+          "'system_matrix_initialization_needed()' to return true");
       // dummy return
       return Teuchos::null;
     }
@@ -107,7 +107,7 @@ namespace SCATRA
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
 
    private:
     //! copy constructor

@@ -33,14 +33,14 @@ namespace
         .AddIntVector(CORE::FE::CellTypeToString(celltype), CORE::FE::num_nodes<celltype>)
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
-        .AddOptionalNamedDoubleVector("RAD", 3)
-        .AddOptionalNamedDoubleVector("AXI", 3)
-        .AddOptionalNamedDoubleVector("CIR", 3)
-        .AddOptionalNamedDoubleVector("FIBER1", 3)
-        .AddOptionalNamedDoubleVector("FIBER2", 3)
-        .AddOptionalNamedDoubleVector("FIBER3", 3)
-        .AddOptionalNamedString("TYPE")
-        .AddOptionalNamedString("POROTYPE");
+        .add_optional_named_double_vector("RAD", 3)
+        .add_optional_named_double_vector("AXI", 3)
+        .add_optional_named_double_vector("CIR", 3)
+        .add_optional_named_double_vector("FIBER1", 3)
+        .add_optional_named_double_vector("FIBER2", 3)
+        .add_optional_named_double_vector("FIBER3", 3)
+        .add_optional_named_string("TYPE")
+        .add_optional_named_string("POROTYPE");
   }
 }  // namespace
 
@@ -48,14 +48,14 @@ DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
 
 DRT::ELEMENTS::SolidPoroType& DRT::ELEMENTS::SolidPoroType::Instance() { return instance_; }
 
-void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SolidPoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
-          .AddOptionalNamedString("EAS")
+          .add_optional_named_string("EAS")
           .AddOptionalTag("FBAR")
           .Build();
 
@@ -89,7 +89,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidPoroType::Create(const std::vector<ch
   return object;
 }
 
-void DRT::ELEMENTS::SolidPoroType::NodalBlockInformation(
+void DRT::ELEMENTS::SolidPoroType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
@@ -133,7 +133,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
   return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
 }
 
-void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
@@ -288,7 +288,7 @@ MAT::StructPoro& DRT::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
 
   return *porostruct_mat;
 }
-MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::FluidPoroMultiMaterial(int nummat) const
+MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::fluid_poro_multi_material(int nummat) const
 {
   if (this->NumMaterial() <= 1)
   {

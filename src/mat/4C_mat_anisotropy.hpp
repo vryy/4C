@@ -86,21 +86,21 @@ namespace MAT
      * This method should be called as soon as the number of Gauss points is known.
      * @param numgp Number of Gauss points
      */
-    void SetNumberOfGaussPoints(int numgp);
+    void set_number_of_gauss_points(int numgp);
 
     /*!
      * \brief Returns the number of Gauss points
      *
      * \return int Number of Gauss integration points
      */
-    int GetNumberOfGaussPoints() const;
+    int get_number_of_gauss_points() const;
 
     /*!
      * \brief Returns the number of element fibers
      *
      * \return int Number of fibers per element
      */
-    int GetNumberOfElementFibers() const;
+    int get_number_of_element_fibers() const;
 
     /*!
      * \brief Returns the number of Gauss point fibers
@@ -115,7 +115,7 @@ namespace MAT
      * \return true
      * \return false
      */
-    bool HasElementCylinderCoordinateSystem() const;
+    bool has_element_cylinder_coordinate_system() const;
 
     /*!
      * \brief Flag whether cylinder coordinate system are defined in the Gauss point
@@ -123,14 +123,14 @@ namespace MAT
      * \return true
      * \return false
      */
-    bool HasGPCylinderCoordinateSystem() const;
+    bool has_gp_cylinder_coordinate_system() const;
 
     /*!
      * \brief Returns the cylinder coordinate system that are defined on the element
      *
      * \return const CylinderCoordinateSystemManager&
      */
-    const CylinderCoordinateSystemManager& GetElementCylinderCoordinateSystem() const;
+    const CylinderCoordinateSystemManager& get_element_cylinder_coordinate_system() const;
 
     /*!
      * \brief Returns the cylinder coordinate system that belongs to the Gauss point
@@ -138,7 +138,7 @@ namespace MAT
      * \param gp (in) : Gauss point
      * \return const CylinderCoordinateSystemManager&
      */
-    const CylinderCoordinateSystemManager& GetGPCylinderCoordinateSystem(int gp) const;
+    const CylinderCoordinateSystemManager& get_gp_cylinder_coordinate_system(int gp) const;
 
     /*!
      * \brief Set vector of element fibers
@@ -160,7 +160,7 @@ namespace MAT
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void ReadAnisotropyFromElement(INPUT::LineDefinition* linedef);
+    void read_anisotropy_from_element(INPUT::LineDefinition* linedef);
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList
@@ -170,18 +170,18 @@ namespace MAT
      *
      * @param params Container that hold the Gauss-point fibers.
      */
-    void ReadAnisotropyFromParameterList(const Teuchos::ParameterList& params);
+    void read_anisotropy_from_parameter_list(const Teuchos::ParameterList& params);
 
     /*!
      * \brief A notifier method that calls all extensions that element fibers are initialized
      */
-    void OnElementFibersInitialized();
+    void on_element_fibers_initialized();
 
 
     /*!
      * \brief A notifier method that calls all extensions that Gauss point fibers are initialized
      */
-    void OnGPFibersInitialized();
+    void on_gp_fibers_initialized();
 
     /// @name Getter methods for the fibers
     ///@{
@@ -226,7 +226,7 @@ namespace MAT
      *
      * \param extension
      */
-    void RegisterAnisotropyExtension(BaseAnisotropyExtension& extension);
+    void register_anisotropy_extension(BaseAnisotropyExtension& extension);
 
    private:
     void InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber);

@@ -74,7 +74,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   // quaternions at each node, respectively
   std::vector<double> nodal_thetas;
   linedef->ExtractDoubleVector("TRIADS", nodal_thetas);
-  this->SetUpInitialRotations(nodal_thetas);
+  this->set_up_initial_rotations(nodal_thetas);
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
   use_fad_ = linedef->HaveNamed("FAD") ? true : false;

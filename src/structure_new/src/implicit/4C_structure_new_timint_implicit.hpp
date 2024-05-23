@@ -71,7 +71,7 @@ namespace STR
        *  In partitioned solution schemes, it is better to keep the current
        *  solution instead of evaluating the initial guess (as the predictor)
        *  does. */
-      void PreparePartitionStep() override;
+      void prepare_partition_step() override;
 
       //! Prepare time step
       void PrepareTimeStep() override;
@@ -97,7 +97,7 @@ namespace STR
 
 
       //! check, if according to divercont flag time step size can be increased
-      void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
+      void check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
       Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
@@ -107,9 +107,9 @@ namespace STR
       };
 
       /// Update State Incrementally for coupled problems with monolithic approach
-      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+      void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
       void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
@@ -128,10 +128,10 @@ namespace STR
        *  [OUTPUT-FOLDER]/[OUTPUT FILE NAME]_str_jacobian_step-[STEP]_nlniter-[NEWTON-ITERATION].mtl
        *
        *  \author hiermeier \date 06/17 */
-      void PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const;
+      void print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const;
 
       /// compute the condition number of the tangential stiffness matrix
-      void ComputeConditionNumber(const NOX::NLN::Group& grp) const;
+      void compute_condition_number(const NOX::NLN::Group& grp) const;
 
      protected:
       //! returns the current solution group
@@ -187,16 +187,16 @@ namespace STR
       int MethodSteps() const override;
 
       //! Give local order of accuracy of displacement part
-      int MethodOrderOfAccuracyDis() const override;
+      int method_order_of_accuracy_dis() const override;
 
       //! Give local order of accuracy of velocity part
-      int MethodOrderOfAccuracyVel() const override;
+      int method_order_of_accuracy_vel() const override;
 
       //! Return linear error coefficient of displacements
-      double MethodLinErrCoeffDis() const override;
+      double method_lin_err_coeff_dis() const override;
 
       //! Return linear error coefficient of velocities
-      double MethodLinErrCoeffVel() const override;
+      double method_lin_err_coeff_vel() const override;
 
       ///@}
 

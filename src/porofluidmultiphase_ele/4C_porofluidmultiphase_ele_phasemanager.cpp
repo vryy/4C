@@ -405,7 +405,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   multiphasemat.EvaluateGenPressure(genpressure_, fluid_phinp);
 
   //! transform generalized pressures to true pressure values
-  multiphasemat.TransformGenPresToTruePres(genpressure_, pressure_);
+  multiphasemat.transform_gen_pres_to_true_pres(genpressure_, pressure_);
 
   // explicit evaluation of saturation
   if (numfluidphases_ > 0) multiphasemat.EvaluateSaturation(saturation_, fluid_phinp, pressure_);
@@ -457,7 +457,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::SolidPressure() const
 /*----------------------------------------------------------------------*
  * recalculate solid pressure if volfracs are present  kremheller 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::RecalculateSolidPressure(
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::recalculate_solid_pressure(
     const double porosity)
 {
   CheckIsEvaluated();
@@ -575,7 +575,8 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulus(int pha
 /*----------------------------------------------------------------------*
  *  check if fluid phase 'phasenum' is incompressible  kremheller 06/17 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::IncompressibleFluidPhase(int phasenum) const
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::incompressible_fluid_phase(
+    int phasenum) const
 {
   CheckIsEvaluated();
 
@@ -704,7 +705,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
   // calculate the derivative of the pressure (actually first its inverse)
-  multiphasemat.EvaluateDerivOfDofWrtPressure(*pressurederiv_, fluid_phinp);
+  multiphasemat.evaluate_deriv_of_dof_wrt_pressure(*pressurederiv_, fluid_phinp);
 
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
@@ -720,7 +721,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // calculate derivatives of saturation w.r.t. pressure
   CORE::LINALG::SerialDenseMatrix deriv(numfluidphases, numfluidphases);
-  multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv, pressure);
+  multiphasemat.evaluate_deriv_of_saturation_wrt_pressure(deriv, pressure);
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
@@ -732,7 +733,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> dummyderiv =
       Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
           numfluidphases, CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases)));
-  multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv, pressure);
+  multiphasemat.evaluate_second_deriv_of_saturation_wrt_pressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
     CORE::LINALG::multiplyTN(deriv, *pressurederiv_, (*dummyderiv)[i]);
@@ -796,7 +797,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SaturationDeriv(
 /*----------------------------------------------------------------------*
  *  get 2nd derivative of saturation of phase          kremheller 05/17 |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SaturationDerivDeriv(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::saturation_deriv_deriv(
     int phasenum, int firstdoftoderive, int seconddoftoderive) const
 {
   phasemanager_->CheckIsEvaluated();
@@ -828,7 +829,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SolidPressureDeriv(in
 /*---------------------------------------------------------------------------*
  * get second derivative of solid pressure                       vuong 08/16 |
  *---------------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SolidPressureDerivDeriv(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::solid_pressure_deriv_deriv(
     int doftoderive, int doftoderive2) const
 {
   phasemanager_->CheckIsEvaluated();
@@ -910,7 +911,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   // no additional derivatives w.r.t volume fraction pressures
 
   // recalculate the solid pressure in case of volume fractions
-  if (phasemanager_->NumVolFrac() > 0) phasemanager_->RecalculateSolidPressure(porosity_);
+  if (phasemanager_->NumVolFrac() > 0) phasemanager_->recalculate_solid_pressure(porosity_);
 
   return;
 }
@@ -958,9 +959,8 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::JacobianDe
 /*----------------------------------------------------------------------*
  *  get derivative of porosity wrt jacobian of defgrad kremheller 08/16 |
  *----------------------------------------------------------------------*/
-double
-DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDerivWrtJacobianDefGrad()
-    const
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::
+    porosity_deriv_wrt_jacobian_def_grad() const
 {
   CheckIsEvaluated();
 
@@ -981,7 +981,8 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDe
 /*----------------------------------------------------------------------*
  * check if porosity depends on pressure               kremheller 07/17 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDependsOnFluid() const
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::porosity_depends_on_fluid()
+    const
 {
   phasemanager_->CheckIsEvaluated();
 
@@ -993,7 +994,8 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDepe
 /*----------------------------------------------------------------------*
  * check if porosity depends on JacobianDefGradient    kremheller 07/17 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDependsOnStruct() const
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::porosity_depends_on_struct()
+    const
 {
   phasemanager_->CheckIsEvaluated();
 
@@ -1221,7 +1223,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
         myphasederiv[doftoderive] +=
             myderivspressure[idof] * phasemanager_->PressureDeriv(idof, doftoderive) +
             myderivssaturation[idof] * phasemanager_->SaturationDeriv(idof, doftoderive);
-      if (phasemanager_->PorosityDependsOnFluid())
+      if (phasemanager_->porosity_depends_on_fluid())
       {
         myphasederiv[doftoderive] += myderivsporosity * phasemanager_->PorosityDeriv(doftoderive);
       }
@@ -1375,8 +1377,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
     // get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
         POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material, iphase);
-    constrelpermeability_[iphase] = singlephasemat.HasConstantRelPermeability();
-    constdynviscosity_[iphase] = singlephasemat.HasConstantViscosity();
+    constrelpermeability_[iphase] = singlephasemat.has_constant_rel_permeability();
+    constdynviscosity_[iphase] = singlephasemat.has_constant_viscosity();
 
     // TODO only isotropic, constant permeability for now
     permeabilitytensors_[iphase].Clear();
@@ -1392,7 +1394,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
         POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
             material, ivolfrac + numvolfrac + numfluidphases);
 
-    constdynviscosityvolfracpress_[ivolfrac] = volfracpressmat.HasConstantViscosity();
+    constdynviscosityvolfracpress_[ivolfrac] = volfracpressmat.has_constant_viscosity();
     // clear
     permeabilitytensorsvolfracpress_[ivolfrac].Clear();
 
@@ -1444,8 +1446,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
     relpermeabilities_[iphase] = singlephasemat.RelPermeability(phasemanager_->Saturation(iphase));
 
     // evaluate derivative of relative permeability w.r.t. saturation
-    derrelpermeabilities_[iphase] = singlephasemat.EvaluateDerivOfRelPermeabilityWrtSaturation(
-        phasemanager_->Saturation(iphase));
+    derrelpermeabilities_[iphase] =
+        singlephasemat.evaluate_deriv_of_rel_permeability_wrt_saturation(
+            phasemanager_->Saturation(iphase));
   }
 
   return;
@@ -1483,7 +1486,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PermeabilityTe
  * check for constant rel permeability                      kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::HasConstantRelPermeability(
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::has_constant_rel_permeability(
     int phasenum) const
 {
   CheckIsSetup();
@@ -1505,7 +1508,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeabil
  * get relative diffusivity of phase 'phasenum'             kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeabilityDeriv(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::rel_permeability_deriv(
     int phasenum) const
 {
   phasemanager_->CheckIsEvaluated();
@@ -1516,7 +1519,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeabil
  * check for constant dynamic viscosity                     kremheller 06/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::HasConstantDynViscosity(
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::has_constant_dyn_viscosity(
     int phasenum) const
 {
   CheckIsSetup();
@@ -1580,7 +1583,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
  *-------------------------------------------------------------------------------------*/
 template <int nsd>
 bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<
-    nsd>::HasConstantDynViscosityVolFracPressure(int volfracpressnum) const
+    nsd>::has_constant_dyn_viscosity_vol_frac_pressure(int volfracpressnum) const
 {
   CheckIsSetup();
 
@@ -1591,19 +1594,20 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<
  * get dynamic viscosity of volume fraction pressure 'volfracnum'  kremheller 02/18 |
  *-----------------------------------------------------------------------------------*/
 template <int nsd>
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityVolFracPressure(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
     int volfracpressnum, double abspressgrad, int matnum) const
 {
   phasemanager_->CheckIsEvaluated();
 
-  return DynViscosityVolFracPressure(*Element()->Material(matnum), volfracpressnum, abspressgrad);
+  return dyn_viscosity_vol_frac_pressure(
+      *Element()->Material(matnum), volfracpressnum, abspressgrad);
 }
 
 /*-------------------------------------------------------------------------------------------*
  *   get dynamic viscosity of volume fraction pressure 'volfracnum'         kremheller 02/18 |
  *----------------------------------------------------------------------------------- --------*/
 template <int nsd>
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityVolFracPressure(
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
     const CORE::MAT::Material& material, int volfracpressnum, double abspressgrad) const
 {
   // get the single phase material
@@ -1619,12 +1623,13 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
  *-------------------------------------------------------------------------------------------------*/
 template <int nsd>
 double
-DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVolFracPressure(
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv_vol_frac_pressure(
     int volfracpressnum, double abspressgrad) const
 {
   phasemanager_->CheckIsEvaluated();
 
-  return DynViscosityDerivVolFracPressure(*Element()->Material(), volfracpressnum, abspressgrad);
+  return dyn_viscosity_deriv_vol_frac_pressure(
+      *Element()->Material(), volfracpressnum, abspressgrad);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1632,7 +1637,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVo
  *-------------------------------------------------------------------------------------------------*/
 template <int nsd>
 double
-DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVolFracPressure(
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv_vol_frac_pressure(
     const CORE::MAT::Material& material, int volfracpressnum, double abspressgrad) const
 {
   // get the single phase material
@@ -1647,8 +1652,9 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVo
  * get permeability tensor for volume fraction pressures    kremheller 02/18 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PermeabilityTensorVolFracPressure(
-    int volfracpressnum, CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<
+    nsd>::permeability_tensor_vol_frac_pressure(int volfracpressnum,
+    CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const
 {
   phasemanager_->CheckIsEvaluated();
   // make a hard copy for now
@@ -1712,7 +1718,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
     for (int i = 0; i < nsd; i++) (difftensorsvolfrac_[ivolfrac])(i, i) = diffusivity;
 
     // for faster check
-    if (singlevolfracmat.HasAddScalarDependentFlux())
+    if (singlevolfracmat.has_add_scalar_dependent_flux())
     {
       hasaddscalardpendentflux_[ivolfrac] = true;
 
@@ -1755,7 +1761,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
         POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(
             material, ivolfrac + numfluidphases);
 
-    if (this->HasAddScalarDependentFlux(ivolfrac))
+    if (this->has_add_scalar_dependent_flux(ivolfrac))
     {
       if (phasemanager_->NumScal() != singlevolfracmat.NumScal())
         FOUR_C_THROW("Wrong number of scalars for additional scalar dependent flux");
@@ -1795,7 +1801,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::DiffTensorVolFra
  * get densities for volume fractions                       kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDependentFlux(
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
     int volfracnum) const
 {
   phasemanager_->CheckIsEvaluated();
@@ -1807,7 +1813,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDepe
  * check if additional scalar flux dependency active        kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDependentFlux(
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
     int volfracnum, int iscal) const
 {
   phasemanager_->CheckIsEvaluated();
@@ -1819,7 +1825,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDepe
  * check if receptor-kinetic law active                     kremheller 01/18 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasReceptorKineticLaw(
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::has_receptor_kinetic_law(
     int volfracnum, int iscal) const
 {
   phasemanager_->CheckIsEvaluated();

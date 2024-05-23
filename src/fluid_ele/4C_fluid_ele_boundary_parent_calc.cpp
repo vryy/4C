@@ -373,7 +373,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
+void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix::Base& elemat1,
     CORE::LINALG::SerialDenseMatrix::Base& elemat2)
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::quad4)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -397,7 +397,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet4)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -408,7 +408,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::tet10)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::tri6, CORE::FE::CellType::tet10>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri6, CORE::FE::CellType::tet10>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -419,7 +419,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex8)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -430,7 +430,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex20)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -441,7 +441,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     {
       if (surfele->ParentElement()->Shape() == CORE::FE::CellType::hex27)
       {
-        EstimateNitscheTraceMaxEigenvalue<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
+        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -863,7 +863,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       }
 
       // get density and viscosity at integration point
-      GetDensityAndViscosity(material, pscaaf, thermpressaf, rateofstrain);
+      get_density_and_viscosity(material, pscaaf, thermpressaf, rateofstrain);
 
       //---------------------------------------------------------------------
       // contributions to element matrix and element vector
@@ -1464,7 +1464,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
 
     // get viscosity at integration point
-    GetDensityAndViscosity(material, 0.0, 0.0, rateofstrain);
+    get_density_and_viscosity(material, 0.0, 0.0, rateofstrain);
 
     //---------------------------------------------------------------------
     // Contributions to element matrix and element vector
@@ -2280,7 +2280,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     }
 
     // get viscosity at integration point
-    GetDensityAndViscosity(material, 0.0, 0.0, rateofstrain);
+    get_density_and_viscosity(material, 0.0, 0.0, rateofstrain);
 
     // define (initial) penalty parameter
     /*
@@ -2392,7 +2392,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       int count = 0;
       while (res * res > 1e-6)
       {
-        const double drdtauB = JacobianSpaldingResidual(y, visc_, tau_B, normu);
+        const double drdtauB = jacobian_spalding_residual(y, visc_, tau_B, normu);
 
         if (drdtauB < 1e-10) FOUR_C_THROW("(Nearly) singular Jacobian of Spaldings equation");
 
@@ -3731,7 +3731,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
+void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     std::vector<int>& blm, CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
     CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2)
@@ -4311,7 +4311,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     FOUR_C_THROW("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
 
   // get viscosity
-  GetDensityAndViscosity(material, 0.0, 0.0, rateofstrain);
+  get_density_and_viscosity(material, 0.0, 0.0, rateofstrain);
 
   // only constant density of 1.0 allowed, for the time being
   if (densaf_ != 1.0)
@@ -5375,13 +5375,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           // compute friction velocity u_tau
           double utau = visc_ / y;
 
-          double res = SpaldingResidual_utau(y, visc_, utau, normu);
+          double res = spalding_residual_utau(y, visc_, utau, normu);
 
           int count = 0;
 
           while ((res * res) > 1.0e-12)
           {
-            const double SpaldingJ = JacobianSpaldingResidual_utau(y, visc_, utau, normu);
+            const double SpaldingJ = jacobian_spalding_residual_utau(y, visc_, utau, normu);
 
             if (SpaldingJ < 1e-10)
             {
@@ -5403,7 +5403,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             }
 
             // get residual of Spaldings equation (law of the wall)
-            res = SpaldingResidual_utau(y, visc_, utau, normu);
+            res = spalding_residual_utau(y, visc_, utau, normu);
 
             if (count > 1000)
             {
@@ -5418,7 +5418,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
           if (spalding)
           {
-            const double dres_duplus = JacobianSpaldingResidual_uplus(y, visc_, utau, normu);
+            const double dres_duplus = jacobian_spalding_residual_uplus(y, visc_, utau, normu);
 
             if (abs(dres_duplus) < 1e-12) FOUR_C_THROW("prevent division by zero");
             const double visc_dudy = -utau * utau / dres_duplus;
@@ -5771,7 +5771,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
  |  get density and viscosity                                  vg 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
+void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
     Teuchos::RCP<const CORE::MAT::Material> material, const double pscaaf,
     const double thermpressaf, const double rateofstrain)
 {
@@ -5936,6 +5936,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
   if (visc_ < 1e-15) FOUR_C_THROW("zero or negative (physical) diffusivity!");
 
   return;
-}  // FluidBoundaryParent::GetDensityAndViscosity
+}  // FluidBoundaryParent::get_density_and_viscosity
 
 FOUR_C_NAMESPACE_CLOSE

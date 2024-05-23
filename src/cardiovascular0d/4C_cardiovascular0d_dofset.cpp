@@ -39,7 +39,7 @@ void UTILS::Cardiovascular0DDofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom(
+int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start,
     const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor)
 {

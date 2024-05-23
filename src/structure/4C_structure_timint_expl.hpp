@@ -168,16 +168,16 @@ namespace STR
     int MethodSteps() const override = 0;
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() const override = 0;
+    int method_order_of_accuracy_dis() const override = 0;
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() const override = 0;
+    int method_order_of_accuracy_vel() const override = 0;
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override = 0;
+    double method_lin_err_coeff_dis() const override = 0;
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override = 0;
+    double method_lin_err_coeff_vel() const override = 0;
 
     //! return time integration factor
     double TimIntParam() const override { return 0.0; }
@@ -237,11 +237,11 @@ namespace STR
     }
 
     //!  Update displacement state in case of coupled problems
-    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
       FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
-          "integration schemes. Thus, calling UpdateStateIncrementally() in an explicit scheme "
+          "integration schemes. Thus, calling update_state_incrementally() in an explicit scheme "
           "is not possible.");
     }
 
@@ -267,7 +267,7 @@ namespace STR
     {
       OutputStep(forced_writerestart);
       // write Gmsh output
-      WriteGmshStrucOutputStep();
+      write_gmsh_struc_output_step();
       return;
     }
 
@@ -290,9 +290,9 @@ namespace STR
 
 
     /* Linear structure solve with just an interface load */
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
+    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
     {
-      FOUR_C_THROW("SolveRelaxationLinear() not implemented");
+      FOUR_C_THROW("solve_relaxation_linear() not implemented");
       return Teuchos::null;
     }
 
@@ -304,9 +304,9 @@ namespace STR
     };
 
     /// are there any Cardiovascular0D bcs?
-    virtual bool HaveCardiovascular0D()
+    virtual bool have_cardiovascular0_d()
     {
-      FOUR_C_THROW("HaveCardiovascular0D() has not been tested for explicit time integrators");
+      FOUR_C_THROW("have_cardiovascular0_d() has not been tested for explicit time integrators");
       return false;
     };
 
@@ -318,24 +318,25 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
-      FOUR_C_THROW("GetConstraintManager() has not been tested for explicit time integrators");
+      FOUR_C_THROW("get_constraint_manager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    virtual Teuchos::RCP<UTILS::Cardiovascular0DManager> get_cardiovascular0_d_manager()
     {
       FOUR_C_THROW(
-          "GetCardiovascular0DManager() has not been tested for explicit time integrators");
+          "get_cardiovascular0_d_manager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
-      FOUR_C_THROW("GetSpringDashpotManager() has not been tested for explicit time integrators");
+      FOUR_C_THROW(
+          "get_spring_dashpot_manager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
@@ -353,20 +354,20 @@ namespace STR
       return Teuchos::null;
     };
 
-    void UpdateIterIncrConstr(
+    void update_iter_incr_constr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
-      FOUR_C_THROW("UpdateIterIncrConstr() has not been tested for explicit time integrators");
+      FOUR_C_THROW("update_iter_incr_constr() has not been tested for explicit time integrators");
       return;
     }
 
-    void UpdateIterIncrCardiovascular0D(
+    void update_iter_incr_cardiovascular0_d(
         Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
         ) override
     {
       FOUR_C_THROW(
-          "UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
+          "update_iter_incr_cardiovascular0_d() has not been tested for explicit time integrators");
       return;
     }
 
@@ -380,7 +381,7 @@ namespace STR
     }
 
     //! prepare partiton step
-    void PreparePartitionStep() override
+    void prepare_partition_step() override
     {
       // do nothing for explicit time integrators
       return;

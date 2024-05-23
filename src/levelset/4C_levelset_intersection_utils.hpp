@@ -104,13 +104,13 @@ namespace SCATRA
       /** \brief pack boundary integration cells from set into char array
        *
        *  \author henke \date 12/09 */
-      void packBoundaryIntCells(const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap,
+      void pack_boundary_int_cells(const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap,
           CORE::COMM::PackBuffer& dataSend);
 
       /** brief unpack boundary integration cells from char array
        *
        * \author henke \date 12/09 */
-      void unpackBoundaryIntCells(const std::vector<char>& dataRecv,
+      void unpack_boundary_int_cells(const std::vector<char>& dataRecv,
           std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap);
 
       /// return the volume of the plus domain
@@ -163,18 +163,18 @@ namespace SCATRA
       /** \brief get the zero level-set
        *
        *  \author rasthofer \date 09/13 */
-      void GetZeroLevelSetContour(const CORE::GEO::CUT::plain_element_set& cuteles,
+      void get_zero_level_set_contour(const CORE::GEO::CUT::plain_element_set& cuteles,
           const CORE::LINALG::SerialDenseMatrix& xyze, CORE::FE::CellType distype);
 
       /// check for supported boundary cell discretization types
-      virtual void CheckBoundaryCellType(CORE::FE::CellType distype_bc) const;
+      virtual void check_boundary_cell_type(CORE::FE::CellType distype_bc) const;
 
-      virtual void AddToBoundaryIntCellsPerEle(const CORE::LINALG::SerialDenseMatrix& xyze,
+      virtual void add_to_boundary_int_cells_per_ele(const CORE::LINALG::SerialDenseMatrix& xyze,
           const CORE::GEO::CUT::BoundaryCell& bcell, CORE::FE::CellType distype_ele);
 
       /// access the private boundary cell vector
       template <typename T>
-      T& BoundaryIntCellsPerEle();
+      T& boundary_int_cells_per_ele();
 
       const std::vector<CORE::GEO::CUT::Point::PointPosition>& DesiredPositions();
 
@@ -206,7 +206,7 @@ namespace SCATRA
     /*----------------------------------------------------------------------------*/
     template <>
     inline CORE::GEO::BoundaryIntCells&
-    Intersection::BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCells>()
+    Intersection::boundary_int_cells_per_ele<CORE::GEO::BoundaryIntCells>()
     {
       return list_boundary_int_cellsper_ele_;
     }
@@ -214,7 +214,7 @@ namespace SCATRA
     /*----------------------------------------------------------------------------*/
     template <>
     inline CORE::GEO::BoundaryIntCellPtrs&
-    Intersection::BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCellPtrs>()
+    Intersection::boundary_int_cells_per_ele<CORE::GEO::BoundaryIntCellPtrs>()
     {
       return boundary_cells_per_ele_;
     }

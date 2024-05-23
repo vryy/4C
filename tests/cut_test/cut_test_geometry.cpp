@@ -120,9 +120,9 @@ void test_geometry_distance()
   CORE::LINALG::Matrix<3, 3> xyze(xyze_data);
   CORE::LINALG::Matrix<3, 1> xyz(xyz_data);
 
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(
       INPAR::CUT::floattype_cln);  // use cln
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -149,9 +149,9 @@ void test_geometry_distance2()
     }
   }
 
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(
       INPAR::CUT::floattype_cln);  // use cln
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
@@ -179,9 +179,9 @@ void test_geometry_distance3()
     }
   }
 
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(
       INPAR::CUT::floattype_cln);  // use cln
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =

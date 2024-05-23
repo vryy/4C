@@ -78,7 +78,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+    void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) override;
 
@@ -102,10 +102,10 @@ namespace POROMULTIPHASESCATRA
     void ApplyMeshMovement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
+    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
     //! print out the coupling method
-    void PrintOutCouplingMethod() const override;
+    void print_out_coupling_method() const override;
 
    private:
     //! set-up of global rhs vector of coupled problem
@@ -137,7 +137,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   dis discretizatiom
      * @param[in]   coupleddofmap map with coupled DOFs
      */
-    void CheckDbcOnCoupledDofs(
+    void check_dbc_on_coupled_dofs(
         Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap);
 
     //! name of the condition

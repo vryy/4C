@@ -43,14 +43,14 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::ComputeRecoilPressureContribution() const
+void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::compute_recoil_pressure_contribution() const
 {
   // get container of owned particles of evaporating phase
   PARTICLEENGINE::ParticleContainer* container_i =
-      particlecontainerbundle_->GetSpecificContainer(evaporatingphase_, PARTICLEENGINE::Owned);
+      particlecontainerbundle_->get_specific_container(evaporatingphase_, PARTICLEENGINE::Owned);
 
   // iterate over particles in container
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)

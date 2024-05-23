@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create(
 }
 
 
-void DRT::ELEMENTS::ConstraintElement3Type::NodalBlockInformation(
+void DRT::ELEMENTS::ConstraintElement3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }

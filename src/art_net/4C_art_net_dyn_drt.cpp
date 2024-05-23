@@ -82,7 +82,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& artdyn = problem->ArterialDynamicParams();
+  const Teuchos::ParameterList& artdyn = problem->arterial_dynamic_params();
 
   if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, artdyn);
 
@@ -175,7 +175,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
   if (artdyn.get<std::string>("SOLVESCATRA") == "yes")
-    ART::UTILS::AssignMaterialPointers(artery_disname, scatra_disname);
+    ART::UTILS::assign_material_pointers(artery_disname, scatra_disname);
 
   if (!CoupledTo3D)
   {

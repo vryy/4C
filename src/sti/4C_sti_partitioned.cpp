@@ -202,13 +202,13 @@ void STI::Partitioned::SolveOneWay() const
     case INPAR::STI::CouplingType::oneway_scatratothermo:
     {
       // pass thermo degrees of freedom to scatra discretization
-      TransferThermoToScatra(ThermoField()->Phiafnp());
+      transfer_thermo_to_scatra(ThermoField()->Phiafnp());
 
       // solve scatra field
       ScaTraField()->Solve();
 
       // pass scatra degrees of freedom to thermo discretization
-      TransferScatraToThermo(ScaTraField()->Phiafnp());
+      transfer_scatra_to_thermo(ScaTraField()->Phiafnp());
 
       // solve thermo field
       ThermoField()->Solve();
@@ -219,13 +219,13 @@ void STI::Partitioned::SolveOneWay() const
     case INPAR::STI::CouplingType::oneway_thermotoscatra:
     {
       // pass scatra degrees of freedom to thermo discretization
-      TransferScatraToThermo(ScaTraField()->Phiafnp());
+      transfer_scatra_to_thermo(ScaTraField()->Phiafnp());
 
       // solve thermo field
       ThermoField()->Solve();
 
       // pass thermo degrees of freedom to scatra discretization
-      TransferThermoToScatra(ThermoField()->Phiafnp());
+      transfer_thermo_to_scatra(ThermoField()->Phiafnp());
 
       // solve scatra field
       ScaTraField()->Solve();
@@ -267,7 +267,7 @@ void STI::Partitioned::SolveTwoWay()
         iter_++;
 
         // pass relaxed scatra degrees of freedom to thermo discretization
-        TransferScatraToThermo(scatra_relaxed);
+        transfer_scatra_to_thermo(scatra_relaxed);
 
         // store current thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), 0.))
@@ -281,7 +281,7 @@ void STI::Partitioned::SolveTwoWay()
           FOUR_C_THROW("Update failed!");
 
         // pass thermo degrees of freedom to scatra discretization
-        TransferThermoToScatra(ThermoField()->Phiafnp());
+        transfer_thermo_to_scatra(ThermoField()->Phiafnp());
 
         // store current scatra state vector
         if (ScaTraField()->PhinpInc()->Update(1., *scatra_relaxed, 0.))
@@ -403,7 +403,7 @@ void STI::Partitioned::SolveTwoWay()
         iter_++;
 
         // pass relaxed thermo degrees of freedom to scatra discretization
-        TransferThermoToScatra(thermo_relaxed);
+        transfer_thermo_to_scatra(thermo_relaxed);
 
         // store current scatra state vector
         if (ScaTraField()->PhinpInc()->Update(1., *ScaTraField()->Phiafnp(), 0.))
@@ -417,7 +417,7 @@ void STI::Partitioned::SolveTwoWay()
           FOUR_C_THROW("Update failed!");
 
         // pass scatra degrees of freedom to thermo discretization
-        TransferScatraToThermo(ScaTraField()->Phiafnp());
+        transfer_scatra_to_thermo(ScaTraField()->Phiafnp());
 
         // store current thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *thermo_relaxed, 0.))

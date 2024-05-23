@@ -49,7 +49,7 @@ namespace CONTACT
          *  This term vanishes in the standard Lagrange formulation.
          *
          *  \author hiermeier \date 03/17 */
-        void AssembleDGGLinMatrix(
+        void assemble_dgg_lin_matrix(
             CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override{};
 
       };  // class Interface

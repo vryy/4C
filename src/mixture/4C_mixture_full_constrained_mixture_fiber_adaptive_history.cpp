@@ -101,7 +101,7 @@ void MIXTURE::TimestepAdaptivityInfo::EmplaceBack(
   }
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::GetTotalNumberOfSimpsonIntervals()
+unsigned int MIXTURE::TimestepAdaptivityInfo::get_total_number_of_simpson_intervals()
 {
   return std::accumulate(list_.begin(), list_.end(), 0,
       [](unsigned int sum, const TimestepAdaptivityInfoItem& item)
@@ -170,7 +170,7 @@ std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::GetIndexFromBase(
 }
 
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::GetNumberOfSimpsonIntervals(
+unsigned int MIXTURE::TimestepAdaptivityInfo::get_number_of_simpson_intervals(
     const unsigned int level) const
 {
   for (const auto& item : list_)

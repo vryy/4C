@@ -185,9 +185,9 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     itermax_ = sdynparams.get<int>("MAXITER");
     loadlin_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "LOADLIN") == 1);
     prestresstime_ =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     prestresstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     prestress_displacement_tolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
     prestress_min_number_of_load_steps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
     predtype_ = CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");
@@ -228,17 +228,18 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     toltype_inco_ = INPAR::STR::convnorm_abs;
 
     tol_plast_res_ =
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams().get<double>("TOLPLASTCONSTR");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLPLASTCONSTR");
     toltype_plast_res_ = INPAR::STR::convnorm_abs;
 
     tol_plast_incr_ =
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams().get<double>("TOLDELTALP");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLDELTALP");
     toltype_plast_incr_ = INPAR::STR::convnorm_abs;
 
-    tol_eas_res_ = GLOBAL::Problem::Instance()->SemiSmoothPlastParams().get<double>("TOLEASRES");
+    tol_eas_res_ = GLOBAL::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLEASRES");
     toltype_eas_res_ = INPAR::STR::convnorm_abs;
 
-    tol_eas_incr_ = GLOBAL::Problem::Instance()->SemiSmoothPlastParams().get<double>("TOLEASINCR");
+    tol_eas_incr_ =
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLEASINCR");
     toltype_eas_incr_ = INPAR::STR::convnorm_abs;
 
     normcombo_disp_pres_ =
@@ -246,13 +247,13 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     normcombo_fres_inco_ =
         CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO");
     normcombo_fres_plast_res_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams(), "NORMCOMBI_RESFPLASTCONSTR");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_RESFPLASTCONSTR");
     normcombo_disp_plast_incr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams(), "NORMCOMBI_DISPPLASTINCR");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_DISPPLASTINCR");
     normcombo_fres_eas_res_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams(), "NORMCOMBI_EASRES");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_EASRES");
     normcombo_disp_eas_incr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->SemiSmoothPlastParams(), "NORMCOMBI_EASINCR");
+        GLOBAL::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_EASINCR");
     normcombo_fres_disp_ =
         CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP");
 
@@ -266,27 +267,27 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     toltype_constr_incr_ = INPAR::STR::convnorm_abs;
 
     tol_cardvasc0d_res_ =
-        GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+        GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
             "TOL_CARDVASC0D_RES");
     toltype_cardvasc0d_res_ = INPAR::STR::convnorm_abs;
 
     tol_cardvasc0d_incr_ =
-        GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+        GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
             "TOL_CARDVASC0D_DOFINCR");
     toltype_cardvasc0d_incr_ = INPAR::STR::convnorm_abs;
 
     tol_contact_res_ =
-        GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>("TOLCONTCONSTR");
+        GLOBAL::Problem::Instance()->contact_dynamic_params().get<double>("TOLCONTCONSTR");
     toltype_contact_res_ = INPAR::STR::convnorm_abs;
 
     tol_contact_lm_incr_ =
-        GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>("TOLLAGR");
+        GLOBAL::Problem::Instance()->contact_dynamic_params().get<double>("TOLLAGR");
     toltype_contact_lm_incr_ = INPAR::STR::convnorm_abs;
 
     normcombo_fres_contact_res_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->ContactDynamicParams(), "NORMCOMBI_RESFCONTCONSTR");
+        GLOBAL::Problem::Instance()->contact_dynamic_params(), "NORMCOMBI_RESFCONTCONSTR");
     normcombo_disp_contact_lm_incr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
-        GLOBAL::Problem::Instance()->ContactDynamicParams(), "NORMCOMBI_DISPLAGR");
+        GLOBAL::Problem::Instance()->contact_dynamic_params(), "NORMCOMBI_DISPLAGR");
   }
 
   {
@@ -470,7 +471,7 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
+enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::get_incr_tolerance_type(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
   CheckInitSetup();
@@ -698,7 +699,7 @@ bool STR::TIMINT::BaseDataSDyn::HaveModelType(const INPAR::STR::ModelType& model
 bool STR::TIMINT::BaseDataSDyn::HaveEleTech(const INPAR::STR::EleTech& eletech) const
 {
   CheckInitSetup();
-  return (GetElementTechnologies().find(eletech) != GetElementTechnologies().end());
+  return (get_element_technologies().find(eletech) != get_element_technologies().end());
 }
 
 
@@ -774,7 +775,7 @@ void STR::TIMINT::ExplEulerDataSDyn::Setup()
 
   modexpleuler_ =
       (CORE::UTILS::IntegralValue<int>(
-           GLOBAL::Problem::Instance()->StructuralDynamicParams(), "MODIFIEDEXPLEULER") == 1);
+           GLOBAL::Problem::Instance()->structural_dynamic_params(), "MODIFIEDEXPLEULER") == 1);
 
   issetup_ = true;
 }

@@ -199,10 +199,10 @@ namespace
 
       // get reference intercalation fraction
       const double x_ref =
-          MAT::Electrode::ComputeIntercalationFraction(ref_conc, chi_max, c_max, 1.0);
+          MAT::Electrode::compute_intercalation_fraction(ref_conc, chi_max, c_max, 1.0);
 
       // set the value of the reference polynomial
-      params_inelastic_defgrad_poly_intercal_frac_->SetPolynomReferenceValue(
+      params_inelastic_defgrad_poly_intercal_frac_->set_polynom_reference_value(
           polynomial_shape_->ComputePolynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
@@ -237,7 +237,7 @@ namespace
               inelastic_defgrad_poly_intercal_frac_aniso_data));
 
       // set the value of the reference polynomial
-      params_inelastic_defgrad_poly_intercal_frac_aniso_->SetPolynomReferenceValue(
+      params_inelastic_defgrad_poly_intercal_frac_aniso_->set_polynom_reference_value(
           polynomial_shape_->ComputePolynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
@@ -335,7 +335,7 @@ namespace
 
     // loop over test values and check whether the result is correct
     for (auto i = 0U; i < test_values.size(); ++i)
-      EXPECT_NEAR(linear_shape_->EvaluateLinearGrowth(test_values[i]), results[i], 1.0e-12);
+      EXPECT_NEAR(linear_shape_->evaluate_linear_growth(test_values[i]), results[i], 1.0e-12);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestInelasticDeformationDirection)
@@ -398,7 +398,7 @@ namespace
     // loop over test values and check whether the result is correct
     for (auto i = 0U; i < TestValues.size(); ++i)
       EXPECT_NEAR(
-          polynomial_shape_->ComputePolynomialDerivative(TestValues[i]), Results[i], 1.0e-12);
+          polynomial_shape_->compute_polynomial_derivative(TestValues[i]), Results[i], 1.0e-12);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateInelasticDefGradDerivative)
@@ -407,14 +407,14 @@ namespace
     CORE::LINALG::Matrix<9, 1> DFinDx(true);
     CORE::LINALG::Matrix<9, 1> DFinDx_ref(true);
 
-    lin_scalar_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    lin_scalar_iso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 2.977205763668e-07;
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
-    lin_scalar_aniso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    lin_scalar_aniso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = 6.734163313433e-07;
     DFinDx_ref(1) = 1.683540828358e-07;
     DFinDx_ref(2) = 6.060746982090e-08;
@@ -426,14 +426,14 @@ namespace
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
-    poly_intercal_frac_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    poly_intercal_frac_iso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.399216373729e-07;
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
-    poly_intercal_frac_aniso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    poly_intercal_frac_aniso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = 7.623672134952e-07;
     DFinDx_ref(1) = 1.905918033738e-07;
     DFinDx_ref(2) = 6.861304921457e-08;
@@ -445,7 +445,7 @@ namespace
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
-    lin_temp_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    lin_temp_iso_->evaluate_inelastic_def_grad_derivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.373943094440e-04;
     FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
   }
@@ -456,7 +456,7 @@ namespace
     CORE::LINALG::Matrix<3, 3> iFin(true);
 
     // test InelasticDefgradLinScalarIso evaluate the method
-    lin_scalar_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+    lin_scalar_iso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_iso_solution_, 1.0e-10);
@@ -465,7 +465,7 @@ namespace
     iFin.Clear();
 
     // test InelasticDefgradLinScalarAniso evaluate the method
-    lin_scalar_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+    lin_scalar_aniso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_aniso_solution_, 1.0e-10);
@@ -474,7 +474,7 @@ namespace
     iFin.Clear();
 
     // test InelasticDefgradPolyIntercalFracIso evaluate the method
-    poly_intercal_frac_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+    poly_intercal_frac_iso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_iso_solution_, 1.0e-10);
@@ -483,7 +483,7 @@ namespace
     iFin.Clear();
 
     // test InelasticDefgradPolyIntercalFracAniso evaluate the method
-    poly_intercal_frac_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+    poly_intercal_frac_aniso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_aniso_solution_, 1.0e-10);
@@ -492,7 +492,7 @@ namespace
     iFin.Clear();
 
     // test InelasticDefgradLinTempIso: evaluate the method
-    lin_temp_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
+    lin_temp_iso_->evaluate_inverse_inelastic_def_grad(&FM_, iFin);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(iFin, iFin_lin_temp_iso_solution_, 1.0e-15);
@@ -523,7 +523,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_iso_->EvaluateAdditionalCmat(
+    lin_scalar_iso_->evaluate_additional_cmat(
         &FM_, iFin_lin_scalar_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
@@ -543,7 +543,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_aniso_->EvaluateAdditionalCmat(
+    lin_scalar_aniso_->evaluate_additional_cmat(
         &FM_, iFin_lin_scalar_aniso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
@@ -563,7 +563,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_iso_->EvaluateAdditionalCmat(
+    poly_intercal_frac_iso_->evaluate_additional_cmat(
         &FM_, iFin_poly_intercal_frac_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
@@ -583,7 +583,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_aniso_->EvaluateAdditionalCmat(
+    poly_intercal_frac_aniso_->evaluate_additional_cmat(
         &FM_, iFin_poly_intercal_frac_aniso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
@@ -596,7 +596,7 @@ namespace
     CMatAdd_ref_solution.PutScalar(0.0);
 
     // evaluate the method
-    lin_temp_iso_->EvaluateAdditionalCmat(
+    lin_temp_iso_->evaluate_additional_cmat(
         &FM_, iFin_lin_temp_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results

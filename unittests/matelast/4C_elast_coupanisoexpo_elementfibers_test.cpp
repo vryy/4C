@@ -51,21 +51,21 @@ namespace
         CORE::LINALG::VOIGT::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
       }
 
-      SetupAnisotropyExtension();
+      setup_anisotropy_extension();
     }
 
-    void SetupAnisotropyExtension()
+    void setup_anisotropy_extension()
     {
       int fiber_id = std::get<0>(GetParam());
       auto strategy = Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr));
       anisotropyExtension_ = std::make_unique<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension>(
           1, 0.0, false, strategy, fiber_id);
-      anisotropyExtension_->RegisterNeededTensors(
+      anisotropyExtension_->register_needed_tensors(
           MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
           MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
           MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
-      anisotropy_.RegisterAnisotropyExtension(*anisotropyExtension_);
-      anisotropy_.SetNumberOfGaussPoints(2);
+      anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
+      anisotropy_.set_number_of_gauss_points(2);
 
       // Setup element fibers
       anisotropy_.SetElementFibers(eleFibers_);
@@ -102,7 +102,7 @@ namespace
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, GetStructuralTensorStress)
   {
-    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor_stress(GetGaussPoint()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->get_structural_tensor_stress(GetGaussPoint()),
         eleTensors_stress_.at(GetFiberId() - 1), 1e-10);
   }
 

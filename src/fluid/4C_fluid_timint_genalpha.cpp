@@ -62,7 +62,7 @@ void FLD::TimIntGenAlpha::Init()
       FOUR_C_THROW("more steps for starting algorithm than steps overall");
   }
 
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   CompleteGeneralInit();
 
@@ -149,7 +149,7 @@ void FLD::TimIntGenAlpha::SetTheta()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                              bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::SetOldPartOfRighthandside()
+void FLD::TimIntGenAlpha::set_old_part_of_righthandside()
 {
   /*
      for low-Mach-number flow: distinguish momentum and continuity part
@@ -171,7 +171,7 @@ void FLD::TimIntGenAlpha::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha time integration  vg 02/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
+void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
 {
   //                                  n+1     n
   //                               vel   - vel
@@ -211,13 +211,13 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
     CORE::LINALG::Export(*onlyaccnp, *accnp_);
   }
 
-}  // TimIntGenAlpha::GenAlphaUpdateAcceleration
+}  // TimIntGenAlpha::gen_alpha_update_acceleration
 
 
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
+void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
 {
   // set intermediate values for acceleration and potential temporal
   // derivatives
@@ -266,14 +266,14 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
   // not implicit treatment as for the genalpha according to Whiting
   velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
 
-}  // TimIntGenAlpha::GenAlphaIntermediateValues
+}  // TimIntGenAlpha::gen_alpha_intermediate_values
 
 
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha             |
  | for given vectors at n and n+1                           ghamm 04/14 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
+void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
     Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn)
 {
   // compute intermediate values for given vectors
@@ -299,7 +299,7 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
   vecn = vecam;
 
   return;
-}  // TimIntGenAlpha::GenAlphaIntermediateValues
+}  // TimIntGenAlpha::gen_alpha_intermediate_values
 
 
 /*----------------------------------------------------------------------*
@@ -317,9 +317,9 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
 /*----------------------------------------------------------------------*|
  | Set Eleparams for turbulence models                          bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
+void FLD::TimIntGenAlpha::treat_turbulence_models(Teuchos::ParameterList& eleparams)
 {
-  FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
+  FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
     FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velaf_, "velafgrad", alefluid_);
   return;
@@ -334,7 +334,7 @@ double FLD::TimIntGenAlpha::SetTimeFac() { return alphaF_; }
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+void FLD::TimIntGenAlpha::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
     const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
     const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
@@ -402,7 +402,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
-void FLD::TimIntGenAlpha::SetElementTimeParameter()
+void FLD::TimIntGenAlpha::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -454,7 +454,7 @@ Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint(
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of velocity part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-int FLD::TimIntGenAlpha::MethodOrderOfAccuracyVel() const
+int FLD::TimIntGenAlpha::method_order_of_accuracy_vel() const
 {
   if (fabs(gamma_ - 0.5 - alphaM_ + alphaF_) < 1.0e-6)
     return 2;
@@ -465,7 +465,7 @@ int FLD::TimIntGenAlpha::MethodOrderOfAccuracyVel() const
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of pressure part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-int FLD::TimIntGenAlpha::MethodOrderOfAccuracyPres() const
+int FLD::TimIntGenAlpha::method_order_of_accuracy_pres() const
 {
   if (fabs(gamma_ - 0.5 - alphaM_ + alphaF_) < 1.0e-6)
     return 2;
@@ -476,13 +476,13 @@ int FLD::TimIntGenAlpha::MethodOrderOfAccuracyPres() const
 /*----------------------------------------------------------------------*
 | Return linear error coefficient of velocity           mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntGenAlpha::MethodLinErrCoeffVel() const
+double FLD::TimIntGenAlpha::method_lin_err_coeff_vel() const
 {
   double fac = 0.0;
 
-  if (MethodOrderOfAccuracy() == 1)
+  if (method_order_of_accuracy() == 1)
     fac = 0.5 - gamma_;
-  else if (MethodOrderOfAccuracy() == 2)
+  else if (method_order_of_accuracy() == 2)
     fac = 1.0 / 6.0 - 0.5 * gamma_;
   else
     FOUR_C_THROW("Unknown Order of Accuracy for Gen-Alpha time integration.");

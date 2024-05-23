@@ -48,32 +48,32 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
   if (action == FLD::set_general_fluid_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementGeneralFluidParameter(p, dis.Comm().MyPID());
+    fldpara->set_element_general_fluid_parameter(p, dis.Comm().MyPID());
   }
   else if (action == FLD::set_time_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterTimInt* fldpara =
         DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
-    fldpara->SetElementTimeParameter(p);
+    fldpara->set_element_time_parameter(p);
   }
   else if (action == FLD::set_turbulence_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementTurbulenceParameters(p);
+    fldpara->set_element_turbulence_parameters(p);
   }
   else if (action == FLD::set_loma_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementLomaParameter(p);
+    fldpara->set_element_loma_parameter(p);
   }
   else if (action == FLD::set_general_fluid_xfem_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterXFEM* fldpara =
         DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
 
-    fldpara->SetElementGeneralFluidParameter(p, dis.Comm().MyPID());
-    fldpara->SetElementTurbulenceParameters(p);
-    fldpara->SetElementXFEMParameter(p, dis.Comm().MyPID());
+    fldpara->set_element_general_fluid_parameter(p, dis.Comm().MyPID());
+    fldpara->set_element_turbulence_parameters(p);
+    fldpara->set_element_xfem_parameter(p, dis.Comm().MyPID());
   }
 
   return;
@@ -771,13 +771,13 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
   {
     DRT::ELEMENTS::FluidEleParameterIntFace* fldintfacepara =
         DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
-    fldintfacepara->SetFaceGeneralFluidParameter(p, dis.Comm().MyPID());
+    fldintfacepara->set_face_general_fluid_parameter(p, dis.Comm().MyPID());
   }
   else if (action == FLD::set_general_face_xfem_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterIntFace* fldintfacepara =
         DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
-    fldintfacepara->SetFaceGeneralXFEMParameter(p, dis.Comm().MyPID());
+    fldintfacepara->set_face_general_xfem_parameter(p, dis.Comm().MyPID());
   }
   else
     FOUR_C_THROW("unknown action type for FluidIntFaceType::PreEvaluate");

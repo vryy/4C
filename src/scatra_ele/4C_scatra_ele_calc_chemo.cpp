@@ -221,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
   // time
-  ClearChemotaxisTerms();
+  clear_chemotaxis_terms();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
         Teuchos::rcp_dynamic_cast<const MAT::MatListChemotaxis>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
-    GetChemotaxisCoefficients(
+    get_chemotaxis_coefficients(
         actmat);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
  |  Clear all chemotaxtis related class variable (i.e. set them to zero)  thon 06/15 |
  *-----------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ClearChemotaxisTerms()
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::clear_chemotaxis_terms()
 {
   numcondchemo_ = 0;
 
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ClearChemotaxisTerms()
  |  get numcond, pairing list, chemotaxis coefficient from material            thon 06/ 15 |
  *-----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetChemotaxisCoefficients(
+void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coefficients(
     const Teuchos::RCP<const CORE::MAT::Material> material  //!< pointer to current material
 )
 {
@@ -341,7 +341,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         CORE::LINALG::Matrix<nen_, 1> laplace(true);
-        my::GetLaplacianStrongForm(laplace);
+        my::get_laplacian_strong_form(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);
       }
 

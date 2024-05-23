@@ -156,7 +156,7 @@ void FPSI::MonolithicPlain::SetupSystem()
 {
   const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
-  SetDefaultParameters(fpsidynparams);
+  set_default_parameters(fpsidynparams);
 
   // call SetupSystem in base classes
   PoroField()->SetupSystem();
@@ -191,7 +191,7 @@ void FPSI::MonolithicPlain::SetupSystem()
   SetDofRowMaps(vecSpaces);
 
   // switch fluid to interface split block matrix
-  FluidField()->UseBlockMatrix(true, FPSICoupl()->FluidFsiFpsiExtractor());
+  FluidField()->UseBlockMatrix(true, FPSICoupl()->fluid_fsi_fpsi_extractor());
 
   // build ale system matrix in splitted system
   AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -216,7 +216,7 @@ void FPSI::MonolithicPlain::SetDofRowMaps(const std::vector<Teuchos::RCP<const E
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FPSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fpsidynparams)
+void FPSI::Monolithic::set_default_parameters(const Teuchos::ParameterList& fpsidynparams)
 {
   // to do
   return;
@@ -275,15 +275,15 @@ void FPSI::MonolithicPlain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
   const int& aidx_fpsi = ALE::UTILS::MapExtractor::cond_fpsi;
 
   // FPSI Couplings
-  const CORE::ADAPTER::Coupling& coupsa_fpsi = FPSICoupl()->PoroStructureAleCoupling();
-  const CORE::ADAPTER::Coupling& coupsf_fpsi = FPSICoupl()->PoroStructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsa_fpsi = FPSICoupl()->poro_structure_ale_coupling();
+  const CORE::ADAPTER::Coupling& coupsf_fpsi = FPSICoupl()->poro_structure_fluid_coupling();
 
   // General Couplings
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // FSI Couplings
-  const CORE::ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
-  const CORE::ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
+  const CORE::ADAPTER::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
+  const CORE::ADAPTER::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
 
   ///////////ADD THE COUPLING HERE////////////////
   p->Add(FPSICoupl()->C_pp(), false, 1.0, 1.0);
@@ -649,7 +649,7 @@ void FPSI::MonolithicPlain::SetupRHSFirstIter(Epetra_Vector& f)
   const double scale = FluidField()->ResidualScaling();
 
   // old interface velocity of fluid field (FSI Cond Vector)
-  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->extract_interface_veln();
 
   // get fluid matrix
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf =
@@ -866,8 +866,8 @@ void FPSI::MonolithicPlain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector
   // put inner --- ALE solution together
   Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
   // AleField()->Interface()->InsertFPSICondVector(acx_fpsi, a); //Already done by
-  // Ale().ApplyInterfaceDisplacements() AleField()->Interface()->InsertFSICondVector(acx_fsi, a);
-  // //Already done by Ale().ApplyInterfaceDisplacements()
+  // Ale().apply_interface_displacements() AleField()->Interface()->InsertFSICondVector(acx_fsi, a);
+  // //Already done by Ale().apply_interface_displacements()
   ax = a;  // displacement on the interace is zero!!!
 
   // ---------------------------------------------------------------------------
@@ -899,10 +899,10 @@ void FPSI::MonolithicPlain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector
     Teuchos::RCP<const Epetra_Vector> acx_fsi = StructToAle_FSI(scx_fsi);
 
     // convert ALE solution increment to fluid solution increment at the interface
-    Teuchos::RCP<Epetra_Vector> fcx_fsi = AleToFluidInterface_FSI(acx_fsi);
+    Teuchos::RCP<Epetra_Vector> fcx_fsi = ale_to_fluid_interface_fsi(acx_fsi);
 
     if (firstiter_)
-      FluidField()->DisplacementToVelocity(
+      FluidField()->displacement_to_velocity(
           fcx_fsi);  // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
     else
       fcx_fsi->Scale(FluidField()->TimeScaling());  // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1)
@@ -922,7 +922,7 @@ void FPSI::MonolithicPlain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector
     // ------------------------------------
   }
 
-  Teuchos::RCP<Epetra_Vector> fox = FPSICoupl()->FluidFsiFpsiExtractor()->ExtractVector(f, 0);
+  Teuchos::RCP<Epetra_Vector> fox = FPSICoupl()->fluid_fsi_fpsi_extractor()->ExtractVector(f, 0);
 
   fx = f;
   // inner ale displacement increment
@@ -949,7 +949,7 @@ void FPSI::MonolithicPlain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector
 /* Recover the Lagrange multiplier at the interface   ... FPSI adapted version of mayr.mt (03/2012)
  */
 /*----------------------------------------------------------------------*/
-void FPSI::MonolithicPlain::RecoverLagrangeMultiplier()
+void FPSI::MonolithicPlain::recover_lagrange_multiplier()
 {
   // For overlapping interfaces also the FPSI Coupling Matrixes should be considered in the
   // condensation procedure ... not done yet!!!!
@@ -1071,7 +1071,7 @@ void FPSI::MonolithicPlain::RecoverLagrangeMultiplier()
 
       // extract inner velocity DOFs after calling AleToFluid()
       Teuchos::RCP<Epetra_Map> velothermap = CORE::LINALG::SplitMap(
-          *FluidField()->VelocityRowMap(), *InterfaceFluidAleCoupling_FSI().MasterDofMap());
+          *FluidField()->VelocityRowMap(), *interface_fluid_ale_coupling_fsi().MasterDofMap());
       CORE::LINALG::MapExtractor velothermapext =
           CORE::LINALG::MapExtractor(*FluidField()->VelocityRowMap(), velothermap, false);
       auxvec = Teuchos::rcp(new Epetra_Vector(*velothermap, true));
@@ -1097,7 +1097,7 @@ void FPSI::MonolithicPlain::RecoverLagrangeMultiplier()
     if (firstcall_)
     {
       auxvec = Teuchos::rcp(new Epetra_Vector(fggprev_->RangeMap(), true));
-      fggprev_->Apply(*FluidField()->ExtractInterfaceVeln(), *auxvec);
+      fggprev_->Apply(*FluidField()->extract_interface_veln(), *auxvec);
       tmpvec->Update(Dt() * timescale, *auxvec, 1.0);
     }
     // ---------End of term (8)

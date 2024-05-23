@@ -40,10 +40,10 @@ namespace INPUT
   {
    public:
     /// Setup of
-    void SetupValidElementLines();
+    void setup_valid_element_lines();
 
     /// print all valid element definitions to stream
-    void PrintElementDatHeaderToStream(std::ostream& stream);
+    void print_element_dat_header_to_stream(std::ostream& stream);
 
     /// Print section header to stream
     void PrintSectionHeader(std::ostream& stream, std::string name);

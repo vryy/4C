@@ -102,7 +102,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (probtype != GLOBAL::ProblemType::fsi)
   {
     PeriodicBoundaryConditions pbc(actdis);
-    pbc.UpdateDofsForPeriodicBoundaryConditions();
+    pbc.update_dofs_for_periodic_boundary_conditions();
   }
 
   // -------------------------------------------------------------------
@@ -149,7 +149,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // FIXME: The solver should not be taken from the contact dynamic section here,
       // but must be specified in the fluid dynamic section instead (popp 11/2012)
 
-      const Teuchos::ParameterList& mshparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& mshparams =
+          GLOBAL::Problem::Instance()->contact_dynamic_params();
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
@@ -203,10 +204,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           // set Inverse blocks for block preconditioner
           // for BGS preconditioner
           // This is only necessary for BGS. CheapSIMPLE has a more modern framework
-          solver->PutSolverParamsToSubParams(
+          solver->put_solver_params_to_sub_params(
               "Inverse1", GLOBAL::Problem::Instance()->SolverParams(fluidsolver));
 
-          solver->PutSolverParamsToSubParams(
+          solver->put_solver_params_to_sub_params(
               "Inverse2", GLOBAL::Problem::Instance()->SolverParams(fluidpressuresolver));
         }
         break;
@@ -225,7 +226,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::condensed_bmat_merged:
     {
       // meshtying (no saddle point problem)
-      const Teuchos::ParameterList& mshparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& mshparams =
+          GLOBAL::Problem::Instance()->contact_dynamic_params();
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       if (mshsolver == (-1))
@@ -270,7 +272,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case INPAR::FLUID::condensed_bmat:
       {
         const Teuchos::ParameterList& mshparams =
-            GLOBAL::Problem::Instance()->ContactDynamicParams();
+            GLOBAL::Problem::Instance()->contact_dynamic_params();
         const int mshsolver = mshparams.get<int>(
             "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
 
@@ -283,16 +285,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           // block preconditioners, that are implemented in 4C
           case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
           {
-            actdis->ComputeNullSpaceIfNecessary(
+            actdis->compute_null_space_if_necessary(
                 solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-            actdis->ComputeNullSpaceIfNecessary(
+            actdis->compute_null_space_if_necessary(
                 solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
           }
           break;
           case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
           {
-            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"), true);
-            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"), true);
+            actdis->compute_null_space_if_necessary(solver->Params().sublist("Inverse1"), true);
+            actdis->compute_null_space_if_necessary(solver->Params().sublist("Inverse2"), true);
           }
           break;
           default:
@@ -303,7 +305,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       default:
         // no block matrix
-        actdis->ComputeNullSpaceIfNecessary(solver->Params(), true);
+        actdis->compute_null_space_if_necessary(solver->Params(), true);
         break;
     }
   }
@@ -342,7 +344,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           probtype == GLOBAL::ProblemType::fpsi_xfem) and
       disname == "porofluid")
   {
-    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     fluidtimeparams->set<int>("Physical Type",
         CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE"));
     if (fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro and
@@ -357,7 +359,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // now, set general parameters required for all problems
-  SetGeneralParameters(fluidtimeparams, prbdyn, fdyn);
+  set_general_parameters(fluidtimeparams, prbdyn, fdyn);
 
   // and, finally, add problem specific parameters
 
@@ -527,7 +529,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       (probtype == GLOBAL::ProblemType::fps3i and disname == "porofluid") or
       (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "porofluid"))
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     fluidtimeparams->set<bool>("poroelast", true);
     fluidtimeparams->set<bool>(
         "interface second order", CORE::UTILS::IntegralValue<int>(porodyn, "SECONDORDER"));
@@ -663,7 +665,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case GLOBAL::ProblemType::scatra:
       {
         // HDG implements all time stepping schemes within gen-alpha
-        if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+        if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
                 CORE::FE::ShapeFunctionType::hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
@@ -671,7 +673,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
-        else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+        else if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
                      CORE::FE::ShapeFunctionType::hdg &&
                  (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
@@ -679,7 +681,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                          "PHYSICAL_TYPE") == INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
-        else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+        else if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
                      CORE::FE::ShapeFunctionType::hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
@@ -911,7 +913,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case GLOBAL::ProblemType::freesurf:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+        if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
                 CORE::FE::ShapeFunctionType::hdg &&
             (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
@@ -1221,7 +1223,7 @@ void ADAPTER::FluidBaseAlgorithm::SetInitialFlowField(const Teuchos::ParameterLi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetInitialInflowField(const Teuchos::ParameterList& fdyn)
+void ADAPTER::FluidBaseAlgorithm::set_initial_inflow_field(const Teuchos::ParameterList& fdyn)
 {
   // set initial field for inflow section by given function
   // we do this here, since we have direct access to all necessary parameters
@@ -1292,7 +1294,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
 
-  discret->ComputeNullSpaceIfNecessary(solver->Params(), true);
+  discret->compute_null_space_if_necessary(solver->Params(), true);
 
   // create a second solver for SIMPLER preconditioner if chosen from input
   CreateSecondSolver(solver, fdyn);
@@ -1308,7 +1310,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
       CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
 
   // now, set general parameters required for all problems
-  SetGeneralParameters(fluidtimeparams, prbdyn, fdyn);
+  set_general_parameters(fluidtimeparams, prbdyn, fdyn);
 
   // overwrite canonical flow parameters by inflow type
   fluidtimeparams->sublist("TURBULENCE MODEL")
@@ -1414,7 +1416,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // initialize algorithm for specific time-integration scheme
   fluid_->Init();
 
-  SetInitialInflowField(fdyn);
+  set_initial_inflow_field(fdyn);
 
   return;
 }
@@ -1422,7 +1424,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
+void ADAPTER::FluidBaseAlgorithm::set_general_parameters(
     const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
     const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn)
 {
@@ -1577,7 +1579,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // -----------------------------get also scatra stabilization sublist
   const Teuchos::ParameterList& scatradyn =
-      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
   fluidtimeparams->sublist("SCATRA STABILIZATION") = scatradyn.sublist("STABILIZATION");
 
   // --------------------------sublist containing turbulence parameters
@@ -1620,7 +1622,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
       case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
       {
         // add Inverse1 block for velocity dofs
-        // tell Inverse1 block about NodalBlockInformation
+        // tell Inverse1 block about nodal_block_information
         // In contrary to contact/meshtying problems this is necessary here, since we originally
         // have built the null space for the whole problem (velocity and pressure dofs). However, if
         // we split the matrix into velocity and pressure block, we have to adapt the null space
@@ -1629,7 +1631,8 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
         // constant vector
         Teuchos::ParameterList& inv1 =
             solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-        inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+        inv1.sublist("nodal_block_information") =
+            solver->Params().sublist("nodal_block_information");
 
         // CheapSIMPLE is somewhat hardwired here
         solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
@@ -1639,15 +1642,15 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
       case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid:
       {
         // add Inverse1 block for velocity dofs
-        // tell Inverse1 block about NodalBlockInformation
+        // tell Inverse1 block about nodal_block_information
         // In contrary to contact/meshtying problems this is necessary here, since we originally
         // have built the null space for the whole problem (velocity and pressure dofs). However, if
         // we split the matrix into velocity and pressure block, we have to adapt the null space
         // information for the subblocks. Therefore we need the nodal block information in the first
         // subblock for the velocities. The pressure null space is trivial to be built using a
         // constant vector
-        solver->Params().sublist("MueLu (Fluid) Parameters").sublist("NodalBlockInformation") =
-            solver->Params().sublist("NodalBlockInformation");
+        solver->Params().sublist("MueLu (Fluid) Parameters").sublist("nodal_block_information") =
+            solver->Params().sublist("nodal_block_information");
       }
       break;
       default:

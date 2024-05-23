@@ -71,7 +71,7 @@ namespace FSI
     //@}
 
     /// create merged map of DOF in the final system from all fields
-    void CreateCombinedDofRowMap() override;
+    void create_combined_dof_row_map() override;
 
     /// Extract initial guess from fields
     void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) override;
@@ -104,10 +104,10 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax) override;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
-    void RecoverLagrangeMultiplier() override;
+    void recover_lagrange_multiplier() override;
 
     /// compute the residual and incremental norms required for convergence check
-    void BuildConvergenceNorms() override;
+    void build_convergence_norms() override;
 
     /// read restart data
     void ReadRestart(int step) override;
@@ -121,7 +121,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    void HandleFluidDofMapChangeInNewton() override;
+    void handle_fluid_dof_map_change_in_newton() override;
 
     /*!
      * Determine a change in fluid DOF map
@@ -131,7 +131,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    bool HasFluidDofMapChanged(const Epetra_BlockMap& fluidincrementmap) override;
+    bool has_fluid_dof_map_changed(const Epetra_BlockMap& fluidincrementmap) override;
 
    private:
     /// build block vector from field vectors

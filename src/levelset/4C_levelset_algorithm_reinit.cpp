@@ -40,7 +40,7 @@ void SCATRA::LevelSetAlgorithm::ReinitEq()
   // -----------------------------------------------------------------
   // set vectors and all further quantities such that the reinitialization
   // can be solved within the existing framework
-  PrepareTimeLoopReinit();
+  prepare_time_loop_reinit();
 
   // -----------------------------------------------------------------
   //            time loop for reinitialization equation
@@ -52,7 +52,7 @@ void SCATRA::LevelSetAlgorithm::ReinitEq()
   // -----------------------------------------------------------------
 
   // cleaning of all necessary modifications
-  FinishTimeLoopReinit();
+  finish_time_loop_reinit();
 
   return;
 }
@@ -61,7 +61,7 @@ void SCATRA::LevelSetAlgorithm::ReinitEq()
 /*-------------------------------------------------------------------*
  | set element parameters for reinitialization equation   fang 08/15 |
  *-------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(
+void SCATRA::LevelSetAlgorithm::set_reinitialization_element_parameters(
     bool calcinitialtimederivative) const
 {
   // create element parameter list
@@ -125,7 +125,7 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(
 /*----------------------------------------------------------------------*
  | set time parameters for reinitialization equation    rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetReinitializationElementTimeParameters()
+void SCATRA::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
 {
   Teuchos::ParameterList eleparams;
 
@@ -154,7 +154,7 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementTimeParameters()
  | prepare internal time loop for reinitialization equation             |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::PrepareTimeLoopReinit()
+void SCATRA::LevelSetAlgorithm::prepare_time_loop_reinit()
 {
   // set switch flag to true to active reinitialization specific parts
   switchreinit_ = true;
@@ -167,9 +167,9 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeLoopReinit()
   pseudostep_ = 0;
 
   // set time-integration parameters for reinitialization equation
-  SetReinitializationElementTimeParameters();
+  set_reinitialization_element_time_parameters();
   // set element parameters for reinitialization equation
-  SetReinitializationElementParameters();
+  set_reinitialization_element_parameters();
 
   return;
 }
@@ -191,7 +191,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
     // -------------------------------------------------------------------
     //                  prepare time step
     // -------------------------------------------------------------------
-    PrepareTimeStepReinit();
+    prepare_time_step_reinit();
 
     // -------------------------------------------------------------------
     //                  solve nonlinear equation
@@ -206,7 +206,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
     // -------------------------------------------------------------------
     //                        check for convergence
     // -------------------------------------------------------------------
-    converged = ConvergenceCheckReinit();
+    converged = convergence_check_reinit();
 
     // -------------------------------------------------------------------
     //                        update solution
@@ -222,17 +222,17 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
  | clean internal time loop for reinitialization equation               |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
+void SCATRA::LevelSetAlgorithm::finish_time_loop_reinit()
 {
   // reset quantites that may have been overwritten
   // reset internal step counter
   pseudostep_ = 0;
 
   // reset time-integration parameters for element evaluation
-  SetElementTimeParameter();
+  set_element_time_parameter();
   // reset general parameters for element evaluation
-  SetElementGeneralParameters();
-  SetElementTurbulenceParameters();
+  set_element_general_parameters();
+  set_element_turbulence_parameters();
 
   //  {
   //    // turn on/off screen output for writing process of Gmsh postprocessing file
@@ -278,7 +278,7 @@ void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
 /*----------------------------------------------------------------------*
  | convergence check for reinitialization equation      rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-bool SCATRA::LevelSetAlgorithm::ConvergenceCheckReinit()
+bool SCATRA::LevelSetAlgorithm::convergence_check_reinit()
 {
   bool abortreinitloop = false;
 
@@ -332,14 +332,14 @@ bool SCATRA::LevelSetAlgorithm::ConvergenceCheckReinit()
  | setup the variables to do a new reinitialization time step           |
  |                                                      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
+void SCATRA::LevelSetAlgorithm::prepare_time_step_reinit()
 {
   // prepare first time step
   if (pseudostep_ == 0)
   {
     // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
     ApplyDirichletBC(time_, phin_, Teuchos::null);
-    CalcInitialTimeDerivative();
+    calc_initial_time_derivative();
   }
 
   // increment time and step
@@ -348,16 +348,16 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
-  SetOldPartOfRighthandside();
-  SetReinitializationElementTimeParameters();
+  set_old_part_of_righthandside();
+  set_reinitialization_element_time_parameters();
 
   // -------------------------------------------------------------------
   // compute node-based velocity field
   // -------------------------------------------------------------------
-  // TODO phin oder phinp: fuer phinp in AddProblemSpecificParametersAndVectors
+  // TODO phin oder phinp: fuer phinp in add_problem_specific_parameters_and_vectors
   //     muss vor oder gleich zu Beginn von AssembleMatAndRHS gerufen werden
 #ifdef USE_PHIN_FOR_VEL
-  if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based) CalcNodeBasedReinitVel();
+  if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based) calc_node_based_reinit_vel();
 #endif
 
   return;
@@ -368,7 +368,7 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
  | calculate node-based velocity field via L2-projection                |
  | for reinitialization                                 rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
+void SCATRA::LevelSetAlgorithm::calc_node_based_reinit_vel()
 {
   // loop all space dimensions,
   // since assembler can only deal with one dof per node here
@@ -894,7 +894,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
 
             // compute normal vector to flame front patch
             CORE::LINALG::Matrix<3, 1> normal(true);
-            ComputeNormalVectorToInterface(patch, patchcoord, normal);
+            compute_normal_vector_to_interface(patch, patchcoord, normal);
 
             //-----------------------------------------
             // find flame front patches facing the node
@@ -904,7 +904,8 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             // distance to the facing patch
             double patchdist = 1.0e19;  // default value
             // check if this patch faces the node
-            FindFacingPatchProjCellSpace(tmpcoord, patch, patchcoord, normal, facenode, patchdist);
+            find_facing_patch_proj_cell_space(
+                tmpcoord, patch, patchcoord, normal, facenode, patchdist);
 
             // a facing patch was found
             if (facenode == true)
@@ -925,7 +926,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             //-------------------------------------------------------------
             // distance to the patch edge
             double edgedist = 1.0e19;
-            ComputeDistanceToEdge(tmpcoord, patch, patchcoord, edgedist);
+            compute_distance_to_edge(tmpcoord, patch, patchcoord, edgedist);
 
             if (fabs(edgedist) < fabs(mindist))
             {
@@ -941,7 +942,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             //----------------------------------------------------------------
             // distance to the patch vertex
             double vertexdist = 1.0e19;
-            ComputeDistanceToPatch(tmpcoord, patch, patchcoord, vertexdist);
+            compute_distance_to_patch(tmpcoord, patch, patchcoord, vertexdist);
 
             if (fabs(vertexdist) < fabs(mindist))
             {
@@ -1011,9 +1012,10 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
  | find a facing flame front patch by projection of node into boundary cell space        |
  |                                                                           henke 12/09 |
  *----------------------------------------------------------------------  -------------- */
-void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG::Matrix<3, 1>& node,
-    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
-    const CORE::LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist)
+void SCATRA::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
+    const CORE::LINALG::Matrix<3, 1>& node, const CORE::GEO::BoundaryIntCell& patch,
+    const CORE::LINALG::SerialDenseMatrix& patchcoord, const CORE::LINALG::Matrix<3, 1>& normal,
+    bool& facenode, double& patchdist)
 {
   // indicator
   facenode = false;
@@ -1114,7 +1116,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
 /*---------------------------------------------------------------------------------------*
  | compute distance to edge of patch                                         henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const CORE::LINALG::Matrix<3, 1>& node,
+void SCATRA::LevelSetAlgorithm::compute_distance_to_edge(const CORE::LINALG::Matrix<3, 1>& node,
     const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     double& edgedist)
 {
@@ -1186,7 +1188,7 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const CORE::LINALG::Matrix
 /*---------------------------------------------- ----------------------------------------*
  | compute distance to vertex of patch                                       henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const CORE::LINALG::Matrix<3, 1>& node,
+void SCATRA::LevelSetAlgorithm::compute_distance_to_patch(const CORE::LINALG::Matrix<3, 1>& node,
     const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     double& vertexdist)
 {
@@ -1224,7 +1226,7 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const CORE::LINALG::Matri
 /*-------------------------------------------------------------------------------------*
  | compute normal vector to interface patch                                henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
+void SCATRA::LevelSetAlgorithm::compute_normal_vector_to_interface(
     const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     CORE::LINALG::Matrix<3, 1>& normal)
 {
@@ -1372,11 +1374,11 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
     f.Scale(-1.0);
     // solve A.X=B
     CORE::LINALG::FixedSizeSerialDenseSolver<nsd, nsd, 1> solver;
-    solver.SetMatrix(gradf);               // set A=gradF
-    solver.SetVectors(incr, f);            // set X=incr, B=F
-    solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
-    int err2 = solver.Factor();            // ?
-    int err = solver.Solve();              // incr = gradF^-1.F
+    solver.SetMatrix(gradf);                 // set A=gradF
+    solver.SetVectors(incr, f);              // set X=incr, B=F
+    solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
+    int err2 = solver.Factor();              // ?
+    int err = solver.Solve();                // incr = gradF^-1.F
     if ((err != 0) || (err2 != 0))
       FOUR_C_THROW("solving linear system in Newton-Raphson method for projection failed");
 
@@ -1456,13 +1458,13 @@ void SCATRA::LevelSetAlgorithm::ReinitElliptic(
   interface_eleq_ = Teuchos::rcp(new std::map<int, CORE::GEO::BoundaryIntCells>(interface));
 
   // call the executing method
-  ReinitializeWithEllipticEquation();
+  reinitialize_with_elliptic_equation();
 }
 
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
+void SCATRA::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
 {
   //-------------------------------------------------
   // preparations
@@ -1472,10 +1474,10 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
   switchreinit_ = true;
 
   // set element parameters for reinitialization equation
-  SetReinitializationElementParameters();
+  set_reinitialization_element_parameters();
 
   // vector for initial phi (solution of level-set equation) of reinitialization process
-  // this vector is only initialized: currently function CalcNodeBasedReinitVel() is also
+  // this vector is only initialized: currently function calc_node_based_reinit_vel() is also
   // used to compute nodal level-set gradients, and this function expects that initialphireinit_ has
   // been set although it is not used for the present purposes
   initialphireinit_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
@@ -1502,7 +1504,7 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
     //-----------------------------
     // compute node-based gradient
     //-----------------------------
-    if (projection_) CalcNodeBasedReinitVel();
+    if (projection_) calc_node_based_reinit_vel();
 
     //-----------------------------
     // setup and solve system
@@ -1539,10 +1541,10 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
   //-------------------------------------------------
 
   // reset time-integration parameters for element evaluation
-  // SetElementTimeParameter(); -> have not been modified
+  // set_element_time_parameter(); -> have not been modified
   // reset general parameters for element evaluation
-  SetElementGeneralParameters();
-  SetElementTurbulenceParameters();
+  set_element_general_parameters();
+  set_element_turbulence_parameters();
 
   // clear variables
   interface_eleq_ = Teuchos::null;

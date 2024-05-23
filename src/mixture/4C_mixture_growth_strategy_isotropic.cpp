@@ -19,12 +19,12 @@ MIXTURE::PAR::IsotropicGrowthStrategy::IsotropicGrowthStrategy(
 }
 
 std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
-MIXTURE::PAR::IsotropicGrowthStrategy::CreateGrowthStrategy()
+MIXTURE::PAR::IsotropicGrowthStrategy::create_growth_strategy()
 {
   return std::make_unique<MIXTURE::IsotropicGrowthStrategy>();
 }
 
-void MIXTURE::IsotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
+void MIXTURE::IsotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
     CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
@@ -36,7 +36,7 @@ void MIXTURE::IsotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
   }
 }
 
-void MIXTURE::IsotropicGrowthStrategy::EvaluateGrowthStressCmat(
+void MIXTURE::IsotropicGrowthStrategy::evaluate_growth_stress_cmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
     const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
     const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

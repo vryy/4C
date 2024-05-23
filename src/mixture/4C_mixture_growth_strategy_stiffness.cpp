@@ -23,7 +23,7 @@ MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
 }
 
 std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
-MIXTURE::PAR::StiffnessGrowthStrategy::CreateGrowthStrategy()
+MIXTURE::PAR::StiffnessGrowthStrategy::create_growth_strategy()
 {
   return std::make_unique<MIXTURE::StiffnessGrowthStrategy>(this);
 }
@@ -34,14 +34,14 @@ MIXTURE::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
 {
 }
 
-void MIXTURE::StiffnessGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
+void MIXTURE::StiffnessGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
     CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
   iFgM = CORE::LINALG::IdentityMatrix<3>();
 }
 
-void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
+void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
     const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
     const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

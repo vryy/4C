@@ -68,7 +68,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   output->WriteMesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
-  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn =
+      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Print default parameters
   if (actdis->Comm().MyPID() == 0)
@@ -89,7 +90,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Create the solver
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
@@ -187,7 +188,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn =
-      GLOBAL::Problem::Instance()->RedAirwayTissueDynamicParams();
+      GLOBAL::Problem::Instance()->red_airway_tissue_dynamic_params();
   Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue =
       Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(), rawdyn));

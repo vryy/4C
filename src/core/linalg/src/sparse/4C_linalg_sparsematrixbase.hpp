@@ -157,7 +157,7 @@ namespace CORE::LINALG
     int Scale(double ScalarConstant) override;
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
-    int ReplaceDiagonalValues(const Epetra_Vector& Diagonal);
+    int replace_diagonal_values(const Epetra_Vector& Diagonal);
 
     /** \brief Replace the row map of the underlying Epetra_CrsMatrix
      *

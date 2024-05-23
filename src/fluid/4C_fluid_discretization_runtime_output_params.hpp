@@ -56,21 +56,21 @@ namespace DRT
       };
 
       /// whether to write velocity
-      bool OutputAccelerationState() const
+      bool output_acceleration_state() const
       {
         CheckInitSetup();
         return output_acceleration_state_;
       };
 
       /// whether to write displacements
-      bool OutputDisplacementState() const
+      bool output_displacement_state() const
       {
         CheckInitSetup();
         return output_displacement_state_;
       };
 
       /// whether to write velocity
-      bool OutputGridVelocityState() const
+      bool output_grid_velocity_state() const
       {
         CheckInitSetup();
         return output_gridvelocity_state_;

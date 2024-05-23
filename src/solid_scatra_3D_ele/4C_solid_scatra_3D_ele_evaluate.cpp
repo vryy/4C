@@ -28,7 +28,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
   }
 
   // get ptr to interface to time integration
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const ELEMENTS::ActionType action = std::invoke(
       [&]()
@@ -44,8 +44,9 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::ActionType::calc_struct_stiffscalar:
       // Evaluate off-diagonal block for SSI
       std::visit(
-          [&](auto& interface) {
-            interface->EvaluateDStressDScalar(
+          [&](auto& interface)
+          {
+            interface->evaluate_d_stress_d_scalar(
                 *this, SolidMaterial(), discretization, la, params, elemat1);
           },
           solid_scatra_calc_variant_);
@@ -55,7 +56,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, SolidMaterial(), discretization, la, params, &elevec1, &elemat1, nullptr);
           },
           solid_scatra_calc_variant_);
@@ -66,7 +67,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, SolidMaterial(), discretization, la, params, &elevec1, &elemat1, &elemat2);
           },
           solid_scatra_calc_variant_);
@@ -78,7 +79,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->EvaluateNonlinearForceStiffnessMass(
+            interface->evaluate_nonlinear_force_stiffness_mass(
                 *this, SolidMaterial(), discretization, la, params, &elevec1, nullptr, nullptr);
           },
           solid_scatra_calc_variant_);
@@ -130,7 +131,7 @@ int DRT::ELEMENTS::SolidScatra::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const double time = std::invoke(
       [&]()

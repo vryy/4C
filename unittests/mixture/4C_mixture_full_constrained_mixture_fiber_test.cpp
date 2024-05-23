@@ -52,7 +52,7 @@ namespace
           {growth_constant, decay_time}, lambda_pre, adaptive_strategy, growth_enabled};
     }
 
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> GenerateRemodelFiber(
+    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> generate_remodel_fiber(
         const double decay_time = 12.0, const double growth_constant = 0.1,
         const double lambda_pre = 1.1)
     {
@@ -149,13 +149,14 @@ namespace
         1.01, FADdouble(2, 0, 1.12), FADdouble(2, 1, 1.12), 1.0};
 
     const double time = 1.4;
-    const FADdouble growth_scalar_integrand = cm_fiber.GrowthScalarIntegrand(mass_increment, time);
+    const FADdouble growth_scalar_integrand =
+        cm_fiber.growth_scalar_integrand(mass_increment, time);
 
     EXPECT_FLOAT_EQ(growth_scalar_integrand.dx(0),
-        cm_fiber.DGrowthScalarIntegrandDGrowthScalar(mass_increment, time).val());
+        cm_fiber.d_growth_scalar_integrand_d_growth_scalar(mass_increment, time).val());
 
     EXPECT_FLOAT_EQ(growth_scalar_integrand.dx(1),
-        cm_fiber.DGrowthScalarIntegrandDProductionRate(mass_increment, time).val());
+        cm_fiber.d_growth_scalar_integrand_d_production_rate(mass_increment, time).val());
   }
 
   TEST_F(FullConstrainedMixtureFiberTest, CheckDerivativeScaledCauchyStressIntegrand)
@@ -170,13 +171,15 @@ namespace
         1.01, FADdouble(2, 0, 1.12), FADdouble(2, 1, 1.12), 1.0};
 
     const FADdouble scaled_cauchy_stress_integrand =
-        cm_fiber.ScaledCauchyStressIntegrand(mass_increment, time, lambda_f);
+        cm_fiber.scaled_cauchy_stress_integrand(mass_increment, time, lambda_f);
 
     EXPECT_FLOAT_EQ(scaled_cauchy_stress_integrand.dx(0),
-        cm_fiber.DScaledCauchyStressIntegrandDGrowthScalar(mass_increment, time, lambda_f).val());
+        cm_fiber.d_scaled_cauchy_stress_integrand_d_growth_scalar(mass_increment, time, lambda_f)
+            .val());
 
     EXPECT_FLOAT_EQ(scaled_cauchy_stress_integrand.dx(1),
-        cm_fiber.DScaledCauchyStressIntegrandDProductionRate(mass_increment, time, lambda_f).val());
+        cm_fiber.d_scaled_cauchy_stress_integrand_d_production_rate(mass_increment, time, lambda_f)
+            .val());
   }
 
   TEST_F(FullConstrainedMixtureFiberTest, RemodelFiberComparisonCauchyStress)
@@ -185,7 +188,7 @@ namespace
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
-        GenerateRemodelFiber();
+        generate_remodel_fiber();
 
     const double lambda_f = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f, 0.0);
@@ -197,17 +200,17 @@ namespace
       cm_fiber.RecomputeState(lambda_f, time, dt);
       remodel_fiber.SetState(lambda_f, 1.0);
 
-      remodel_fiber.IntegrateLocalEvolutionEquationsImplicit(dt);
+      remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 
       // compare
       ASSERT_NEAR(
-          cm_fiber.sig_h_, remodel_fiber.EvaluateCurrentHomeostaticFiberCauchyStress(), 1e-2);
+          cm_fiber.sig_h_, remodel_fiber.evaluate_current_homeostatic_fiber_cauchy_stress(), 1e-2);
       ASSERT_NEAR(cm_fiber.computed_sigma_ / cm_fiber.sig_h_,
-          remodel_fiber.EvaluateCurrentFiberCauchyStress() /
-              remodel_fiber.EvaluateCurrentHomeostaticFiberCauchyStress(),
+          remodel_fiber.evaluate_current_fiber_cauchy_stress() /
+              remodel_fiber.evaluate_current_homeostatic_fiber_cauchy_stress(),
           1e-2);
       ASSERT_NEAR(
-          cm_fiber.computed_growth_scalar_, remodel_fiber.EvaluateCurrentGrowthScalar(), 1e-2);
+          cm_fiber.computed_growth_scalar_, remodel_fiber.evaluate_current_growth_scalar(), 1e-2);
 
       cm_fiber.Update();
       remodel_fiber.Update();
@@ -220,7 +223,7 @@ namespace
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
-        GenerateRemodelFiber();
+        generate_remodel_fiber();
 
     const double lambda_f = 1.05;
     cm_fiber.ReinitializeHistory(lambda_f, 0.0);
@@ -232,11 +235,11 @@ namespace
       cm_fiber.RecomputeState(lambda_f, time, dt);
 
       remodel_fiber.SetState(lambda_f, 1.0);
-      remodel_fiber.IntegrateLocalEvolutionEquationsImplicit(dt);
+      remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 
       // compare
-      ASSERT_NEAR(cm_fiber.EvaluateCurrentSecondPKStress(),
-          remodel_fiber.EvaluateCurrentFiberPK2Stress(), 1e-2);
+      ASSERT_NEAR(cm_fiber.evaluate_current_second_pk_stress(),
+          remodel_fiber.evaluate_current_fiber_p_k2_stress(), 1e-2);
 
       cm_fiber.Update();
       remodel_fiber.Update();
@@ -264,8 +267,8 @@ namespace
       cm_fiber_adaptive.RecomputeState(lambda_f, time, dt);
 
       // compare
-      EXPECT_NEAR(cm_fiber.EvaluateCurrentSecondPKStress(),
-          cm_fiber_adaptive.EvaluateCurrentSecondPKStress(), 1e-7);
+      EXPECT_NEAR(cm_fiber.evaluate_current_second_pk_stress(),
+          cm_fiber_adaptive.evaluate_current_second_pk_stress(), 1e-7);
 
       cm_fiber.Update();
       cm_fiber_adaptive.Update();
@@ -296,8 +299,8 @@ namespace
       cm_fiber_adaptive.RecomputeState(lambda_f, time, dt);
 
       // compare
-      EXPECT_NEAR(cm_fiber.EvaluateCurrentSecondPKStress(),
-          cm_fiber_adaptive.EvaluateCurrentSecondPKStress(), 1e-7);
+      EXPECT_NEAR(cm_fiber.evaluate_current_second_pk_stress(),
+          cm_fiber_adaptive.evaluate_current_second_pk_stress(), 1e-7);
 
       cm_fiber.Update();
       cm_fiber_adaptive.Update();
@@ -348,7 +351,7 @@ namespace
     cm_fiber.RecomputeState(1.06, 0.01, 0.01);
 
     // evaluate local newton
-    const auto local_newton_evaluator = cm_fiber.GetLocalNewtonEvaluator();
+    const auto local_newton_evaluator = cm_fiber.get_local_newton_evaluator();
 
     CORE::LINALG::Matrix<2, 1, FADdouble> x;
     x(0) = FADdouble(2, 0, 1.5);
@@ -375,7 +378,7 @@ namespace
       cm_fiber.RecomputeState(lambda_f, time, dt);
 
       // evaluate local newton
-      const auto local_newton_evaluator = cm_fiber.GetLocalNewtonEvaluator();
+      const auto local_newton_evaluator = cm_fiber.get_local_newton_evaluator();
 
       CORE::LINALG::Matrix<2, 1, FADdouble> x;
       x(0) = FADdouble(2, 0, cm_fiber.computed_growth_scalar_.val());
@@ -392,7 +395,7 @@ namespace
     }
   }
 
-  TEST_F(FullConstrainedMixtureFiberTest, DScaledCauchyStressIntegrandDLambdaFSq)
+  TEST_F(FullConstrainedMixtureFiberTest, d_scaled_cauchy_stress_integrand_d_lambda_f_sq)
   {
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<FADdouble>();
 
@@ -404,10 +407,10 @@ namespace
     MIXTURE::MassIncrement<FADdouble> current_increment = {1.1, 1.4, 0.9, 1.22};
 
     FADdouble scaled_cauchy_stress_integrand =
-        cm_fiber.ScaledCauchyStressIntegrand(current_increment, time, lambda_f);
+        cm_fiber.scaled_cauchy_stress_integrand(current_increment, time, lambda_f);
 
     FADdouble dscaled_cauchy_stress_integrandDLambdaFSq =
-        cm_fiber.DScaledCauchyStressIntegrandDLambdaFSq(current_increment, time, lambda_f);
+        cm_fiber.d_scaled_cauchy_stress_integrand_d_lambda_f_sq(current_increment, time, lambda_f);
 
     EXPECT_DOUBLE_EQ(dscaled_cauchy_stress_integrandDLambdaFSq.val() * 2 * lambda_f.val(),
         scaled_cauchy_stress_integrand.dx(0));
@@ -426,7 +429,7 @@ namespace
     cm_fiber.RecomputeState(FADdouble(1, 0, lambda_f), 0.01, 0.01);
 
     // evaluate local newton
-    const auto local_newton_evaluator = cm_fiber.GetLocalNewtonEvaluator();
+    const auto local_newton_evaluator = cm_fiber.get_local_newton_evaluator();
 
     cm_fiber.computed_growth_scalar_ = cm_fiber.computed_growth_scalar_.val();
     cm_fiber.computed_sigma_ = cm_fiber.computed_sigma_.val();
@@ -438,9 +441,9 @@ namespace
     const auto [residuum, derivative] = local_newton_evaluator(x);
 
     EXPECT_NEAR(residuum(0).dx(0),
-        cm_fiber.EvaluateDResiduumGrowthScalarDLambdaFSq().val() * 2 * lambda_f, 1e-8);
+        cm_fiber.evaluate_d_residuum_growth_scalar_d_lambda_f_sq().val() * 2 * lambda_f, 1e-8);
     EXPECT_NEAR(residuum(1).dx(0),
-        cm_fiber.EvaluateDResiduumCauchyStressDLambdaFSq().val() * 2 * lambda_f, 1e-8);
+        cm_fiber.evaluate_d_residuum_cauchy_stress_d_lambda_f_sq().val() * 2 * lambda_f, 1e-8);
   }
 
   TEST_F(FullConstrainedMixtureFiberTest,
@@ -457,8 +460,8 @@ namespace
       const double lambda_f = lambda_f_0;
       cm_fiber.RecomputeState(FADdouble(1, 0, lambda_f), time, dt);
 
-      EXPECT_NEAR(cm_fiber.EvaluateDCurrentFiberPK2StressDLambdafsq().val() * 2 * lambda_f,
-          cm_fiber.EvaluateCurrentSecondPKStress().dx(0), 1e-7);
+      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+          cm_fiber.evaluate_current_second_pk_stress().dx(0), 1e-7);
 
       // remove automatic differentiation type from history data
       cm_fiber.computed_growth_scalar_ = cm_fiber.computed_growth_scalar_.val();
@@ -484,8 +487,8 @@ namespace
       const double lambda_f = lambda_f_0 + 0.001 * timestep;
       cm_fiber.RecomputeState(FADdouble(1, 0, lambda_f), time, dt);
 
-      EXPECT_NEAR(cm_fiber.EvaluateDCurrentFiberPK2StressDLambdafsq().val() * 2 * lambda_f,
-          cm_fiber.EvaluateCurrentSecondPKStress().dx(0), 1e-8);
+      EXPECT_NEAR(cm_fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+          cm_fiber.evaluate_current_second_pk_stress().dx(0), 1e-8);
 
       // remove automatic differentiation type from history data
       cm_fiber.computed_growth_scalar_ = cm_fiber.computed_growth_scalar_.val();
@@ -506,8 +509,8 @@ namespace
     double lambda_f = 1.2;
     fiber.RecomputeState(FADdouble(1, 0, lambda_f), 1.1, 1.0);
 
-    EXPECT_NEAR(fiber.EvaluateDCurrentFiberPK2StressDLambdafsq().val() * 2 * lambda_f,
-        fiber.EvaluateCurrentSecondPKStress().dx(0), 1e-8);
+    EXPECT_NEAR(fiber.evaluate_d_current_fiber_p_k2_stress_d_lambdafsq().val() * 2 * lambda_f,
+        fiber.evaluate_current_second_pk_stress().dx(0), 1e-8);
   }
 
   TEST_F(FullConstrainedMixtureFiberTest, GrowthScalarLinearizationIsAnalyticalSolution)
@@ -611,7 +614,7 @@ namespace
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
     MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
-        GenerateRemodelFiber();
+        generate_remodel_fiber();
 
     const std::array lambda_f = {1.05, 1.1, 1.09999};
     double time = 0.0;
@@ -628,15 +631,15 @@ namespace
         cm_fiber.RecomputeState(lambda_f[interval_id], time, dt);
         remodel_fiber.SetState(lambda_f[interval_id], 1.0);
 
-        remodel_fiber.IntegrateLocalEvolutionEquationsImplicit(dt);
+        remodel_fiber.integrate_local_evolution_equations_implicit(dt);
 
         // compare
         ASSERT_NEAR(cm_fiber.computed_sigma_ / cm_fiber.sig_h_,
-            remodel_fiber.EvaluateCurrentFiberCauchyStress() /
-                remodel_fiber.EvaluateCurrentHomeostaticFiberCauchyStress(),
+            remodel_fiber.evaluate_current_fiber_cauchy_stress() /
+                remodel_fiber.evaluate_current_homeostatic_fiber_cauchy_stress(),
             1e-2);
         ASSERT_NEAR(
-            cm_fiber.computed_growth_scalar_, remodel_fiber.EvaluateCurrentGrowthScalar(), 3e-2);
+            cm_fiber.computed_growth_scalar_, remodel_fiber.evaluate_current_growth_scalar(), 3e-2);
 
         cm_fiber.Update();
         remodel_fiber.Update();
@@ -773,7 +776,7 @@ namespace
   {
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
 
-    ASSERT_DOUBLE_EQ(cm_fiber.GetLastTimeInHistory(), 0.0);
+    ASSERT_DOUBLE_EQ(cm_fiber.get_last_time_in_history(), 0.0);
   }
 
 
@@ -782,7 +785,7 @@ namespace
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = GenerateFiber<double>();
 
     cm_fiber.AddTime(1.0);
-    ASSERT_DOUBLE_EQ(cm_fiber.GetLastTimeInHistory(), 1.0);
+    ASSERT_DOUBLE_EQ(cm_fiber.get_last_time_in_history(), 1.0);
   }
 
   TEST_F(FullConstrainedMixtureFiberTest, GetLastTimeInHistoryWithMultipleIntervals)
@@ -811,7 +814,7 @@ namespace
       cm_fiber.Update();
     }
 
-    ASSERT_DOUBLE_EQ(cm_fiber.GetLastTimeInHistory(), 0.6);
+    ASSERT_DOUBLE_EQ(cm_fiber.get_last_time_in_history(), 0.6);
   }
 
   TEST_F(FullConstrainedMixtureFiberTest, UpdateCallsAddTimeIfGrowthIsDisabled)

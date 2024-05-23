@@ -345,7 +345,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationMonaghanTest, StandardBackgroundPressure)
+  TEST_F(SPHMomentumFormulationMonaghanTest, standard_background_pressure)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -361,7 +361,7 @@ namespace
     double mod_acc_i[3] = {};
     double mod_acc_j[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
@@ -393,7 +393,7 @@ namespace
 
     double mod_acc_j[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, nullptr, mod_acc_j);
 
     // compute reference solution
@@ -422,7 +422,7 @@ namespace
 
     double mod_acc_i[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, nullptr);
 
     // compute reference solution
@@ -436,7 +436,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationMonaghanTest, GeneralizedBackgroundPressure)
+  TEST_F(SPHMomentumFormulationMonaghanTest, generalized_background_pressure)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -454,7 +454,7 @@ namespace
     double mod_acc_i[3] = {};
     double mod_acc_j[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
@@ -489,7 +489,7 @@ namespace
 
     double mod_acc_j[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, nullptr, mod_acc_j);
 
     // compute reference solution
@@ -519,7 +519,7 @@ namespace
 
     double mod_acc_i[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, nullptr);
 
     // compute reference solution
@@ -532,7 +532,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContribution)
+  TEST_F(SPHMomentumFormulationMonaghanTest, modified_velocity_contribution)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -562,7 +562,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -627,7 +627,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -689,7 +689,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -747,7 +747,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, nullptr,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, nullptr,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -794,7 +794,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         nullptr, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -1089,7 +1089,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationAdamiTest, StandardBackgroundPressure)
+  TEST_F(SPHMomentumFormulationAdamiTest, standard_background_pressure)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1105,7 +1105,7 @@ namespace
     double mod_acc_i[3] = {};
     double mod_acc_j[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
@@ -1135,7 +1135,7 @@ namespace
 
     double mod_acc_j[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, nullptr, mod_acc_j);
 
     // compute reference solution
@@ -1162,7 +1162,7 @@ namespace
 
     double mod_acc_i[3] = {};
 
-    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+    momentumformulation_->standard_background_pressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
         speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, nullptr);
 
     // compute reference solution
@@ -1174,7 +1174,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationAdamiTest, GeneralizedBackgroundPressure)
+  TEST_F(SPHMomentumFormulationAdamiTest, generalized_background_pressure)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1192,7 +1192,7 @@ namespace
     double mod_acc_i[3] = {};
     double mod_acc_j[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
@@ -1229,7 +1229,7 @@ namespace
 
     double mod_acc_j[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, nullptr, mod_acc_j);
 
     // compute reference solution
@@ -1260,7 +1260,7 @@ namespace
 
     double mod_acc_i[3] = {};
 
-    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+    momentumformulation_->generalized_background_pressure(&dens_i, &dens_j, &mass_i, &mass_j,
         mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, nullptr);
 
     // compute reference solution
@@ -1274,7 +1274,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
-  TEST_F(SPHMomentumFormulationAdamiTest, ModifiedVelocityContribution)
+  TEST_F(SPHMomentumFormulationAdamiTest, modified_velocity_contribution)
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1304,7 +1304,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -1367,7 +1367,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -1427,7 +1427,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -1484,7 +1484,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, nullptr,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, nullptr,
         mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -1530,7 +1530,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+    momentumformulation_->modified_velocity_contribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
         nullptr, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution

@@ -86,7 +86,7 @@ namespace DRT
         //! destructor
         virtual ~AssembleInterface() = default;
 
-        virtual int NumPhasesToAssembleInto() const = 0;
+        virtual int num_phases_to_assemble_into() const = 0;
 
         virtual int PhaseToAssembleInto(int iassemble, int numdofpernode) const = 0;
 
@@ -108,7 +108,7 @@ namespace DRT
         AssembleStandard(int curphase, const bool inittimederiv)
             : AssembleInterface(inittimederiv), curphase_(curphase){};
 
-        int NumPhasesToAssembleInto() const override { return 1; };
+        int num_phases_to_assemble_into() const override { return 1; };
 
         int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
         {
@@ -134,7 +134,7 @@ namespace DRT
           phasestoassemble_[1] = otherphase;
         };
 
-        int NumPhasesToAssembleInto() const override { return 2; };
+        int num_phases_to_assemble_into() const override { return 2; };
 
         int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
         {
@@ -213,7 +213,7 @@ namespace DRT
             ) = 0;
 
         //! evaluate off-diagonal coupling matrix with structure
-        virtual void EvaluateMatrixODStruct(
+        virtual void evaluate_matrix_od_struct(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -230,7 +230,7 @@ namespace DRT
             double det) = 0;
 
         //! evaluate off-diagonal coupling matrix with scatra
-        virtual void EvaluateMatrixODScatra(
+        virtual void evaluate_matrix_od_scatra(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -306,7 +306,7 @@ namespace DRT
         };
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStruct(
+        void evaluate_matrix_od_struct(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -326,13 +326,13 @@ namespace DRT
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
           {
-            (*it)->EvaluateMatrixODStruct(elemat, funct, deriv, derxy, xjm, numdofpernode,
+            (*it)->evaluate_matrix_od_struct(elemat, funct, deriv, derxy, xjm, numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac, det);
           }
         };
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatra(
+        void evaluate_matrix_od_scatra(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -349,7 +349,7 @@ namespace DRT
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
           {
-            (*it)->EvaluateMatrixODScatra(elemat, funct, derxy, numdofpernode, phasemanager,
+            (*it)->evaluate_matrix_od_scatra(elemat, funct, derxy, numdofpernode, phasemanager,
                 variablemanager, timefacfac, fac);
           }
         };
@@ -374,7 +374,7 @@ namespace DRT
 
       This class  is the base class for single summand evaluators. It comprises an assembler object,
       defining in which rows the term is to be assembled into. The pure virtual
-      methods EvaluateMatrixAndAssemble(...) and EvaluateVectorAndAssemble(...) defined
+      methods evaluate_matrix_and_assemble(...) and evaluate_vector_and_assemble(...) defined
       the actual term and are to be implemented in derived classes.
 
       \author vuong
@@ -402,11 +402,12 @@ namespace DRT
             ) override
         {
           // the assembler class decides, where the terms are assembled into
-          for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
+          for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
+               iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
-            EvaluateMatrixAndAssemble(elemat, funct, derxy, myphase_,
+            evaluate_matrix_and_assemble(elemat, funct, derxy, myphase_,
                 assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac, assembler_->CalcInitTimeDeriv());
           }
@@ -428,18 +429,19 @@ namespace DRT
             ) override
         {
           // the assembler class decides, where the terms are assembled into
-          for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
+          for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
+               iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
-            EvaluateVectorAndAssemble(elevec, funct, derxy, xyze, myphase_,
+            evaluate_vector_and_assemble(elevec, funct, derxy, xyze, myphase_,
                 assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, rhsfac, fac, assembler_->CalcInitTimeDeriv());
           }
         };
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStruct(
+        void evaluate_matrix_od_struct(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -456,18 +458,19 @@ namespace DRT
             double det) override
         {
           // the assembler class decides, where the terms are assembled into
-          for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
+          for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
+               iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
-            EvaluateMatrixODStructAndAssemble(elemat, funct, deriv, derxy, xjm, myphase_,
+            evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy, xjm, myphase_,
                 assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac, det);
           }
         };
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatra(
+        void evaluate_matrix_od_scatra(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -481,11 +484,12 @@ namespace DRT
             ) override
         {
           // the assembler class decides, where the terms are assembled into
-          for (int iassemble = 0; iassemble < assembler_->NumPhasesToAssembleInto(); iassemble++)
+          for (int iassemble = 0; iassemble < assembler_->num_phases_to_assemble_into();
+               iassemble++)
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
-            EvaluateMatrixODScatraAndAssemble(elemat, funct, derxy, myphase_,
+            evaluate_matrix_od_scatra_and_assemble(elemat, funct, derxy, myphase_,
                 assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac);
           }
@@ -494,7 +498,7 @@ namespace DRT
        protected:
         // actual evaluation and assembly of the respective term in the stiffness matrix (defined by
         // derived class)
-        virtual void EvaluateMatrixAndAssemble(
+        virtual void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -512,7 +516,7 @@ namespace DRT
 
         // actual evaluation and assembly of the respective term in the RHS vector (defined by
         // derived class)
-        virtual void EvaluateVectorAndAssemble(
+        virtual void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -531,7 +535,7 @@ namespace DRT
 
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
-        virtual void EvaluateMatrixODStructAndAssemble(
+        virtual void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -551,7 +555,7 @@ namespace DRT
 
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
-        virtual void EvaluateMatrixODScatraAndAssemble(
+        virtual void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -593,13 +597,13 @@ namespace DRT
             const double fac, const double det, const int numdofpernode, const int phasetoadd);
 
         // linearization of a term scaled with saturation after fluid dofs
-        void SaturationLinearizationFluid(CORE::LINALG::SerialDenseMatrix& mymat,
+        void saturation_linearization_fluid(CORE::LINALG::SerialDenseMatrix& mymat,
             const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int numfluidphases, const int curphase, const int phasetoadd,
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
         // linearization of a term scaled with porosity after fluid dofs
-        void PorosityLinearizationFluid(CORE::LINALG::SerialDenseMatrix& mymat,
+        void porosity_linearization_fluid(CORE::LINALG::SerialDenseMatrix& mymat,
             const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int phasetoadd, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
@@ -636,7 +640,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -653,7 +657,7 @@ namespace DRT
         );
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -671,7 +675,7 @@ namespace DRT
         );
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -690,7 +694,7 @@ namespace DRT
             double det);
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -726,7 +730,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -743,7 +747,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -761,7 +765,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -780,7 +784,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -816,7 +820,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -833,7 +837,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -851,7 +855,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -870,7 +874,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -906,7 +910,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -923,7 +927,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -941,7 +945,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -960,7 +964,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -997,7 +1001,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1014,7 +1018,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1032,7 +1036,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1051,7 +1055,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1087,7 +1091,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1104,7 +1108,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1122,7 +1126,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1141,7 +1145,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1177,7 +1181,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1194,7 +1198,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1212,7 +1216,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1231,7 +1235,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1279,7 +1283,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1296,7 +1300,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1314,7 +1318,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1333,7 +1337,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1383,7 +1387,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1400,7 +1404,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1418,7 +1422,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1437,7 +1441,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1473,7 +1477,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1490,7 +1494,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1508,7 +1512,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1527,7 +1531,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1575,7 +1579,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1592,7 +1596,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1610,7 +1614,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1629,7 +1633,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1665,7 +1669,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1682,7 +1686,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1700,7 +1704,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1719,7 +1723,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1758,7 +1762,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1775,7 +1779,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1793,7 +1797,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1812,7 +1816,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1848,7 +1852,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1865,7 +1869,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1883,7 +1887,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1902,7 +1906,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1941,7 +1945,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1958,7 +1962,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1976,7 +1980,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1995,7 +1999,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2041,7 +2045,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2058,7 +2062,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2076,7 +2080,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2095,7 +2099,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2132,7 +2136,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2149,7 +2153,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2167,7 +2171,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2186,7 +2190,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2216,7 +2220,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2233,7 +2237,7 @@ namespace DRT
             ) override{};
 
         //! evaluate element vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2251,7 +2255,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2270,7 +2274,7 @@ namespace DRT
             double det) override{};
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2312,7 +2316,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2329,7 +2333,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2347,7 +2351,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2366,7 +2370,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2415,7 +2419,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2432,7 +2436,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2450,7 +2454,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2469,7 +2473,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2508,7 +2512,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2525,7 +2529,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2543,7 +2547,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2562,7 +2566,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2601,7 +2605,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2618,7 +2622,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2636,7 +2640,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2655,7 +2659,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2692,7 +2696,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2709,7 +2713,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2727,7 +2731,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2746,7 +2750,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2783,7 +2787,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2800,7 +2804,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2818,7 +2822,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2837,7 +2841,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2873,7 +2877,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2890,7 +2894,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2908,7 +2912,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2927,7 +2931,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2963,7 +2967,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2980,7 +2984,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2998,7 +3002,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3017,7 +3021,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3053,7 +3057,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3070,7 +3074,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3088,7 +3092,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3107,7 +3111,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3143,7 +3147,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3160,7 +3164,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3178,7 +3182,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3197,7 +3201,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3234,7 +3238,7 @@ namespace DRT
 
        protected:
         //! evaluate element matrix
-        void EvaluateMatrixAndAssemble(
+        void evaluate_matrix_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3251,7 +3255,7 @@ namespace DRT
             ) override;
 
         //! evaluate element RHS vector
-        void EvaluateVectorAndAssemble(
+        void evaluate_vector_and_assemble(
             std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3269,7 +3273,7 @@ namespace DRT
             ) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODStructAndAssemble(
+        void evaluate_matrix_od_struct_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3288,7 +3292,7 @@ namespace DRT
             double det) override;
 
         //! evaluate off-diagonal coupling matrix with structure
-        void EvaluateMatrixODScatraAndAssemble(
+        void evaluate_matrix_od_scatra_and_assemble(
             std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&

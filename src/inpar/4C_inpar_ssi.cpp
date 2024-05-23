@@ -337,16 +337,16 @@ void INPAR::SSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   // set ScaTra-Structure interaction interface meshtying condition
   auto pointssiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS",
-          "SSIInterfaceMeshtying", "SSI Interface Meshtying",
-          CORE::Conditions::SSIInterfaceMeshtying, true, CORE::Conditions::geometry_type_point));
+          "ssi_interface_meshtying", "SSI Interface Meshtying",
+          CORE::Conditions::ssi_interface_meshtying, true, CORE::Conditions::geometry_type_point));
   auto linessiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING LINE CONDITIONS",
-          "SSIInterfaceMeshtying", "SSI Interface Meshtying",
-          CORE::Conditions::SSIInterfaceMeshtying, true, CORE::Conditions::geometry_type_line));
-  auto surfssiinterfacemeshtying =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS",
-          "SSIInterfaceMeshtying", "SSI Interface Meshtying",
-          CORE::Conditions::SSIInterfaceMeshtying, true, CORE::Conditions::geometry_type_surface));
+          "ssi_interface_meshtying", "SSI Interface Meshtying",
+          CORE::Conditions::ssi_interface_meshtying, true, CORE::Conditions::geometry_type_line));
+  auto surfssiinterfacemeshtying = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS", "ssi_interface_meshtying",
+      "SSI Interface Meshtying", CORE::Conditions::ssi_interface_meshtying, true,
+      CORE::Conditions::geometry_type_surface));
 
   // equip condition definitions with input file line components
   //

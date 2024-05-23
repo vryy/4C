@@ -75,9 +75,9 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat2(elemat2_epetra.values(), true);
@@ -302,7 +302,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
           }
 
           // push-forward invJ for every gaussian point
-          UpdateJacobianMapping(mydisp, *prestress_);
+          update_jacobian_mapping(mydisp, *prestress_);
 
           // Update constraintmixture material
           if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -465,7 +465,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -555,7 +555,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
         for (unsigned gp = 0; gp < NUMGPT_SOTET4; ++gp)
         {
           // Compute deformation gradient
-          ComputeDeformationGradient(defgrd, xdispT, gp);
+          compute_deformation_gradient(defgrd, xdispT, gp);
 
           // call material update if material = m_growthremodel_elasthyper (calculate and update
           // inelastic deformation gradient)
@@ -895,7 +895,7 @@ void DRT::ELEMENTS::SoTet4::InitJacobianMapping()
         solve_for_inverseJac;
     solve_for_inverseJac.SetMatrix(jac);               // set A=jac
     solve_for_inverseJac.SetVectors(partials, I_aug);  // set X=partials, B=I_aug
-    solve_for_inverseJac.FactorWithEquilibration(true);
+    solve_for_inverseJac.factor_with_equilibration(true);
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();  // partials = jac^-1.I_aug
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Jacobian failed");
@@ -1014,7 +1014,7 @@ void DRT::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location matr
     */
 
     // Evaluate deformation gradient
-    ComputeDeformationGradient(defgrd, xdispT, gp);
+    compute_deformation_gradient(defgrd, xdispT, gp);
 
     /*----------------------------------------------------------------------*
        the B-operator used is equivalent to the one used in hex8, this needs
@@ -1263,7 +1263,7 @@ void DRT::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location matr
       params.set("gp_coords_ref", point);
     }
 
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet4>(shapefcts[gp], params);
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::tet4>(shapefcts[gp], params);
 
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
 
@@ -1771,7 +1771,7 @@ void DRT::ELEMENTS::SoTet4::DefGradient(const std::vector<double>& disp,
   return;
 }
 
-void DRT::ELEMENTS::SoTet4::ComputeDeformationGradient(
+void DRT::ELEMENTS::SoTet4::compute_deformation_gradient(
     CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
     const CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const
 {
@@ -1822,7 +1822,7 @@ void DRT::ELEMENTS::SoTet4::ComputeDeformationGradient(
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet4::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoTet4::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   // get incremental disp
@@ -2029,10 +2029,10 @@ void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
-    const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+void DRT::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
+    const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
@@ -2103,9 +2103,10 @@ void DRT::ELEMENTS::SoTet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::
   static CORE::LINALG::Matrix<9, NUMDIM_SOTET4> d2_cauchyndir_dF_dn(true);
   static CORE::LINALG::Matrix<9, NUMDIM_SOTET4> d2_cauchyndir_dF_ddir(true);
 
-  SolidMaterial()->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
-      d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
-      &d2_cauchyndir_dF_ddir, -1, Id(), concentration, nullptr, nullptr, nullptr);
+  SolidMaterial()->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir,
+      d_cauchyndir_dn, d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2,
+      &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, Id(), concentration, nullptr, nullptr,
+      nullptr);
 
   if (d_cauchyndir_dd)
   {
@@ -2239,7 +2240,7 @@ void DRT::ELEMENTS::SoTet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::
   if (d_cauchyndir_dc != nullptr)
   {
     static CORE::LINALG::Matrix<9, 1> d_F_dc(true);
-    SolidMaterial()->EvaluateLinearizationOD(defgrd, *concentration, &d_F_dc);
+    SolidMaterial()->evaluate_linearization_od(defgrd, *concentration, &d_F_dc);
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }

@@ -118,7 +118,7 @@ namespace CORE::GEO
 
           bool HasSinglePoints(Location location) override;
 
-          void SetCorrectRotationDirection(bool correct_rotation)
+          void set_correct_rotation_direction(bool correct_rotation)
           {
             correct_rotation_direction_ = correct_rotation;
           }
@@ -131,7 +131,7 @@ namespace CORE::GEO
            *   can reuse the implementation for the volume cell generation in 2-D.
            *
            *   \author hiermeier \date 01/17 */
-          void SplitMainCyclesIntoLineCycles();
+          void split_main_cycles_into_line_cycles();
 
          private:
           std::vector<Cycle> surface_main_cycles_;
@@ -173,10 +173,11 @@ namespace CORE::GEO
          * necessary
          *
          *  \author hiermeier \date 01/17 */
-        static void CorrectRotationDirection(const Side* side, std::vector<Cycle>& cycles);
+        static void correct_rotation_direction(const Side* side, std::vector<Cycle>& cycles);
 
        private:
-        void FillGraphAndCycleWithLineFacets(const plain_facet_set& line_facets, Cycle& cycle);
+        void fill_graph_and_cycle_with_line_facets(
+            const plain_facet_set& line_facets, Cycle& cycle);
 
         void FindCycles(Element* element, Cycle& cycle);
 

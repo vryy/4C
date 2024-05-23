@@ -30,7 +30,7 @@ MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::IterativePrestressStrategy::CreatePrestressStrategy()
+MIXTURE::PAR::IterativePrestressStrategy::create_prestress_strategy()
 {
   std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
       new MIXTURE::IterativePrestressStrategy(this));

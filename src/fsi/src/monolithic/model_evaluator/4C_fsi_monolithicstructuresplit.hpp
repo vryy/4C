@@ -97,7 +97,7 @@ namespace FSI
      *  for rhs in next time step in order to guarantee temporal consistent
      *  exchange of coupling traction
      */
-    void RecoverLagrangeMultiplier() override;
+    void recover_lagrange_multiplier() override;
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
@@ -109,7 +109,7 @@ namespace FSI
      * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
      * interpolation factors a and b.
      */
-    void CalculateInterfaceEnergyIncrement() override;
+    void calculate_interface_energy_increment() override;
 
     /// the composed system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
@@ -170,7 +170,7 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+    void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -198,7 +198,7 @@ namespace FSI
     //! We are dealing with NOX here, so we get absolute values. x is the sum of
     //! all increments up to this point.
     //!
-    //! \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
+    //! \sa  ADAPTER::FluidFSI::velocity_to_displacement()
     void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
@@ -212,7 +212,7 @@ namespace FSI
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
      *  DOF row map.
      */
-    void CreateCombinedDofRowMap() override;
+    void create_combined_dof_row_map() override;
 
     /*! \brief Setup the Dirichlet map extractor
      *
@@ -221,7 +221,7 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    void SetupDBCMapExtractor() override;
+    void setup_dbc_map_extractor() override;
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f) override;

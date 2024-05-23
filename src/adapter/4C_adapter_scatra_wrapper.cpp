@@ -21,13 +21,13 @@ ADAPTER::AdapterScatraWrapper::AdapterScatraWrapper(Teuchos::RCP<ScatraInterface
     : scatra_timint_(scatra)
 {
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntImpl>(scatra_timint_, true)
-      ->SetModelEvaluatroPtr(this);
+      ->set_model_evaluatro_ptr(this);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::AdapterScatraWrapper::EvaluateAdditionalSolutionDependingModels(
+void ADAPTER::AdapterScatraWrapper::evaluate_additional_solution_depending_models(
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // do nothing so far

@@ -97,7 +97,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // access parameter lists for scatra-thermo interaction and scalar transport field
   const Teuchos::ParameterList& stidyn = problem->STIDynamicParams();
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // extract and check ID of linear solver for scatra field
   const int solver_id_scatra = scatradyn.get<int>("LINEAR_SOLVER");

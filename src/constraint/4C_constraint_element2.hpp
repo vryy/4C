@@ -48,7 +48,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
@@ -217,7 +217,7 @@ namespace DRT
       /*!
       \brief Create matrix with material configuration for 2 dimensions and 3 nodes
       */
-      inline void MaterialConfiguration(
+      inline void material_configuration(
           CORE::LINALG::Matrix<3, 2>& x  ///< nodal coords in material frame
       ) const
       {
@@ -236,7 +236,7 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 2 dimensions and 3 nodes
       */
-      inline void SpatialConfiguration(
+      inline void spatial_configuration(
           CORE::LINALG::Matrix<3, 2>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp  ///< displacements
       ) const
@@ -266,14 +266,14 @@ namespace DRT
       );
 
       /// Compute first derivatives of normal distance with respect to the nodal displacements
-      void ComputeFirstDerivDist(
+      void compute_first_deriv_dist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
       /// Compute second derivatives of normal distance with respect to the nodal displacements
-      void ComputeSecondDerivDist(
+      void compute_second_deriv_dist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseMatrix& elematrix,  ///< matrix to store results into
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
@@ -284,13 +284,13 @@ namespace DRT
       );
 
       /// Compute first derivatives of angle at second node with respect to the nodal displacements
-      void ComputeFirstDerivAngle(
+      void compute_first_deriv_angle(
           const CORE::LINALG::Matrix<3, 2>& xc,       ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseVector& elevector  ///< vector to store results into
       );
 
       /// Compute second derivatives of angle at second node with respect to the nodal displacements
-      void ComputeSecondDerivAngle(
+      void compute_second_deriv_angle(
           const CORE::LINALG::Matrix<3, 2>& xc,       ///< nodal coords in spatial frame
           CORE::LINALG::SerialDenseMatrix& elematrix  ///< matrix to store results into
       );

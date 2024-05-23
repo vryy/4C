@@ -98,7 +98,7 @@ namespace FLD
     velnp is the solution vector provided by the time integration
     algorithm
     */
-    void EvaluatePointwiseMeanValuesInPlanes();
+    void evaluate_pointwise_mean_values_in_planes();
 
     //@}
 
@@ -113,7 +113,7 @@ namespace FLD
 
     */
 
-    void TimeAverageMeansAndOutputOfStatistics(int step);
+    void time_average_means_and_output_of_statistics(int step);
 
     /*!
     \brief Reset sums and number of samples to 0
@@ -127,7 +127,7 @@ namespace FLD
     flow around a rotating circular cylinder
 
     */
-    std::vector<double> ReturnShellPlaneRadius() { return (*nodeshells_); };
+    std::vector<double> return_shell_plane_radius() { return (*nodeshells_); };
 
     //@}
 

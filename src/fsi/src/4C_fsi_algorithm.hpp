@@ -101,10 +101,10 @@ namespace FSI
     //@}
 
     /// return the structure fluid coupling object
-    CORE::ADAPTER::Coupling& StructureFluidCoupling();
+    CORE::ADAPTER::Coupling& structure_fluid_coupling();
 
     /// return const version of structure fluid coupling object
-    const CORE::ADAPTER::Coupling& StructureFluidCoupling() const;
+    const CORE::ADAPTER::Coupling& structure_fluid_coupling() const;
 
    protected:
     /// underlying structure of the FSI problem

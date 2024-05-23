@@ -125,9 +125,9 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
 bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_all &&
-      options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_diagonal &&
-      options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_diagonal_side)
+  if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_diagonal &&
+      options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_diagonal_side)
     return false;
 
   // Any method should involve the following two steps
@@ -157,7 +157,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
     std::vector<Point*> ptl = *itd;
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(ptl);
 
-    scaleEquationOfPlane(RefPlaneTemp);
+    scale_equation_of_plane(RefPlaneTemp);
 
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
@@ -165,7 +165,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
     // STEP 2: Project all the corner points of the Hex element onto the reference plane.
     // If all these projected points are within the background element, then we consider this as a
     // possible reference plane!
-    if (isAllProjectedCornersInsideEle(RefPlaneTemp, points, tol))
+    if (is_all_projected_corners_inside_ele(RefPlaneTemp, points, tol))
     {
       double fac =
           sqrt(pow(RefPlaneTemp[0], 2) + pow(RefPlaneTemp[1], 2) + pow(RefPlaneTemp[2], 2));
@@ -195,8 +195,8 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
 bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_all &&
-      options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_facet)
+  if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_facet)
     return false;
 
   const plain_facet_set& allfacets = volcell_->Facets();
@@ -211,7 +211,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
   for (plain_facet_set::const_iterator it = allfacets.begin(); it != allfacets.end(); it++)
   {
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon((*it)->Points());
-    scaleEquationOfPlane(RefPlaneTemp);
+    scale_equation_of_plane(RefPlaneTemp);
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
     facet_data.insert(
@@ -224,7 +224,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
   {
     std::vector<double> RefPlaneTemp = it->second.first;
 
-    scaleEquationOfPlane(RefPlaneTemp);
+    scale_equation_of_plane(RefPlaneTemp);
 
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
@@ -233,7 +233,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
     // If all these projected points are within the background element, then we consider this as a
     // possible reference plane!
 
-    if (isAllProjectedCornersInsideEle(RefPlaneTemp, points, tol))
+    if (is_all_projected_corners_inside_ele(RefPlaneTemp, points, tol))
     {
       double fac =
           sqrt(pow(RefPlaneTemp[0], 2) + pow(RefPlaneTemp[1], 2) + pow(RefPlaneTemp[2], 2));
@@ -265,9 +265,9 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
 bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_all &&
-      options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_side &&
-      options_.Direct_Divergence_Refplane() != INPAR::CUT::DirDiv_refplane_diagonal_side)
+  if (options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_side &&
+      options_.direct_divergence_refplane() != INPAR::CUT::DirDiv_refplane_diagonal_side)
     return false;
 
   const std::vector<Side*>& allsides = elem1_->Sides();
@@ -303,7 +303,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
         FOUR_C_THROW("Side with another number of nodes than 3 or 4?");
 
       std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(ptside);
-      scaleEquationOfPlane(RefPlaneTemp);
+      scale_equation_of_plane(RefPlaneTemp);
       if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
       side_data.insert(std::make_pair(RefPlaneTemp[0], std::make_pair(RefPlaneTemp, ptside)));
@@ -318,7 +318,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
   {
     std::vector<double> RefPlaneTemp = it->second.first;
 
-    scaleEquationOfPlane(RefPlaneTemp);
+    scale_equation_of_plane(RefPlaneTemp);
 
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
@@ -326,7 +326,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
     // STEP 2: Project all the corner points of the Hex element onto the reference plane.
     // If all these projected points are within the background element, then we consider this as a
     // possible reference plane!
-    if (isAllProjectedCornersInsideEle(RefPlaneTemp, points, tol))
+    if (is_all_projected_corners_inside_ele(RefPlaneTemp, points, tol))
     {
       double fac =
           sqrt(pow(RefPlaneTemp[0], 2) + pow(RefPlaneTemp[1], 2) + pow(RefPlaneTemp[2], 2));
@@ -355,7 +355,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
  * we project all the corner points of the element onto this reference plane sudhakar 06/15 If all
  *these projected points are within the element, then we got the correct ref plane
  *---------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInsideEle(
+bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::is_all_projected_corners_inside_ele(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   for (std::vector<Point*>::iterator it = points.begin(); it != points.end(); it++)
@@ -389,7 +389,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInside
 /*----------------------------------------------------------------------------------------------------------*
  * Scale the equation of plane to enable comparison of normals sudhakar 07/15
  *----------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::DirectDivergenceGlobalRefplane::scaleEquationOfPlane(
+void CORE::GEO::CUT::DirectDivergenceGlobalRefplane::scale_equation_of_plane(
     std::vector<double>& RefPlaneEqn)
 {
   double scale =

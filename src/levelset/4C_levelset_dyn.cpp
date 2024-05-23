@@ -47,7 +47,7 @@ void levelset_dyn(int restart)
   const Teuchos::ParameterList& levelsetcontrol = problem->LevelSetControl();
 
   // access the scatra-specific parameter list
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // check velocity field
   const INPAR::SCATRA::VelocityField veltype =
@@ -75,7 +75,7 @@ void levelset_dyn(int restart)
           GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-  scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);
+  scatrabase->ScaTraField()->set_number_of_dof_set_velocity(1);
 
   // finalize discretization
   scatradis->FillComplete();

@@ -43,16 +43,16 @@ namespace ADAPTER
     Teuchos::RCP<CORE::LINALG::MapExtractor> CombinedInterface() { return combinedinterface_; };
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractImmersedInterfaceDispnp();
+    virtual Teuchos::RCP<Epetra_Vector> extract_immersed_interface_dispnp();
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface + fsi interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFullInterfaceDispnp();
+    virtual Teuchos::RCP<Epetra_Vector> extract_full_interface_dispnp();
 
     /// Predictor for interface displacements at immersed interface
-    Teuchos::RCP<Epetra_Vector> PredictImmersedInterfaceDispnp();
+    Teuchos::RCP<Epetra_Vector> predict_immersed_interface_dispnp();
 
     /// Predictor for interface displacements at immersed and fsi interface
-    Teuchos::RCP<Epetra_Vector> PredictFullInterfaceDispnp();
+    Teuchos::RCP<Epetra_Vector> predict_full_interface_dispnp();
 
     /// Get mutable reference to DBC object
     STR::Dbc& GetDBC();
@@ -75,7 +75,7 @@ namespace ADAPTER
     /// This prepares a new solve of the structural field within one time
     /// step. The middle values are newly created.
     ///
-    void ApplyImmersedInterfaceForces(
+    void apply_immersed_interface_forces(
         Teuchos::RCP<Epetra_Vector> iforce_fsi, Teuchos::RCP<Epetra_Vector> iforce_immersed);
 
     /*!

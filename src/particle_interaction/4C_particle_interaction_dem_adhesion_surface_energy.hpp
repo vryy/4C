@@ -43,7 +43,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup();
 
     //! calculate adhesion surface energy
-    virtual void AdhesionSurfaceEnergy(
+    virtual void adhesion_surface_energy(
         const double& mean_surface_energy, double& surface_energy) const = 0;
 
    protected:
@@ -58,7 +58,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyConstant(const Teuchos::ParameterList& params);
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(
+    void adhesion_surface_energy(
         const double& mean_surface_energy, double& surface_energy) const override
     {
       surface_energy = mean_surface_energy;
@@ -75,12 +75,12 @@ namespace PARTICLEINTERACTION
     void Setup() override;
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(
+    void adhesion_surface_energy(
         const double& mean_surface_energy, double& surface_energy) const override = 0;
 
    protected:
     //! adjust surface energy to allowed bounds
-    void AdjustSurfaceEnergyToAllowedBounds(
+    void adjust_surface_energy_to_allowed_bounds(
         const double& mean_surface_energy, double& surface_energy) const;
 
     //! variance of adhesion surface energy distribution
@@ -97,7 +97,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params);
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(
+    void adhesion_surface_energy(
         const double& mean_surface_energy, double& surface_energy) const override;
   };
 
@@ -109,7 +109,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params);
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(
+    void adhesion_surface_energy(
         const double& mean_surface_energy, double& surface_energy) const override;
   };
 

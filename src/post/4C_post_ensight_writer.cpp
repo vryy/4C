@@ -97,7 +97,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs) iter++;
+  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs) iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
   for (int i = 0; i < iter; ++i)
@@ -200,10 +200,10 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
       casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
 
       casefile << "\nTIME\n\n";
-      casefile << GetTimeSectionStringFromTimesets(timesetmap_);
+      casefile << get_time_section_string_from_timesets(timesetmap_);
 
       casefile << "\nFILE\n\n";
-      casefile << GetFileSectionStringFromFilesets(filesetmap_);
+      casefile << get_file_section_string_from_filesets(filesetmap_);
 
       casefile.close();
     }
@@ -233,7 +233,7 @@ void EnsightWriter::WriteGeoFile(const std::string& geofilename)
   std::map<std::string, std::vector<std::ofstream::pos_type>> resultfilepos;
 
   {
-    WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
+    write_geo_file_one_time_step(geofile, resultfilepos, "geo");
   }
 
   // append index table
@@ -251,7 +251,7 @@ void EnsightWriter::WriteGeoFile(const std::string& geofilename)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
+void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string name)
 {
@@ -279,7 +279,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     // cast dis to NurbsDiscretisation
@@ -300,7 +300,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
     for (int np = 0; np < npatches; ++np)
     {
       // get nurbs dis' knotvector sizes
-      std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+      std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(np));
 
       int numvisp = 1;
 
@@ -340,7 +340,7 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 {
   using namespace FourC;
 
-  CORE::FE::ShapeFunctionType distype = field_->problem()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = field_->problem()->spatial_approximation_type();
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
@@ -357,16 +357,16 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
     case CORE::FE::ShapeFunctionType::polynomial:
     case CORE::FE::ShapeFunctionType::hdg:
     {
-      WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
+      write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
       break;
     }
     case CORE::FE::ShapeFunctionType::nurbs:
     {
       // write real geometry coordinates
-      if (!writecp_) WriteCoordinatesForNurbsShapefunctions(geofile, dis, proc0map);
+      if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, dis, proc0map);
       // write control point coordinates
       else
-        WriteCoordinatesForPolynomialShapefunctions(geofile, dis, proc0map);
+        write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
       break;
     }
     default:
@@ -580,7 +580,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
     // proc 1 to proc n have to send their stored node connectivity to proc0
     // which does the writing
 
-    WriteNodeConnectivityPar(geofile, dis, nodevector, proc0map);
+    write_node_connectivity_par(geofile, dis, nodevector, proc0map);
   }
   return;
 }
@@ -592,7 +592,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
  \author gjb
  \date 12/07
 */
-void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
+void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
     const Teuchos::RCP<Epetra_Map> proc0map) const
 {
@@ -1011,7 +1011,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       // store information for later case file creation
       variableresulttypemap_[name] = "node";
 
-      WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf);
+      write_nodal_result_step(file, result, resultfilepos, groupname, name, numdf);
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
       {
@@ -1028,7 +1028,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         {
           FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
-        WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf);
+        write_nodal_result_step(file, result, resultfilepos, groupname, name, numdf);
       }
     }
     break;
@@ -1039,7 +1039,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       // store information for later case file creation
       variableresulttypemap_[name] = "element";
 
-      WriteElementDOFResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+      write_element_dof_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
       {
@@ -1056,7 +1056,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         {
           FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
-        WriteElementDOFResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        write_element_dof_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       }
     }
     break;
@@ -1067,7 +1067,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       // store information for later case file creation
       variableresulttypemap_[name] = "element";
 
-      WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+      write_element_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
       {
@@ -1084,7 +1084,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
         {
           FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
-        WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        write_element_result_step(file, result, resultfilepos, groupname, name, numdf, from);
       }
     }
     break;
@@ -1119,7 +1119,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
   return;
 }
 
-void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string groupname,
+void EnsightWriter::write_result_one_time_step(PostResult& result, const std::string groupname,
     const std::string name, const ResultType restype, const int numdf, bool firststep,
     bool laststep, const int from)
 {
@@ -1206,7 +1206,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       // store information for later case file creation
       variableresulttypemap_[name] = "node";
 
-      WriteNodalResultStep(file, result, resultfilepos_, groupname, name, numdf);
+      write_nodal_result_step(file, result, resultfilepos_, groupname, name, numdf);
 
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
@@ -1232,7 +1232,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       // store information for later case file creation
       variableresulttypemap_[name] = "element";
 
-      WriteElementDOFResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+      write_element_dof_result_step(file, result, resultfilepos_, groupname, name, numdf, from);
 
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
@@ -1258,7 +1258,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       // store information for later case file creation
       variableresulttypemap_[name] = "element";
 
-      WriteElementResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+      write_element_result_step(file, result, resultfilepos_, groupname, name, numdf, from);
 
       // how many bits are necessary per time step (we assume a fixed size)?
       if (myrank_ == 0)
@@ -1545,15 +1545,15 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
-    WriteDofResultStepForNurbs(file, numdf, data, name, offset);
+    write_dof_result_step_for_nurbs(file, numdf, data, name, offset);
   }
-  else if (field_->problem()->SpatialApproximationType() ==
+  else if (field_->problem()->spatial_approximation_type() ==
                CORE::FE::ShapeFunctionType::polynomial or
-           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
-           (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
+           field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
+           (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     //------------------------------------------------------
@@ -1687,12 +1687,12 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   \brief Write nodal values for one timestep for node-based vectors
   Each node has to have the same number of dofs.
 */
-void EnsightWriter::WriteNodalResultStep(std::ofstream& file, PostResult& result,
+void EnsightWriter::write_nodal_result_step(std::ofstream& file, PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
   const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
-  WriteNodalResultStep(file, data, resultfilepos, groupname, name, numdf);
+  write_nodal_result_step(file, data, resultfilepos, groupname, name, numdf);
 }
 
 
@@ -1701,7 +1701,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file, PostResult& result
   \brief Write nodal values for one timestep for node-based vectors
   Each node has to have the same number of dofs.
 */
-void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
+void EnsightWriter::write_nodal_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
@@ -1723,15 +1723,15 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   // switch between nurbs an others
-  if (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
-    WriteNodalResultStepForNurbs(file, numdf, data, name, 0);
+    write_nodal_result_step_for_nurbs(file, numdf, data, name, 0);
   }
-  else if (field_->problem()->SpatialApproximationType() ==
+  else if (field_->problem()->spatial_approximation_type() ==
                CORE::FE::ShapeFunctionType::polynomial or
-           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
-           (field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs &&
+           field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
+           (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
@@ -1795,7 +1795,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
 
   Each element has to have the same number of dofs.
 */
-void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& result,
+void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdof, const int from) const
 {
@@ -1948,12 +1948,12 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
   \date 01/08
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteElementResultStep(std::ofstream& file, PostResult& result,
+void EnsightWriter::write_element_result_step(std::ofstream& file, PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
   const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
-  WriteElementResultStep(file, data, resultfilepos, groupname, name, numdf, from);
+  write_element_result_step(file, data, resultfilepos, groupname, name, numdf, from);
 }
 
 
@@ -1967,7 +1967,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file, PostResult& resu
   \date 01/08
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteElementResultStep(std::ofstream& file,
+void EnsightWriter::write_element_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
@@ -2164,7 +2164,8 @@ std::string EnsightWriter::GetVariableSection(std::map<std::string, std::vector<
     {
       filename_for_casefile = filename_nopath;
     }
-    str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile, timesetnumber);
+    str << get_variable_entry_for_case_file(
+        numdf, setnumber, key, filename_for_casefile, timesetnumber);
   }
 
   return str.str();
@@ -2173,8 +2174,9 @@ std::string EnsightWriter::GetVariableSection(std::map<std::string, std::vector<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetVariableEntryForCaseFile(const int numdf, const unsigned int fileset,
-    const std::string name, const std::string filename, const int timeset) const
+std::string EnsightWriter::get_variable_entry_for_case_file(const int numdf,
+    const unsigned int fileset, const std::string name, const std::string filename,
+    const int timeset) const
 {
   std::stringstream str;
 
@@ -2215,7 +2217,7 @@ std::string EnsightWriter::GetVariableEntryForCaseFile(const int numdf, const un
   \brief create string for one TIME set in the case file
 */
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetTimeSectionString(
+std::string EnsightWriter::get_time_section_string(
     const int timeset, const std::vector<double>& times) const
 {
   std::stringstream s;
@@ -2239,7 +2241,7 @@ std::string EnsightWriter::GetTimeSectionString(
   \brief create string for the TIME section in the case file
 */
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetTimeSectionStringFromTimesets(
+std::string EnsightWriter::get_time_section_string_from_timesets(
     const std::map<std::string, std::vector<double>>& timesetmap) const
 {
   std::stringstream s;
@@ -2256,7 +2258,7 @@ std::string EnsightWriter::GetTimeSectionStringFromTimesets(
     if (donetimesets.find(timesetnumber) == donetimesets.end())  // do not write redundant time sets
     {
       donetimesets.insert(timesetnumber);
-      std::string outstring = GetTimeSectionString(timesetnumber, soltimes);
+      std::string outstring = get_time_section_string(timesetnumber, soltimes);
       s << outstring << std::endl;
     }
   }
@@ -2268,7 +2270,7 @@ std::string EnsightWriter::GetTimeSectionStringFromTimesets(
   \brief create string for the FILE section in the case file
 */
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::GetFileSectionStringFromFilesets(
+std::string EnsightWriter::get_file_section_string_from_filesets(
     const std::map<std::string, std::vector<int>>& filesetmap) const
 {
   std::stringstream s;
@@ -2333,7 +2335,7 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
     coordinates of the nodes in the discretization.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& geofile,
+void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
     const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;

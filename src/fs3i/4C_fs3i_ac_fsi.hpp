@@ -77,38 +77,38 @@ namespace FS3I
     void SmallTimeScaleLoop();
 
     /// flag whether small time scale time loop should be finished
-    bool SmallTimeScaleLoopNotFinished();
+    bool small_time_scale_loop_not_finished();
 
     /// Prepare small time scale time step
-    void SmallTimeScalePrepareTimeStep();
+    void small_time_scale_prepare_time_step();
 
     /// Prepare time step
     void PrepareTimeStep() override
     {
       FOUR_C_THROW(
-          "This function is not implemented! Use SmallTimeScalePrepareTimeStep() or "
-          "LargeTimeScalePrepareTimeStep() instead!");
+          "This function is not implemented! Use small_time_scale_prepare_time_step() or "
+          "large_time_scale_prepare_time_step() instead!");
     };
 
     /// OuterLoop
-    void SmallTimeScaleOuterLoop();
+    void small_time_scale_outer_loop();
 
     /// OuterLoop for sequentially staggered FS3I scheme
-    void SmallTimeScaleOuterLoopSequStagg();
+    void small_time_scale_outer_loop_sequ_stagg();
 
     /// OuterLoop for iterative staggered FS3I scheme
-    void SmallTimeScaleOuterLoopIterStagg();
+    void small_time_scale_outer_loop_iter_stagg();
 
     /// Do a single fsi step (including all subcycles)
     void DoFSIStep();
 
-    void IsSmallTimeScalePeriodic();
+    void is_small_time_scale_periodic();
 
     /// Decide if fsi problem is already periodic
     void IsFsiPeriodic();
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
-    void SetWallShearStresses() const override;
+    void set_wall_shear_stresses() const override;
 
     /// Decide if fluid scatra problem is periodic
     void IsScatraPeriodic();
@@ -123,10 +123,10 @@ namespace FS3I
     void DoFSIStepPeriodic();
 
     /// Get step number of on cycle ago
-    double GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, const double time);
+    double get_step_of_one_period_ago_and_prepare_reading(const int actstep, const double time);
 
     /// Get step number of the beginning of this cycle
-    double GetStepOfBeginnOfThisPeriodAndPrepareReading(
+    double get_step_of_beginn_of_this_period_and_prepare_reading(
         const int actstep, const double acttime, const double dt);
 
     /// Get filename in which the equivalent step of the last period is written
@@ -136,19 +136,19 @@ namespace FS3I
     void SetTimeAndStepInFSI(const double time, const int step);
 
     /// Do a single scatra step
-    void SmallTimeScaleDoScatraStep();
+    void small_time_scale_do_scatra_step();
 
     /// Update and output the small time scale
-    void SmallTimeScaleUpdateAndOutput();
+    void small_time_scale_update_and_output();
 
     /// Write FSI output
     void FsiOutput();
 
     /// check convergence of scatra fields
-    bool ScatraConvergenceCheck(const int itnum) override;
+    bool scatra_convergence_check(const int itnum) override;
 
     /// Convergence check for iterative staggered FS3I scheme
-    bool PartFs3iConvergenceCkeck(const int itnum);
+    bool part_fs3i_convergence_ckeck(const int itnum);
 
     //--------------------------------------------------------------------
     /// @name  control routines for the large time scale
@@ -158,64 +158,64 @@ namespace FS3I
     void LargeTimeScaleLoop();
 
     /// Prepare the large time scale loop
-    void PrepareLargeTimeScaleLoop();
+    void prepare_large_time_scale_loop();
 
     /// Set mean wall shear stresses in scatra fields
-    void SetMeanWallShearStresses() const;
+    void set_mean_wall_shear_stresses() const;
 
     /// Set mean concentration of the fluid scatra field
-    void SetMeanFluidScatraConcentration();
+    void set_mean_fluid_scatra_concentration();
 
     /// Set zero velocity field in scatra fields
-    void SetZeroVelocityField();
+    void set_zero_velocity_field();
 
     /// Evaluate surface permeability condition for structure scatra field
-    void EvaluateithScatraSurfacePermeability(const int i  ///< id of scalar to evaluate
+    void evaluateith_scatra_surface_permeability(const int i  ///< id of scalar to evaluate
     );
 
     /// Finish the large time scale loop
-    void FinishLargeTimeScaleLoop();
+    void finish_large_time_scale_loop();
 
     /// flag whether large time scale time loop should be finished
-    bool LargeTimeScaleLoopNotFinished();
+    bool large_time_scale_loop_not_finished();
 
     /// Prepare large time scale time step
-    void LargeTimeScalePrepareTimeStep();
+    void large_time_scale_prepare_time_step();
 
     /// OuterLoop for sequentially staggered FS3I scheme
-    void LargeTimeScaleOuterLoop();
+    void large_time_scale_outer_loop();
 
     /// Do a large time scale structe scatra step
     void DoStructScatraStep();
 
     /// evaluate, solver and iteratively update structure scalar problem
-    void StructScatraEvaluateSolveIterUpdate();
+    void struct_scatra_evaluate_solve_iter_update();
 
     /// check convergence of structure scatra field
-    bool StructScatraConvergenceCheck(const int itnum  ///< current iteration number
+    bool struct_scatra_convergence_check(const int itnum  ///< current iteration number
     );
 
     /// Do the structure scatra displacments need to update
-    bool DoesGrowthNeedsUpdate();
+    bool does_growth_needs_update();
 
     /// update the structure scatra displacments due to growth
-    void LargeTimeScaleDoGrowthUpdate();
+    void large_time_scale_do_growth_update();
 
     /// OuterLoop for large time scale iterative staggered FS3I scheme
-    void LargeTimeScaleOuterLoopIterStagg();
+    void large_time_scale_outer_loop_iter_stagg();
 
     /// set mean FSI values in scatra fields (only to be used in large time scale!!)
-    void LargeTimeScaleSetFSISolution();
+    void large_time_scale_set_fsi_solution();
 
     /// Update and output the large time scale
-    void LargeTimeScaleUpdateAndOutput();
+    void large_time_scale_update_and_output();
     //@}
 
     /// Build map extractor which extracts the j-th dof
     std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> BuildMapExtractor();
 
     /// optional safety check for times and dt's of all fields
-    void CheckIfTimesAndStepsAndDtsMatch();
+    void check_if_times_and_steps_and_dts_match();
 
     /// Compare if two doubles are relatively zero
     bool IsRealtiveEqualTo(const double A,  ///< first value
@@ -224,9 +224,9 @@ namespace FS3I
     );
 
     /// Compare if A mod B is relatively equal to zero
-    bool ModuloIsRealtiveZero(const double value,  ///< value to mod
-        const double modulo,                       ///< mod value
-        const double Ref = 1.0                     ///< reference value
+    bool modulo_is_realtive_zero(const double value,  ///< value to mod
+        const double modulo,                          ///< mod value
+        const double Ref = 1.0                        ///< reference value
     );
 
    private:

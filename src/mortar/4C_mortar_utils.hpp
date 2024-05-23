@@ -175,7 +175,7 @@ namespace MORTAR
   parallel distribution (and the domain map, accordingly).
 
   */
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowColTransform(
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix_row_col_transform(
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
       Teuchos::RCP<const Epetra_Map> newrowmap, Teuchos::RCP<const Epetra_Map> newdomainmap);
 
@@ -210,7 +210,7 @@ namespace MORTAR
            not very safe, so be sure, what you do. Material pointers can be
            added according to link_materials
     */
-    void CreateVolumeGhosting(const DRT::Discretization& dis_src,
+    void create_volume_ghosting(const DRT::Discretization& dis_src,
         const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
         bool check_on_in = true, bool check_on_exit = true);
 

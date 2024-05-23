@@ -181,7 +181,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   // Setup Coupling Objects
   //-------------------------------------------------------------------------
-  SetupCouplingObjects();
+  setup_coupling_objects();
 
   // build ale system matrix in splitted system
   if (HaveAle()) AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -220,17 +220,17 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
- | SetupCouplingObjects                                      ager 06/16 |
+ | setup_coupling_objects                                      ager 06/16 |
  *----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::SetupCouplingObjects()
+void FSI::MonolithicXFEM::setup_coupling_objects()
 {
   {
-    if (StructurePoro()->MeshtyingContactBridge() != Teuchos::null)
+    if (StructurePoro()->meshtying_contact_bridge() != Teuchos::null)
     {
-      if (StructurePoro()->MeshtyingContactBridge()->HaveContact())
+      if (StructurePoro()->meshtying_contact_bridge()->HaveContact())
       {
         CONTACT::NitscheStrategy* cs = dynamic_cast<CONTACT::NitscheStrategy*>(
-            &StructurePoro()->MeshtyingContactBridge()->GetStrategy());
+            &StructurePoro()->meshtying_contact_bridge()->GetStrategy());
         if (!cs)
           FOUR_C_THROW(
               "FSI::MonolithicXFEM: Only Nitsche Contact Strategy for XFSCI/XFPSCI available yet!");
@@ -241,7 +241,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
 
         // Do contact and xfluid communication stuff
         xf_c_comm_ = Teuchos::rcp(new XFEM::XFluidContactComm(*cs));
-        xf_c_comm_->InitializeFluidState(FluidField()->GetCutWizard(),
+        xf_c_comm_->initialize_fluid_state(FluidField()->GetCutWizard(),
             FluidField()->Discretization(), FluidField()->GetConditionManager(),
             FluidField()->Params());
 
@@ -378,7 +378,7 @@ void FSI::MonolithicXFEM::SetupSystem()
    Create a combined map for Structure/Fluid-DOFs all in one!
    ----------------------------------------------------------------------*/
 
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
 
   /*----------------------------------------------------------------------
@@ -611,10 +611,10 @@ void FSI::MonolithicXFEM::ApplyDBC()
   // however, the additional C_ss coupling block is added and we have to apply DBC again to the sum
   // no DBC are applied for in the fluid-evaluate for the ff-diagonal block or the fluid coupling
   // blocks therefore we apply BCS to the whole system. Just the internal DBCs via the structural
-  // evaluate (PrepareSystemForNewtonSolve()) are applied twice
+  // evaluate (prepare_system_for_newton_solve()) are applied twice
 
   // apply combined Dirichlet to whole XFSI system
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
   return;
@@ -640,7 +640,7 @@ void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 // Create the combined DOF row map for the FSI problem;
 // row maps of structure and xfluid to an global FSI DOF row map
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
+void FSI::MonolithicXFEM::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces_mergedporo;
@@ -711,8 +711,8 @@ void FSI::MonolithicXFEM::CombineFieldVectors(
     Teuchos::RCP<const Epetra_Vector> fv   ///< fluid DOFs
 )
 {
-  Extractor_MergedPoro().AddVector(*sv, structp_block_, v);
-  Extractor_MergedPoro().AddVector(*fv, fluid_block_, v);
+  extractor_merged_poro().AddVector(*sv, structp_block_, v);
+  extractor_merged_poro().AddVector(*fv, fluid_block_, v);
 }
 
 
@@ -731,13 +731,13 @@ void FSI::MonolithicXFEM::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> 
   // Process structure unknowns
   /*----------------------------------------------------------------------*/
   // Extract whole structure field vector
-  sx = Extractor_MergedPoro().ExtractVector(x, structp_block_);
+  sx = extractor_merged_poro().ExtractVector(x, structp_block_);
 
   /*----------------------------------------------------------------------*/
   // Process fluid unknowns
   /*----------------------------------------------------------------------*/
   // Extract vector of fluid unknowns from x
-  fx = Extractor_MergedPoro().ExtractVector(x, fluid_block_);
+  fx = extractor_merged_poro().ExtractVector(x, fluid_block_);
 
   // Extract vector of ale unknowns from x
   if (HaveAle()) ax = Extractor().ExtractVector(x, ale_i_block_);
@@ -784,7 +784,7 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::PrepareTimeStep");
 
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
   //--------------------------------------------
   // Structure PrepareTimeStep
@@ -811,7 +811,7 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
   // predict coupling states (for relaxing ale mesh!) /after Structure->PrepareTimestep
   for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
-    coupit->second->PredictCouplingStates();
+    coupit->second->predict_coupling_states();
 
   if (have_contact_) xf_c_comm_->PrepareTimeStep();
 
@@ -937,10 +937,10 @@ void FSI::MonolithicXFEM::Output()
 
 
   //--------------------------------
-  if (StructurePoro()->GetConstraintManager()->HaveMonitor())
+  if (StructurePoro()->get_constraint_manager()->HaveMonitor())
   {
-    StructurePoro()->GetConstraintManager()->ComputeMonitorValues(StructurePoro()->Dispnp());
-    if (Comm().MyPID() == 0) StructurePoro()->GetConstraintManager()->PrintMonitorValues();
+    StructurePoro()->get_constraint_manager()->compute_monitor_values(StructurePoro()->Dispnp());
+    if (Comm().MyPID() == 0) StructurePoro()->get_constraint_manager()->PrintMonitorValues();
   }
 
   if (HaveAle()) AleField()->Output();
@@ -1191,7 +1191,7 @@ bool FSI::MonolithicXFEM::Newton()
 
       // if not a new time-step, take the step-increment which has been summed up so far
       if (sx_sum_ != Teuchos::null)
-        Extractor_MergedPoro().AddVector(sx_sum_, structp_block_, x_sum_);
+        extractor_merged_poro().AddVector(sx_sum_, structp_block_, x_sum_);
 
       //-------------------
       // initialize the fluid part of the global step-increment
@@ -1246,7 +1246,7 @@ bool FSI::MonolithicXFEM::Newton()
     //-------------------
     // Build residual and incremental norms, count the DOFs!
     //-------------------
-    BuildCovergenceNorms();
+    build_covergence_norms();
 
 
     //-------------------
@@ -1310,9 +1310,9 @@ bool FSI::MonolithicXFEM::Newton()
 /*----------------------------------------------------------------------*/
 // compute all norms used for convergence check
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::BuildCovergenceNorms()
+void FSI::MonolithicXFEM::build_covergence_norms()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::BuildCovergenceNorms()");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::build_covergence_norms()");
 
   // build map extractors for velocity and pressure dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
@@ -1329,8 +1329,8 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   rhs_->Norm2(&normrhs_);
 
   // structural Dofs
-  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->Norm2(&normstrrhs_l2_);
-  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->NormInf(&normstrrhs_inf_);
+  extractor_merged_poro().ExtractVector(rhs_, structp_block_)->Norm2(&normstrrhs_l2_);
+  extractor_merged_poro().ExtractVector(rhs_, structp_block_)->NormInf(&normstrrhs_inf_);
 
   // fluid velocity Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 0)
@@ -1360,8 +1360,8 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   iterinc_->Norm2(&norminc_);
 
   // structural Dofs
-  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->Norm2(&normstrinc_l2_);
-  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrinc_inf_);
+  extractor_merged_poro().ExtractVector(iterinc_, structp_block_)->Norm2(&normstrinc_l2_);
+  extractor_merged_poro().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrinc_inf_);
   Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincdisp_inf_);
 
   // fluid velocity Dofs
@@ -1388,8 +1388,8 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   // get length of the structural and fluid vector
   //-------------------------------
   ns_ =
-      (*(Extractor_MergedPoro().ExtractVector(rhs_, structp_block_))).GlobalLength();  // structure
-  nf_ = (*(Extractor().ExtractVector(rhs_, fluid_block_))).GlobalLength();             // fluid
+      (*(extractor_merged_poro().ExtractVector(rhs_, structp_block_))).GlobalLength();  // structure
+  nf_ = (*(Extractor().ExtractVector(rhs_, fluid_block_))).GlobalLength();              // fluid
   nfv_ = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 0)))
              .GlobalLength();  // fluid velocity
   nfp_ = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 1)))
@@ -1494,9 +1494,9 @@ bool FSI::MonolithicXFEM::Evaluate()
     // Set new state in StructurePoro
     if (sx == Teuchos::null)
       sx = Teuchos::rcp(new Epetra_Vector(*StructurePoro()->DofRowMap(), true));
-    StructurePoro()->UpdateStateIncrementally(sx);
+    StructurePoro()->update_state_incrementally(sx);
     if (have_contact_)
-      StructurePoro()->MeshtyingContactBridge()->GetStrategy().SetState(
+      StructurePoro()->meshtying_contact_bridge()->GetStrategy().SetState(
           MORTAR::state_new_displacement, *StructurePoro()->Dispnp());
   }
 
@@ -1514,7 +1514,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   {
     fx_permuted = Teuchos::rcp(new Epetra_Vector(*fx));
 
-    PermuteFluidDOFSForward(fx_permuted);
+    permute_fluid_dofs_forward(fx_permuted);
   }
 
 
@@ -1597,7 +1597,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
     if (have_contact_)
     {
-      xf_c_comm_->FillComplete_SeleMap();
+      xf_c_comm_->fill_complete_sele_map();
 
       // We need these fluid state for the evaluation of contact ...
       FluidField()->SetStateTimInt();
@@ -1635,7 +1635,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   //       fluid-evaluate call
   if (iter_ > 1)
   {
-    UpdatePermutationMap(*FluidField()->GetPermutationMap());
+    update_permutation_map(*FluidField()->GetPermutationMap());
   }
 
   //-------------------
@@ -1644,7 +1644,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   //-------------------
 
 
-  if (FluidField()->NewtonRestartMonolithic()) return true;
+  if (FluidField()->newton_restart_monolithic()) return true;
 
 
 
@@ -1726,7 +1726,7 @@ bool FSI::MonolithicXFEM::Converged()
  | update the permutation map between using the recent permutations    |
  | between the last two Newton iterations                 schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::UpdatePermutationMap(
+void FSI::MonolithicXFEM::update_permutation_map(
     std::map<int, int> permutation_map  /// permutation map between last two Newton iterations, by
                                         /// copy, do not call by reference
 )
@@ -1782,7 +1782,7 @@ void FSI::MonolithicXFEM::UpdatePermutationMap(
   //--------------------------------
 
   // finally build the new permutation cycles used for permuting the dofs forward and backward
-  BuildFluidPermutation();
+  build_fluid_permutation();
 }
 
 
@@ -1790,7 +1790,7 @@ void FSI::MonolithicXFEM::UpdatePermutationMap(
  | build the new permutation cycles used for permuting the             |
  | fluid dofs forward and backward                        schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::BuildFluidPermutation()
+void FSI::MonolithicXFEM::build_fluid_permutation()
 {
   /// vector of permutation cycles, one cycle consists of a series of global dof ids (gids)
   permutation_.clear();
@@ -1863,7 +1863,7 @@ void FSI::MonolithicXFEM::BuildFluidPermutation()
  | forward to a vector (based on dofsets) w.r.t. new interface position|
  |                                                        schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::PermuteFluidDOFSForward(Teuchos::RCP<Epetra_Vector>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Epetra_Vector>& fx)
 {
   //---------------------------------
   // forward permutation of dofsets
@@ -1919,7 +1919,7 @@ void FSI::MonolithicXFEM::PermuteFluidDOFSForward(Teuchos::RCP<Epetra_Vector>& f
  | backward to a vector (based on dofsets) w.r.t. new interface        |
  | position                                               schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::PermuteFluidDOFSBackward(Teuchos::RCP<Epetra_Vector>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_backward(Teuchos::RCP<Epetra_Vector>& fx)
 {
   //---------------------------------
   // backward permutation of dofsets
@@ -2028,7 +2028,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     FOUR_C_THROW("Iterative solver expected");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -2105,18 +2105,18 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
       const Teuchos::ParameterList& fsolverparams =
           GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
 
-      solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-      StructurePoro()->Discretization()->ComputeNullSpaceIfNecessary(
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
+      StructurePoro()->Discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse1"));
 
-      solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
-      FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+      solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams);
+      FluidField()->Discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse2"), true);
 
       if (StructurePoro()->isPoro())
       {
-        solver_->PutSolverParamsToSubParams("Inverse3", fsolverparams);
-        StructurePoro()->FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+        solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams);
+        StructurePoro()->FluidField()->Discretization()->compute_null_space_if_necessary(
             solver_->Params().sublist("Inverse3"));
       }
       if (HaveAle())
@@ -2125,14 +2125,14 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
             GLOBAL::Problem::Instance()->SolverParams(alinsolvernumber);
         if (ale_i_block_ == 3)
         {
-          solver_->PutSolverParamsToSubParams("Inverse3", asolverparams);
-          AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+          solver_->put_solver_params_to_sub_params("Inverse3", asolverparams);
+          AleField()->write_access_discretization()->compute_null_space_if_necessary(
               solver_->Params().sublist("Inverse3"));
         }
         else if (ale_i_block_ == 4)
         {
-          solver_->PutSolverParamsToSubParams("Inverse4", asolverparams);
-          AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+          solver_->put_solver_params_to_sub_params("Inverse4", asolverparams);
+          AleField()->write_access_discretization()->compute_null_space_if_necessary(
               solver_->Params().sublist("Inverse4"));
         }
         else
@@ -2162,14 +2162,14 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       // This is not very elegant:
       // first read in solver parameters. These have to contain ML parameters such that...
-      solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-      solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
+      solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams);
 
       // ... 4C calculates the null space vectors. These are then stored in the sublists
       //     Inverse1 and Inverse2 from where they...
-      StructurePoro()->Discretization()->ComputeNullSpaceIfNecessary(
+      StructurePoro()->Discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse1"));
-      FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+      FluidField()->Discretization()->compute_null_space_if_necessary(
           solver_->Params().sublist("Inverse2"));
 
       // ... are copied from here to ...
@@ -2238,7 +2238,7 @@ void FSI::MonolithicXFEM::LinearSolve()
     // Infnormscaling: scale system before solving
     ScaleSystem(*systemmatrix_, *rhs_);
 
-    FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+    FluidField()->Discretization()->compute_null_space_if_necessary(
         solver_->Params().sublist("Inverse2"), true);
 
     // solve the problem, work is done here!
@@ -2284,12 +2284,12 @@ void FSI::MonolithicXFEM::LinearSolve()
   // and rhs are defined
 
   Teuchos::RCP<Epetra_Vector> f_iterinc_permuted = Extractor().ExtractVector(iterinc_, 1);
-  PermuteFluidDOFSBackward(f_iterinc_permuted);
+  permute_fluid_dofs_backward(f_iterinc_permuted);
   Extractor().InsertVector(*f_iterinc_permuted, 1, *iterinc_);
 
 
   Teuchos::RCP<Epetra_Vector> f_rhs_permuted = Extractor().ExtractVector(rhs_, 1);
-  PermuteFluidDOFSBackward(f_rhs_permuted);
+  permute_fluid_dofs_backward(f_rhs_permuted);
   Extractor().InsertVector(*f_rhs_permuted, 1, *rhs_);
 
   //---------------------------------------------
@@ -2389,7 +2389,7 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
   // print to standard out
   if (Comm().MyPID() == 0)
   {
-    if (iter_ == 1) PrintNewtonIterHeader();
+    if (iter_ == 1) print_newton_iter_header();
 
     PrintNewtonIterText();
   }
@@ -2399,7 +2399,7 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file              */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::PrintNewtonIterHeader()
+void FSI::MonolithicXFEM::print_newton_iter_header()
 {
   IO::cout << "CONVTOL: " << tolfres_ << IO::endl;
 

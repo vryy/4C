@@ -96,7 +96,7 @@ namespace THR
     }
 
     //! for implicit partitioned schemes
-    void PreparePartitionStep() override
+    void prepare_partition_step() override
     {
       // do nothing
       return;
@@ -164,7 +164,7 @@ namespace THR
     int MethodSteps() override = 0;
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracy() override = 0;
+    int method_order_of_accuracy() override = 0;
 
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff() override = 0;

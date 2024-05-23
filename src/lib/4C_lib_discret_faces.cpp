@@ -41,7 +41,7 @@ int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, boo
 
   if (createinternalfaces)
   {
-    CreateInternalFacesExtension();
+    create_internal_faces_extension();
   }
 
   return 0;
@@ -52,7 +52,7 @@ int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, boo
 /*----------------------------------------------------------------------*
  |  Build internal faces extension (public)                 schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::CreateInternalFacesExtension(const bool verbose)
+void DRT::DiscretizationFaces::create_internal_faces_extension(const bool verbose)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationFaces::CreateInternalFaces");
 
@@ -214,7 +214,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                 "face's node from master's face element not found in slave's face element!");
         }
 
-        surf_it->second.SetLocalNumberingMap(localtrafomap);
+        surf_it->second.set_local_numbering_map(localtrafomap);
       }
     }  // loop iele
 
@@ -239,7 +239,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> faces;
 
   // get pbcs
-  std::map<int, std::vector<int>>* col_pbcmapmastertoslave = GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* col_pbcmapmastertoslave = get_all_pbc_coupled_col_nodes();
 
   std::map<std::vector<int>, InternalFacesData>::iterator face_it;
   for (face_it = surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)
@@ -829,7 +829,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                     "face's node from master's face element not found in slave's face element!");
             }
             // set in face
-            face_it->second.SetLocalNumberingMap(localtrafomap);
+            face_it->second.set_local_numbering_map(localtrafomap);
 
             //            if (comm_->MyPID()==1)
             //            {
@@ -881,7 +881,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       Teuchos::RCP<DRT::FaceElement> surf = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
           parent_master->CreateFaceElement(parent_slave, nodeids.size(), nodeids.data(),
               nodes.data(), face_it->second.GetLSurfaceMaster(), face_it->second.GetLSurfaceSlave(),
-              face_it->second.GetLocalNumberingMap()),
+              face_it->second.get_local_numbering_map()),
           true);
       FOUR_C_ASSERT(surf != Teuchos::null,
           "Creating a face element failed. Check overloading of CreateFaceElement");

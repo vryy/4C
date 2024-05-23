@@ -95,18 +95,18 @@ namespace SSI
           CORE::LINALG::MatrixType ssi_matrixtype, CORE::LINALG::MatrixType scatra_matrixtype,
           bool is_scatra_manifold);
 
-      void CompleteScaTraManifoldScaTraMatrix();
+      void complete_sca_tra_manifold_sca_tra_matrix();
 
       //! call complete on the scalar transport manifold - structure off-diagonal matrix
-      void CompleteScaTraManifoldStructureMatrix();
+      void complete_sca_tra_manifold_structure_matrix();
 
-      void CompleteScaTraScaTraManifoldMatrix();
+      void complete_sca_tra_sca_tra_manifold_matrix();
 
       //! call complete on the scalar transport - structure off-diagonal matrix
-      void CompleteScaTraStructureMatrix();
+      void complete_sca_tra_structure_matrix();
 
       //! call complete on the structure - scalar transport off-diagonal matrix
-      void CompleteStructureScaTraMatrix();
+      void complete_structure_sca_tra_matrix();
 
       //! method that clears all ssi matrices
       void ClearMatrices();
@@ -117,25 +117,25 @@ namespace SSI
       //! return sub blocks of system matrix
       //@{
       Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
-      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_manifold_structure_matrix()
       {
         return scatramanifold_structure_matrix_;
       }
-      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraStructureMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_structure_matrix()
       {
         return scatra_structure_matrix_;
       }
-      Teuchos::RCP<CORE::LINALG::SparseOperator> StructureScaTraMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> structure_sca_tra_matrix()
       {
         return structure_scatra_matrix_;
       }
       Teuchos::RCP<CORE::LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
       Teuchos::RCP<CORE::LINALG::SparseOperator> ManifoldMatrix() { return manifold_matrix_; }
-      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraScaTraManifoldMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_sca_tra_manifold_matrix()
       {
         return scatra_scatramanifold_matrix_;
       }
-      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraManifoldScaTraMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_manifold_sca_tra_matrix()
       {
         return scatramanifold_scatra_matrix_;
       }
@@ -167,14 +167,14 @@ namespace SSI
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeMainDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
+      void initialize_main_diag_matrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeOffDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
+      void initialize_off_diag_matrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the system matrix
@@ -182,7 +182,7 @@ namespace SSI
        * @param[in] ssi_maps         pointer to the ssi maps object containing all relevant maps
        * @param[in] ssi_matrixtype   the ssi matrix type
        */
-      void InitializeSystemMatrix(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
+      void initialize_system_matrix(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
           CORE::LINALG::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
@@ -288,13 +288,13 @@ namespace SSI
       Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
       //! the multi map extractor of the scalar transport on manifold field
-      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_sca_tra_manifold() const;
 
       //! the multi map extractor of the structure field
       Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapStructure() const;
 
       //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix() const
       {
         return block_map_system_matrix_;
       }
@@ -315,14 +315,14 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> ScaTraDofRowMap() const;
 
       //! the scalar transport on manifolds dof row map
-      Teuchos::RCP<const Epetra_Map> ScaTraManifoldDofRowMap() const;
+      Teuchos::RCP<const Epetra_Map> sca_tra_manifold_dof_row_map() const;
 
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> StructureDofRowMap() const;
 
      private:
       //! create and check the block maps of all sub problems
-      void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
+      void create_and_check_block_maps_sub_problems(const SSIMono& ssi_mono_algorithm);
 
       //! block maps of all sub problems organized in std map
       std::map<Subproblem, Teuchos::RCP<const CORE::LINALG::MultiMapExtractor>>
@@ -364,7 +364,7 @@ namespace SSI
       }
 
       //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SlaveMasterExtractor() const
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> slave_master_extractor() const
       {
         return slave_master_extractor_;
       }
@@ -376,7 +376,7 @@ namespace SSI
       }
 
       //! coupling adapter between new slave nodes and slave nodes from input file
-      Teuchos::RCP<CORE::ADAPTER::Coupling> SlaveSlaveTransformation() const
+      Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation() const
       {
         return slave_slave_transformation_;
       }
@@ -403,7 +403,7 @@ namespace SSI
           bool check_over_constrained);
 
       //! check if one dof has slave side conditions and Dirichlet conditions
-      void CheckSlaveSideHasDirichletConditions(
+      void check_slave_side_has_dirichlet_conditions(
           Teuchos::RCP<const Epetra_Map> struct_dbc_map) const;
 
       //! all master side dofs
@@ -430,7 +430,7 @@ namespace SSI
       //!                                 (value)
       //! \param check_over_constrained   [in] check if two DBCs are set on two dofs at the same
       //! position
-      void DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> dis,
+      void define_master_slave_pairing(Teuchos::RCP<DRT::Discretization> dis,
           const std::vector<std::vector<int>>& grouped_matching_nodes,
           std::vector<int>& master_gids, std::map<int, int>& slave_master_pair,
           bool check_over_constrained) const;
@@ -439,7 +439,7 @@ namespace SSI
       //! \param dis                 [in] discretization
       //! \param name_meshtying_condition   [in] name of meshtying condition
       //! \param coupling_pairs         [out] vector of pairs of matching nodes
-      void FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> dis,
+      void find_matching_node_pairs(Teuchos::RCP<DRT::Discretization> dis,
           const std::string& name_meshtying_condition,
           std::vector<std::pair<int, int>>& coupling_pairs) const;
 
@@ -448,7 +448,7 @@ namespace SSI
       //! \param name_meshtying_condition          [in] name of meshtying condition
       //! \param inodegidvec_slave                 [in] new slave nodes on this proc
       //! \param all_coupled_original_slave_gids   [out] old slave nodes that match new slave nodes
-      void FindSlaveSlaveTransformationNodes(Teuchos::RCP<DRT::Discretization> dis,
+      void find_slave_slave_transformation_nodes(Teuchos::RCP<DRT::Discretization> dis,
           const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
           std::vector<int>& all_coupled_original_slave_gids) const;
 
@@ -460,7 +460,7 @@ namespace SSI
       //!                                            number of assigned slave nodes
       //! \param max_assigned_slave_nodes            [out] max. number of slave nodes assigned to a
       //!                                            master node
-      void GetNumAssignedSlaveToMasterNodes(const std::map<int, int>& slave_master_pair,
+      void get_num_assigned_slave_to_master_nodes(const std::map<int, int>& slave_master_pair,
           std::map<int, int>& num_assigned_slave_to_master_nodes,
           int& max_assigned_slave_nodes) const;
 
@@ -491,7 +491,7 @@ namespace SSI
       //! \param name_meshtying_condition    [in] name of meshtying condition
       //! \param build_slave_slave_transformation [in] is a map required that defines the
       //! transformation from slave nodes at the input and matched slave nodes
-      void SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> dis,
+      void setup_mesh_tying_handlers(Teuchos::RCP<DRT::Discretization> dis,
           const std::string& name_meshtying_condition, bool build_slave_slave_transformation,
           bool check_over_constrained);
 

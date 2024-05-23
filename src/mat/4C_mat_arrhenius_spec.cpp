@@ -149,7 +149,7 @@ double MAT::ArrheniusSpec::ComputeDensity(const double temp, const double thermp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ArrheniusSpec::ComputeReactionCoeff(const double temp) const
+double MAT::ArrheniusSpec::compute_reaction_coeff(const double temp) const
 {
   const double reacoeff = -PreExCon() * pow(temp, TempExp()) * exp(-AcTemp() / temp);
 

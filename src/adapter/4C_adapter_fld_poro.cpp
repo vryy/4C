@@ -41,14 +41,14 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 
 /*======================================================================*/
 /* evaluate poroelasticity specific constraint*/
-void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
+void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_vel_constraint_matrix,
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     POROELAST::Coupltype coupltype)
 {
   if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   Discretization()->SetState(0, "dispnp", Dispnp());
   Discretization()->SetState(0, "scaaf", Scaaf());
@@ -123,7 +123,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     DRT::AssembleStrategy couplstrategy(0,  // fluiddofset for row
         1,                                  // structdofset for column
         ConstraintMatrix,
-        StructVelConstraintMatrix,  // fluid-mechanical matrix
+        struct_vel_constraint_matrix,  // fluid-mechanical matrix
         Cond_RHS, Teuchos::null, Teuchos::null);
 
     // evaluate the fluid-mechanical system matrix on the fluid element

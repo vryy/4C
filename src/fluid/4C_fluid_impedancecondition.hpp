@@ -69,14 +69,14 @@ namespace FLD
       /*!
       \brief Calculate impedance tractions and add it to fluid residual and linearisation
       */
-      void AddImpedanceBCToResidualAndSysmat(const double dta, const double time,
+      void add_impedance_bc_to_residual_and_sysmat(const double dta, const double time,
           Teuchos::RCP<Epetra_Vector>& residual,
           Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
 
       /*!
       \brief Wrap for time update of impedance conditions
       */
-      void TimeUpdateImpedances(const double time);
+      void time_update_impedances(const double time);
 
       /*!
       \brief Wrapper for FluidImpedacnceBc::WriteRestart
@@ -149,7 +149,7 @@ namespace FLD
         \brief compute convolution integral and apply pressure
         to elements
       */
-      void CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
+      void calculate_impedance_tractions_and_update_residual_and_sysmat(
           Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
           const double dta, const double time, const int condid);
 

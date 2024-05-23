@@ -119,7 +119,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const CORE::FE:
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::Artery::isHigherOrderElement(const CORE::FE::CellType distype) const
+bool DRT::ELEMENTS::Artery::is_higher_order_element(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)

@@ -83,7 +83,7 @@ void SCATRA::ScaTraTimIntLoma::SetupSplitter()
 /*----------------------------------------------------------------------*
  | set initial thermodynamic pressure                          vg 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
+void SCATRA::ScaTraTimIntLoma::set_initial_therm_pressure()
 {
   // get thermodynamic pressure from material parameters
   int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
@@ -123,16 +123,16 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
   // (only for generalized-alpha time-integration scheme)
   // -> For constant thermodynamic pressure, this is done here once and
   // for all simulation time.
-  ComputeThermPressureIntermediateValues();
+  compute_therm_pressure_intermediate_values();
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::SetInitialThermPressure
+}  // SCATRA::ScaTraTimIntLoma::set_initial_therm_pressure
 
 
 /*----------------------------------------------------------------------*
  | compute initial time derivative of thermodynamic pressure   vg 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
+void SCATRA::ScaTraTimIntLoma::compute_initial_therm_pressure_deriv()
 {
   // check for temperature-dependent water, which is allowed to be used in TFSI
   int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_tempdepwater);
@@ -146,7 +146,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams);
+  add_flux_approx_to_parameter_list(eleparams);
 
   // set scalar vector values needed by elements
   discret_->ClearState();
@@ -156,8 +156,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
 
-  // the time = 0.0, since this function is called BEFORE the first IncrementTimeAndStep() in
-  // InitialCalculations() therefore, the standard SetElementTimeParameter() can be used for this
+  // the time = 0.0, since this function is called BEFORE the first increment_time_and_step() in
+  // InitialCalculations() therefore, the standard set_element_time_parameter() can be used for this
   // method
 
   // variables for integrals of domain and bodyforce
@@ -218,10 +218,10 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 
   // compute values at intermediate time steps
   // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
+  compute_therm_pressure_intermediate_values();
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv
+}  // SCATRA::ScaTraTimIntLoma::compute_initial_therm_pressure_deriv
 
 
 /*----------------------------------------------------------------------*
@@ -276,7 +276,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure from mass conservation       vg 01/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
+void SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 {
   // set scalar values needed by elements
   discret_->ClearState();
@@ -312,24 +312,24 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   }
 
   // compute time derivative of thermodynamic pressure at time step n+1
-  ComputeThermPressureTimeDerivative();
+  compute_therm_pressure_time_derivative();
 
   // compute values at intermediate time steps
   // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
+  compute_therm_pressure_intermediate_values();
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons
+}  // SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons
 
 
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem              rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectors(
+void SCATRA::ScaTraTimIntLoma::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {
-  AddThermPressToParameterList(params);
+  add_therm_press_to_parameter_list(params);
   return;
 }
 

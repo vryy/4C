@@ -199,7 +199,7 @@ namespace DRT
           ) override;
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-      void NonlinearStiffnessPoroelast(std::vector<int>& lm,         //!< location matrix
+      void nonlinear_stiffness_poroelast(std::vector<int>& lm,       //!< location matrix
           CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  //!< current displacements
           CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,   //!< current velocities
           CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,      //!< porosity at element nodes
@@ -230,15 +230,16 @@ namespace DRT
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
-      void ComputePorosityAndLinearization(Teuchos::ParameterList& params, const double& press,
+      void compute_porosity_and_linearization(Teuchos::ParameterList& params, const double& press,
           const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity,
           const CORE::LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
           CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus) override;
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
-      void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params, const double& press,
-          const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+      void compute_porosity_and_linearization_od(Teuchos::ParameterList& params,
+          const double& press, const double& J, const int& gp,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity,
           double& dphi_dp) override;
 

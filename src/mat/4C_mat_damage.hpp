@@ -197,7 +197,7 @@ namespace MAT
         int eleGID) override;
 
     //! evaluate material using Lemaitre material model
-    virtual void EvaluateFullLemaitre(
+    virtual void evaluate_full_lemaitre(
         const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
@@ -207,7 +207,7 @@ namespace MAT
         int eleGID);                                               //!< element GID
 
     //! evaluate material using the simplified Lemaitre model
-    virtual void EvaluateSimplifiedLemaitre(
+    virtual void evaluate_simplified_lemaitre(
         const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
@@ -235,8 +235,8 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                    cmat,  //!< elasto-plastic material tangent
+    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                       cmat,  //!< elasto-plastic material tangent
         int eleID,
         double Dgamma,         //!< plastic multiplier
         double G,              //!< shear modulus
@@ -253,8 +253,9 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic damage tensor in matrix nation for 3d
-    void SetupCmatElastoPlasticFullLemaitre(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                                cmat,    //!< elasto-plastic tangent modulus (out)
+    void setup_cmat_elasto_plastic_full_lemaitre(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+            cmat,                                        //!< elasto-plastic tangent modulus (out)
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1> N_tilde,  //!< flow vector
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< total stress
         double heaviside,                                //!< heaviside-function
@@ -278,16 +279,16 @@ namespace MAT
             b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
     );
 
-    //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
+    //! calculates the derivative of get_sigma_y_at_strainbarnp() w.r.t. astrain_{n+1}
     //! and returns the isotropic hardening modulus
-    double GetIsoHardAtStrainbarnp(
+    double get_iso_hard_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain
                                   //!< or if damage!=0: isotropic hardening internal variable
     );
 
     //! calculates current yield stress from (sigma_y-astrain)-samples which
     //! describe a piecewise constant function
-    double GetSigmaYAtStrainbarnp(
+    double get_sigma_y_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain, in case of dependent hardening
                                   //!< or if damage!=0: isotropic hardening internal variable
     );
@@ -312,7 +313,7 @@ namespace MAT
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double IsotropicHardeningVariable(int gp  //!< current Gauss point
+    double isotropic_hardening_variable(int gp  //!< current Gauss point
     ) const
     {
       return isohardvarlast_->at(gp);

@@ -393,7 +393,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadResultDataVecChar(std::string id_path,
+Teuchos::RCP<std::vector<char>> IO::HDFReader::read_result_data_vec_char(std::string id_path,
     std::string value_path, int columns, const Epetra_Comm& Comm,
     Teuchos::RCP<Epetra_Map>& elemap) const
 {

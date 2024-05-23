@@ -44,11 +44,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const int id,
   return Teuchos::rcp(new DRT::ELEMENTS::FluidPoro(id, owner));
 }
 
-void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition(
+void DRT::ELEMENTS::FluidPoroEleType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
-  FluidType::SetupElementDefinition(definitions_fluid);
+  FluidType::setup_element_definition(definitions_fluid);
 
   std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 

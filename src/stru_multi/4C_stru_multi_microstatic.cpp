@@ -58,8 +58,9 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // while other parameters (like output options, convergence checks)
   // can be used individually from the microscale input file
   const Teuchos::ParameterList& sdyn_micro =
-      GLOBAL::Problem::Instance(microdisnum_)->StructuralDynamicParams();
-  const Teuchos::ParameterList& sdyn_macro = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+      GLOBAL::Problem::Instance(microdisnum_)->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn_macro =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // i/o options should be read from the corresponding micro-file
   const Teuchos::ParameterList& ioflags = GLOBAL::Problem::Instance(microdisnum_)->IOParams();
@@ -77,7 +78,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
+  discret_->compute_null_space_if_necessary(solver_->Params());
 
   INPAR::STR::PredEnum pred =
       CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
@@ -433,7 +434,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+  CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -539,7 +540,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+    CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -789,7 +790,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
   step_ = rstep;
   stepn_ = step_ + 1;
 
-  reader.ReadSerialDenseMatrix(lastalpha, "alpha");
+  reader.read_serial_dense_matrix(lastalpha, "alpha");
 }
 
 
@@ -925,7 +926,7 @@ void STRUMULTI::MicroStatic::SetEASData()
 
 
 
-void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* stress,
+void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* stress,
     CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton,
     bool& build_stiff)
 {
@@ -1034,7 +1035,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
 
     // prescribe rigid body modes
-    discret_->ComputeNullSpaceIfNecessary(solver->Params());
+    discret_->compute_null_space_if_necessary(solver->Params());
 
     Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
     iterinc->PutScalar(0.0);
@@ -1141,7 +1142,7 @@ void STRUMULTI::MicroStaticParObject::Pack(CORE::COMM::PackBuffer& data) const
 
   AddtoPack(data, UniqueParObjectId());
 
-  const auto* micro_data = STRUMULTI::MicroStaticParObject::GetMicroStaticDataPtr();
+  const auto* micro_data = STRUMULTI::MicroStaticParObject::get_micro_static_data_ptr();
   AddtoPack(data, micro_data->gp_);
   AddtoPack(data, micro_data->eleowner_);
   AddtoPack(data, micro_data->microdisnum_);

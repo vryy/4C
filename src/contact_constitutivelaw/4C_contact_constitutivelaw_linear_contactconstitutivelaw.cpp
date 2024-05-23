@@ -29,7 +29,7 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::LinearConstitutiveLawPara
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::CreateConstitutiveLaw()
+CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::create_constitutive_law()
 {
   return Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw(this));
 }

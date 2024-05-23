@@ -17,30 +17,30 @@
 FOUR_C_NAMESPACE_OPEN
 
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
-DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
+DRT::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
     const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
 {
   switch (ele.Shape())
   {
     case CORE::FE::CellType::quad4:
     {
-      return DefineCalculationInterfaceType<CORE::FE::CellType::quad4>(eletech);
+      return define_calculation_interface_type<CORE::FE::CellType::quad4>(eletech);
     }
     case CORE::FE::CellType::quad8:
     {
-      return DefineCalculationInterfaceType<CORE::FE::CellType::quad8>(eletech);
+      return define_calculation_interface_type<CORE::FE::CellType::quad8>(eletech);
     }
     case CORE::FE::CellType::quad9:
     {
-      return DefineCalculationInterfaceType<CORE::FE::CellType::quad9>(eletech);
+      return define_calculation_interface_type<CORE::FE::CellType::quad9>(eletech);
     }
     case CORE::FE::CellType::tri3:
     {
-      return DefineCalculationInterfaceType<CORE::FE::CellType::tri3>(eletech);
+      return define_calculation_interface_type<CORE::FE::CellType::tri3>(eletech);
     }
     case CORE::FE::CellType::tri6:
     {
-      return DefineCalculationInterfaceType<CORE::FE::CellType::tri6>(eletech);
+      return define_calculation_interface_type<CORE::FE::CellType::tri6>(eletech);
     }
     default:
       FOUR_C_THROW("unknown distype provided");
@@ -49,7 +49,7 @@ DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
 
 template <CORE::FE::CellType distype>
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
-DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
+DRT::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
     const std::set<INPAR::STR::EleTech>& eletech)
 {
   // here we go into the different cases for element technology

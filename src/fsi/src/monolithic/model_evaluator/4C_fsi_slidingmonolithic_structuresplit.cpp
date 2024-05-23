@@ -152,9 +152,9 @@ FSI::SlidingMonolithicStructureSplit::SlidingMonolithicStructureSplit(
   notsetup_ = true;
 
   coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
   fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   aigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
@@ -235,7 +235,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
 
     aleproj_ = CORE::UTILS::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
-    SetDefaultParameters(fsidyn, NOXParameterList());
+    set_default_parameters(fsidyn, NOXParameterList());
 
     // we use non-matching meshes at the interface
     // mortar with: structure = slave, fluid = master
@@ -243,7 +243,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
     const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     // get coupling objects
-    CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+    CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -253,17 +253,17 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
     std::vector<int> coupleddof(ndim, 1);
 
     coupsfm_->Setup(FluidField()->Discretization(), StructureField()->Discretization(),
-        AleField()->WriteAccessDiscretization(), coupleddof, "FSICoupling", comm_, false);
+        AleField()->write_access_discretization(), coupleddof, "FSICoupling", comm_, false);
 
     // fluid to ale at the interface
-    icoupfa.SetupConditionCoupling(*FluidField()->Discretization(),
+    icoupfa.setup_condition_coupling(*FluidField()->Discretization(),
         FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
         AleField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
     // we might have a free surface
     if (FluidField()->Interface()->FSCondRelevant())
     {
-      fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+      fscoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
           FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
           AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
     }
@@ -280,7 +280,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
     FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
     // create combined map
-    CreateCombinedDofRowMap();
+    create_combined_dof_row_map();
 
     // Use normal matrix for fluid equations but build (splitted) mesh movement
     // linearization (if requested in the input file)
@@ -296,7 +296,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
-    SetupDBCMapExtractor();
+    setup_dbc_map_extractor();
     // -------------------------------------------------------------------------
 
     // enable debugging
@@ -326,7 +326,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::CreateCombinedDofRowMap()
+void FSI::SlidingMonolithicStructureSplit::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
@@ -343,7 +343,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateCombinedDofRowMap()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::SetupDBCMapExtractor()
+void FSI::SlidingMonolithicStructureSplit::setup_dbc_map_extractor()
 {
   /* Dirichlet maps for structure and fluid do not intersect with interface map.
    * ALE Dirichlet map might intersect with interface map, but ALE interface
@@ -466,7 +466,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const double scale = FluidField()->ResidualScaling();
 
   // old interface velocity of fluid field
-  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->extract_interface_veln();
 
   // get the Mortar projection matrix P = D^{-1} * M
   const Teuchos::RCP<const CORE::LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
@@ -660,7 +660,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
     const CORE::LINALG::SparseMatrix& afsig = blocka->Matrix(0, 2);
 
     // extract fluid free surface velocities.
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractFreeSurfaceVeln();
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_free_surface_veln();
     Teuchos::RCP<Epetra_Vector> aveln = FluidToAleInterface(fveln);
 
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(afsig.RowMap(), true));
@@ -801,7 +801,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystemMatrix(
   mat.Assign(1, 1, CORE::LINALG::View, *f);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      CORE::ADAPTER::CouplingSlaveConverter(InterfaceFluidAleCoupling()), mat.Matrix(2, 1));
+      CORE::ADAPTER::CouplingSlaveConverter(interface_fluid_ale_coupling()), mat.Matrix(2, 1));
   mat.Assign(2, 2, CORE::LINALG::View, aii);
 
   /*--------------------------------------------------------------------------*/
@@ -897,18 +897,18 @@ void FSI::SlidingMonolithicStructureSplit::Update()
 
     iprojdispinc_->Update(-1.0, *iprojdisp_, 1.0, *idispale, 0.0);
 
-    slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
+    slideale_->EvaluateMortar(StructureField()->extract_interface_dispnp(), iprojdisp_, *coupsfm_);
     slideale_->EvaluateFluidMortar(idispale, iprojdisp_);
 
     Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(temp);
-    AleField()->ApplyInterfaceDisplacements(acx);
-    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->Dispnp()));
+    AleField()->apply_interface_displacements(acx);
+    FluidField()->apply_mesh_displacement(AleToFluid(AleField()->Dispnp()));
 
     Teuchos::RCP<Epetra_Vector> unew =
-        slideale_->InterpolateFluid(FluidField()->ExtractInterfaceVelnp());
-    FluidField()->ApplyInterfaceVelocities(unew);
+        slideale_->InterpolateFluid(FluidField()->extract_interface_velnp());
+    FluidField()->apply_interface_velocities(unew);
   }
 
   // call Update()-routine in base class to handle the single fields
@@ -1325,7 +1325,7 @@ void FSI::SlidingMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<cons
 
   // convert fluid interface velocities into ALE interface displacements
   Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSICondVector(fx);
-  FluidField()->VelocityToDisplacement(fcx);
+  FluidField()->velocity_to_displacement(fcx);
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
@@ -1336,7 +1336,7 @@ void FSI::SlidingMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<cons
   if (FluidField()->Interface()->FSCondRelevant())
   {
     Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSCondVector(fx);
-    FluidField()->FreeSurfVelocityToDisplacement(fcx);
+    FluidField()->free_surf_velocity_to_displacement(fcx);
 
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
     AleField()->Interface()->InsertFSCondVector(acx, a);
@@ -1404,10 +1404,10 @@ void FSI::SlidingMonolithicStructureSplit::Output()
   }
   AleField()->Output();
 
-  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
-    if (comm_.MyPID() == 0) StructureField()->GetConstraintManager()->PrintMonitorValues();
+    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
+    if (comm_.MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -1466,12 +1466,12 @@ void FSI::SlidingMonolithicStructureSplit::ReadRestart(int step)
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
 
   if (aleproj_ != INPAR::FSI::ALEprojection_none)
-    slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispn(), iprojdisp_, *coupsfm_);
+    slideale_->EvaluateMortar(StructureField()->extract_interface_dispn(), iprojdisp_, *coupsfm_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::RecoverLagrangeMultiplier()
+void FSI::SlidingMonolithicStructureSplit::recover_lagrange_multiplier()
 {
   // get time integration parameter of structural time integrator
   // to enable consistent time integration among the fields
@@ -1565,7 +1565,7 @@ void FSI::SlidingMonolithicStructureSplit::RecoverLagrangeMultiplier()
   if (firstcall_)
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
-    mortarp->Apply(*FluidField()->ExtractInterfaceVeln(),*auxvec);
+    mortarp->Apply(*FluidField()->extract_interface_veln(),*auxvec);
     auxauxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
     sggprev_->Apply(*auxvec,*auxauxvec);
     tmpvec->Update(Dt(),*auxauxvec,1.0);
@@ -1588,15 +1588,15 @@ void FSI::SlidingMonolithicStructureSplit::RecoverLagrangeMultiplier()
    * mortar matrices M or D later on.
    */
 
-  //  CheckKinematicConstraint();
-  //  CheckDynamicEquilibrium();
+  //  check_kinematic_constraint();
+  //  check_dynamic_equilibrium();
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::CalculateInterfaceEnergyIncrement()
+void FSI::SlidingMonolithicStructureSplit::calculate_interface_energy_increment()
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -1619,14 +1619,14 @@ void FSI::SlidingMonolithicStructureSplit::CalculateInterfaceEnergyIncrement()
 
   energysum_ += energy;
 
-  WriteInterfaceEnergyFile(energy, energysum_);
+  write_interface_energy_file(energy, energysum_);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::CheckKinematicConstraint()
+void FSI::SlidingMonolithicStructureSplit::check_kinematic_constraint()
 {
   // some scaling factors for fluid
   const double timescale = FluidField()->TimeScaling();
@@ -1636,10 +1636,10 @@ void FSI::SlidingMonolithicStructureSplit::CheckKinematicConstraint()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
   // get interface displacements and velocities
-  Teuchos::RCP<Epetra_Vector> disnp = StructureField()->ExtractInterfaceDispnp();
-  Teuchos::RCP<Epetra_Vector> disn = StructureField()->ExtractInterfaceDispn();
-  Teuchos::RCP<Epetra_Vector> velnp = FluidField()->ExtractInterfaceVelnp();
-  Teuchos::RCP<Epetra_Vector> veln = FluidField()->ExtractInterfaceVeln();
+  Teuchos::RCP<Epetra_Vector> disnp = StructureField()->extract_interface_dispnp();
+  Teuchos::RCP<Epetra_Vector> disn = StructureField()->extract_interface_dispn();
+  Teuchos::RCP<Epetra_Vector> velnp = FluidField()->extract_interface_velnp();
+  Teuchos::RCP<Epetra_Vector> veln = FluidField()->extract_interface_veln();
 
   // prepare vectors for projected interface quantities
   Teuchos::RCP<Epetra_Vector> disnpproj =
@@ -1684,7 +1684,7 @@ void FSI::SlidingMonolithicStructureSplit::CheckKinematicConstraint()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::CheckDynamicEquilibrium()
+void FSI::SlidingMonolithicStructureSplit::check_dynamic_equilibrium()
 {
   // get the Mortar matrices D and M
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
@@ -1805,7 +1805,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateSystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
+void FSI::SlidingMonolithicStructureSplit::create_node_owner_relationship(
     std::map<int, int>* nodeOwner, std::map<int, std::list<int>>* inverseNodeOwner,
     std::map<int, DRT::Node*>* structurenodesPtr, std::map<int, DRT::Node*>* fluidgnodesPtr,
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -1872,7 +1872,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
     {
       int stdofGID = P_Map.GID(stdofLID);  // gid of structure dof
       // find related node and owner to stdofGID
-      FindNodeRelatedToDof(structurenodesPtr, stdofGID, structuredis, re);  // fluid
+      find_node_related_to_dof(structurenodesPtr, stdofGID, structuredis, re);  // fluid
       stnode = re[0];
       stowner = re[1];
 
@@ -1888,7 +1888,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
     {
       if (j < NumEntries)
       {
-        FindNodeRelatedToDof(fluidgnodesPtr, fldofGID[j], fluiddis, re);
+        find_node_related_to_dof(fluidgnodesPtr, fldofGID[j], fluiddis, re);
         flnode = re[0];
         flowner = re[1];
       }
@@ -1914,7 +1914,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateNodeOwnerRelationship(
         {
           dofid = fldofGID[j];
           comm_.Broadcast(&dofid, 1, proc);
-          FindNodeRelatedToDof(fluidgnodesPtr, dofid, fluiddis,
+          find_node_related_to_dof(fluidgnodesPtr, dofid, fluiddis,
               re);  // let each processor look for the node related to gstid
           foundNode = re[0];
           foundOwner = re[1];

@@ -83,12 +83,12 @@ namespace STI
 
    private:
     //! Apply Dirichlet conditions to assembled OD blocks
-    void ApplyDirichletOffDiag(
+    void apply_dirichlet_off_diag(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
 
     //! Assemble interface and domain contributions of OD blocks
-    void AssembleDomainInterfaceOffDiag(
+    void assemble_domain_interface_off_diag(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
 
@@ -96,16 +96,16 @@ namespace STI
     void AssembleMatAndRHS();
 
     //! assemble off-diagonal scatra-thermo block of global system matrix
-    void AssembleODBlockScatraThermo();
+    void assemble_od_block_scatra_thermo();
 
     //! assemble off-diagonal thermo-scatra block of global system matrix
-    void AssembleODBlockThermoScatra();
+    void assemble_od_block_thermo_scatra();
 
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
     //! compute null space information associated with global system matrix if applicable
-    void ComputeNullSpaceIfNecessary(Teuchos::ParameterList&
+    void compute_null_space_if_necessary(Teuchos::ParameterList&
             solverparams  //! solver parameter list for scatra-thermo interaction
     ) const;
 

@@ -257,11 +257,11 @@ namespace
   }
 
   // Named Double Vector
-  TEST(LineDefinitionTest, AddNamedDoubleVector)
+  TEST(LineDefinitionTest, add_named_double_vector)
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
     auto line_definition =
-        INPUT::LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+        INPUT::LineDefinition::Builder().add_named_double_vector("OMEGA", 3).Build();
     EXPECT_TRUE(line_definition.Read(input));
   }
 
@@ -269,7 +269,7 @@ namespace
   {
     std::istringstream input("OMEGA 1.23 2.34");
     auto line_definition =
-        INPUT::LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+        INPUT::LineDefinition::Builder().add_named_double_vector("OMEGA", 3).Build();
     EXPECT_FALSE(line_definition.Read(input));
   }
 
@@ -277,7 +277,7 @@ namespace
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45 4.56");
     auto line_definition =
-        INPUT::LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+        INPUT::LineDefinition::Builder().add_named_double_vector("OMEGA", 3).Build();
     EXPECT_FALSE(line_definition.Read(input));
   }
 
@@ -285,7 +285,7 @@ namespace
   {
     std::istringstream input("1.23 2.34 3.45");
     auto line_definition =
-        INPUT::LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+        INPUT::LineDefinition::Builder().add_named_double_vector("OMEGA", 3).Build();
     EXPECT_FALSE(line_definition.Read(input));
   }
 
@@ -334,8 +334,9 @@ namespace
         .AddInt("i")
         .AddNamedDouble("d")
         .AddNamedIntVector("iv", 3)
-        .AddOptionalNamedStringVector("s", 2)
-        .AddOptionalNamedPairOfStringAndDoubleVector("pairs", INPUT::LengthFromIntNamed("i"))
+        .add_optional_named_string_vector("s", 2)
+        .add_optional_named_pair_of_string_and_double_vector(
+            "pairs", INPUT::LengthFromIntNamed("i"))
         .Build()
         .Print(out);
 

@@ -27,28 +27,28 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombined(
+double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
     std::vector<double>& parent_disp)
 {
   switch (ParentElement()->Shape())
   {
     case CORE::FE::CellType::hex8:
       if (Shape() == CORE::FE::CellType::quad4)
-        return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex8,
+        return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::hex8,
             CORE::FE::CellType::quad4>(parent_disp);
       else
         FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
     case CORE::FE::CellType::hex27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex27,
+      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::hex27,
           CORE::FE::CellType::quad9>(parent_disp);
       break;
     case CORE::FE::CellType::tet4:
-      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::tet4,
+      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::tet4,
           CORE::FE::CellType::tri3>(parent_disp);
       break;
     case CORE::FE::CellType::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::nurbs27,
+      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::nurbs27,
           CORE::FE::CellType::nurbs9>(parent_disp);
       break;
     default:
@@ -60,7 +60,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 
 
 template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombined(
+double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
     std::vector<double>& parent_disp)
 {
   const int dim = CORE::FE::dim<dt_vol>;
@@ -80,8 +80,8 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 
   CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
 
-  TraceEstimateVolMatrix<dt_vol>(xrefe, xcurr, vol);
-  TraceEstimateSurfMatrix<dt_vol, dt_surf>(xrefe, xcurr, surf);
+  trace_estimate_vol_matrix<dt_vol>(xrefe, xcurr, vol);
+  trace_estimate_surf_matrix<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
   CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
   SubspaceProjector<dt_vol>(xcurr, proj);
@@ -102,7 +102,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 }
 
 template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
+void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& vol)
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
 
 
 template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
+void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& surf)
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
   for (int i = 3; i < 6; ++i) id4(i, i) = 2.;
 
   CORE::LINALG::SerialDenseMatrix xrefe_surf(CORE::FE::num_nodes<dt_surf>, dim);
-  MaterialConfiguration(xrefe_surf);
+  material_configuration(xrefe_surf);
 
   std::vector<double> n(3);
   CORE::LINALG::Matrix<3, 1> n_v(n.data(), true);
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
           GLOBAL::Problem::Instance()->GetDis("structure").get())
           ->GetKnotVector()
-          ->GetBoundaryEleAndParentKnots(
+          ->get_boundary_ele_and_parent_knots(
               parentknots, boundaryknots, normalfac, ParentElement()->Id(), FaceParentNumber());
 
       CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_surf>, 1> weights, shapefcn;
@@ -398,26 +398,26 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
+double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
   switch (ParentElement()->Shape())
   {
     case CORE::FE::CellType::hex8:
       if (Shape() == CORE::FE::CellType::quad4)
-        return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex8,
+        return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::hex8,
             CORE::FE::CellType::quad4>(parent_disp);
       else
         FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
     case CORE::FE::CellType::hex27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex27,
+      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::hex27,
           CORE::FE::CellType::quad9>(parent_disp);
     case CORE::FE::CellType::tet4:
-      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::tet4,
+      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::tet4,
           CORE::FE::CellType::tri3>(parent_disp);
     case CORE::FE::CellType::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::nurbs27,
+      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::nurbs27,
           CORE::FE::CellType::nurbs9>(parent_disp);
     default:
       FOUR_C_THROW("parent shape not implemented");
@@ -427,7 +427,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
 }
 
 template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
+double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
   const int dim = CORE::FE::dim<dt_vol>;
@@ -446,12 +446,12 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
 
   CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
 
-  TraceEstimateVolMatrixTSI<dt_vol>(xrefe, xcurr, vol);
-  TraceEstimateSurfMatrixTSI<dt_vol, dt_surf>(xrefe, xcurr, surf);
+  trace_estimate_vol_matrix_tsi<dt_vol>(xrefe, xcurr, vol);
+  trace_estimate_surf_matrix_tsi<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
 
   CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
-  SubspaceProjectorScalar<dt_vol>(proj);
+  subspace_projector_scalar<dt_vol>(proj);
 
   CORE::LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
 
@@ -469,7 +469,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
 }
 
 template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
+void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& vol)
@@ -510,7 +510,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
 
 
 template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
+void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& surf)
@@ -528,7 +528,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
   CORE::LINALG::Matrix<1, num_node> iCn_N_XYZ;
 
   CORE::LINALG::SerialDenseMatrix xrefe_surf(CORE::FE::num_nodes<dt_surf>, dim);
-  MaterialConfiguration(xrefe_surf);
+  material_configuration(xrefe_surf);
 
   std::vector<double> n(3);
   CORE::LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
 
 
 template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
+void DRT::ELEMENTS::StructuralSurface::subspace_projector_scalar(
     CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol> - 1>& proj)
 {
   const int num_node = CORE::FE::num_nodes<dt_vol>;

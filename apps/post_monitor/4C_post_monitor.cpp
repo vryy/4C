@@ -212,7 +212,7 @@ void MonWriter::WriteMonStrainFile(
 }
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonPlStrainFile(
+void MonWriter::write_mon_pl_strain_file(
     PostProblem& problem, std::string& infieldtype, std::string straintype, int node)
 {
   // stop it now
@@ -328,7 +328,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonHeatfluxFile(
+void MonWriter::write_mon_heatflux_file(
     PostProblem& problem, std::string& infieldtype, std::string heatfluxtype, int node)
 {
   // stop it now
@@ -355,7 +355,7 @@ void MonWriter::WriteMonHeatfluxFile(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonTempgradFile(
+void MonWriter::write_mon_tempgrad_file(
     PostProblem& problem, std::string& infieldtype, std::string tempgradtype, int node)
 {
   // stop it now
@@ -1880,8 +1880,8 @@ int main(int argc, char** argv)
     {
       ThermoMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
-      mymonwriter.WriteMonHeatfluxFile(problem, infieldtype, problem.heatfluxtype(), node);
-      mymonwriter.WriteMonTempgradFile(problem, infieldtype, problem.tempgradtype(), node);
+      mymonwriter.write_mon_heatflux_file(problem, infieldtype, problem.heatfluxtype(), node);
+      mymonwriter.write_mon_tempgrad_file(problem, infieldtype, problem.tempgradtype(), node);
       break;
     }
     case GLOBAL::ProblemType::tsi:
@@ -1892,7 +1892,7 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonFile(problem, infieldtype, node);
         mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
         mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
-        mymonwriter.WriteMonPlStrainFile(problem, infieldtype, problem.straintype(), node);
+        mymonwriter.write_mon_pl_strain_file(problem, infieldtype, problem.straintype(), node);
       }
       else if (infieldtype == "thermo")
       {
@@ -1901,8 +1901,8 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
         mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
         // TODO: bugfix in case of coupled tsi
-        //        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
-        //        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+        //        mymonwriter.write_mon_heatflux_file(problem,infieldtype,problem.heatfluxtype(),node);
+        //        mymonwriter.write_mon_tempgrad_file(problem,infieldtype,problem.tempgradtype(),node);
       }
       else
       {

@@ -86,7 +86,7 @@ void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
   CheckIsInit();
   CheckIsSetup();
 
-  // write velocities since they may be needed in PrepareFirstTimeStep() of the scatra field
+  // write velocities since they may be needed in prepare_first_time_step() of the scatra field
   SetVelocityField();
   // write initial output to file
   if (Step() == 0) Output();
@@ -107,7 +107,7 @@ void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
     Update();
 
     // compute error for problems with analytical solution
-    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
     // write output to screen and files
     Output();
@@ -122,18 +122,18 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
   CheckIsInit();
   CheckIsSetup();
 
-  PrepareTimeLoopTwoWay();
+  prepare_time_loop_two_way();
 
   // time loop
   while (NotFinished())
   {
-    IncrementTimeAndStep();
+    increment_time_and_step();
 
     // prepare next time step
-    PrepareTimeStepConvection();
+    prepare_time_step_convection();
 
     // Outer iteration loop
-    OuterIterationConvection();
+    outer_iteration_convection();
 
     // update all single field solvers and density
     UpdateConvection();
@@ -146,7 +146,7 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
 /*----------------------------------------------------------------------*
  | Initial calculations for two-way coupling time loop       fang 08/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
+void SCATRA::ScaTraAlgorithm::prepare_time_loop_two_way()
 {
   // safety checks
   CheckIsInit();
@@ -182,7 +182,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
   CheckIsInit();
   CheckIsSetup();
 
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   FluidField()->PrepareTimeStep();
 
@@ -202,7 +202,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
+void SCATRA::ScaTraAlgorithm::prepare_time_step_convection()
 {
   // safety checks
   CheckIsInit();
@@ -265,7 +265,7 @@ void SCATRA::ScaTraAlgorithm::DoFluidStep()
 
   // currently only required for forced homogeneous isotropic turbulence with
   // passive scalar transport; does nothing otherwise
-  FluidField()->CalcIntermediateSolution();
+  FluidField()->calc_intermediate_solution();
 
   FluidField()->Solve();
 }
@@ -330,7 +330,7 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
+void SCATRA::ScaTraAlgorithm::outer_iteration_convection()
 {
   // safety checks
   CheckIsInit();
@@ -398,8 +398,8 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     {
       printf("\n");
       printf("Flux: Outer Iterations step: %3d \n", natconvitnum);
-      ScaTraField().OutputProblemSpecific();
-      ScaTraField().OutputTotalAndMeanScalars();
+      ScaTraField().output_problem_specific();
+      ScaTraField().output_total_and_mean_scalars();
       printf("\n");
     }
 
@@ -448,11 +448,11 @@ void SCATRA::ScaTraAlgorithm::Output()
   }
 
   FluidField()->StatisticsAndOutput();
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 
   // we have to call the output of averaged fields for scatra separately
-  if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
-    FluidField()->TurbulenceStatisticManager()->DoOutputForScaTra(
+  if (FluidField()->turbulence_statistic_manager() != Teuchos::null)
+    FluidField()->turbulence_statistic_manager()->DoOutputForScaTra(
         *ScaTraField()->DiscWriter(), ScaTraField()->Step());
 }
 
@@ -606,7 +606,7 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
 void SCATRA::ScaTraAlgorithm::TestResults()
 {
   GLOBAL::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(create_sca_tra_field_test());
   GLOBAL::Problem::Instance()->TestAll(Comm());
 }
 FOUR_C_NAMESPACE_CLOSE

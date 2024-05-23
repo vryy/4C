@@ -102,12 +102,12 @@ namespace CORE::ADAPTER
       DOF 0 (master) with DOF 1 slave, DOF 3 (master) with DOF 2 slave, etc.
 
      */
-    void SetupConditionCoupling(const DRT::Discretization& masterdis,
+    void setup_condition_coupling(const DRT::Discretization& masterdis,
         Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
         Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
         bool matchall = true, const int nds_master = 0, const int nds_slave = 0);
 
-    void SetupConditionCoupling(const DRT::Discretization& masterdis,
+    void setup_condition_coupling(const DRT::Discretization& masterdis,
         Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
         Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
         const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall = true,
@@ -120,7 +120,7 @@ namespace CORE::ADAPTER
       affiliation to other condition and build appropriate dof maps.
 
      */
-    void SetupConstrainedConditionCoupling(
+    void setup_constrained_condition_coupling(
         const DRT::Discretization& masterdis,          ///< discretization of master side
         Teuchos::RCP<const Epetra_Map> mastercondmap,  ///< map with condition DOFs of master side
         const DRT::Discretization& slavedis,           ///< discretization of slave side
@@ -409,10 +409,10 @@ namespace CORE::ADAPTER
     //@{
 
     /// fill rowmap with master -> slave pairs
-    void FillMasterToSlaveMap(std::map<int, int>& rowmap) const;
+    void fill_master_to_slave_map(std::map<int, int>& rowmap) const;
 
     /// fill rowmap with slave -> master pairs
-    void FillSlaveToMasterMap(std::map<int, int>& rowmap) const;
+    void fill_slave_to_master_map(std::map<int, int>& rowmap) const;
 
     /// fill partial mastermap with gid of partial slavemap
     Teuchos::RCP<Epetra_Map> SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave);
@@ -433,13 +433,13 @@ namespace CORE::ADAPTER
     /// \name Lagrangian coupling helpers
 
     /// create coupling matrices for Lagrangian coupling conditions
-    void SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
+    void setup_coupling_matrices(const Epetra_Map& shiftedmastermap,
         const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap);
 
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMat() const { return matmm_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMat() const { return matsm_; }
-    Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMatTrans() const { return matmm_trans_; }
-    Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMatTrans() const { return matsm_trans_; }
+    Teuchos::RCP<Epetra_CrsMatrix> master_to_master_mat_trans() const { return matmm_trans_; }
+    Teuchos::RCP<Epetra_CrsMatrix> slave_to_master_mat_trans() const { return matsm_trans_; }
 
     //@}
 
@@ -458,7 +458,7 @@ namespace CORE::ADAPTER
      *  which is used inside xfield_field_coupling to determine
      *  if base class is called
      */
-    virtual std::vector<int> BuildDofVectorFromNumDof(const int numdof);
+    virtual std::vector<int> build_dof_vector_from_num_dof(const int numdof);
 
    private:
     /*! \brief Do the actual matching of the master <-> slave pairs

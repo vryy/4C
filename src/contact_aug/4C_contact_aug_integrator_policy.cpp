@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Jacobian(
+void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv2nd_jacobian(
     const MORTAR::Element& sele,
     const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
@@ -33,7 +33,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Jacobian(
+void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv2nd_jacobian(
     const MORTAR::Element& sele,
     const CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
     const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
@@ -46,14 +46,14 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
   // 2-nd int: 1-st paired vector key corresponds to varied dof GID
   // 3-rd int: 2-nd paired vector key corresponds to linearized dof GID
   Deriv2ndVecMap dd_non_unit_normal(probdim);
-  this->Deriv2nd_NonUnitSlaveElementNormal(sele, nodal_dofs, deriv, dd_non_unit_normal);
+  this->deriv2nd_non_unit_slave_element_normal(sele, nodal_dofs, deriv, dd_non_unit_normal);
 
   /*----------------------------------------------------------------------*/
   // unit normal vector: 1-st order derivative
   // 1-st int: vector index corresponds to the normal component index
   // 2-nd int: paired vector key corresponds to varied dof GID
   Deriv1stVecMap d_unit_normal(probdim);
-  this->Deriv1st_UnitSlaveElementNormal(
+  this->deriv1st_unit_slave_element_normal(
       unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal);
 
   /*----------------------------------------------------------------------*/
@@ -147,7 +147,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_Jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveElementNormal(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::deriv1st_unit_slave_element_normal(
     const CORE::LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset) const
 {
@@ -167,7 +167,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
 
   // (0) calculate the projection matrix into the tangential plain
   CORE::LINALG::Matrix<probdim, probdim> tproj_mat(true);
-  ProjectionIntoTangentialPlain(unit_normal, tproj_mat);
+  projection_into_tangential_plain(unit_normal, tproj_mat);
 
   // (1) calculate the product of projection matrix and the first derivative
   //     of the non-unit normal. Additionally, the result is scaled by the
@@ -202,7 +202,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-double CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::UnitSlaveElementNormal(
+double CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::unit_slave_element_normal(
     const MORTAR::Element& sele, const CORE::LINALG::Matrix<3, 2>& tau,
     CORE::LINALG::Matrix<probdim, 1>& unit_normal) const
 {
@@ -229,7 +229,7 @@ double CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::UnitSlaveElementNor
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlaveElementNormal(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::deriv1st_non_unit_slave_element_normal(
     const MORTAR::Element& sele, const CORE::LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
     const CORE::LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv,
     const CORE::LINALG::Matrix<3, 2>& tau, Deriv1stVecMap& d_non_unit_normal) const
@@ -238,7 +238,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
 
-  this->timer_.start(TimeID::Deriv1st_NonUnitSlaveElementNormal);
+  this->timer_.start(TimeID::deriv1st_non_unit_slave_element_normal);
 
   const double normal_fac = sele.NormalFac();
   CORE::GEN::reset(probdim, SLAVENUMNODE * probdim, d_non_unit_normal);
@@ -305,13 +305,13 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
 
   CORE::GEN::complete(d_non_unit_normal);
 
-  this->timer_.stop(TimeID::Deriv1st_NonUnitSlaveElementNormal);
+  this->timer_.stop(TimeID::deriv1st_non_unit_slave_element_normal);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlaveElementNormal(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::deriv2nd_non_unit_slave_element_normal(
     const MORTAR::Element& sele, const CORE::LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
     const CORE::LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv,
     Deriv2ndVecMap& dd_non_unit_normal) const
@@ -320,7 +320,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
   std::cout << CONTACT_FUNC_NAME << std::endl;
 #endif
 
-  this->timer_.start(TimeID::Deriv2nd_NonUnitSlaveElementNormal);
+  this->timer_.start(TimeID::deriv2nd_non_unit_slave_element_normal);
 
   const double normal_fac = sele.NormalFac();
   // loop over all components of the normal vector
@@ -374,18 +374,18 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
 
   CORE::GEN::complete(dd_non_unit_normal);
 
-  this->timer_.stop(TimeID::Deriv2nd_NonUnitSlaveElementNormal);
+  this->timer_.stop(TimeID::deriv2nd_non_unit_slave_element_normal);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveElementNormal(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::deriv2nd_unit_slave_element_normal(
     const CORE::LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
     const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal) const
 {
-  this->timer_.start(TimeID::Deriv2nd_UnitSlaveElementNormal);
+  this->timer_.start(TimeID::deriv2nd_unit_slave_element_normal);
 
   // temporal data structures
   Deriv1stMap dn_n(0);
@@ -397,7 +397,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
   // (0-0) evaluate the scalar product of unit-normal vector and the first
   //       derivative of the non-unit normal vector
   // loop over the normal vector components
-  InnerProductOfVectorAndDeriv1stVector(unit_normal, d_non_unit_normal, dn_n);
+  inner_product_of_vector_and_deriv1st_vector(unit_normal, d_non_unit_normal, dn_n);
 
   // (0-1) Multiply the scalar product calculated in (0-0) with the varied
   //       unit normal and scale the result by the negative inverse normal
@@ -486,7 +486,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
   /*--------------------------------------------------------------------------*/
   // (3-0) Calculate the projection matrix into the tangential plain
   CORE::LINALG::Matrix<probdim, probdim> tproj_mat(false);
-  ProjectionIntoTangentialPlain(unit_normal, tproj_mat);
+  projection_into_tangential_plain(unit_normal, tproj_mat);
 
   // (3-1) Multiply the tangential projection matrix with the second derviatives
   //       of the non-unit normal and scale the result with the inverse
@@ -512,15 +512,16 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
   }
 
   CORE::GEN::complete(dd_unit_normal);
-  this->timer_.stop(TimeID::Deriv2nd_UnitSlaveElementNormal);
+  this->timer_.stop(TimeID::deriv2nd_unit_slave_element_normal);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::InnerProductOfVectorAndDeriv1stVector(
-    const CORE::LINALG::Matrix<probdim, 1>& vec, const Deriv1stVecMap& d_vec,
-    Deriv1stMap& dvec_vec) const
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim,
+    slavetype>::inner_product_of_vector_and_deriv1st_vector(const CORE::LINALG::Matrix<probdim, 1>&
+                                                                vec,
+    const Deriv1stVecMap& d_vec, Deriv1stMap& dvec_vec) const
 {
   // loop over the normal vector components
   for (unsigned dof = 0; dof < probdim; ++dof)
@@ -540,7 +541,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::InnerProductOfVectorA
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype>
-void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::ProjectionIntoTangentialPlain(
+void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::projection_into_tangential_plain(
     const CORE::LINALG::Matrix<probdim, 1>& unit_normal,
     CORE::LINALG::Matrix<probdim, probdim>& tproj_mat) const
 {
@@ -701,15 +702,15 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
   mele.GetNodalCoords(mcoord);
 
   // --- contributions from the master side -----------------------------------
-  this->Add_Deriv2nd_MaDispl(lmat_inv, mnodal_dofs, mderiv, d_mxigp, dd_mxigp);
+  this->add_deriv2nd_ma_displ(lmat_inv, mnodal_dofs, mderiv, d_mxigp, dd_mxigp);
 
-  this->Add_Deriv1st_MaMetric(
+  this->add_deriv1st_ma_metric(
       lmat_inv, mnodal_dofs, mtau, mderiv, mderiv2, mcoord, d_mxigp, dd_mxigp);
 
   // --- contributions from the slave side -------------------------------------
-  this->Add_Deriv1st_Alpha_Deriv1st_Normal(lmat_inv, d_alpha, sele, sval, dd_mxigp);
+  this->add_deriv1st_alpha_deriv1st_normal(lmat_inv, d_alpha, sele, sval, dd_mxigp);
 
-  this->Add_Alpha_Deriv2nd_Normal(lmat_inv, alpha, sele, sval, dd_mxigp);
+  this->add_alpha_deriv2nd_normal(lmat_inv, alpha, sele, sval, dd_mxigp);
 
   CORE::GEN::complete(dd_mxigp);
 }
@@ -717,7 +718,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv2nd_MaDispl(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_deriv2nd_ma_displ(
     const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv,
     const CORE::LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
     const CORE::LINALG::Matrix<MASTERDIM, MASTERNUMNODE>& mderiv, const Deriv1stVecMap& d_mxigp,
@@ -753,7 +754,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv2nd_M
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1st_MaMetric(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_deriv1st_ma_metric(
     const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv,
     const CORE::LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
     const CORE::LINALG::Matrix<3, 2>& mtau,
@@ -828,7 +829,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1st_M
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::BaseIntPolicy<probdim, slavetype,
-    mastertype>::Add_Deriv1st_Alpha_Deriv1st_Normal(const CORE::LINALG::Matrix<probdim, probdim>&
+    mastertype>::add_deriv1st_alpha_deriv1st_normal(const CORE::LINALG::Matrix<probdim, probdim>&
                                                         lmat_inv,
     const Deriv1stMap& d_alpha, const MORTAR::Element& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, Deriv2ndVecMap& dd_mxigp) const
@@ -900,7 +901,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Alpha_Deriv2nd_Normal(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_alpha_deriv2nd_normal(
     const CORE::LINALG::Matrix<probdim, probdim>& lmat_inv, const double alpha,
     const MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     Deriv2ndVecMap& dd_mxigp) const
@@ -1047,7 +1048,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
   // get slave element nodes
   DRT::Node** snodes = sele.Nodes();
 
-  this->Add_Deriv1stGapNContributions(snodes, wgt * jac, lmval, d_gapn_sl, d_gapn_ma);
+  this->add_deriv1st_gap_n_contributions(snodes, wgt * jac, lmval, d_gapn_sl, d_gapn_ma);
 
   // NOTE: skip contributions related to the 1-st order derivative of the
   // element jacobian
@@ -1064,15 +1065,15 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1
   // get slave element nodes
   DRT::Node** snodes = sele.Nodes();
 
-  this->Add_Deriv1stGapNContributions(snodes, wgt * jac, lmval, d_gapn_sl, d_gapn_ma);
+  this->add_deriv1st_gap_n_contributions(snodes, wgt * jac, lmval, d_gapn_sl, d_gapn_ma);
 
-  this->Add_Deriv1stJacobianContributions(snodes, wgt, lmval, gapn_sl, gapn_ma, d_jac);
+  this->add_deriv1st_jacobian_contributions(snodes, wgt, lmval, gapn_sl, gapn_ma, d_jac);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_WGap_Complete(
+void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv1st_w_gap_complete(
     const int linsize, MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
@@ -1103,14 +1104,14 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
     // swap slave contributions
     {
       Deriv1stMap& wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
-      Deriv1stMap& wgap_sl_complete = cnode.AugData().GetDeriv1st_WGapSl_Complete();
+      Deriv1stMap& wgap_sl_complete = cnode.AugData().get_deriv1st_w_gap_sl_complete();
       wgap_sl_complete.swap(wgap_sl);
     }
 
     // swap master contributions
     {
       Deriv1stMap& wgap_ma = cnode.AugData().GetDeriv1st_WGapMa();
-      Deriv1stMap& wgap_ma_complete = cnode.AugData().GetDeriv1st_WGapMa_Complete();
+      Deriv1stMap& wgap_ma_complete = cnode.AugData().get_deriv1st_w_gap_ma_complete();
       wgap_ma_complete.swap(wgap_ma);
     }
   }
@@ -1131,14 +1132,14 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
     // swap slave contributions
     {
       Deriv1stMap& wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
-      Deriv1stMap& wgap_sl_complete = cnode.AugData().GetDeriv1st_WGapSl_Complete();
+      Deriv1stMap& wgap_sl_complete = cnode.AugData().get_deriv1st_w_gap_sl_complete();
       wgap_sl_complete.swap(wgap_sl);
     }
 
     // swap master contributions
     {
       Deriv1stMap& wgap_ma = cnode.AugData().GetDeriv1st_WGapMa();
-      Deriv1stMap& wgap_ma_complete = cnode.AugData().GetDeriv1st_WGapMa_Complete();
+      Deriv1stMap& wgap_ma_complete = cnode.AugData().get_deriv1st_w_gap_ma_complete();
       wgap_ma_complete.swap(wgap_ma);
     }
   }
@@ -1147,7 +1148,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_WGap_Complete(
+void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv1st_w_gap_complete(
     const int linsize, MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
@@ -1170,12 +1171,12 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1
 
     // slave
     Teuchos::RCP<Deriv1stMap>& d_wgap_sl_complete_ptr =
-        cnode.AugData().GetDeriv1st_WGapSl_Complete_Ptr();
+        cnode.AugData().get_deriv1st_w_gap_sl_complete_ptr();
     d_wgap_sl_complete_ptr = Teuchos::rcpFromRef(d_wgap_sl);
 
     // master
     Teuchos::RCP<Deriv1stMap>& d_wgap_ma_complete_ptr =
-        cnode.AugData().GetDeriv1st_WGapMa_Complete_Ptr();
+        cnode.AugData().get_deriv1st_w_gap_ma_complete_ptr();
     d_wgap_ma_complete_ptr = Teuchos::rcpFromRef(d_wgap_ma);
   }
 }
@@ -1183,7 +1184,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1stGapNContributions(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_deriv1st_gap_n_contributions(
     DRT::Node* const* snodes, const double scale,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const Deriv1stMap& d_gapn_sl,
     const Deriv1stMap& d_gapn_ma) const
@@ -1219,8 +1220,8 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1stGa
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1stJacobianContributions(
-    DRT::Node* const* snodes, const double wgt,
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype,
+    mastertype>::add_deriv1st_jacobian_contributions(DRT::Node* const* snodes, const double wgt,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
     const double gapn_ma, const Deriv1stMap& d_jac) const
 {
@@ -1253,16 +1254,16 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
     const Deriv1stVecMap& d_n_unit, const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_gapn_sl,
     const Deriv1stMap& d_gapn_ma) const
 {
-  Add_Jac_Deriv2nd_GapN(
+  add_jac_deriv2nd_gap_n(
       sele, mele, sval, mval, lmval, mderiv, mtau, gpn, wgt, jac, d_mxigp, d_n_unit, dd_n_unit);
 
-  Add_Deriv1st_GapN_Deriv1st_Jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  add_deriv1st_gap_n_deriv1st_jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_Deriv2nd_GapN(
+void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::add_jac_deriv2nd_gap_n(
     MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
@@ -1475,12 +1476,12 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
     const Deriv1stMap& d_gapn_ma) const
 {
   // evaluate the complete second order derivative of the discrete normal gap
-  Add_Jac_Deriv2nd_GapN(sele, mele, sval, mval, lmval, mderiv, mderiv2nd, mtau, gpn, wgt, jac,
+  add_jac_deriv2nd_gap_n(sele, mele, sval, mval, lmval, mderiv, mderiv2nd, mtau, gpn, wgt, jac,
       d_mxigp, dd_mxigp, d_n_unit, dd_n_unit);
 
-  this->Add_Deriv1st_GapN_Deriv1st_Jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  this->add_deriv1st_gap_n_deriv1st_jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
 
-  this->Add_GapN_Deriv2nd_Jac(sele, lmval, wgt, gapn_sl, gapn_ma, dd_jac);
+  this->add_gap_n_deriv2nd_jac(sele, lmval, wgt, gapn_sl, gapn_ma, dd_jac);
 
   DRT::Node* const* snodes = sele.Nodes();
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
@@ -1497,7 +1498,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_GapN_Deriv2nd_Jac(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_gap_n_deriv2nd_jac(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const double gapn_sl, const double gapn_ma, const Deriv2ndMap& dd_jac) const
 {
@@ -1530,7 +1531,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_GapN_Deriv
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_GapN_Lin_Jac(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_var_gap_n_lin_jac(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_gapn_ma, const Deriv1stMap& d_jac) const
 {
@@ -1587,7 +1588,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_GapN_L
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_Jac_Lin_GapN(
+void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::add_var_jac_lin_gap_n(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_gapn_ma, const Deriv1stMap& d_jac) const
 {
@@ -1637,12 +1638,12 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Var_Jac_Li
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype,
-    mastertype>::Add_Deriv1st_GapN_Deriv1st_Jac(MORTAR::Element& sele,
+    mastertype>::add_deriv1st_gap_n_deriv1st_jac(MORTAR::Element& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_gapn_ma, const Deriv1stMap& d_jac) const
 {
   this->timer_.start(TimeID::INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac);
-  this->Add_Var_GapN_Lin_Jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  this->add_var_gap_n_lin_jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
   this->timer_.stop(TimeID::INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac);
 }
 
@@ -1650,18 +1651,18 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
 void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype,
-    mastertype>::Add_Deriv1st_GapN_Deriv1st_Jac(MORTAR::Element& sele,
+    mastertype>::add_deriv1st_gap_n_deriv1st_jac(MORTAR::Element& sele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_gapn_ma, const Deriv1stMap& d_jac) const
 {
-  this->Add_Var_GapN_Lin_Jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
-  this->Add_Var_Jac_Lin_GapN(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  this->add_var_gap_n_lin_jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  this->add_var_jac_lin_gap_n(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_Deriv2nd_GapN(
+void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::add_jac_deriv2nd_gap_n(
     MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
     const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
@@ -1954,7 +1955,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_De
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_WGapN_Error(
+void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv1st_w_gap_n_error(
     const MORTAR::Element& sele, const std::vector<unsigned>& active_nlids,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double* gpn, const double gapn_sl,
     const double gapn_ma, const double wgt, const double jac, const Deriv1stMap& d_jac,
@@ -2011,7 +2012,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deri
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_WGapN_Error(
+void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::get_deriv1st_w_gap_n_error(
     const MORTAR::Element& sele, const std::vector<unsigned>& active_nlids,
     const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double* gpn, const double gapn_sl,
     const double gapn_ma, const double wgt, const double jacslave, const Deriv1stMap& d_jac,

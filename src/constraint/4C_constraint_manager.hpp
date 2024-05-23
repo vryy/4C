@@ -113,7 +113,7 @@ namespace CONSTRAINTS
     /*!
          \brief Return number of constraints
     */
-    int GetNumberOfConstraints() const { return num_constr_id_; };
+    int get_number_of_constraints() const { return num_constr_id_; };
 
     /*!
      \brief Scale all lagrange multipliers by a double d
@@ -192,7 +192,7 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> GetLagrMultVectorOld() const { return lagr_mult_vec_old_; };
+    Teuchos::RCP<Epetra_Vector> get_lagr_mult_vector_old() const { return lagr_mult_vec_old_; };
 
     /*!
      \brief Return if there are constraints
@@ -236,13 +236,13 @@ namespace CONSTRAINTS
     /*!
        \brief Compute values described by a monitor boundary condition
     */
-    void ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp  ///< current displacement
+    void compute_monitor_values(Teuchos::RCP<Epetra_Vector> disp  ///< current displacement
     );
 
     /*!
        \brief Compute values described by a monitor boundary condition
     */
-    void ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp  ///< current displacement
+    void compute_monitor_values(Teuchos::RCP<const Epetra_Vector> disp  ///< current displacement
     );
 
     /// Reset reference base values for restart computations

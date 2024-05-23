@@ -84,49 +84,49 @@ namespace PARTICLEINTERACTION
     void SetCurrentStepSize(const double currentstepsize);
 
     //! insert contact evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! get normal contact stiffness
-    double GetNormalContactStiffness() const;
+    double get_normal_contact_stiffness() const;
 
     //! check critical time step (on this processor)
-    void CheckCriticalTimeStep() const;
+    void check_critical_time_step() const;
 
     //! add contact contribution to force and moment field
-    void AddForceAndMomentContribution();
+    void add_force_and_moment_contribution();
 
     //! evaluate elastic potential energy contribution
-    void EvaluateElasticPotentialEnergy(double& elasticpotentialenergy) const;
+    void evaluate_elastic_potential_energy(double& elasticpotentialenergy) const;
 
    private:
     //! init normal contact handler
-    void InitNormalContactHandler();
+    void init_normal_contact_handler();
 
     //! init tangential contact handler
-    void InitTangentialContactHandler();
+    void init_tangential_contact_handler();
 
     //! init rolling contact handler
-    void InitRollingContactHandler();
+    void init_rolling_contact_handler();
 
     //! setup particle interaction writer
-    void SetupParticleInteractionWriter();
+    void setup_particle_interaction_writer();
 
     //! get maximum density of all materials
-    double GetMaxDensityOfAllMaterials() const;
+    double get_max_density_of_all_materials() const;
 
     //! evaluate particle contact contribution
-    void EvaluateParticleContact();
+    void evaluate_particle_contact();
 
     //! evaluate particle-wall contact contribution
-    void EvaluateParticleWallContact();
+    void evaluate_particle_wall_contact();
 
     //! evaluate particle elastic potential energy contribution
-    void EvaluateParticleElasticPotentialEnergy(double& elasticpotentialenergy) const;
+    void evaluate_particle_elastic_potential_energy(double& elasticpotentialenergy) const;
 
     //! evaluate particle-wall elastic potential energy contribution
-    void EvaluateParticleWallElasticPotentialEnergy(double& elasticpotentialenergy) const;
+    void evaluate_particle_wall_elastic_potential_energy(double& elasticpotentialenergy) const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

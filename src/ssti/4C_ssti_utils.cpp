@@ -51,7 +51,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   // initialize global map extractor
   maps_subproblems_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor
-  maps_subproblems_->CheckForValidMapExtractor();
+  maps_subproblems_->check_for_valid_map_extractor();
 
   // initialize map extractors associated with blocks of subproblems
   block_map_structure_ = Teuchos::rcp(
@@ -85,9 +85,9 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     }
   }
 
-  block_map_scatra_->CheckForValidMapExtractor();
-  block_map_structure_->CheckForValidMapExtractor();
-  block_map_thermo_->CheckForValidMapExtractor();
+  block_map_scatra_->check_for_valid_map_extractor();
+  block_map_structure_->check_for_valid_map_extractor();
+  block_map_thermo_->check_for_valid_map_extractor();
 }
 
 /*---------------------------------------------------------------------------------*
@@ -141,14 +141,14 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
     }
   }
 
-  blockmapinterface->CheckForValidMapExtractor();
+  blockmapinterface->check_for_valid_map_extractor();
 
   return blockmapinterface;
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocksSlave(
+Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::maps_interface_blocks_slave(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
     CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const
 {
@@ -176,7 +176,7 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
     }
   }
 
-  blockmapinterfaceslave->CheckForValidMapExtractor();
+  blockmapinterfaceslave->check_for_valid_map_extractor();
 
   return blockmapinterfaceslave;
 }
@@ -257,7 +257,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
     case CORE::LINALG::MatrixType::block_field:
     {
       systemmatrix_ = SetupBlockMatrix(
-          ssti_maps_mono->BlockMapSystemMatrix(), ssti_maps_mono->BlockMapSystemMatrix());
+          ssti_maps_mono->block_map_system_matrix(), ssti_maps_mono->block_map_system_matrix());
       break;
     }
 
@@ -354,7 +354,7 @@ void SSTI::SSTIMatrices::ClearMatrices()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSTI::SSTIMatrices::CompleteCouplingMatrices()
+void SSTI::SSTIMatrices::complete_coupling_matrices()
 {
   switch (matrixtype_scatra_)
   {
@@ -417,7 +417,7 @@ void SSTI::SSTIMatrices::CompleteCouplingMatrices()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSTI::SSTIMatrices::UnCompleteCouplingMatrices()
+void SSTI::SSTIMatrices::un_complete_coupling_matrices()
 {
   scatrastructuredomain_->UnComplete();
   scatrathermodomain_->UnComplete();

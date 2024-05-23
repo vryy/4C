@@ -74,7 +74,7 @@ namespace MAT
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
      * available
      */
-    void OnGlobalDataInitialized() override;
+    void on_global_data_initialized() override;
 
     /*!
      * \brief Retrns the cylinder coordinate system for a specific Gausspoint.
@@ -86,23 +86,23 @@ namespace MAT
      * \return const CylinderCoordinateSystemProvider& Reference to the cylinder coordinate system
      * provider
      */
-    const CylinderCoordinateSystemProvider& GetCylinderCoordinateSystem(int gp) const;
+    const CylinderCoordinateSystemProvider& get_cylinder_coordinate_system(int gp) const;
 
-    Teuchos::RCP<MAT::CoordinateSystemProvider> GetCoordinateSystemProvider(int gp) const;
+    Teuchos::RCP<MAT::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
 
    private:
     /*!
      * \brief This method will be called by MAT::Anisotropy to notify that element information is
      * available.
      */
-    void OnGlobalElementDataInitialized() override;
+    void on_global_element_data_initialized() override;
 
 
     /*!
      * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
      * is available.
      */
-    void OnGlobalGPDataInitialized() override;
+    void on_global_gp_data_initialized() override;
 
     /// flag where the coordinate system is located
     CosyLocation cosy_location_;

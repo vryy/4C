@@ -51,20 +51,20 @@ namespace XFEM
     void GetStdAverageWeights(
         const INPAR::XFEM::AveragingStrategy averaging_strategy, double& kappa_m);
 
-    //! @name NIT_getTraceEstimateConstant
+    //! @name nit_get_trace_estimate_constant
     /*!
     \brief get the constant which satisfies the trace inequality depending on the spatial dimension
     and polynomial order of the element
      */
-    double NIT_getTraceEstimateConstant(
+    double nit_get_trace_estimate_constant(
         const CORE::FE::CellType ele_distype, const bool is_pseudo_2D);
 
 
-    //! @name NIT_Compute_ViscPenalty_Stabfac
+    //! @name nit_compute_visc_penalty_stabfac
     /*!
     \brief compute viscous part of Nitsche's penalty term scaling for Nitsche's method
      */
-    void NIT_Compute_ViscPenalty_Stabfac(
+    void nit_compute_visc_penalty_stabfac(
         const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
                                                ///< which the stabilization factor is computed
         const double&
@@ -160,10 +160,10 @@ namespace XFEM
         const double densaf_master,      ///< master density
         const double densaf_slave,       ///< slave density
         INPAR::XFEM::MassConservationScaling
-            MassConservationScaling,  ///< kind of mass conservation scaling
+            mass_conservation_scaling,  ///< kind of mass conservation scaling
         INPAR::XFEM::MassConservationCombination
-            MassConservationCombination,  ///< kind of mass conservation combination
-        const double NITStabScaling,      ///< scaling of nit stab fac
+            mass_conservation_combination,  ///< kind of mass conservation combination
+        const double NITStabScaling,        ///< scaling of nit stab fac
         INPAR::XFEM::ConvStabScaling
             ConvStabScaling,  ///< which convective stab. scaling of inflow stab
         INPAR::XFEM::XffConvStabScaling

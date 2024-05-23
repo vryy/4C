@@ -45,11 +45,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(const int id, 
   return Teuchos::rcp(new DRT::ELEMENTS::Wall1Scatra(id, owner));
 }
 
-void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::Wall1ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 

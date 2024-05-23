@@ -67,12 +67,12 @@ namespace FSI
     void Setup() override;
 
     /// Access function for the #kinematiccoupling_ flag
-    bool GetKinematicCoupling() const { return kinematiccoupling_; }
+    bool get_kinematic_coupling() const { return kinematiccoupling_; }
 
     /** \brief Set function for the kinematiccoupling variable
      *  \param[in] variable value to write into #kinematiccoupling_
      */
-    void SetKinematicCoupling(const bool variable) { kinematiccoupling_ = variable; }
+    void set_kinematic_coupling(const bool variable) { kinematiccoupling_ = variable; }
 
    protected:
     /** \brief composed FSI operator

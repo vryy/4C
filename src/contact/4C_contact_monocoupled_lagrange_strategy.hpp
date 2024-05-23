@@ -4,7 +4,7 @@
 multipliers for monolithical coupled multifield problems!
 Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
 do nothing, as they are called directly in the structure. To use the contact
-the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
+the additional methods apply_force_stiff_cmt_coupled() & RecoverCoupled() have
 to be called!
 
 \level 3
@@ -57,7 +57,8 @@ namespace CONTACT
     {
       if (has_to_evaluate_ && 0)
         FOUR_C_THROW(
-            "MonoCoupledLagrangeStrategy::You have to call ApplyForceStiffCmtCoupled() for Contact "
+            "MonoCoupledLagrangeStrategy::You have to call apply_force_stiff_cmt_coupled() for "
+            "Contact "
             "Evaluation!");  // what to do in the predictor?
       has_to_evaluate_ = true;
       return;
@@ -82,14 +83,14 @@ namespace CONTACT
 
     // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
     // coupled algorithms
-    virtual void ApplyForceStiffCmtCoupled(Teuchos::RCP<Epetra_Vector> dis,
+    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
         std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>*> k_sx,
         Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor);
 
     // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
     // coupled algorithms
-    virtual void ApplyForceStiffCmtCoupled(Teuchos::RCP<Epetra_Vector> dis,
+    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_ss,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& k_sx, Teuchos::RCP<Epetra_Vector>& rhs_s,
         const int step, const int iter, bool predictor);
@@ -108,7 +109,7 @@ namespace CONTACT
 
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
 
-    void EvaluateOffDiagContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void evaluate_off_diag_contact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         int Column_Block_Id);  // condensation for all off diagonal matrixes k_s? in monolithically
                                // coupled problems!
 
@@ -117,7 +118,7 @@ namespace CONTACT
     MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old) = delete;
     MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old) = delete;
 
-    void SaveCouplingMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
+    void save_coupling_matrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> mhataam,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> invda) override;
 
@@ -134,7 +135,7 @@ namespace CONTACT
         lambdaold_;  // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
     //! pure useage safty flags
-    bool has_to_evaluate_;  // checks if ApplyForceStiffCmtCoupled() after every call of
+    bool has_to_evaluate_;  // checks if apply_force_stiff_cmt_coupled() after every call of
                             // ApplyForceStiffCmt()
     bool has_to_recover_;   // checks if RecoverCoupled() after every call of Recover()
 

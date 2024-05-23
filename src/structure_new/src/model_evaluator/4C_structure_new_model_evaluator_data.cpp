@@ -213,7 +213,7 @@ void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TIMINT::Base>
 {
   sdyn_ptr_ = timint_ptr->GetDataSDynPtr();
   io_ptr_ = timint_ptr->GetDataIOPtr();
-  gstate_ptr_ = timint_ptr->GetDataGlobalStatePtr();
+  gstate_ptr_ = timint_ptr->get_data_global_state_ptr();
   timint_ptr_ = timint_ptr;
   comm_ptr_ = timint_ptr->GetDataGlobalState().GetCommPtr();
   isinit_ = true;
@@ -339,7 +339,7 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::CollectNormTypesOverAllProcs(
+void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
     const quantity_norm_type_map& normtypes) const
 {
   CheckInit();
@@ -406,14 +406,14 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
   double rtol = 0.0;
   if (GetWRMSTolerances(qtype, atol, rtol))
   {
-    SumIntoMyRelativeMeanSquare(atol, rtol, step_length, numentries, my_update_values,
+    sum_into_my_relative_mean_square(atol, rtol, step_length, numentries, my_update_values,
         my_new_sol_values, my_rms_norm_[qtype]);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::SumIntoMyPreviousSolNorm(
+void STR::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_old_sol_values, const int& owner)
 {
@@ -429,9 +429,9 @@ void STR::MODELEVALUATOR::Data::SumIntoMyPreviousSolNorm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::SumIntoMyRelativeMeanSquare(const double& atol, const double& rtol,
-    const double& step_length, const int& numentries, const double* my_update_values,
-    const double* my_new_sol_values, double& my_rms) const
+void STR::MODELEVALUATOR::Data::sum_into_my_relative_mean_square(const double& atol,
+    const double& rtol, const double& step_length, const int& numentries,
+    const double* my_update_values, const double* my_new_sol_values, double& my_rms) const
 {
   for (int i = 0; i < numentries; ++i)
   {
@@ -532,7 +532,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StressDataPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
+const Epetra_Vector& STR::MODELEVALUATOR::Data::current_element_volume_data() const
 {
   FOUR_C_ASSERT(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
   return *elevolumes_ptr_;
@@ -564,7 +564,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::PlasticStrainDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::plastic_strain_data_ptr()
 {
   CheckInitSetup();
   return plastic_straindata_ptr_;
@@ -581,7 +581,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::CouplingStressDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::coupling_stress_data_ptr()
 {
   CheckInitSetup();
   return couplstressdata_ptr_;
@@ -630,30 +630,30 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetPlasticStrainOutputType() const
+enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
 {
   CheckInitSetup();
-  return io_ptr_->GetPlasticStrainOutputType();
+  return io_ptr_->get_plastic_strain_output_type();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetCouplingStressOutputType() const
+enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
 {
   CheckInitSetup();
-  return io_ptr_->GetCouplingStressOutputType();
+  return io_ptr_->get_coupling_stress_output_type();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::GetOptQuantityOutputType() const
+enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
 {
   CheckInitSetup();
-  return io_ptr_->GetOptQuantityOutputType();
+  return io_ptr_->get_opt_quantity_output_type();
 }
 
 Teuchos::RCP<STR::MODELEVALUATOR::GaussPointDataOutputManager>&
-STR::MODELEVALUATOR::Data::GaussPointDataOutputManagerPtr()
+STR::MODELEVALUATOR::Data::gauss_point_data_output_manager_ptr()
 {
   CheckInitSetup();
   return gauss_point_data_manager_ptr_;
@@ -694,21 +694,21 @@ double STR::MODELEVALUATOR::Data::GetEnergyData(const std::string type) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::InsertEnergyTypeToBeConsidered(enum STR::EnergyType type)
+void STR::MODELEVALUATOR::Data::insert_energy_type_to_be_considered(enum STR::EnergyType type)
 {
   energy_data_[type] = 0.0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::SetValueForEnergyType(double value, enum STR::EnergyType type)
+void STR::MODELEVALUATOR::Data::set_value_for_energy_type(double value, enum STR::EnergyType type)
 {
   energy_data_[type] = value;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::ClearValuesForAllEnergyTypes()
+void STR::MODELEVALUATOR::Data::clear_values_for_all_energy_types()
 {
   for (auto& energy_data_iter : energy_data_)
   {
@@ -718,7 +718,7 @@ void STR::MODELEVALUATOR::Data::ClearValuesForAllEnergyTypes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(
+void STR::MODELEVALUATOR::Data::add_contribution_to_energy_type(
     const double value, const enum STR::EnergyType type)
 {
   energy_data_[type] += value;
@@ -743,7 +743,7 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
     Teuchos::RCP<const STR::NLN::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->GetNlnSolverPtr();
     /* If we are still in the setup process we return -1. This will happen
-     * for the EquilibrateInitialState() call in dynamic simulations. */
+     * for the equilibrate_initial_state() call in dynamic simulations. */
     if (nlnsolver_ptr.is_null()) return -1;
     nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::NLN::SOLVER::Nox>(nlnsolver_ptr);
     if (not nox_nln_ptr.is_null()) isnox = true;

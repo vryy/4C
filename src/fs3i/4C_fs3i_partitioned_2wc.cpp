@@ -81,8 +81,8 @@ void FS3I::PartFS3I2Wc::Timeloop()
       CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
-    scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
-    scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();
+    scatravec_[0]->ScaTraField()->prepare_first_time_step();
+    scatravec_[1]->ScaTraField()->prepare_first_time_step();
   }
 
   // output of initial state
@@ -93,7 +93,7 @@ void FS3I::PartFS3I2Wc::Timeloop()
 
   while (NotFinished())
   {
-    IncrementTimeAndStep();
+    increment_time_and_step();
 
     PrepareTimeStep();
 
@@ -124,13 +124,13 @@ void FS3I::PartFS3I2Wc::InitialCalculations()
         "Constant thermodynamic pressure required if TFSI algorithm is used with "
         "temperature-dependent water!");
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-      ->SetInitialThermPressure();
+      ->set_initial_therm_pressure();
 
   // energy conservation: compute initial time derivative of therm. pressure
   // mass conservation: compute initial mass (initial time deriv. assumed zero)
   if (consthermpress_ == "No_energy")
     Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-        ->ComputeInitialThermPressureDeriv();
+        ->compute_initial_therm_pressure_deriv();
   else if (consthermpress_ == "No_mass")
     Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
         ->ComputeInitialMass();
@@ -164,7 +164,7 @@ void FS3I::PartFS3I2Wc::PrepareTimeStep()
   // (if not constant or based on mass conservation)
   if (consthermpress_ == "No_energy")
     Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-        ->PredictThermPressure();
+        ->predict_therm_pressure();
 
   // prepare time step for fluid, structure and ALE fields
   fsi_->PrepareTimeStep();
@@ -202,7 +202,7 @@ void FS3I::PartFS3I2Wc::OuterLoop()
   if (Comm().MyPID() == 0)
     std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                  "SOLVER\n****************************************\n";
-  ScatraEvaluateSolveIterUpdate();
+  scatra_evaluate_solve_iter_update();
 
   while (stopnonliniter == false)
   {
@@ -212,13 +212,13 @@ void FS3I::PartFS3I2Wc::OuterLoop()
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_ == "No_energy")
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-          ->ComputeThermPressure();
+          ->compute_therm_pressure();
     else if (consthermpress_ == "No_mass")
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
-          ->ComputeThermPressureFromMassCons();
+          ->compute_therm_pressure_from_mass_cons();
 
     // set fluid- and structure-based scalar transport values required in FSI
-    SetScaTraValuesInFSI();
+    set_sca_tra_values_in_fsi();
 
     // solve FSI system
     if (Comm().MyPID() == 0)
@@ -235,7 +235,7 @@ void FS3I::PartFS3I2Wc::OuterLoop()
     if (Comm().MyPID() == 0)
       std::cout << "\n****************************************\n        SCALAR TRANSPORT "
                    "SOLVER\n****************************************\n";
-    ScatraEvaluateSolveIterUpdate();
+    scatra_evaluate_solve_iter_update();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
@@ -248,7 +248,7 @@ void FS3I::PartFS3I2Wc::OuterLoop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
+void FS3I::PartFS3I2Wc::set_sca_tra_values_in_fsi()
 {
   // set scalar and thermodynamic pressure values as well as time
   // derivatives and discretization from fluid scalar in fluid
@@ -265,7 +265,7 @@ void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()),
             scatravec_[0]->ScaTraField()->Discretization());
       else
-        fsi_->FluidField()->SetLomaIterScalarFields(
+        fsi_->FluidField()->set_loma_iter_scalar_fields(
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiam()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()), Teuchos::null,
@@ -290,7 +290,7 @@ void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()),
             scatravec_[0]->ScaTraField()->Discretization());
       else
-        fsi_->FluidField()->SetLomaIterScalarFields(
+        fsi_->FluidField()->set_loma_iter_scalar_fields(
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phin()),
             FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()), Teuchos::null,
@@ -315,7 +315,7 @@ void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
   // (Note potential inconsistencies related to this call in case of generalized-alpha time
   // integration!)
   fsi_->StructureField()->Discretization()->SetState(
-      1, "scalarfield", StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()));
+      1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->ScaTraField()->Phinp()));
 }
 
 
@@ -336,7 +336,7 @@ bool FS3I::PartFS3I2Wc::ConvergenceCheck(int itnum)
   if (fsi_->NoxStatus() == ::NOX::StatusTest::Converged) fluidstopnonliniter = true;
 
   // scatra convergence check
-  scatrastopnonliniter = ScatraConvergenceCheck(itnum);
+  scatrastopnonliniter = scatra_convergence_check(itnum);
 
   // warn if itemax is reached without convergence of FSI solver,
   // but proceed to next timestep
@@ -360,7 +360,7 @@ bool FS3I::PartFS3I2Wc::ConvergenceCheck(int itnum)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::PartFS3I2Wc::ScatraConvergenceCheck(int itnum)
+bool FS3I::PartFS3I2Wc::scatra_convergence_check(int itnum)
 {
   // define flags for convergence check for scatra fields
   bool scatra1stopnonliniter = false;

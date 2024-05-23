@@ -88,12 +88,12 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
     // calculate nodal area
     if (!actdisc_->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
     GetArea(geom);
-    InitializeCurSurfNormal();
+    initialize_cur_surf_normal();
   }
 
   // ToDo: do we really need this??
   // initialize prestressing offset
-  InitializePrestrOffset();
+  initialize_prestr_offset();
 }
 
 // NEW version, consistently integrated over element surface!!
@@ -282,7 +282,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
             force_disp_deriv = (GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
-                                    .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
+                                    .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
           }
 
           // velocity related forces and derivatives
@@ -732,7 +732,7 @@ void CONSTRAINTS::SpringDashpot::OutputPrestrOffset(
 /*----------------------------------------------------------------------*
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::OutputPrestrOffsetOld(
+void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
     Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const
 {
   // export spring offset length
@@ -754,13 +754,13 @@ void CONSTRAINTS::SpringDashpot::OutputPrestrOffsetOld(
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::InitializeCurSurfNormal()
+void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 {
   // create MORTAR interface
   mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());
@@ -910,7 +910,7 @@ void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::E
 /*-----------------------------------------------------------------------*
 |(private)                                                    mhv 12/2015|
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::InitializePrestrOffset()
+void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
 {
   offset_prestr_.clear();
 

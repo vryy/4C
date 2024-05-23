@@ -455,7 +455,7 @@ const Epetra_Map* DRT::Discretization::DofRowMap(const unsigned nds) const
 {
   FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
   if (!Filled()) FOUR_C_THROW("FillComplete was not called on this discretization");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() not called on this discretization");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() not called on this discretization");
 
   return dofsets_[nds]->DofRowMap();
 }
@@ -467,7 +467,7 @@ const Epetra_Map* DRT::Discretization::DofColMap(const unsigned nds) const
 {
   FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
   if (!Filled()) FOUR_C_THROW("FillComplete was not called on this discretization");
-  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() not called on this discretization");
+  if (!HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() not called on this discretization");
 
   return dofsets_[nds]->DofColMap();
 }
@@ -482,7 +482,7 @@ void DRT::Discretization::ReplaceDofSet(const unsigned nds,
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
   havedof_ = havedof_ and newdofset->Filled() and nds != 0;
-  if (replaceinstatdofsets) newdofset->ReplaceInStaticDofsets(dofsets_[nds]);
+  if (replaceinstatdofsets) newdofset->replace_in_static_dofsets(dofsets_[nds]);
   dofsets_[nds] = newdofset;
 }
 
@@ -514,13 +514,13 @@ void DRT::Discretization::ReplaceDofSet(
 {
   FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
   havedof_ = false;
-  if (replaceinstatdofsets) newdofset->ReplaceInStaticDofsets(dofsets_[0]);
+  if (replaceinstatdofsets) newdofset->replace_in_static_dofsets(dofsets_[0]);
   dofsets_[0] = newdofset;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, std::vector<int>>* DRT::Discretization::GetAllPBCCoupledColNodes()
+std::map<int, std::vector<int>>* DRT::Discretization::get_all_pbc_coupled_col_nodes()
 {
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
@@ -541,7 +541,7 @@ std::map<int, std::vector<int>>* DRT::Discretization::GetAllPBCCoupledColNodes()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeConnectivity()
+Teuchos::RCP<std::map<int, int>> DRT::Discretization::get_pbc_slave_to_master_node_connectivity()
 {
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
@@ -553,7 +553,7 @@ Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeCon
     {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
-      return pbcdofset->GetSlaveToMasterNodeConnectivity();
+      return pbcdofset->get_slave_to_master_node_connectivity();
     }
   }
 

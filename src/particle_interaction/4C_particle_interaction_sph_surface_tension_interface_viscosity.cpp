@@ -45,7 +45,7 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
 void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
 {
   // init artificial viscosity handler
-  InitArtificialViscosityHandler();
+  init_artificial_viscosity_handler();
 
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
@@ -73,7 +73,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set kernel handler
   kernel_ = kernel;
@@ -109,20 +109,20 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
   for (const auto& type_i : fluidtypes_)
   {
     fluidmaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-        particlematerial->GetPtrToParticleMatParameter(type_i));
+        particlematerial->get_ptr_to_particle_mat_parameter(type_i));
   }
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityContribution() const
+void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_contribution() const
 {
   // compute interface viscosity contribution (particle contribution)
-  ComputeInterfaceViscosityParticleContribution();
+  compute_interface_viscosity_particle_contribution();
 
   // compute interface viscosity contribution (particle-boundary contribution)
-  ComputeInterfaceViscosityParticleBoundaryContribution();
+  compute_interface_viscosity_particle_boundary_contribution();
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::InitArtificialViscosityHandler()
+void PARTICLEINTERACTION::SPHInterfaceViscosity::init_artificial_viscosity_handler()
 {
   // create artificial viscosity handler
   artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
@@ -132,18 +132,18 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::InitArtificialViscosityHandler(
   artificialviscosity_->Init();
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityParticleContribution()
+void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_particle_contribution()
     const
 {
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -158,10 +158,10 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
@@ -232,18 +232,18 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
 }
 
 void PARTICLEINTERACTION::SPHInterfaceViscosity::
-    ComputeInterfaceViscosityParticleBoundaryContribution() const
+    compute_interface_viscosity_particle_boundary_contribution() const
 {
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+  neighborpairs_->get_relevant_particle_pair_indices_for_disjoint_combination(
       fluidtypes_, boundarytypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -277,17 +277,17 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
 
     // get equation of state for particle types
     const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i =
-        equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
+        equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);

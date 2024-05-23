@@ -37,9 +37,9 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINAL
 void ALE::Meshsliding::AdapterMortar(std::vector<int> coupleddof)
 {
   adaptermeshsliding_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
-      GLOBAL::Problem::Instance()->ContactDynamicParams(),
-      GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
+      GLOBAL::Problem::Instance()->contact_dynamic_params(),
+      GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   // Setup and Output of Nonlinear meshtying adapter
   adaptermeshsliding_->Setup(discret_, discret_, coupleddof, "Mortar");
@@ -103,7 +103,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ALE::Meshsliding::GetMortarMatrixP()
 /*  Condensation operation for a block matrix            */
 /*                                          wirtz 02/16  */
 /*-------------------------------------------------------*/
-void ALE::Meshsliding::CondensationOperationBlockMatrix(
+void ALE::Meshsliding::condensation_operation_block_matrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator>&
         sysmat,                             ///> sysmat established by the element routine
     Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine

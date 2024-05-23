@@ -48,10 +48,10 @@ PARTICLEINTERACTION::DEMAdhesion::~DEMAdhesion() = default;
 void PARTICLEINTERACTION::DEMAdhesion::Init()
 {
   // init adhesion law handler
-  InitAdhesionLawHandler();
+  init_adhesion_law_handler();
 
   // init adhesion surface energy handler
-  InitAdhesionSurfaceEnergyHandler();
+  init_adhesion_surface_energy_handler();
 }
 
 void PARTICLEINTERACTION::DEMAdhesion::Setup(
@@ -66,7 +66,7 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall hander
   particlewallinterface_ = particlewallinterface;
@@ -75,7 +75,7 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   particleinteractionwriter_ = particleinteractionwriter;
 
   // setup particle interaction writer
-  SetupParticleInteractionWriter();
+  setup_particle_interaction_writer();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -93,16 +93,16 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   if (adhesion_distance_ < 0.0) FOUR_C_THROW("negative adhesion distance!");
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::AddForceContribution()
+void PARTICLEINTERACTION::DEMAdhesion::add_force_contribution()
 {
   // evaluate particle adhesion contribution
-  EvaluateParticleAdhesion();
+  evaluate_particle_adhesion();
 
   // evaluate particle-wall adhesion contribution
-  if (particlewallinterface_) EvaluateParticleWallAdhesion();
+  if (particlewallinterface_) evaluate_particle_wall_adhesion();
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionLawHandler()
+void PARTICLEINTERACTION::DEMAdhesion::init_adhesion_law_handler()
 {
   // get type of adhesion law
   INPAR::PARTICLE::AdhesionLaw adhesionlaw =
@@ -134,7 +134,7 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionLawHandler()
   adhesionlaw_->Init();
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
+void PARTICLEINTERACTION::DEMAdhesion::init_adhesion_surface_energy_handler()
 {
   // get type of adhesion surface energy distribution
   INPAR::PARTICLE::SurfaceEnergyDistribution surfaceenergydistributiontype =
@@ -176,26 +176,26 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
   adhesionsurfaceenergy_->Init();
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::SetupParticleInteractionWriter()
+void PARTICLEINTERACTION::DEMAdhesion::setup_particle_interaction_writer()
 {
   // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("particle-wall-adhesion");
+    particleinteractionwriter_->register_specific_runtime_output_writer("particle-wall-adhesion");
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
+void PARTICLEINTERACTION::DEMAdhesion::evaluate_particle_adhesion()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::evaluate_particle_adhesion");
 
   // get reference to particle adhesion history pair data
   DEMHistoryPairAdhesionData& adhesionhistorydata =
-      historypairs_->GetRefToParticleAdhesionHistoryData();
+      historypairs_->get_ref_to_particle_adhesion_history_data();
 
   // adhesion surface energy
   const double surface_energy = params_dem_.get<double>("ADHESION_SURFACE_ENERGY");
 
   // iterate over particle pairs
-  for (const auto& particlepair : neighborpairs_->GetRefToParticlePairAdhesionData())
+  for (const auto& particlepair : neighborpairs_->get_ref_to_particle_pair_adhesion_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -210,10 +210,10 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get global ids of particle
     const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
@@ -251,7 +251,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
 
     // calculate adhesion surface energy
     if (not(adhesionhistory_ij.surface_energy_ > 0.0))
-      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(
+      adhesionsurfaceenergy_->adhesion_surface_energy(
           surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
@@ -283,9 +283,9 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
   }
 }
 
-void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
+void PARTICLEINTERACTION::DEMAdhesion::evaluate_particle_wall_adhesion()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::evaluate_particle_wall_adhesion");
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -293,15 +293,15 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
   // get reference to particle-wall pair data
   const DEMParticleWallPairData& particlewallpairdata =
-      neighborpairs_->GetRefToParticleWallPairAdhesionData();
+      neighborpairs_->get_ref_to_particle_wall_pair_adhesion_data();
 
   // get reference to particle-wall adhesion history pair data
   DEMHistoryPairAdhesionData& adhesionhistorydata =
-      historypairs_->GetRefToParticleWallAdhesionHistoryData();
+      historypairs_->get_ref_to_particle_wall_adhesion_history_data();
 
   // write interaction output
   const bool writeinteractionoutput =
-      particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
+      particleinteractionwriter_->get_current_write_result_flag() and writeparticlewallinteraction_;
 
   // init storage for interaction output
   std::vector<double> attackpoints;
@@ -331,7 +331,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle
     const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
@@ -365,7 +365,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       ele->LocationVector(
-          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+          *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // adhesion surface energy
@@ -380,7 +380,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
         FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
-      surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
+      surface_energy = particlewallmaterial->adhesion_surface_energy();
     }
 
     // no evaluation of adhesion contribution
@@ -420,7 +420,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
     // calculate adhesion surface energy
     if (not(adhesionhistory_ij.surface_energy_ > 0.0))
-      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(
+      adhesionsurfaceenergy_->adhesion_surface_energy(
           surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
@@ -481,8 +481,8 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
   {
     // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("particle-wall-adhesion");
-    auto& visualization_data = visualization_manager->GetVisualizationData();
+        particleinteractionwriter_->get_specific_runtime_output_writer("particle-wall-adhesion");
+    auto& visualization_data = visualization_manager->get_visualization_data();
 
     // set wall attack points
     visualization_data.GetPointCoordinates() = attackpoints;

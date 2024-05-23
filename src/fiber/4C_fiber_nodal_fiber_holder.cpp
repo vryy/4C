@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(
+void DRT::FIBER::NodalFiberHolder::set_coordinate_system_direction(
     DRT::FIBER::CoordinateSystemDirection type,
     const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber)
 {
@@ -25,14 +25,14 @@ void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(
 }
 
 const std::vector<CORE::LINALG::Matrix<3, 1>>&
-DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirection(
+DRT::FIBER::NodalFiberHolder::get_coordinate_system_direction(
     DRT::FIBER::CoordinateSystemDirection type) const
 {
   return coordinate_system_directions_.at(type);
 }
 
 std::vector<CORE::LINALG::Matrix<3, 1>>&
-DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirectionMutual(
+DRT::FIBER::NodalFiberHolder::get_coordinate_system_direction_mutual(
     DRT::FIBER::CoordinateSystemDirection type)
 {
   return coordinate_system_directions_.at(type);
@@ -67,14 +67,14 @@ const std::vector<double>& DRT::FIBER::NodalFiberHolder::GetAngle(DRT::FIBER::An
 
 std::size_t DRT::FIBER::NodalFiberHolder::FibersSize() const { return fibers_.size(); }
 
-std::size_t DRT::FIBER::NodalFiberHolder::CoordinateSystemSize() const
+std::size_t DRT::FIBER::NodalFiberHolder::coordinate_system_size() const
 {
   return coordinate_system_directions_.size();
 }
 
 std::size_t DRT::FIBER::NodalFiberHolder::AnglesSize() const { return angles_.size(); }
 
-bool DRT::FIBER::NodalFiberHolder::ContainsCoordinateSystemDirection(
+bool DRT::FIBER::NodalFiberHolder::contains_coordinate_system_direction(
     DRT::FIBER::CoordinateSystemDirection type) const
 {
   return coordinate_system_directions_.find(type) != coordinate_system_directions_.end();

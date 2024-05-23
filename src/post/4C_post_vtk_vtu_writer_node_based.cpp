@@ -346,7 +346,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
 }
 
 
-void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
+void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
@@ -419,7 +419,7 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
 
 
 
-void PostVtuWriterNode::WriteElementResultStep(std::ofstream& file,
+void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
@@ -445,21 +445,21 @@ void PostVtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");

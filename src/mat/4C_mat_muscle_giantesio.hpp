@@ -195,7 +195,7 @@ namespace MAT
      * @param[in] currentTime Current time t_n
      * @param[out] omegaaAndDerivs Activation level and derivatives
      */
-    CORE::UTILS::ValuesFunctAndFunctDerivs EvaluateActivationLevelAndDerivatives(
+    CORE::UTILS::ValuesFunctAndFunctDerivs evaluate_activation_level_and_derivatives(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -213,7 +213,7 @@ namespace MAT
      * @param[in] currentTime Current time t_n
      * @return omegaa Activation level
      */
-    double SolveActivationLevelEquation(
+    double solve_activation_level_equation(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -230,7 +230,7 @@ namespace MAT
      * @return equationValueAndDeriv Value of the activation level equation and its derivative for
      * the given omegaa, lambdaM and rhs
      */
-    std::tuple<double, double> EvaluateActivationLevelEquationAndDeriv(
+    std::tuple<double, double> evaluate_activation_level_equation_and_deriv(
         double omegaa, const double& lambdaM, const double& rhs);
 
     /*!
@@ -242,7 +242,7 @@ namespace MAT
      * @param[in] currentTime Current time t
      * @return rhs Right hand side of the activation level equation
      */
-    double EvaluateRhsActivationLevelEquation(
+    double evaluate_rhs_activation_level_equation(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -254,7 +254,7 @@ namespace MAT
      * @param[in] currentTime Current time t
      * @return intPa Integral of the active nominal stress w.r.t. the fiber stretch
      */
-    double EvaluateActiveNominalStressIntegral(
+    double evaluate_active_nominal_stress_integral(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -273,7 +273,7 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return dFadomegaa First derivative of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> DActDefGrad_DActLevel(
+    CORE::LINALG::Matrix<3, 3> d_act_def_grad_d_act_level(
         const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
@@ -283,7 +283,7 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return ddFaddomegaa Second derivative of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> DDActDefGrad_DDActLevel(
+    CORE::LINALG::Matrix<3, 3> dd_act_def_grad_dd_act_level(
         const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
@@ -302,7 +302,7 @@ namespace MAT
      * @param[in] dFadomegaa First derivative of the active deformation gradient
      * @return dinvFadomegaa First derivative of the inverse of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> DInvActDefGrad_DActLevel(
+    CORE::LINALG::Matrix<3, 3> d_inv_act_def_grad_d_act_level(
         const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa);
 
     /*!

@@ -140,10 +140,10 @@ namespace POROELASTSCATRA
     //! @name Apply current field state to system
 
     //! Evaluate off diagonal matrix in poro row
-    void EvaluateODBlockMatPoro();
+    void evaluate_od_block_mat_poro();
 
     //! Evaluate off diagonal matrix in scatra row
-    void EvaluateODBlockMatScatra();
+    void evaluate_od_block_mat_scatra();
 
     //@}
 
@@ -163,7 +163,7 @@ namespace POROELASTSCATRA
 
     //! @name helper methods for Newton loop
 
-    void BuildConvergenceNorms();
+    void build_convergence_norms();
 
     //! solve linear system
     void LinearSolve();
@@ -183,7 +183,7 @@ namespace POROELASTSCATRA
 
     //! contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration

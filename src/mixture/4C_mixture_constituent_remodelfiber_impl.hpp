@@ -70,7 +70,7 @@ namespace MIXTURE
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
     void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 
@@ -91,23 +91,23 @@ namespace MIXTURE
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
     [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
-    void IntegrateLocalEvolutionEquations(double dt, int gp, int eleGID);
+    void integrate_local_evolution_equations(double dt, int gp, int eleGID);
     [[nodiscard]] double EvaluateLambdaf(
         const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
-    [[nodiscard]] CORE::LINALG::Matrix<1, 6> EvaluateDLambdafsqDC(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<1, 6> evaluate_d_lambdafsq_dc(int gp, int eleGID) const;
 
     [[nodiscard]] CORE::LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
     [[nodiscard]] CORE::LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
 
-    [[nodiscard]] double EvaluateDepositionStretch(double time) const;
-    void UpdateHomeostaticValues(const Teuchos::ParameterList& params, int eleGID);
+    [[nodiscard]] double evaluate_deposition_stretch(double time) const;
+    void update_homeostatic_values(const Teuchos::ParameterList& params, int eleGID);
 
     void Initialize();
 

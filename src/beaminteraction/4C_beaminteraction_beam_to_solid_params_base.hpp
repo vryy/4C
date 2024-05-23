@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement GetConstraintEnforcement() const
+    inline INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement get_constraint_enforcement() const
     {
       return constraint_enforcement_;
     }
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization GetContactDiscretization() const
+    inline INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization get_contact_discretization() const
     {
       return contact_discretization_;
     }
@@ -101,7 +101,8 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionType() const
+    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions get_mortar_shape_function_type()
+        const
     {
       return mortar_shape_function_;
     }
@@ -131,7 +132,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the order for the FAD type.
      */
-    [[nodiscard]] bool IsRotationalCoupling() const { return rotational_coupling_; }
+    [[nodiscard]] bool is_rotational_coupling() const { return rotational_coupling_; }
 
    protected:
     //! Flag if Init was called.

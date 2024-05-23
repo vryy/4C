@@ -50,7 +50,7 @@ namespace DRT
 
       //! define ScatraEle instances dependent on problem
       template <CORE::FE::CellType distype, int probdim>
-      static ScaTraEleInterface* DefineProblemTypeHDG(INPAR::SCATRA::ImplType problem,
+      static ScaTraEleInterface* define_problem_type_hdg(INPAR::SCATRA::ImplType problem,
           const int numdofpernode, const int numscal, const std::string& disname);
 
     };  // end class ScaTraFactory

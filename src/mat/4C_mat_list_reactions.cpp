@@ -254,7 +254,7 @@ int MAT::MatListReactions::ReacID(const unsigned index) const
 /*----------------------------------------------------------------------*
  | calculate advanced reaction terms                         thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListReactions::CalcReaBodyForceTerm(
+double MAT::MatListReactions::calc_rea_body_force_term(
     const int k, const std::vector<double>& phinp, const double* gpcoord, const double scale) const
 {
   // set time and space coordinates
@@ -272,7 +272,7 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, constants, scale);
+    bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants, scale);
   }
 
   return bodyforcetermK;
@@ -281,8 +281,9 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  | calculate advanced reaction term derivatives              thon 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
-    const std::vector<double>& phinp, const double* gpcoord, const double scale) const
+void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
+    std::vector<double>& derivs, const std::vector<double>& phinp, const double* gpcoord,
+    const double scale) const
 {
   // set time and space coordinates
   std::vector<std::pair<std::string, double>> constants;
@@ -297,7 +298,7 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, constants, scale);
+    reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants, scale);
   }
   // gpcoord_
   return;
@@ -306,9 +307,9 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector
 /*----------------------------------------------------------------------*
  | calculate advanced reaction terms                         thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListReactions::CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
-    const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
-    const double scale) const
+double MAT::MatListReactions::calc_rea_body_force_term(const int k,
+    const std::vector<double>& phinp, const std::vector<std::pair<std::string, double>>& constants,
+    const double* gpcoord, const double scale) const
 {
   // add time and space coordinates
   std::vector<std::pair<std::string, double>> constants_mod(constants);
@@ -325,7 +326,7 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(const int k, const std::vecto
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, constants_mod, scale);
+    bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants_mod, scale);
   }
 
   return bodyforcetermK;
@@ -334,9 +335,10 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(const int k, const std::vecto
 /*----------------------------------------------------------------------*
  | calculate advanced reaction term derivatives              thon 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
-    const std::vector<double>& phinp, const std::vector<std::pair<std::string, double>>& constants,
-    const double* gpcoord, const double scale) const
+void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
+    std::vector<double>& derivs, const std::vector<double>& phinp,
+    const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
+    const double scale) const
 {
   // add time and space coordinates
   std::vector<std::pair<std::string, double>> constants_mod(constants);
@@ -351,7 +353,7 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, constants_mod, scale);
+    reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants_mod, scale);
   }
 
   return;
@@ -360,7 +362,7 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(const int k, std::vector
 /*----------------------------------------------------------------------*
  | add additional variables to reaction                kremheller 07/17 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::AddAdditionalVariables(
+void MAT::MatListReactions::add_additional_variables(
     const int k, const std::vector<std::pair<std::string, double>>& variables) const
 {
   for (int condnum = 0; condnum < NumReac(); condnum++)
@@ -369,7 +371,7 @@ void MAT::MatListReactions::AddAdditionalVariables(
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->AddAdditionalVariables(k, variables);
+    reacmat->add_additional_variables(k, variables);
   }
 }
 
@@ -377,7 +379,7 @@ void MAT::MatListReactions::AddAdditionalVariables(
  |  calculating advanced reaction term derivatives after additional variables     |
  |  (e.g. for monolithic coupling)                               kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(const int k,
+void MAT::MatListReactions::calc_rea_body_force_deriv_matrix_add_variables(const int k,
     std::vector<double>& derivs, const std::vector<double>& phinp,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
@@ -404,7 +406,8 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(const int k,
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
         Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrixAddVariables(k, derivs, variables, constants_mod, scale);
+    reacmat->calc_rea_body_force_deriv_matrix_add_variables(
+        k, derivs, variables, constants_mod, scale);
   }
 
   return;

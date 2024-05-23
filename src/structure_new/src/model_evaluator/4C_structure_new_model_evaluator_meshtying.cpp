@@ -106,14 +106,14 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   // ---------------------------------------------------------------------
   // final touches to the meshtying strategy
   // ---------------------------------------------------------------------
-  strategy_ptr_->StoreDirichletStatus(Int().GetDbc().GetDBCMapExtractor());
+  strategy_ptr_->store_dirichlet_status(Int().GetDbc().GetDBCMapExtractor());
   strategy_ptr_->SetState(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
-  strategy_ptr_->EvaluateReferenceState();
+  strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->Inttime_init();
-  SetTimeIntegrationInfo(*strategy_ptr_);
+  set_time_integration_info(*strategy_ptr_);
   strategy_ptr_->RedistributeContact(
-      Int().GetDbc().GetZerosPtr(), Int().GetDbc().GetZerosPtr());  // ToDo RedistributeMeshtying??
+      Int().GetDbc().GetZerosPtr(), Int().GetDbc().GetZerosPtr());  // ToDo redistribute_meshtying??
   strategy_ptr_->MortarCoupling(Int().GetDbc().GetZerosPtr());
 
   strategy_ptr_->NoxInterfacePtr()->Init(GStatePtr());
@@ -123,7 +123,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-        GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
+        GLOBAL::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
     {
@@ -141,7 +141,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
                 GState().GetDiscret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))->X()[d] -
                 Xslavemod->operator[](Xslavemod->Map().LID(gid));
           }
-        ApplyMeshInitialization(Xslavemod);
+        apply_mesh_initialization(Xslavemod);
       }
     }
     else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
@@ -300,7 +300,7 @@ const CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy() co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row_map_ptr() const
 {
   CheckInitSetup();
   if (Strategy().LMDoFRowMapPtr(true) == Teuchos::null)
@@ -319,13 +319,13 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::GetBlockDofRowMap
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_solution_ptr() const
 {
   //  //TODO: this should be removed!
   //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
   //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-  //          problem->ContactDynamicParams(),"SYSTEM");
+  //          problem->contact_dynamic_params(),"SYSTEM");
   //  if (systype == INPAR::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
@@ -336,7 +336,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolu
   //    if (not curr_lm_ptr.is_null())
   //      curr_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
   //
-  //    ExtendLagrangeMultiplierDomain( curr_lm_ptr );
+  //    extend_lagrange_multiplier_domain( curr_lm_ptr );
   //
   //    return curr_lm_ptr;
   //  }
@@ -346,12 +346,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeStepSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_step_solution_ptr()
+    const
 {
   //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
   //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-  //          problem->ContactDynamicParams(),"SYSTEM");
+  //          problem->contact_dynamic_params(),"SYSTEM");
   //  if (systype == INPAR::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
@@ -363,7 +364,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeSte
   //  if (not old_lm_ptr.is_null())
   //    old_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
   //
-  //  ExtendLagrangeMultiplierDomain( old_lm_ptr );
+  //  extend_lagrange_multiplier_domain( old_lm_ptr );
   //
   //  return old_lm_ptr;
   return Teuchos::null;
@@ -371,20 +372,20 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeSte
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::RunPreApplyJacobianInverse(const Epetra_Vector& rhs,
+void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy())
-      .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
+      .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::RunPostApplyJacobianInverse(const Epetra_Vector& rhs,
+void STR::MODELEVALUATOR::Meshtying::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  const_cast<CONTACT::MtAbstractStrategy&>(Strategy()).RunPostApplyJacobianInverse(result);
+  const_cast<CONTACT::MtAbstractStrategy&>(Strategy()).run_post_apply_jacobian_inverse(result);
 }
 
 /*----------------------------------------------------------------------------*
@@ -418,7 +419,7 @@ bool STR::MODELEVALUATOR::Meshtying::EvaluateStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
+void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
     Teuchos::RCP<const Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
@@ -485,11 +486,11 @@ void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs)
+void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs)
 {
   CheckInitSetup();
 
-  Strategy().RemoveCondensedContributionsFromRhs(rhs);
+  Strategy().remove_condensed_contributions_from_rhs(rhs);
 }
 
 /*----------------------------------------------------------------------*
@@ -519,13 +520,13 @@ void STR::MODELEVALUATOR::Meshtying::ReadRestart(IO::DiscretizationReader& iorea
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::SetTimeIntegrationInfo(
+void STR::MODELEVALUATOR::Meshtying::set_time_integration_info(
     CONTACT::MtAbstractStrategy& strategy) const
 {
   const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
   const double time_fac = Int().GetIntParam();
 
-  strategy.SetTimeIntegrationInfo(time_fac, dyntype);
+  strategy.set_time_integration_info(time_fac, dyntype);
 }
 
 FOUR_C_NAMESPACE_CLOSE

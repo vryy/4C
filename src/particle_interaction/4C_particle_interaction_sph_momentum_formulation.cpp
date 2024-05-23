@@ -97,7 +97,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const doub
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac_conv, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPressure(
+void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::standard_background_pressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
@@ -108,7 +108,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPres
   if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundPressure(
+void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::generalized_background_pressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
@@ -122,7 +122,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundP
         mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::Pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContribution(
+void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::modified_velocity_contribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
@@ -197,7 +197,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double*
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac, vel_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressure(
+void PARTICLEINTERACTION::SPHMomentumFormulationAdami::standard_background_pressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
@@ -206,7 +206,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressur
   if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPressure(
+void PARTICLEINTERACTION::SPHMomentumFormulationAdami::generalized_background_pressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
@@ -220,7 +220,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPres
         mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::Pow<2>(dens_j[0]), e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribution(
+void PARTICLEINTERACTION::SPHMomentumFormulationAdami::modified_velocity_contribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const

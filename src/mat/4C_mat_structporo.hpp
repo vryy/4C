@@ -174,7 +174,7 @@ namespace MAT
     double InitPorosity() const { return params_->init_porosity_; }
 
     //! return time derivative of reference porosity (only nonzero with reaction)
-    virtual double RefPorosityTimeDeriv() const { return 0.0; }
+    virtual double ref_porosity_time_deriv() const { return 0.0; }
 
     //! compute current porosity and save it
     virtual void ComputePorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
@@ -253,7 +253,7 @@ namespace MAT
         CORE::LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
-    virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
+    virtual void constitutive_derivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
         double press,        //!< (i) fluid pressure at gauss point
         double J,            //!< (i) Jacobian determinant at gauss point
         double porosity,     //!< (i) porosity at gauss point
@@ -265,7 +265,7 @@ namespace MAT
     );
 
     //! evaluate constitutive relation for porosity and compute derivatives using reference porosity
-    void ConstitutiveDerivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
+    void constitutive_derivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
         double press,        //!< (i) fluid pressure at gauss point
         double J,            //!< (i) Jacobian determinant at gauss point
         double porosity,     //!< (i) porosity at gauss point
@@ -296,7 +296,7 @@ namespace MAT
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
     }
 
-    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
         CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
@@ -306,7 +306,7 @@ namespace MAT
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
         CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
     {
-      mat_->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
+      mat_->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
           d_cauchyndir_ddir, d_cauchyndir_dF, d2_cauchyndir_dF2, d2_cauchyndir_dF_dn,
           d2_cauchyndir_dF_ddir, gp, eleGID, concentration, temp, d_cauchyndir_dT,
           d2_cauchyndir_dF_dT);

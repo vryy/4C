@@ -111,7 +111,7 @@ namespace ADAPTER
     /**
      * \brief Recomputes all coupling related quantities without performing a search
      */
-    virtual void RecomputeCouplingWithoutPairCreation();
+    virtual void recompute_coupling_without_pair_creation();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -184,7 +184,7 @@ namespace ADAPTER
      *\param[out] beam_dofvec current positions and velocities of the beam element
      *\param[out] fluid_dofvec current positions and velocities of the fluid element
      */
-    virtual void ExtractCurrentElementDofs(std::vector<DRT::Element const*> elements,
+    virtual void extract_current_element_dofs(std::vector<DRT::Element const*> elements,
         std::vector<double>& beam_dofvec, std::vector<double>& fluid_dofvec) const;
 
     /**
@@ -195,7 +195,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> assemble_fluid_coupling_matrix() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -209,7 +209,8 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> assemble_structure_coupling_matrix()
+        const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -223,7 +224,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const
+    virtual Teuchos::RCP<Epetra_Vector> assemble_structure_coupling_residual() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -237,7 +238,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const
+    virtual Teuchos::RCP<Epetra_Vector> assemble_fluid_coupling_residual() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -256,7 +257,7 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const { return bridge_; };
 
     /// Get map extractor to split fluid velocity and pressure values
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetVelocityPressureSplitter() const
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> get_velocity_pressure_splitter() const
     {
       return velocity_pressure_splitter_;
     }

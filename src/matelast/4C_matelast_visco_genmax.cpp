@@ -24,7 +24,7 @@ MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<CORE::MAT::PAR::Material>& 
 
 MAT::ELASTIC::GenMax::GenMax(MAT::ELASTIC::PAR::GenMax* params) : params_(params) {}
 
-void MAT::ELASTIC::GenMax::ReadMaterialParametersVisco(
+void MAT::ELASTIC::GenMax::read_material_parameters_visco(
     double& tau, double& beta, double& alpha, std::string& solve)
 {
   tau = params_->tau_;

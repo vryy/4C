@@ -143,7 +143,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
 
   // Note: element1 is always the beam, element2 is the sphere
 
-  ClosestPointProjection();
+  closest_point_projection();
 
   // vectors for shape functions and their derivatives
   CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
@@ -185,13 +185,13 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, xicontact_);
 
     // call function to fill variables with coords and derivs of the contact point
-    ComputeCoordsAndDerivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
+    compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
 
     // call function to compute scaled normal and gap in possible contact point
     ComputeNormal(normal, gap, norm, x1, x2);
 
     // call function to evaluate contact status
-    CheckAndSetContactStatus();
+    check_and_set_contact_status();
 
     //**********************************************************************
     // (2) Compute contact forces and stiffness
@@ -201,17 +201,17 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     if (forcevec1 != nullptr and forcevec2 != nullptr)
     {
       EvaluateFcContact(*forcevec1, *forcevec2,
-          Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, N1_i,
-          contactflag_);
+          Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
+          N1_i, contactflag_);
     }
 
     // call function to evaluate contact stiffness
     if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
         stiffmat22 != nullptr)
     {
-      EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
-          Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, norm, x1,
-          x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, contactflag_);
+      evaluate_stiffc_contact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
+          Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
+          norm, x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, contactflag_);
     }
   }
   else  // Fixme do this only for the nodes (physical) end points of beams in case of C1-continuous
@@ -267,7 +267,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, XiContact);
 
         // call function to fill variables with coords and derivs of the contact point
-        ComputeCoordsAndDerivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
+        compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
 
         // call function to compute scaled normal and gap in possible contact point
         ComputeNormal(normal, gap, norm, x1, x2);
@@ -288,17 +288,18 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         if (forcevec1 != nullptr and forcevec2 != nullptr)
         {
           EvaluateFcContact(*forcevec1, *forcevec2,
-              Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, N1_i,
-              nodalcontactflag_[inode]);
+              Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
+              normal, N1_i, nodalcontactflag_[inode]);
         }
 
         // call function to evaluate contact stiffness
         if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
             stiffmat22 != nullptr)
         {
-          EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
-              Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, norm,
-              x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, nodalcontactflag_[inode], false);
+          evaluate_stiffc_contact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
+              Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
+              normal, norm, x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, nodalcontactflag_[inode],
+              false);
         }
       }
     }
@@ -310,7 +311,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ClosestPointProjection()
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest_point_projection()
 {
   // local variable for beam element coordinate
   TYPE eta = 0.0;
@@ -348,7 +349,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     GetShapeFunctions(N1_i, N1_i_xi, N1_i_xixi, eta);
 
     // update coordinates and derivatives of contact points
-    ComputeCoordsAndDerivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
+    compute_coords_and_derivs(x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi);
 
     // compute delta_x = x1-x2
     for (unsigned int j = 0; j < 3; ++j) delta_x(j) = x1(j) - x2(j);
@@ -368,7 +369,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     }
 
     // evaluate f at current eta
-    EvaluateOrthogonalityCondition(f, delta_x, norm_delta_x, dx1);
+    evaluate_orthogonality_condition(f, delta_x, norm_delta_x, dx1);
 
     // compute the scalar residuum
     residual = abs(CORE::FADUTILS::CastToDouble(f));
@@ -377,7 +378,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     if (residual < BEAMCONTACTTOL) break;
 
     // evaluate Jacobian of f at current eta
-    EvaluateLinOrthogonalityCondition(df, delta_x, norm_delta_x, dx1, ddx1);
+    evaluate_lin_orthogonality_condition(df, delta_x, norm_delta_x, dx1, ddx1);
 
     // singular df
     if (abs(df) < COLINEARTOL)
@@ -423,7 +424,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
-    numnodalvalues>::EvaluateOrthogonalityCondition(TYPE& f,
+    numnodalvalues>::evaluate_orthogonality_condition(TYPE& f,
     const CORE::LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
     const CORE::LINALG::Matrix<3, 1, TYPE>& dx1)
 {
@@ -445,7 +446,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
-    numnodalvalues>::EvaluateLinOrthogonalityCondition(TYPE& df,
+    numnodalvalues>::evaluate_lin_orthogonality_condition(TYPE& df,
     CORE::LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
     const CORE::LINALG::Matrix<3, 1, TYPE>& dx1, const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1)
 
@@ -466,7 +467,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::CheckAndSetContactStatus()
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
+    numnodalvalues>::check_and_set_contact_status()
 {
   // check contact condition
   contactflag_ = (gap_ < 0) ? true : false;
@@ -537,7 +539,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::EvaluateStiffcContact(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_stiffc_contact(
     CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
     CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22,
     const double& pp, const TYPE& gap, const CORE::LINALG::Matrix<3, 1, TYPE>& normal,
@@ -844,7 +846,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_coords_and_derivs(
     CORE::LINALG::Matrix<3, 1, TYPE>& x1, CORE::LINALG::Matrix<3, 1, TYPE>& x2,
     CORE::LINALG::Matrix<3, 1, TYPE>& dx1, CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
@@ -1151,7 +1153,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Print(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
-    numnodalvalues>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+    numnodalvalues>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   CheckInitSetup();
 

@@ -36,17 +36,17 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
       atrium_model_(CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
-          GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+          GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
       ventricle_model_(
           CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
-              GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+              GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
                   "SYS-PUL CIRCULATION PARAMETERS"),
               "VENTRICLE_MODEL")),
       respiratory_model_(
           CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
-              GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+              GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
       gaussrule_(CORE::FE::GaussRule2D::undefined)
@@ -54,7 +54,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
   actdisc_->GetCondition(conditionname, cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
   {
-    cardiovascular0dtype_ = GetCardiovascular0DType(conditionname);
+    cardiovascular0dtype_ = get_cardiovascular0_d_type(conditionname);
     std::vector<int> curcoupID;
     for (auto& i : cardiovascular0dcond_)
     {
@@ -210,7 +210,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 /*-----------------------------------------------------------------------*
 |(private)                                                      mhv 10/13|
  *-----------------------------------------------------------------------*/
-UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::GetCardiovascular0DType(
+UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::get_cardiovascular0_d_type(
     const std::string& name)
 {
   if (name == "Cardiovascular0D4ElementWindkesselStructureCond")

@@ -46,19 +46,19 @@ void FLD::TimIntPoro::Init()
   if (not alefluid_) FOUR_C_THROW("poro fluid has to be an ale fluid!");
 
   // set some poro-specific parameters
-  SetElementCustomParameter();
+  set_element_custom_parameter();
 }
 
-void FLD::TimIntPoro::SetElementGeneralFluidParameter()
+void FLD::TimIntPoro::set_element_general_fluid_parameter()
 {
   // set some poro-specific parameters only in specific poro cases
-  FluidImplicitTimeInt::SetElementGeneralFluidParameter();
+  FluidImplicitTimeInt::set_element_general_fluid_parameter();
 }
 
-void FLD::TimIntPoro::SetElementTurbulenceParameters()
+void FLD::TimIntPoro::set_element_turbulence_parameters()
 {
   // set some poro-specific parameters only in specific poro cases
-  FluidImplicitTimeInt::SetElementTurbulenceParameters();
+  FluidImplicitTimeInt::set_element_turbulence_parameters();
 }
 
 void FLD::TimIntPoro::AssembleMatAndRHS()
@@ -73,7 +73,7 @@ void FLD::TimIntPoro::ReadRestart(int step)
   reader.ReadVector(gridv_, "gridv");
 }
 
-void FLD::TimIntPoro::SetElementCustomParameter()
+void FLD::TimIntPoro::set_element_custom_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -99,10 +99,10 @@ void FLD::TimIntPoro::SetElementCustomParameter()
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
-void FLD::TimIntPoro::SetInitialPorosityField(
+void FLD::TimIntPoro::set_initial_porosity_field(
     const INPAR::POROELAST::InitialField init, const int startfuncno)
 {
-  std::cout << "FLD::TimIntPoro::SetInitialPorosityField()" << std::endl;
+  std::cout << "FLD::TimIntPoro::set_initial_porosity_field()" << std::endl;
 
   switch (init)
   {
@@ -144,11 +144,11 @@ void FLD::TimIntPoro::SetInitialPorosityField(
   }
 }
 
-void FLD::TimIntPoro::UpdateIterIncrementally(
+void FLD::TimIntPoro::update_iter_incrementally(
     Teuchos::RCP<const Epetra_Vector> vel)  //!< input residual velocities
 
 {
-  FluidImplicitTimeInt::UpdateIterIncrementally(vel);
+  FluidImplicitTimeInt::update_iter_incrementally(vel);
   // set the new solution we just got
   if (vel != Teuchos::null)
   {
@@ -184,7 +184,7 @@ void FLD::TimIntPoro::Output()
   }
 }
 
-void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntPoro::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
   eleparams.set<int>("Physical Type", physicaltype_);
 
@@ -249,12 +249,12 @@ void FLD::TimIntPoro::PoroIntUpdate()
   sysmat_->Complete();
 }
 
-void FLD::TimIntPoro::TimIntCalculateAcceleration()
+void FLD::TimIntPoro::tim_int_calculate_acceleration()
 {
   // for poro problems, there is a time derivative of the porosity/pressure
   // in the continuity equation. Therefore, we potentially need time
   // derivatives of the pressure and thus do not split the state vectors
-  CalculateAcceleration(velnp_, veln_, velnm_, accn_, accnp_);
+  calculate_acceleration(velnp_, veln_, velnm_, accn_, accnp_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

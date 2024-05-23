@@ -53,7 +53,7 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
       global_active_lambda_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  switch (params->GetMortarShapeFunctionType())
+  switch (params->get_mortar_shape_function_type())
   {
     case INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::line2:
     {
@@ -489,7 +489,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
 /**
  *
  */
-void BEAMINTERACTION::BeamToFluidMortarManager::AddGlobalForceStiffnessContributions(
+void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contributions(
     Teuchos::RCP<Epetra_FEVector> fluid_force, Teuchos::RCP<Epetra_FEVector> beam_force,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kbb, Teuchos::RCP<CORE::LINALG::SparseMatrix> kbf,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kff, Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb,

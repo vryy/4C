@@ -52,7 +52,7 @@ void FLD::TimIntStationaryHDG::Init()
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
-                              ->NumDofPerElementAuxiliary()
+                              ->num_dof_per_element_auxiliary()
                         : 0;
 
   // set degrees of freedom in the discretization
@@ -110,7 +110,7 @@ void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                       als 01/18 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::SetCustomEleParamsAssembleMatAndRHS(
+void FLD::TimIntStationaryHDG::set_custom_ele_params_assemble_mat_and_rhs(
     Teuchos::ParameterList& eleparams)
 {
   eleparams.set<bool>("needslocalupdate", !first_assembly_);
@@ -120,7 +120,7 @@ void FLD::TimIntStationaryHDG::SetCustomEleParamsAssembleMatAndRHS(
 /*----------------------------------------------------------------------*
 | set old part of right hand side                             als 01/18 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::SetOldPartOfRighthandside()
+void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 {
   /*
      Stationary:
@@ -154,7 +154,7 @@ void FLD::TimIntStationaryHDG::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                       als 01/18 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::ClearStateAssembleMatAndRHS()
+void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
 {
   if (!first_assembly_)
   {
@@ -165,7 +165,7 @@ void FLD::TimIntStationaryHDG::ClearStateAssembleMatAndRHS()
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
   first_assembly_ = false;
-  FluidImplicitTimeInt::ClearStateAssembleMatAndRHS();
+  FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
 }
 
 /*----------------------------------------------------------------------*
@@ -229,7 +229,7 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
-void FLD::TimIntStationaryHDG::SetElementTimeParameter()
+void FLD::TimIntStationaryHDG::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 

@@ -43,7 +43,7 @@ namespace XFEM
     //@{
 
     //! predict states in the coupling object
-    void PredictCouplingStates() override;
+    void predict_coupling_states() override;
 
     //! Set required displacement & velocity states in the coupling object
     void SetCouplingStates() override;

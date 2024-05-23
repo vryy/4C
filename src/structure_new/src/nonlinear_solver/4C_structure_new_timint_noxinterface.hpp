@@ -81,7 +81,7 @@ namespace STR
       bool computeFandJacobian(
           const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) override;
 
-      bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+      bool compute_correction_system(const enum NOX::NLN::CorrectionType type,
           const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
           Epetra_Operator& jac) override;
 
@@ -99,21 +99,21 @@ namespace STR
 
       /*! Get the root mean square of the solution update (vector) entries
        *  (derived from NOX::NLN::Interface::Required) */
-      double GetPrimarySolutionUpdateRMS(const Epetra_Vector& xnew, const Epetra_Vector& xold,
+      double get_primary_solution_update_rms(const Epetra_Vector& xnew, const Epetra_Vector& xold,
           const double& aTol, const double& rTol,
           const NOX::NLN::StatusTest::QuantityType& checkQuantity,
           const bool& disable_implicit_weighting = false) const override;
 
       /*! Returns the desired norm of the solution update (vector) entries
        *  (derived from NOX::NLN::Interface::Required) */
-      double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew, const Epetra_Vector& xold,
+      double get_primary_solution_update_norms(const Epetra_Vector& xnew, const Epetra_Vector& xold,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
           const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
 
       /*! Returns the previous solution norm of primary DoF fields
        *  (derived from NOX::NLN::Interface::Required) */
-      double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
+      double get_previous_primary_solution_norms(const Epetra_Vector& xold,
           const NOX::NLN::StatusTest::QuantityType& checkquantity,
           const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
@@ -124,8 +124,8 @@ namespace STR
       double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
           const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-      double GetLinearizedModelTerms(const ::NOX::Abstract::Group* group, const Epetra_Vector& dir,
-          const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+      double get_linearized_model_terms(const ::NOX::Abstract::Group* group,
+          const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 
@@ -139,10 +139,10 @@ namespace STR
       void CreateBackupState(const Epetra_Vector& dir) override;
 
       /// recover from back-up
-      void RecoverFromBackupState() override;
+      void recover_from_backup_state() override;
 
       /// compute the current volumes for all elements
-      bool computeElementVolumes(
+      bool compute_element_volumes(
           const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const override;
 
       /// fill the sets with DOFs of the desired elements
@@ -152,8 +152,8 @@ namespace STR
       //!@}
 
       // Get element based scaling operator
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC()
-          override;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>
+      calc_jacobian_contributions_from_element_level_for_ptc() override;
 
       //! Access the implicit integrator
       STR::Integrator& ImplInt();
@@ -171,11 +171,11 @@ namespace STR
       //! check if init and setup have been called
       void CheckInitSetup() const;
 
-      double GetLinearizedEnergyModelTerms(const ::NOX::Abstract::Group* group,
+      double get_linearized_energy_model_terms(const ::NOX::Abstract::Group* group,
           const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const;
 
-      void FindConstraintModels(const ::NOX::Abstract::Group* grp,
+      void find_constraint_models(const ::NOX::Abstract::Group* grp,
           std::vector<INPAR::STR::ModelType>& constraint_models) const;
 
       //! calculate norm in Get*Norms functions

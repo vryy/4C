@@ -49,8 +49,9 @@ namespace POROMULTIPHASESCATRA
         int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl);
 
     //! exchange material pointers of discretizations
-    void AssignMaterialPointers(const std::string& struct_disname, const std::string& fluid_disname,
-        const std::string& scatra_disname, const bool artery_coupl);
+    void assign_material_pointers(const std::string& struct_disname,
+        const std::string& fluid_disname, const std::string& scatra_disname,
+        const bool artery_coupl);
 
     //! create solution algorithm depending on input file
     Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>

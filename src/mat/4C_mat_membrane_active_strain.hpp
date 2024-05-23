@@ -234,10 +234,10 @@ namespace MAT
         INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir);
 
     // calculate normal direction from FIBER1 and FIBER2
-    void SetupNormalDirection();
+    void setup_normal_direction();
 
     // pullback of the tangent from intermediate to reference configuration
-    void Pullback4thTensorVoigt(const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
+    void pullback4th_tensor_voigt(const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
         const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
         CORE::LINALG::Matrix<3, 3>& cmat_reference);
 

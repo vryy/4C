@@ -28,7 +28,7 @@ DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodei
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lline);
+  set_parent_master_element(parent, lline);
   return;
 }
 

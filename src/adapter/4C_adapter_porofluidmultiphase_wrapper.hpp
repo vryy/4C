@@ -68,7 +68,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     /// access coupled system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const override;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization() const override;
@@ -105,13 +105,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Saturation() const override;
 
     //! return valid volume fraction species dof vector
-    Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const override;
+    Teuchos::RCP<const Epetra_Vector> valid_vol_frac_spec_dofs() const override;
 
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const override;
 
     //! return number of dof set associated with solid pressure
-    int GetDofSetNumberOfSolidPressure() const override;
+    int get_dof_set_number_of_solid_pressure() const override;
 
     //! do time integration (time loop)
     void TimeLoop() override;
@@ -126,7 +126,7 @@ namespace ADAPTER
     void Update() override;
 
     //! calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol() override;
+    void evaluate_error_compared_to_analytical_sol() override;
 
     //! general solver call for coupled algorithms
     void Solve() override;
@@ -147,22 +147,24 @@ namespace ADAPTER
     void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     //! reconstruct pressures and saturation from current solution
-    void ReconstructPressuresAndSaturations() override;
+    void reconstruct_pressures_and_saturations() override;
 
     //! reconstruct flux from current solution
     void ReconstructFlux() override;
 
     //! calculate phase velocities from current solution
-    void CalculatePhaseVelocities() override;
+    void calculate_phase_velocities() override;
 
     //! build linear system tangent matrix, rhs/force residual
     void Evaluate() override;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
-    void AssembleFluidStructCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
+    void assemble_fluid_struct_coupling_mat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
 
     // Assemble Off-Diagonal Fluid-Scatra Coupling matrix
-    void AssembleFluidScatraCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
+    void assemble_fluid_scatra_coupling_mat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
 
     /// direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;

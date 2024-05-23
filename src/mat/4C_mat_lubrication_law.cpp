@@ -47,7 +47,7 @@ void MAT::PAR::LubricationLawConstant::ComputeViscosity(const double& press, dou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::LubricationLawConstant::ConstitutiveDerivatives(
+void MAT::PAR::LubricationLawConstant::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   dviscosity_dp = 0.0;
@@ -83,7 +83,7 @@ void MAT::PAR::LubricationLawBarus::ComputeViscosity(const double& press, double
 }
 
 // Evaluate constitutive relation for viscosity and compute derivatives
-void MAT::PAR::LubricationLawBarus::ConstitutiveDerivatives(
+void MAT::PAR::LubricationLawBarus::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   dviscosity_dp = viscosity * PreVisCoeff_;
@@ -126,7 +126,7 @@ void MAT::PAR::LubricationLawRoeland::ComputeViscosity(const double& press, doub
 }
 
 // Evaluate constitutive relation for viscosity and compute derivatives
-void MAT::PAR::LubricationLawRoeland::ConstitutiveDerivatives(
+void MAT::PAR::LubricationLawRoeland::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   // double z = (PreVisCoeff_ * RefPress_ ) / (log ( ABSViscosity_ / RefVisc_ ));

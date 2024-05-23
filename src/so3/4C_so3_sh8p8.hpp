@@ -50,20 +50,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoSh8p8Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
+      std::string get_element_type_string() const { return "SOLIDSH8P8"; }
     };
 
     /// An incompressible 8-node solid shell element inherited from #DRT::ELEMENTS::so_sh8
@@ -438,8 +438,8 @@ namespace DRT
       //@}
 
       /// determine proportions of element at origin
-      void AxialMetricsAtOrigin(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
-                                    xrefe,               ///< (material/reference) element coords
+      void axial_metrics_at_origin(const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>&
+                                       xrefe,            ///< (material/reference) element coords
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac0,  ///< Jacobian at origin
           CORE::LINALG::Matrix<NUMDIM_, 1>& metr0        ///< axial metrics at origin
       );
@@ -486,7 +486,7 @@ namespace DRT
 
       /// retrieve EAS parameters and incremental update of them
       template <int NUMEAS_T>
-      static void EasUpdateIncrementally(
+      static void eas_update_incrementally(
           CORE::LINALG::SerialDenseMatrix*&
               oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
           CORE::LINALG::SerialDenseMatrix*&
@@ -507,8 +507,9 @@ namespace DRT
 
       /// push parametric EAS GL strain to material/reference configuration
       template <int NUMEAS_T>
-      static void EasMaterialiseShapeFcts(const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
-                                              M,  ///< EAS shape functions in material configuration
+      static void eas_materialise_shape_fcts(
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
+              M,                ///< EAS shape functions in material configuration
           const double& detJ0,  ///< material-to-parameter Jacobian determinant at origin
           const double& detJ,   ///< material-to-parameter Jacobian determinant at GP
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
@@ -528,8 +529,9 @@ namespace DRT
 
       /// build EAS constraint and its tangents
       template <int NUMEAS_T>
-      static void EasConstraintAndTangent(Teuchos::RCP<CORE::LINALG::SerialDenseVector>&
-                                              feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
+      static void eas_constraint_and_tangent(
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>&
+              feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,  ///< current tangent k_ad
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap,  ///< current tangent k_ap
@@ -587,7 +589,7 @@ namespace DRT
       //@{
 
       //! \note uses an inconsistent Voigt notation
-      static void Matrix2TensorToVector9Voigt_Inconsistent(
+      static void matrix2_tensor_to_vector9_voigt_inconsistent(
           CORE::LINALG::Matrix<NUMDFGR_, 1>& fvct,             ///< (out) 9x1 Voigt vector
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< (in) 3x3 matrix
           const bool transpose = false                         ///< use transposed input 3x3 matrix
@@ -600,7 +602,8 @@ namespace DRT
       ///   \frac{\partial (F^{-1})_{ij}}{\partial F_{kl}}
       ///   = -(F^{-1})_{ik} \cdot (F^{-1})_{lj}
       ///\f]
-      static void InvVector9VoigtDiffByItself(CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& invfderf,
+      static void inv_vector9_voigt_diff_by_itself(
+          CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& invfderf,
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat,
           const bool transpose = false  ///< use transposed input 3x3 matrix
       );
@@ -613,7 +616,7 @@ namespace DRT
       ///   = -1/2*\big( (F^{-1})_{ik} \cdot (F^{-1})_{lj}
       ///                + (F^{-1})_{il} \cdot (F^{-1})_{kj} \big)
       ///\f]
-      static void InvVector6VoigtDiffByItself(
+      static void inv_vector6_voigt_diff_by_itself(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               invfderf,                                          ///< 6x6 derivative
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat  ///< 3x3 inverse symmetric 2-tensor
@@ -637,7 +640,7 @@ namespace DRT
       ///   \end{array}
       ///\f]
       ///
-      static void InvVector6VoigtTwiceDiffByItself(
+      static void inv_vector6_voigt_twice_diff_by_itself(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>&
               invbvdderb,                                    ///< 6x36 matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ibt  ///< 3x3 inverted symmetric 2-tensor
@@ -650,7 +653,7 @@ namespace DRT
       ///   \frac{\partial F_{im} F_{mj}}{\partial F_{kl}}
       ///   = \delta_{ik}\cdot F_{lj} + \delta_{jl}\cdot F_{ik}
       ///\f]
-      static void SqVector6VoigtDiffByItself(
+      static void sq_vector6_voigt_diff_by_itself(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               sqfderf,                                         ///< diff. squared matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< symmetric 2-tensor
@@ -658,13 +661,13 @@ namespace DRT
 
       /// Derivative of "square" of non-symmetric 2-tensor by itself
       ///
-      /// cf. #SqVector6VoigtDiffByItself
+      /// cf. #sq_vector6_voigt_diff_by_itself
       ///
       /// In compact tensor notation
       ///\f[
       ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsymbol{F}}
       ///\f]
-      static void SqVector9VoigtDiffByItself(
+      static void sq_vector9_voigt_diff_by_itself(
           CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& sqfderf,   ///< diff. squared matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< non-symmetric 2-tensor
           const bool transpose = false                         ///< transpose non-symmetric 2-tensor
@@ -686,7 +689,7 @@ namespace DRT
       ///     \Big)
       /// \end{array}
       ///\f]
-      static void SqVector6VoigtTwiceDiffByItself(
+      static void sq_vector6_voigt_twice_diff_by_itself(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>&
               sqfdderf,                                       ///< 2nd derivative
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat  ///< symmetric 2-tensor (not needed)
@@ -695,8 +698,9 @@ namespace DRT
       /// 2nd derivative of square of symmetric 2-tensor with respect to itself
       /// -- sparse storage version
       ///
-      /// cf. #SqVector6VoigtTwiceDiffByItself bit with sparse storage of 6-tensor
-      static void SqVector6VoigtTwiceDiffByItself(int* isqfdderf,  ///< indices of non-zero entries
+      /// cf. #sq_vector6_voigt_twice_diff_by_itself bit with sparse storage of 6-tensor
+      static void sq_vector6_voigt_twice_diff_by_itself(
+          int* isqfdderf,  ///< indices of non-zero entries
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 6>&
               sqfdderf  ///< 2nd derivative data (sparsely stored)
       );
@@ -719,7 +723,7 @@ namespace DRT
       ///\f[
       ///   \mathbf{A} = \mathbf{B} \; \tilde{\mathbf{C}}
       ///\f]
-      static void Matrix2TensorToMatrix6x9Voigt(
+      static void matrix2_tensor_to_matrix6x9_voigt(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_>& bm,  ///< (out) 6x9 Voigt matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,        ///< (in) 3x3 matrix
           const bool transpose = true                              ///< transpose entries
@@ -744,7 +748,7 @@ namespace DRT
       ///\f]
       ///
       /// This operation is also known as 'pull back' or 'base transformation', respectively.
-      static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
+      static void matrix2_tensor_to_left_right_product_matrix6x6_voigt(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               bm,                                            ///< (out) 6x6 Voigt matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
@@ -795,7 +799,7 @@ namespace DRT
       ///     esp. p. 741 ff.
       ///
       /// \return error: 0=success, 1=failure
-      static int SymSpectralDecompJacIter(
+      static int sym_spectral_decomp_jac_iter(
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ew,  ///< diagional matrix of eigenvalues
           CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>&
               ev,  ///< orthornormal eigenvectors (direction cosines)
@@ -895,7 +899,7 @@ namespace DRT
 
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
+      std::string get_element_type_string() const { return "SOLIDSH8P8"; }
     };  // class So_sh8p8
 
 

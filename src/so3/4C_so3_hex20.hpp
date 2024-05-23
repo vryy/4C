@@ -54,20 +54,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex20Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH20"; }
+      std::string get_element_type_string() const { return "SOLIDH20"; }
     };
 
     /*!
@@ -314,7 +314,7 @@ namespace DRT
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
-      std::vector<double> soh20_ElementCenterRefeCoords();
+      std::vector<double> soh20_element_center_refe_coords();
 
       //@}
 
@@ -354,7 +354,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
@@ -469,7 +469,7 @@ namespace DRT
       };
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDH20"; }
+      std::string get_element_type_string() const { return "SOLIDH20"; }
     };  // class So_hex20
 
 

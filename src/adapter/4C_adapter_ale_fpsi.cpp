@@ -29,7 +29,7 @@ ADAPTER::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFpsiWrapper::ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
+void ADAPTER::AleFpsiWrapper::apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_->InsertFPSICondVector(idisp, WriteAccessDispnp());
 
@@ -38,7 +38,7 @@ void ADAPTER::AleFpsiWrapper::ApplyInterfaceDisplacements(Teuchos::RCP<const Epe
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFpsiWrapper::ApplyFSIInterfaceDisplacements(
+void ADAPTER::AleFpsiWrapper::apply_fsi_interface_displacements(
     Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_->InsertFSICondVector(idisp, WriteAccessDispnp());

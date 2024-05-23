@@ -59,7 +59,7 @@ class MyocardSanGarny : public MyocardGeneral
   double ReaCoeff(const double phi, const double dt) override;
 
   ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const override;
+  int get_number_of_internal_state_variables() const override;
 
   ///  returns current internal state of the material
   double GetInternalState(const int k) const override;
@@ -68,7 +68,7 @@ class MyocardSanGarny : public MyocardGeneral
   void SetInternalState(const int k, const double val) override;
 
   ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const override;
+  int get_number_of_ionic_currents() const override;
 
   ///  return ionic currents
   double GetIonicCurrents(const int k) const override;

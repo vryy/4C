@@ -453,7 +453,7 @@ bool NTS::Interpolator::Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::E
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     seitz 08/15|
  *----------------------------------------------------------------------*/
-void NTS::Interpolator::InterpolateMasterTemp3D(
+void NTS::Interpolator::interpolate_master_temp3_d(
     MORTAR::Element& sele, std::vector<MORTAR::Element*> meles)
 {
   // if it's not a TSI problem, there's nothing to do here
@@ -466,7 +466,7 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      FOUR_C_THROW("InterpolateMasterTemp3D called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("interpolate_master_temp3_d called on a wrong type of MORTAR::Element pair!");
   }
 
   //**************************************************************
@@ -896,7 +896,7 @@ void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::Element& mele,
   double prod = wearval / area;
 
   // add current node wear to w
-  dynamic_cast<CONTACT::FriNode&>(mynode).AddDeltaWeightedWearValue(prod);
+  dynamic_cast<CONTACT::FriNode&>(mynode).add_delta_weighted_wear_value(prod);
 
   //****************************************************************
   //   linearization for implicit algorithms

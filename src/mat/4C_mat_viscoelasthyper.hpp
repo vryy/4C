@@ -216,13 +216,13 @@ namespace MAT
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
-    virtual void EvaluateIsoViscoPrincipal(CORE::LINALG::Matrix<6, 1>& stress,
+    virtual void evaluate_iso_visco_principal(CORE::LINALG::Matrix<6, 1>& stress,
         CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<8, 1>& mu,
         CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<6, 6>& id4sharp,
         CORE::LINALG::Matrix<6, 1>& scgrate);
 
     /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
-    virtual void EvaluateIsoViscoModified(CORE::LINALG::Matrix<6, 1>& stressisomodisovisco,
+    virtual void evaluate_iso_visco_modified(CORE::LINALG::Matrix<6, 1>& stressisomodisovisco,
         CORE::LINALG::Matrix<6, 1>& stressisomodvolvisco,
         CORE::LINALG::Matrix<6, 6>& cmatisomodisovisco,
         CORE::LINALG::Matrix<6, 6>& cmatisomodvolvisco, CORE::LINALG::Matrix<3, 1>& prinv,
@@ -240,7 +240,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, int gp);
 
     /// calculates the stress and elasticitiy tensor for the GeneneralizedMax-material
-    virtual void EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6, 1>& Q,
+    virtual void evaluate_visco_generalized_gen_max(CORE::LINALG::Matrix<6, 1>& Q,
         CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
         const CORE::LINALG::Matrix<6, 1>* glstrain, int gp, int eleGID);
 

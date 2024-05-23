@@ -106,7 +106,7 @@ namespace BEAMINTERACTION
      * @param local_force (in/out) Local pair force vector.
      * @param local_stiff (in/out) Local pair stiffness matrix.
      */
-    void EvaluateRotationalCouplingTerms(
+    void evaluate_rotational_coupling_terms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&

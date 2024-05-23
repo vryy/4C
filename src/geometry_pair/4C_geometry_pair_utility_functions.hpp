@@ -56,18 +56,18 @@ namespace GEOMETRYPAIR
   void CopySegment(const LineSegment<A>& segment_in, LineSegment<B>& segment_out)
   {
     // Add the start and end points.
-    segment_out.GetStartPoint().SetFromOtherPointDouble(segment_in.GetStartPoint());
-    segment_out.GetEndPoint().SetFromOtherPointDouble(segment_in.GetEndPoint());
+    segment_out.GetStartPoint().set_from_other_point_double(segment_in.GetStartPoint());
+    segment_out.GetEndPoint().set_from_other_point_double(segment_in.GetEndPoint());
 
     // Add the projection points.
-    const auto n_points = segment_in.GetNumberOfProjectionPoints();
+    const auto n_points = segment_in.get_number_of_projection_points();
     const std::vector<ProjectionPoint1DTo3D<A>>& projection_points_in =
         segment_in.GetProjectionPoints();
     std::vector<ProjectionPoint1DTo3D<B>>& projection_points_out =
         segment_out.GetProjectionPoints();
     projection_points_out.resize(n_points);
     for (unsigned int i_point = 0; i_point < n_points; i_point++)
-      projection_points_out[i_point].SetFromOtherPointDouble(projection_points_in[i_point]);
+      projection_points_out[i_point].set_from_other_point_double(projection_points_in[i_point]);
   }
 
   /**

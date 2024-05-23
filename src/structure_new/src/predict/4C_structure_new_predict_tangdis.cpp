@@ -66,14 +66,14 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   CheckInitSetup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
-  grp_ptr->ResetPrePostOperator(NoxParams().sublist("Group Options"));
+  grp_ptr->reset_pre_post_operator(NoxParams().sublist("Group Options"));
 
   ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
 
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
   // ---------------------------------------------------------------------------
-  dbc_incr_ptr_ = Dbc().GetDirichletIncrement();
+  dbc_incr_ptr_ = Dbc().get_dirichlet_increment();
 
   // ---------------------------------------------------------------------------
   // We create at this point a new solution vector and initialize it
@@ -150,14 +150,14 @@ const Epetra_Vector& STR::PREDICT::TangDis::GetDbcIncr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const bool& STR::PREDICT::TangDis::IsApplyLinearReactionForces() const
+const bool& STR::PREDICT::TangDis::is_apply_linear_reaction_forces() const
 {
   return apply_linear_reaction_forces_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::PREDICT::TangDis::PreApplyForceExternal(Epetra_Vector& fextnp) const
+bool STR::PREDICT::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) const
 {
   CheckInitSetup();
 
@@ -187,7 +187,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
 {
   // If we do not want to apply linear reaction forces due to changing Dirichlet
   // boundary conditions, we just return.
-  if (not tang_predict_ptr_->IsApplyLinearReactionForces()) return;
+  if (not tang_predict_ptr_->is_apply_linear_reaction_forces()) return;
 
   // get the new dirichlet boundary increment
   const Epetra_Vector& dbc_incr = tang_predict_ptr_->GetDbcIncr();
@@ -201,7 +201,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
   /* Alternatively, it's also possible to get a const pointer on the jacobian
    * by calling grp.getLinearSystem()->getJacobianOperator()... */
   Teuchos::RCP<const CORE::LINALG::SparseMatrix> stiff_ptr =
-      tang_predict_ptr_->GlobalState().GetJacobianDisplBlock();
+      tang_predict_ptr_->GlobalState().get_jacobian_displ_block();
 
   // check if the jacobian is filled
   if (not stiff_ptr->Filled()) FOUR_C_THROW("The jacobian is not yet filled!");

@@ -39,17 +39,17 @@ namespace
     EXPECT_FALSE(densitycorrection_->ComputeDensityBC());
   }
 
-  TEST_F(SPHDensityCorrectionInteriorTest, CorrectedDensityInterior)
+  TEST_F(SPHDensityCorrectionInteriorTest, corrected_density_interior)
   {
     const double denssum = 1.07;
     double dens = 0.98;
 
-    densitycorrection_->CorrectedDensityInterior(&denssum, &dens);
+    densitycorrection_->corrected_density_interior(&denssum, &dens);
 
     EXPECT_NEAR(dens, denssum, 1e-14);
   }
 
-  TEST_F(SPHDensityCorrectionInteriorTest, CorrectedDensityFreeSurface)
+  TEST_F(SPHDensityCorrectionInteriorTest, corrected_density_free_surface)
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -58,7 +58,7 @@ namespace
 
     const double dens_ref = dens;
 
-    densitycorrection_->CorrectedDensityFreeSurface(&denssum, &colorfield, &dens_bc, &dens);
+    densitycorrection_->corrected_density_free_surface(&denssum, &colorfield, &dens_bc, &dens);
 
     EXPECT_NEAR(dens, dens_ref, 1e-14);
   }
@@ -88,17 +88,17 @@ namespace
   {
     EXPECT_FALSE(densitycorrection_->ComputeDensityBC());
   }
-  TEST_F(SPHDensityCorrectionNormalizedTest, CorrectedDensityInterior)
+  TEST_F(SPHDensityCorrectionNormalizedTest, corrected_density_interior)
   {
     const double denssum = 1.07;
     double dens = 0.98;
 
-    densitycorrection_->CorrectedDensityInterior(&denssum, &dens);
+    densitycorrection_->corrected_density_interior(&denssum, &dens);
 
     EXPECT_NEAR(dens, denssum, 1e-14);
   }
 
-  TEST_F(SPHDensityCorrectionNormalizedTest, CorrectedDensityFreeSurface)
+  TEST_F(SPHDensityCorrectionNormalizedTest, corrected_density_free_surface)
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -107,7 +107,7 @@ namespace
 
     const double dens_ref = denssum / colorfield;
 
-    densitycorrection_->CorrectedDensityFreeSurface(&denssum, &colorfield, &dens_bc, &dens);
+    densitycorrection_->corrected_density_free_surface(&denssum, &colorfield, &dens_bc, &dens);
 
     EXPECT_NEAR(dens, dens_ref, 1e-14);
   }
@@ -137,17 +137,17 @@ namespace
     EXPECT_TRUE(densitycorrection_->ComputeDensityBC());
   }
 
-  TEST_F(SPHDensityCorrectionRandlesTest, CorrectedDensityInterior)
+  TEST_F(SPHDensityCorrectionRandlesTest, corrected_density_interior)
   {
     const double denssum = 1.07;
     double dens = 0.98;
 
-    densitycorrection_->CorrectedDensityInterior(&denssum, &dens);
+    densitycorrection_->corrected_density_interior(&denssum, &dens);
 
     EXPECT_NEAR(dens, denssum, 1e-14);
   }
 
-  TEST_F(SPHDensityCorrectionRandlesTest, CorrectedDensityFreeSurface)
+  TEST_F(SPHDensityCorrectionRandlesTest, corrected_density_free_surface)
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -156,7 +156,7 @@ namespace
 
     const double dens_ref = denssum + dens_bc * (1.0 - colorfield);
 
-    densitycorrection_->CorrectedDensityFreeSurface(&denssum, &colorfield, &dens_bc, &dens);
+    densitycorrection_->corrected_density_free_surface(&denssum, &colorfield, &dens_bc, &dens);
 
     EXPECT_NEAR(dens, dens_ref, 1e-14);
   }

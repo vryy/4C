@@ -476,8 +476,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
 //-----------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::EvaluateEdgeBasedStabilization(DRT::ELEMENTS::FluidIntFace*
-                                                  intface,  ///< internal face element
+    ndistype>::evaluate_edge_based_stabilization(DRT::ELEMENTS::FluidIntFace*
+                                                     intface,  ///< internal face element
     Teuchos::RCP<CORE::MAT::Material>& material,            ///< material associated with the faces
     DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
     DRT::ELEMENTS::FluidEleParameterIntFace&
@@ -506,31 +506,31 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // boolean for ghost penalty reconstruction in velocity and pressure used for
   // XFEM-time-integration
-  const bool ghost_penalty_reconstruct = fldintfacepara.Is_GhostPenaltyReconstruction();
+  const bool ghost_penalty_reconstruct = fldintfacepara.is_ghost_penalty_reconstruction();
 
   // flags to integrate pressure gradient jump based stabilization terms
   bool EOS_pres = fldintfacepara.Face_EOS_Pres();  // eos/gp pressure stabilization
 
   // flags to integrate velocity gradient jump based stabilization terms
   const bool EOS_conv_stream =
-      fldintfacepara.Face_EOS_Conv_Stream();  // eos/gp convective streamline stabilization
+      fldintfacepara.face_eos_conv_stream();  // eos/gp convective streamline stabilization
   const bool EOS_conv_cross =
       fldintfacepara.Face_EOS_Conv_Cross();  // eos/gp convective crosswind stabilization
   const bool EOS_div_vel_jump =
       fldintfacepara
-          .Face_EOS_Div_vel_jump();  // eos/gp divergence stabilization based on velocity jump
+          .face_eos_div_vel_jump();  // eos/gp divergence stabilization based on velocity jump
 
   const bool GP_visc =
       fldintfacepara.Face_GP_visc();  // ghost penalty stabilization according to Nitsche's method
   double GP_visc_fac =
-      fldintfacepara.Ghost_Penalty_visc_fac();  // ghost penalty stabilization factor according to
+      fldintfacepara.ghost_penalty_visc_fac();  // ghost penalty stabilization factor according to
                                                 // Nitsche's method
   if (!GP_visc) GP_visc_fac = 0.0;
 
   const bool GP_trans =
       fldintfacepara.Face_GP_trans();  // ghost penalty stabilization according to Nitsche's method
   double GP_trans_fac =
-      fldintfacepara.Ghost_Penalty_trans_fac();  // ghost penalty stabilization factor according to
+      fldintfacepara.ghost_penalty_trans_fac();  // ghost penalty stabilization factor according to
                                                  // Nitsche's method
   if (!GP_trans) GP_trans_fac = 0.0;
 
@@ -539,11 +539,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           .Face_GP_u_p_2nd();  // 2nd order ghost penalty stabilization for velocity und pressure
   double GP_u_2nd_fac =
       fldintfacepara
-          .Ghost_Penalty_visc_2nd_fac();  // 2nd order velocity ghost penalty stabilization factor
+          .ghost_penalty_visc_2nd_fac();  // 2nd order velocity ghost penalty stabilization factor
                                           // according to Nitsche's method
   double GP_p_2nd_fac =
       fldintfacepara
-          .Ghost_Penalty_press_2nd_fac();  // 2nd order pressure ghost penalty stabilization factor
+          .ghost_penalty_press_2nd_fac();  // 2nd order pressure ghost penalty stabilization factor
                                            // according to Nitsche's method
   if (!GP_u_p_2nd)
   {
@@ -553,14 +553,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   const bool GP_u_p_2nd_normal =
       fldintfacepara
-          .Is_General_Ghost_Penalty_u_p_2nd_Normal();  // 2nd order ghost penalty stabilization for
+          .is_general_ghost_penalty_u_p_2nd_normal();  // 2nd order ghost penalty stabilization for
                                                        // velocity und pressure in normal direction?
 
 
   // flags to integrate velocity gradient jump based stabilization terms
   bool EOS_div =
       fldintfacepara
-          .Face_EOS_Div_div_jump();  // eos/gp divergence stabilization based on divergence jump
+          .face_eos_div_div_jump();  // eos/gp divergence stabilization based on divergence jump
 
   // special treatment of this specific tau definition
   EOS_div =
@@ -585,7 +585,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if ((!EOS_vel) and (!EOS_pres) and (!EOS_div))
   {
-    FOUR_C_THROW("do not call EvaluateEdgeBasedStabilization if no stab is required!");
+    FOUR_C_THROW("do not call evaluate_edge_based_stabilization if no stab is required!");
   }
 
   if (EOS_div_vel_jump)
@@ -1062,14 +1062,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //-----------------------------------------------------
     // evaluate the shape functions at the integration point
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints_->Weight(iquad), face_xi_gp_,
-        p_xi_gp_, n_xi_gp_, pele->Id(), nele->Id(), use2ndderiv);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints_->Weight(iquad),
+        face_xi_gp_, p_xi_gp_, n_xi_gp_, pele->Id(), nele->Id(), use2ndderiv);
 
 
     //-----------------------------------------------------
     // get velocity and pressure and derivatives at integration point
 
-    EvalVelPresAndDerivsAtIntPoint(use2ndderiv, pele->IsAle());
+    eval_vel_pres_and_derivs_at_int_point(use2ndderiv, pele->IsAle());
 
     //-----------------------------------------------------
     vderxyaf_diff_.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
@@ -1086,7 +1086,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // get the stabilization parameters
     SetConvectiveVelint(fldintfacepara, pele->IsAle());
 
-    ComputeStabilizationParams(ghost_penalty_reconstruct, use2ndderiv,
+    compute_stabilization_params(ghost_penalty_reconstruct, use2ndderiv,
         fldintfacepara.EOS_WhichTau(), EOS_conv_stream, EOS_conv_cross, EOS_div_vel_jump,
         max_vel_L2_norm, timefac, GP_visc_fac, GP_trans_fac, GP_u_2nd_fac, GP_p_2nd_fac);
 
@@ -1154,7 +1154,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
       if (GP_u_p_2nd_normal)  // just the theoretically sufficient 2nd order normal derivatives!
       {
-        GhostPenalty2ndNormal(tau_timefacfac_u_2nd, tau_timefacfac_p_2nd);
+        ghost_penalty2nd_normal(tau_timefacfac_u_2nd, tau_timefacfac_p_2nd);
       }
       else  // the full 2nd order derivatives (even the tangential contributions)
       {
@@ -1506,7 +1506,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
 
 
     // calculate reaction coefficient
-    reacoeff_ = actmat->ComputeReactionCoeff() *
+    reacoeff_ = actmat->compute_reaction_coeff() *
                 dynamic_cast<MAT::PAR::FluidPoro*>(actmat->Parameter())->initial_porosity_;
   }
   else if (material->MaterialType() == CORE::Materials::m_matlist)
@@ -1571,7 +1571,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
   {
     FOUR_C_THROW(
         "A Newtonian Fluid is expected. For XFEM this should be checked in "
-        "XFEM::XfemEdgeStab::AssembleEdgeStabGhostPenalty(..)!\n");
+        "XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(..)!\n");
   }
 
   //--------------------------------------------------
@@ -1602,7 +1602,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::EvalShapeFuncAndDerivsAtIntPoint(const double wquad,  ///< Gaussian weight
+    ndistype>::eval_shape_func_and_derivs_at_int_point(const double wquad,  ///< Gaussian weight
     const CORE::LINALG::Matrix<facensd_, 1>&
         xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
     const CORE::LINALG::Matrix<nsd_, 1>&
@@ -1614,7 +1614,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     bool use2ndderiv  ///< flag to use 2nd order derivatives
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: EvalShapeFuncAndDerivsAtIntPoint");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: eval_shape_func_and_derivs_at_int_point");
 
   if (!(distype == CORE::FE::CellType::nurbs9))
   {
@@ -1775,8 +1775,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
-    EvalVelPresAndDerivsAtIntPoint(bool use2ndderiv,  ///< flag to use 2nd order derivatives
-        bool isAle                                    ///< flag, whether we are on an ALE-fluid
+    eval_vel_pres_and_derivs_at_int_point(bool use2ndderiv,  ///< flag to use 2nd order derivatives
+        bool isAle  ///< flag, whether we are on an ALE-fluid
     )
 {
   //-----------------------------------------------------
@@ -2001,14 +2001,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::EvalShapeFuncAndDerivsAtIntPoint(CORE::FE::GaussIntegration::iterator&
-                                                    iquad,  ///< actual integration point
-    int master_eid,                                         ///< master parent element
-    int slave_eid,                                          ///< slave parent element
-    bool use2ndderiv                                        ///< flag to use 2nd order derivatives
+    ndistype>::eval_shape_func_and_derivs_at_int_point(CORE::FE::GaussIntegration::iterator&
+                                                           iquad,  ///< actual integration point
+    int master_eid,                                                ///< master parent element
+    int slave_eid,                                                 ///< slave parent element
+    bool use2ndderiv  ///< flag to use 2nd order derivatives
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: EvalShapeFuncAndDerivsAtIntPoint");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: eval_shape_func_and_derivs_at_int_point");
 
 
   // gaussian weight
@@ -2248,10 +2248,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetCo
 
 
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GhostPenalty2ndNormal(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ghost_penalty2nd_normal(
     const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: GhostPenalty2ndNormal");
+  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: ghost_penalty2nd_normal");
 
 
   if (numderiv2_n != numderiv2_p)
@@ -3399,12 +3399,12 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (nsd_ == 3)
   {
-    FindHEXConnectingLines2D(numnode_intface, connectivity_line_surf_, side_id_master,
+    find_hex_connecting_lines2_d(numnode_intface, connectivity_line_surf_, side_id_master,
         side_id_slave, p_lines_master, p_lines_slave, opposite_side_id_master,
         opposite_side_id_slave);
   }
   else if (nsd_ == 2)
-    FindQUADConnectingLines1D(numnode_intface, side_id_master, side_id_slave, p_lines_master,
+    find_quad_connecting_lines1_d(numnode_intface, side_id_master, side_id_slave, p_lines_master,
         p_lines_slave, opposite_side_id_master, opposite_side_id_slave);
   else
     FOUR_C_THROW("no valid nsd_");
@@ -3593,7 +3593,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
 //------------------------------------------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::ComputeStabilizationParams(const bool is_ghost_penalty_reconstruct,
+    ndistype>::compute_stabilization_params(const bool is_ghost_penalty_reconstruct,
     const bool use2ndderiv, const INPAR::FLUID::EosTauType tautype, const bool EOS_conv_stream,
     const bool EOS_conv_cross, const bool EOS_div_vel_jump, const double max_vel_L2_norm,
     const double timefac, const double gamma_ghost_penalty_visc,

@@ -137,7 +137,7 @@ namespace STR
     int IntegrateStep() override;
 
     //! Create Edges of for discrete shell elements
-    void InitializeEdgeElements();
+    void initialize_edge_elements();
 
     //! @name Prediction
     //@{
@@ -151,7 +151,7 @@ namespace STR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    void PreparePartitionStep() override;
+    void prepare_partition_step() override;
 
     //! Check if line search is applied in combination with elements
     //! that perform a local condensation (e.g. EAS)
@@ -160,7 +160,7 @@ namespace STR
     //! Predict constant displacements, velocities and accelerations,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs
-    void PredictConstDisVelAcc();
+    void predict_const_dis_vel_acc();
 
     //! Predict constant displacements, however the velocities
     //! and accelerations are consistent to the time integration
@@ -168,14 +168,14 @@ namespace STR
     //! solution.
     //! This method has to be implemented by the individual time
     //! integrator.
-    virtual void PredictConstDisConsistVelAcc() = 0;
+    virtual void predict_const_dis_consist_vel_acc() = 0;
 
     //! Predict displacements based on the assumption of constant
     //! velocities. Calculate consistent velocities and accelerations
     //! afterwards.
     //! This method has to be implemented by the individual time
     //! integrator.
-    virtual void PredictConstVelConsistAcc() = 0;
+    virtual void predict_const_vel_consist_acc() = 0;
 
     //! Predict displacements based on the assumption of constant
     //! accelerations. Calculate consistent velocities and accelerations
@@ -188,12 +188,12 @@ namespace STR
     //! and the linearised system at the previously converged state.
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
-    void PredictTangDisConsistVelAcc();
+    void predict_tang_dis_consist_vel_acc();
 
     //!
-    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond);
+    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond);
     //!
-    void UpdateKrylovSpaceProjection();
+    void update_krylov_space_projection();
 
     //@}
 
@@ -231,7 +231,7 @@ namespace STR
      *  it is of importance whether this method is called from a predictor step
      *  or from a regular Newton step.
      */
-    virtual void EvaluateForceStiffResidual(Teuchos::ParameterList& params) = 0;
+    virtual void evaluate_force_stiff_residual(Teuchos::ParameterList& params) = 0;
 
     /*! \brief Evaluate forces and residual #fres_
      *
@@ -248,10 +248,10 @@ namespace STR
      *
      *  \author mayr.mt \date 09/2014
      */
-    virtual void EvaluateForceResidual() = 0;
+    virtual void evaluate_force_residual() = 0;
 
     //! Apply external force, its stiffness at state
-    void ApplyForceStiffExternal(const double time,          //!< evaluation time
+    void apply_force_stiff_external(const double time,       //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> dis,               //!< old displacement state
         const Teuchos::RCP<Epetra_Vector> disn,              //!< new displacement state
         const Teuchos::RCP<Epetra_Vector> vel,               // velocity state
@@ -260,7 +260,7 @@ namespace STR
     );
 
     //! Evaluate ordinary internal force, its stiffness at state
-    void ApplyForceStiffInternal(const double time,        //!< evaluation time
+    void apply_force_stiff_internal(const double time,     //!< evaluation time
         const double dt,                                   //!< step size
         const Teuchos::RCP<Epetra_Vector> dis,             //!< displacement state
         const Teuchos::RCP<Epetra_Vector> disi,            //!< residual displacements
@@ -273,8 +273,8 @@ namespace STR
     );
 
     //! Evaluate internal and inertia forces and their linearizations
-    void ApplyForceStiffInternalAndInertial(const double time,  //!< evaluation time
-        const double dt,                                        //!< step size
+    void apply_force_stiff_internal_and_inertial(const double time,  //!< evaluation time
+        const double dt,                                             //!< step size
         const double timintfac_dis,              //!< time integration factor for d(Res) / d dis
         const double timintfac_vel,              //!< time integration factor for d(Res) / d vel
         const Teuchos::RCP<Epetra_Vector> dis,   //!< displacement state
@@ -298,7 +298,7 @@ namespace STR
     );
 
     //! Evaluate forces due to constraints
-    void ApplyForceStiffConstraint(const double time,       //!< evaluation time
+    void apply_force_stiff_constraint(const double time,    //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> dis,              //!< last evaluated displacements
         const Teuchos::RCP<Epetra_Vector> disn,             //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                  //!< forces are added onto
@@ -307,17 +307,17 @@ namespace STR
     );
 
     //! Evaluate forces due to Cardiovascular0D BCs
-    void ApplyForceStiffCardiovascular0D(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> disn,              //!< evaluation displacements
-        Teuchos::RCP<Epetra_Vector>& fint,                   //!< forces are added onto
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
+    void apply_force_stiff_cardiovascular0_d(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> disn,                  //!< evaluation displacements
+        Teuchos::RCP<Epetra_Vector>& fint,                       //!< forces are added onto
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,       //!< stiffness is added onto
         Teuchos::ParameterList
             pwindk  //!< parameter list containing scale factors for matrix entries
     );
 
 
     //! Evaluate forces and stiffness due to contact / meshtying
-    void ApplyForceStiffContactMeshtying(
+    void apply_force_stiff_contact_meshtying(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
         Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
@@ -325,7 +325,7 @@ namespace STR
     );
 
     //! Evaluate forces and stiffness due to beam contact
-    void ApplyForceStiffBeamContact(
+    void apply_force_stiff_beam_contact(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
         Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
@@ -333,12 +333,12 @@ namespace STR
     );
 
     //! Check residual displacement and scale it if necessary
-    void LimitStepsizeBeamContact(
+    void limit_stepsize_beam_contact(
         Teuchos::RCP<Epetra_Vector>& disi  //!< residual displacement vector
     );
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
-    void ApplyForceStiffSpringDashpot(
+    void apply_force_stiff_spring_dashpot(
         Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector> fint,                  //!< internal forces are modified
         Teuchos::RCP<Epetra_Vector> dis,                   //!< current displacement state
@@ -356,7 +356,7 @@ namespace STR
     //! determine characteristic norms for relative
     //! error checks of residual displacements
     //! \author lw  \date 12/07
-    virtual double CalcRefNormDisplacement();
+    virtual double calc_ref_norm_displacement();
 
     //! determine characteristic norms for relative
     //! error checks of residual forces
@@ -394,7 +394,7 @@ namespace STR
     int LinSolveErrorCheck(int linerror);
 
     //! check for success of nonlinear solve otherwise return error code
-    int NewtonFullErrorCheck(int linerror, int eleerror);
+    int newton_full_error_check(int linerror, int eleerror);
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -411,7 +411,7 @@ namespace STR
     int LsSolveNewtonStep();
 
     //! Update structural RHS and stiffness matrix (line search)
-    void LsUpdateStructuralRHSandStiff(bool& isexcept, double& merit_fct);
+    void ls_update_structural_rh_sand_stiff(bool& isexcept, double& merit_fct);
 
     //! Evaluate the specified merit function (line search)
     //! (for pure structural problems this routine is rather short.
@@ -424,13 +424,13 @@ namespace STR
     bool LsConverged(double* mf_value, double step_red);
 
     //! Print information concerning the last line search step (line search)
-    void LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red);
+    void ls_print_line_search_iter(double* mf_value, int iter_ls, double step_red);
 
-    //! Contains text to LsPrintLineSearchIter
+    //! Contains text to ls_print_line_search_iter
     void LsPrintLsIterText(FILE* ofile  //!< output file handle
     );
 
-    //! Contains header to LsPrintLineSearchIter
+    //! Contains header to ls_print_line_search_iter
     void LsPrintLsIterHeader(FILE* ofile  //!< output file handle
     );
 
@@ -442,7 +442,7 @@ namespace STR
     //! is increased by Uzawa_param*(Vol_err)
     //!
     //! \author tk (originally)
-    int UzawaNonLinearNewtonFull();
+    int uzawa_non_linear_newton_full();
 
     //! do full Newton iteration respecting volume constraint
     //!
@@ -451,10 +451,10 @@ namespace STR
     //! Linear problem is solved with Uzawa algorithm.
     //!
     //! \author tk (originally) \date 11/07
-    int UzawaLinearNewtonFull();
+    int uzawa_linear_newton_full();
 
     //! check for success of nonlinear solve otherwise return error code
-    int UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror);
+    int uzawa_linear_newton_full_error_check(int linerror, int eleerror);
 
     //! Do pseudo transient continuation non-linear iteration
     //!
@@ -502,13 +502,13 @@ namespace STR
      */
     void CmtLinearSolve();
 
-    int CmtWindkConstrNonlinearSolve();
-    int CmtWindkConstrLinearSolve(const double k_ptc);
+    int cmt_windk_constr_nonlinear_solve();
+    int cmt_windk_constr_linear_solve(const double k_ptc);
 
     //! Do nonlinear iteration for beam contact
     //!
     //! \author popp (originally) \date 11/11
-    int BeamContactNonlinearSolve();
+    int beam_contact_nonlinear_solve();
 
     //@}
 
@@ -594,15 +594,15 @@ namespace STR
     );
 
     //! Create solver parameters for  non-linear solution with NOX
-    Teuchos::RCP<Teuchos::ParameterList> NoxCreateSolverParameters();
+    Teuchos::RCP<Teuchos::ParameterList> nox_create_solver_parameters();
 
     //! Create printing parameters for non-linear solution with NOX
-    Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters(
+    Teuchos::RCP<Teuchos::ParameterList> nox_create_print_parameters(
         const bool verbose = false  //!< verbosity level
     ) const;
 
     //! Create the linear system that is passed into NOX
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
+    Teuchos::RCP<::NOX::Epetra::LinearSystem> nox_create_linear_system(
         Teuchos::ParameterList& nlParams,  ///< parameter list
         ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
         Teuchos::RCP<::NOX::Utils> utils   ///< printing utilities
@@ -634,12 +634,12 @@ namespace STR
     //! We have to use this update routine if we are not sure whether velocities and accelerations
     //! have been computed consistently to the displacements based on time integration scheme
     //! specific formulas. Hence, this method is necessary for certain predictors (like
-    //! #PredictConstDisVelAcc).
-    virtual void UpdateIterIncrementally() = 0;
+    //! #predict_const_dis_vel_acc).
+    virtual void update_iter_incrementally() = 0;
 
     //! Update iteration incrementally with prescribed residual
     //! displacements
-    void UpdateIterIncrementally(
+    void update_iter_incrementally(
         const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     );
 
@@ -653,7 +653,7 @@ namespace STR
     //! We can use this update routine if we are sure that the velocities
     //! and accelerations have been computed consistently to the displacements
     //! based on time integration scheme specific formulas.
-    virtual void UpdateIterIteratively() = 0;
+    virtual void update_iter_iteratively() = 0;
 
     //! Update configuration after time step
     //!
@@ -668,19 +668,19 @@ namespace STR
     void UpdateStepElement() override = 0;
 
     //! Update step for constraints
-    void UpdateStepConstraint();
+    void update_step_constraint();
 
     //! Update step for Cardiovascular0D
-    void UpdateStepCardiovascular0D();
+    void update_step_cardiovascular0_d();
 
     //! Update step for SpringDashpot
-    void UpdateStepSpringDashpot();
+    void update_step_spring_dashpot();
 
     //@}
 
     // export contact integration time and active set into text files
     // xxx.time and xxx.active
-    void ExportContactQuantities();
+    void export_contact_quantities();
 
     //! @name Attribute access functions
     //@{
@@ -696,37 +696,37 @@ namespace STR
     int MethodSteps() const override = 0;
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() const override = 0;
+    int method_order_of_accuracy_dis() const override = 0;
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() const override = 0;
+    int method_order_of_accuracy_vel() const override = 0;
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override = 0;
+    double method_lin_err_coeff_dis() const override = 0;
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override = 0;
+    double method_lin_err_coeff_vel() const override = 0;
 
     //! Return bool indicating if constraints are defined
     bool HaveConstraint() override;
 
     //! Return bool indicating if Cardiovascular0D bcs are defined
-    bool HaveCardiovascular0D();
+    bool have_cardiovascular0_d();
 
     //! Return bool indicating if spring dashpot BCs are defined
     bool HaveSpringDashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override { return conman_; }
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override { return conman_; }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
-    Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    Teuchos::RCP<UTILS::Cardiovascular0DManager> get_cardiovascular0_d_manager()
     {
       return cardvasc0dman_;
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
       return springman_;
     }
@@ -744,13 +744,13 @@ namespace STR
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    void UpdateIterIncrConstr(
+    void update_iter_incr_constr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
         ) override;
 
     //! Update iteration
     //! Add residual increment to pressures stored in Cardiovascular0D manager
-    void UpdateIterIncrCardiovascular0D(
+    void update_iter_incr_cardiovascular0_d(
         Teuchos::RCP<Epetra_Vector> cv0ddofincr  ///< pressure increment
         ) override;
 
@@ -764,26 +764,27 @@ namespace STR
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
 
     //! Evaluate/define the residual force vector #fres_ for
-    //! relaxation solution with SolveRelaxationLinear
-    virtual void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) = 0;
+    //! relaxation solution with solve_relaxation_linear
+    virtual void evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params) = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override;
+    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
-    void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
+    void check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status);
 
     //! check, if according to divercont flag 3D0D PTC can be reset to normal Newton
-    void CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status);
+    void check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& status);
 
     /*! \brief Prepare system for solving with Newton's method
      *
      *  Blank DOFs with Dirichlet BCs in the residual. By default
      *  (preparejacobian = true), apply Dirichlet BCs to #stiff_ as well. This
      *  can be switched off when only the residual has been evaluated
-     *  (\sa EvaluateForceResidual()).
+     *  (\sa evaluate_force_residual()).
      */
-    void PrepareSystemForNewtonSolve(const bool preparejacobian = true  ///< prepare Jacobian matrix
+    void prepare_system_for_newton_solve(
+        const bool preparejacobian = true  ///< prepare Jacobian matrix
     );
 
     //@}
@@ -823,22 +824,22 @@ namespace STR
     void PrepareTimeStep() override;
 
     //! Update state incrementally for coupled problems with monolithic approach
-    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
-      UpdateIterIncrementally(disiterinc);
+      update_iter_incrementally(disiterinc);
       return;
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
-      UpdateIterIncrementally(disiterinc);
+      update_iter_incrementally(disiterinc);
 
       Teuchos::ParameterList params;
 
       // builds tangent, residual and applies DBC
-      EvaluateForceStiffResidual(params);
-      PrepareSystemForNewtonSolve();
+      evaluate_force_stiff_residual(params);
+      prepare_system_for_newton_solve();
       return;
     }
 
@@ -907,7 +908,7 @@ namespace STR
 
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration

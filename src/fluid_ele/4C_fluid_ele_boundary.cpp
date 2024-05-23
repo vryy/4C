@@ -38,7 +38,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
     DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
     : DRT::FaceElement(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
 {
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   distype_ = CORE::FE::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());

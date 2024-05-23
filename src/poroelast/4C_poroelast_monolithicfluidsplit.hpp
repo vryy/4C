@@ -73,7 +73,7 @@ namespace POROELAST
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    void RecoverLagrangeMultiplierAfterTimeStep() override;
+    void recover_lagrange_multiplier_after_time_step() override;
 
     //! @name matrix transformation
     //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$

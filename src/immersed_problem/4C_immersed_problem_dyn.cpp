@@ -40,7 +40,7 @@ void immersed_problem_drt()
   // Get Parameters
   ///////////////////////////////////////////////////////////////////////
   // get parameterlist for immersed method
-  const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
+  const Teuchos::ParameterList& immersedmethodparams = problem->immersed_method_params();
   // choose algorithm
   int coupling = CORE::UTILS::IntegralValue<int>(immersedmethodparams, "COUPALGO");
   int scheme = CORE::UTILS::IntegralValue<int>(immersedmethodparams, "SCHEME");
@@ -76,7 +76,8 @@ void immersed_problem_drt()
 
           {
             // check if structural predictor ConstDisVelAcc is chosen in input file
-            if (problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
+            if (problem->structural_dynamic_params().get<std::string>("PREDICT") !=
+                "ConstDisVelAcc")
               FOUR_C_THROW(
                   "Invalid structural predictor for immersed fsi!\n"
                   "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
@@ -110,7 +111,7 @@ void immersed_problem_drt()
             algo->ReadRestart(restart);
           else
             // additional setup for structural search tree, etc.
-            algo->SetupStructuralDiscretization();
+            algo->setup_structural_discretization();
 
           algo->Timeloop(algo);
 

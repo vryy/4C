@@ -85,7 +85,7 @@ namespace NOX
            \param jac    : full access to the jacobian
            \param linsys : read only access to the linear system object
          */
-        virtual void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
+        virtual void run_pre_apply_jacobian_inverse(::NOX::Abstract::Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys);
 
         /*! User defined method that will be executed at the end
@@ -96,7 +96,7 @@ namespace NOX
            \param jac    : full access to the jacobian
            \param linsys : read only access to the linear system object
          */
-        virtual void runPostApplyJacobianInverse(::NOX::Abstract::Vector& result,
+        virtual void run_post_apply_jacobian_inverse(::NOX::Abstract::Vector& result,
             ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
             const NOX::NLN::LinearSystem& linsys);
 
@@ -107,7 +107,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeJacobian(CORE::LINALG::SparseOperator& jac,
+        virtual void run_pre_compute_jacobian(CORE::LINALG::SparseOperator& jac,
             const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys);
 
         /** User defined method that will be executed at the end of a call to
@@ -117,7 +117,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac,
+        virtual void run_post_compute_jacobian(CORE::LINALG::SparseOperator& jac,
             const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys);
 
         /** User defined method that will be executed at the start of a call to
@@ -128,7 +128,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeFandJacobian(Epetra_Vector& rhs,
+        virtual void run_pre_compute_fand_jacobian(Epetra_Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
             const NOX::NLN::LinearSystem& linsys);
 
@@ -140,7 +140,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeFandJacobian(Epetra_Vector& rhs,
+        virtual void run_post_compute_fand_jacobian(Epetra_Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
             const NOX::NLN::LinearSystem& linsys);
 
@@ -163,7 +163,7 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
+inline void NOX::NLN::LinSystem::PrePostOperator::run_pre_apply_jacobian_inverse(
     ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
     const NOX::NLN::LinearSystem& linsys)
 {
@@ -171,11 +171,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreApplyJacobianInverse(rhs, jac, linsys);
+      it->second->run_pre_apply_jacobian_inverse(rhs, jac, linsys);
   }
 }
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
+inline void NOX::NLN::LinSystem::PrePostOperator::run_post_apply_jacobian_inverse(
     ::NOX::Abstract::Vector& result, ::NOX::Abstract::Vector& rhs,
     CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
 {
@@ -183,51 +183,51 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostApplyJacobianInverse(result, rhs, jac, linsys);
+      it->second->run_post_apply_jacobian_inverse(result, rhs, jac, linsys);
   }
 }
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeJacobian(
+inline void NOX::NLN::LinSystem::PrePostOperator::run_pre_compute_jacobian(
     CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreComputeJacobian(jac, x, linsys);
+      it->second->run_pre_compute_jacobian(jac, x, linsys);
   }
 }
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeJacobian(
+inline void NOX::NLN::LinSystem::PrePostOperator::run_post_compute_jacobian(
     CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostComputeJacobian(jac, x, linsys);
+      it->second->run_post_compute_jacobian(jac, x, linsys);
   }
 }
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeFandJacobian(Epetra_Vector& rhs,
+inline void NOX::NLN::LinSystem::PrePostOperator::run_pre_compute_fand_jacobian(Epetra_Vector& rhs,
     CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreComputeFandJacobian(rhs, jac, x, linsys);
+      it->second->run_pre_compute_fand_jacobian(rhs, jac, x, linsys);
   }
 }
 
-inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(Epetra_Vector& rhs,
+inline void NOX::NLN::LinSystem::PrePostOperator::run_post_compute_fand_jacobian(Epetra_Vector& rhs,
     CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostComputeFandJacobian(rhs, jac, x, linsys);
+      it->second->run_post_compute_fand_jacobian(rhs, jac, x, linsys);
   }
 }
 

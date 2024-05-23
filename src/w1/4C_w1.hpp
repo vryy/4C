@@ -56,13 +56,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, int const numdof, int const dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -641,8 +641,8 @@ namespace DRT
       /// due to dimensional reduction #wtype_
       ///
       /// \author bborn \date 06/09
-      void MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatrix& stress,  ///< stress matrix
-          CORE::LINALG::SerialDenseMatrix& C,                                ///< elasticity matrix
+      void material_response3d_plane(CORE::LINALG::SerialDenseMatrix& stress,  ///< stress matrix
+          CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
           const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
           Teuchos::ParameterList& params,                 ///< element parameter list
           int gp                                          ///< Gauss point
@@ -660,9 +660,9 @@ namespace DRT
       );
 
       /// Map plane Green-Lagrange strains to 3d
-      void GreenLagrangePlane3d(const CORE::LINALG::SerialDenseVector&
-                                    glplane,  ///< 2d version of GL strain (Voigt notation)
-          CORE::LINALG::Matrix<6, 1>& gl3d    ///< 3d version of GL strain (Voigt notation)
+      void green_lagrange_plane3d(const CORE::LINALG::SerialDenseVector&
+                                      glplane,  ///< 2d version of GL strain (Voigt notation)
+          CORE::LINALG::Matrix<6, 1>& gl3d      ///< 3d version of GL strain (Voigt notation)
       );
 
       /// Internal/strain energy
@@ -707,7 +707,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -881,11 +881,11 @@ namespace DRT
       Wall1Line& operator=(const Wall1Line& old);
 
       /// Submethod to compute necessary change to stiffness matrix due to the constraint
-      void ComputeAreaConstrStiff(
+      void compute_area_constr_stiff(
           CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseMatrix& elematrix);
 
       /// Submethod to compute first derivatives of constraint area w.r.t. the displacements
-      void ComputeAreaConstrDeriv(
+      void compute_area_constr_deriv(
           CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector);
 
       /// compute infintesimal line element dr for integration along the line

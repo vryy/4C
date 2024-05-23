@@ -199,7 +199,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      void InitJacobianMappingSpecialForNurbs(DRT::Discretization& dis);
+      void init_jacobian_mapping_special_for_nurbs(DRT::Discretization& dis);
 
       //@}
 
@@ -247,7 +247,7 @@ namespace DRT
       //! to fill these matrices or vectors.
       //!
       //! \return 0 if successful, negative otherwise
-      int EvaluateCouplWithThr(
+      int evaluate_coupl_with_thr(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly

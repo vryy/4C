@@ -118,7 +118,7 @@ namespace IMMERSED
     \param condname      (in) : condition name
     \param buildgeometry (in) : build geometry for condition or not
     */
-    void CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
+    void create_volume_condition(const Teuchos::RCP<DRT::Discretization>& dis,
         const std::vector<int> dvol_fenode, const CORE::Conditions::ConditionType condtype,
         const std::string condname, bool buildgeometry);
 
@@ -128,7 +128,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void BuildConditionDofMap(const Teuchos::RCP<const DRT::Discretization>& dis,
+    void build_condition_dof_map(const Teuchos::RCP<const DRT::Discretization>& dis,
         const std::string condname, const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig,
         const int numdof, Teuchos::RCP<Epetra_Map>& cond_dofmap);
 
@@ -178,7 +178,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void ApplyDirichletToFluid(const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
+    void apply_dirichlet_to_fluid(const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
         const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -200,7 +200,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void RemoveDirichletFromFluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+    void remove_dirichlet_from_fluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
         const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper);
 
 
@@ -224,7 +224,7 @@ namespace IMMERSED
     \date 05/14
 
     */
-    void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
+    void evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
         Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
         std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action);
@@ -237,7 +237,7 @@ namespace IMMERSED
     \date 05/14
 
     */
-    void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<DRT::Discretization> dis,
         const Teuchos::RCP<const DRT::Discretization> idis, DRT::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
@@ -253,7 +253,7 @@ namespace IMMERSED
     \date 05/14
 
     */
-    void EvaluateInterpolationCondition(Teuchos::RCP<DRT::Discretization> evaldis,
+    void evaluate_interpolation_condition(Teuchos::RCP<DRT::Discretization> evaldis,
         Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
         const std::string& condstring, const int condid);
 
@@ -265,7 +265,7 @@ namespace IMMERSED
     \date 09/15
 
     */
-    void SearchPotentiallyCoveredBackgrdElements(
+    void search_potentially_covered_backgrd_elements(
         std::map<int, std::set<int>>* current_subset_tofill,
         Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
         const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
@@ -279,7 +279,7 @@ namespace IMMERSED
     \date 09/15
 
     */
-    void EvaluateSubsetElements(Teuchos::ParameterList& params,
+    void evaluate_subset_elements(Teuchos::ParameterList& params,
         Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>& elementstoeval,
         int action);
 
@@ -312,7 +312,7 @@ namespace IMMERSED
     \author rauch
     \date 03/17
     */
-    std::vector<double> CalcGlobalResultantfromEpetraVector(const Epetra_Comm& comm,
+    std::vector<double> calc_global_resultantfrom_epetra_vector(const Epetra_Comm& comm,
         const Teuchos::RCP<const DRT::Discretization>& dis,
         const Teuchos::RCP<const Epetra_Vector>& vec_epetra);
 
@@ -397,7 +397,7 @@ namespace IMMERSED
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
-        (problem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
+        (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
 
     // dimension of global problem
     const int globdim = problem->NDim();
@@ -772,9 +772,9 @@ namespace IMMERSED
               {
                 // std::cout<<"ID="<<immersedele->Id()<<"
                 // scalarprod="<<std::setprecision(10)<<scalarproduct<<std::endl;
-                immersedele->SetBoundaryIsImmersed(2);
+                immersedele->set_boundary_is_immersed(2);
                 immersedele->ConstructElementRCP(
-                    problem->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND"));
+                    problem->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND"));
               }
 
               // DEBUG output
@@ -1245,7 +1245,7 @@ namespace IMMERSED
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
-        (problem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
+        (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
 
     // dimension of global problem
     const int globdim = problem->NDim();

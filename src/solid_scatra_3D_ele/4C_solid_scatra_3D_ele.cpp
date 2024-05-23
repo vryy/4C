@@ -27,12 +27,12 @@ namespace
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
         .AddNamedString("TYPE")
-        .AddOptionalNamedDoubleVector("RAD", 3)
-        .AddOptionalNamedDoubleVector("AXI", 3)
-        .AddOptionalNamedDoubleVector("CIR", 3)
-        .AddOptionalNamedDoubleVector("FIBER1", 3)
-        .AddOptionalNamedDoubleVector("FIBER2", 3)
-        .AddOptionalNamedDoubleVector("FIBER3", 3);
+        .add_optional_named_double_vector("RAD", 3)
+        .add_optional_named_double_vector("AXI", 3)
+        .add_optional_named_double_vector("CIR", 3)
+        .add_optional_named_double_vector("FIBER1", 3)
+        .add_optional_named_double_vector("FIBER2", 3)
+        .add_optional_named_double_vector("FIBER3", 3);
   }
 }  // namespace
 
@@ -40,7 +40,7 @@ DRT::ELEMENTS::SolidScatraType DRT::ELEMENTS::SolidScatraType::instance_;
 
 DRT::ELEMENTS::SolidScatraType& DRT::ELEMENTS::SolidScatraType::Instance() { return instance_; }
 
-void DRT::ELEMENTS::SolidScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SolidScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
@@ -77,7 +77,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidScatraType::Create(const std::vector<
   return object;
 }
 
-void DRT::ELEMENTS::SolidScatraType::NodalBlockInformation(
+void DRT::ELEMENTS::SolidScatraType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
@@ -121,7 +121,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidScatra::Surfaces()
   return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidScatra>(*this);
 }
 
-void DRT::ELEMENTS::SolidScatra::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {

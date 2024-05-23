@@ -55,13 +55,13 @@ namespace CORE::Dofsets
     void AddDofSettoList() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset) override
+    void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) override
     {
-      dofset_->ReplaceInStaticDofsets(olddofset);
+      dofset_->replace_in_static_dofsets(olddofset);
     };
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// returns true if \ref dofset_ is filled
@@ -247,7 +247,7 @@ namespace CORE::Dofsets
     };
 
    protected:
-    /// check if \ref AssignDegreesOfFreedom was called on parent dofset
+    /// check if \ref assign_degrees_of_freedom was called on parent dofset
     void CheckIsAssigned() const;
 
     /// pointer to the parent dofset represented by this proxy

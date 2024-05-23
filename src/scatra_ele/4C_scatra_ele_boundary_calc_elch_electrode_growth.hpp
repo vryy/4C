@@ -59,10 +59,11 @@ namespace DRT
 
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
       //! interface layer growth
-      void EvaluateMinMaxOverpotential(const DRT::FaceElement* ele,  //!< current boundary element
-          Teuchos::ParameterList& params,                            //!< parameter list
-          DRT::Discretization& discretization,                       //!< discretization
-          DRT::Element::LocationArray& la                            //!< location array
+      void evaluate_min_max_overpotential(
+          const DRT::FaceElement* ele,          //!< current boundary element
+          Teuchos::ParameterList& params,       //!< parameter list
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       /*!
@@ -84,7 +85,7 @@ namespace DRT
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void EvaluateS2ICouplingGrowthGrowth(
+      void evaluate_s2_i_coupling_growth_growth(
           const DRT::FaceElement* ele,                     ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           DRT::Discretization& discretization,             ///< discretization
@@ -95,7 +96,7 @@ namespace DRT
 
       //! evaluate global growth-scatra matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void EvaluateS2ICouplingGrowthScatra(
+      void evaluate_s2_i_coupling_growth_scatra(
           const DRT::FaceElement* ele,                    ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           DRT::Discretization& discretization,            ///< discretization
@@ -106,7 +107,7 @@ namespace DRT
 
       //! evaluate global scatra-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
-      void EvaluateS2ICouplingScatraGrowth(
+      void evaluate_s2_i_coupling_scatra_growth(
           const DRT::FaceElement* ele,                   ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
           DRT::Discretization& discretization,           ///< discretization
@@ -139,9 +140,10 @@ namespace DRT
        * @param[out] emastermatrix   linearizations of slave-side residuals w.r.t. master-side dofs
        * @param[out] eslaveresidual  slave-side residual vector
        */
-      void CalculateRHSAndLinearization(int numelectrons, double timefacfac, double timefacrhsfac,
-          double j, double dj_dc_slave, double dj_dc_master, double dj_dpot_slave,
-          double dj_dpot_master, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+      void calculate_rhs_and_linearization(int numelectrons, double timefacfac,
+          double timefacrhsfac, double j, double dj_dc_slave, double dj_dc_master,
+          double dj_dpot_slave, double dj_dpot_master,
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual) const;
 

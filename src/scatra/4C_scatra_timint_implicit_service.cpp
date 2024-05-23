@@ -202,7 +202,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // used for the output of the normal flux as a vector field
   // is computed only once; for ALE formulation recalculation is necessary
   if ((normals_ == Teuchos::null) or isale_)
-    normals_ = ComputeNormalVectors(std::vector<std::string>(1, "ScaTraFluxCalc"));
+    normals_ = compute_normal_vectors(std::vector<std::string>(1, "ScaTraFluxCalc"));
 
   if (calcflux_boundary_ == INPAR::SCATRA::flux_convective)
   {
@@ -234,7 +234,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // other parameters that might be needed by the elements
       // the resulting system has to be solved incrementally
-      SetElementTimeParameter(true);
+      set_element_time_parameter(true);
 
       // AVM3 separation for incremental solver: get fine-scale part of scalar
       if (incremental_ and (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
@@ -243,10 +243,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // add element parameters according to time-integration scheme
       // we want to have an incremental solver!!
-      AddTimeIntegrationSpecificVectors(true);
+      add_time_integration_specific_vectors(true);
 
       // add element parameters according to specific problem
-      AddProblemSpecificParametersAndVectors(eleparams);
+      add_problem_specific_parameters_and_vectors(eleparams);
 
       {
         // call standard loop over elements
@@ -258,7 +258,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       trueresidual_->Update(ResidualScaling(), *residual_, 0.0);
 
       // undo potential changes
-      SetElementTimeParameter();
+      set_element_time_parameter();
 
     }  // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
   }    // if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
@@ -285,7 +285,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         "action", SCATRA::BoundaryAction::add_convective_mass_flux, params);
 
     // add element parameters according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
+    add_time_integration_specific_vectors();
 
     // call loop over boundary elements and add integrated fluxes to trueresidual_
     discret_->EvaluateCondition(params, trueresidual_, "ScaTraFluxCalc");
@@ -478,7 +478,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     }
 
     // statistics section for normfluxintegral
-    if (DoBoundaryFluxStatistics())
+    if (do_boundary_flux_statistics())
     {
       // add current flux value to the sum!
       (*sumnormfluxintegral_)[icond] += parnormfluxintegral[0];  // only first scalar!
@@ -571,7 +571,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 /*--------------------------------------------------------------------*
  | calculate initial time derivatives of state variables   fang 03/15 |
  *--------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
+void SCATRA::ScaTraTimIntImpl::calc_initial_time_derivative()
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calculate initial time derivative");
@@ -588,7 +588,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // computation of initial time derivative vector Dirichlet boundary conditions should be
   // consistent with initial field
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
   ApplyNeumannBC(neumann_loads_);
 
   // In most cases, the history vector is entirely zero at this point, since this routine is called
@@ -614,10 +614,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
-  AddProblemSpecificParametersAndVectors(eleparams);
+  add_problem_specific_parameters_and_vectors(eleparams);
 
   // add state vectors according to time integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // modify global system of equations as explained above
   discret_->Evaluate(eleparams, sysmat_, residual_);
@@ -632,7 +632,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // auxiliary degrees of freedom (= non-transported scalars) constant when solving for initial time
   // derivatives of primary degrees of freedom (= transported scalars)
   if (splitter_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sysmat_, *phidtnp_, *residual_, *zeros_, *(splitter_->CondMap()));
 
   // solve global system of equations for initial time derivative of state variables
@@ -676,7 +676,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // final screen output
   if (myrank_ == 0) std::cout << "done!" << std::endl;
-}  // SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative
+}  // SCATRA::ScaTraTimIntImpl::calc_initial_time_derivative
 
 
 /*---------------------------------------------------------------------------*
@@ -739,32 +739,32 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 /*---------------------------------------------------------------------------*
  | compute time derivatives of discrete state variables           fang 01/17 |
  *---------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeTimeDerivative()
+void SCATRA::ScaTraTimIntImpl::compute_time_derivative()
 {
   // compute time derivatives of discrete state variables associated with meshtying strategy
-  strategy_->ComputeTimeDerivative();
+  strategy_->compute_time_derivative();
 }
 
 
 /*----------------------------------------------------------------------*
  | output total and mean values of transported scalars       fang 03/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
+void SCATRA::ScaTraTimIntImpl::output_total_and_mean_scalars(const int num)
 {
   if (outputscalars_ != INPAR::SCATRA::outputscalars_none)
   {
     if (outputscalarstrategy_ == Teuchos::null)
       FOUR_C_THROW("output strategy was not initialized!");
-    outputscalarstrategy_->OutputTotalAndMeanScalars(this, num);
+    outputscalarstrategy_->output_total_and_mean_scalars(this, num);
   }  // if(outputscalars_)
-}  // SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars
+}  // SCATRA::ScaTraTimIntImpl::output_total_and_mean_scalars
 
 
 /*--------------------------------------------------------------------------------------------------------*
  | output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets   fang
  06/15 |
  *--------------------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string& condstring)
+void SCATRA::ScaTraTimIntImpl::output_domain_or_boundary_integrals(const std::string& condstring)
 {
   // check whether output is applicable
   if ((computeintegrals_ == INPAR::SCATRA::computeintegrals_initial and Step() == 0) or
@@ -773,9 +773,9 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
     if (outputdomainintegralstrategy_ == Teuchos::null)
       FOUR_C_THROW("output strategy was not initialized!");
 
-    outputdomainintegralstrategy_->EvaluateIntegralsAndPrintResults(this, condstring);
+    outputdomainintegralstrategy_->evaluate_integrals_and_print_results(this, condstring);
   }  // check whether output is applicable
-}  // SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals
+}  // SCATRA::ScaTraTimIntImpl::output_domain_or_boundary_integrals
 
 
 /*----------------------------------------------------------------------*
@@ -795,7 +795,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
       "action", SCATRA::BoundaryAction::calc_fs3i_surface_permeability, condparams);
 
   // add element parameters according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // replace phinp by the mean of phinp if this has been set
   if (mean_conc_ != Teuchos::null)
@@ -845,7 +845,7 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
       "action", SCATRA::BoundaryAction::calc_fps3i_surface_permeability, condparams);
 
   // add element parameters according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
   if (not discret_->HasState(NdsWallShearStress(), "WallShearStress"))
@@ -884,7 +884,7 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
 /*----------------------------------------------------------------------*
  | add approximation to flux vectors to a parameter list      gjb 05/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(Teuchos::ParameterList& p)
+void SCATRA::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::ParameterList& p)
 {
   Teuchos::RCP<Epetra_MultiVector> flux = CalcFluxInDomain();
 
@@ -908,15 +908,15 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(Teuchos::ParameterLi
       fluxk->ReplaceMyValue(i, 1, ((*flux)[1])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i, 2, ((*flux)[2])[(flux->Map()).LID(dofgid)]);
     }
-    discret_->AddMultiVectorToParameterList(p, name, fluxk);
+    discret_->add_multi_vector_to_parameter_list(p, name, fluxk);
   }
-}  // SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList
+}  // SCATRA::ScaTraTimIntImpl::add_flux_approx_to_parameter_list
 
 
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::compute_normal_vectors(
     const std::vector<std::string>& condnames)
 {
   // create vectors for x,y and z component of average normal vector field
@@ -958,13 +958,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   }
 
   return normal;
-}  // SCATRA:: ScaTraTimIntImpl::ComputeNormalVectors
+}  // SCATRA:: ScaTraTimIntImpl::compute_normal_vectors
 
 
 /*------------------------------------------------------------------------------------------------*
  | compute null space information associated with global system matrix if applicable   fang 09/17 |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
+void SCATRA::ScaTraTimIntImpl::compute_null_space_if_necessary() const
 {
   // extract solver parameters
   Teuchos::ParameterList& solverparams = solver_->Params();
@@ -1001,14 +1001,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
 
   else
     // compute standard, vector-based null space information if applicable
-    discret_->ComputeNullSpaceIfNecessary(solverparams, true);
-}  // SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary()
+    discret_->compute_null_space_if_necessary(solverparams, true);
+}  // SCATRA::ScaTraTimIntImpl::compute_null_space_if_necessary()
 
 
 /*----------------------------------------------------------------------*
  | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
+void SCATRA::ScaTraTimIntImpl::compute_neumann_inflow(
     Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'Neumann inflow'
@@ -1022,20 +1022,20 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
       "action", SCATRA::BoundaryAction::calc_Neumann_inflow, condparams);
 
   // add element parameters and vectors according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // set thermodynamic pressure in case of loma
-  AddProblemSpecificParametersAndVectors(condparams);
+  add_problem_specific_parameters_and_vectors(condparams);
 
   std::string condstring("TransportNeumannInflow");
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
-}  // SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow
+}  // SCATRA::ScaTraTimIntImpl::compute_neumann_inflow
 
 /*----------------------------------------------------------------------*
  | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
+void SCATRA::ScaTraTimIntImpl::evaluate_convective_heat_transfer(
     Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'TransportThermoConvections'
@@ -1049,18 +1049,18 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
       "action", SCATRA::BoundaryAction::calc_convective_heat_transfer, condparams);
 
   // add element parameters and vectors according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   std::string condstring("TransportThermoConvections");
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
-}  // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
+}  // SCATRA::ScaTraTimIntImpl::evaluate_convective_heat_transfer
 
 
 /*------------------------------------------------------------------------------------------*
  | output performance statistics associated with linear solver into *.csv file   fang 02/17 |
  *------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
+void SCATRA::ScaTraTimIntImpl::output_lin_solver_stats(
     const CORE::LINALG::Solver& solver,  //!< linear solver
     const double& time,                  //!< solver time maximized over all processors
     const int& step,                     //!< time step
@@ -1095,13 +1095,13 @@ void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
     // close file
     file.close();
   }
-}  // SCATRA::ScaTraTimIntImpl::OutputLinSolverStats
+}  // SCATRA::ScaTraTimIntImpl::output_lin_solver_stats
 
 
 /*---------------------------------------------------------------------------------------------*
  | output performance statistics associated with nonlinear solver into *.csv file   fang 04/15 |
  *---------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats(
+void SCATRA::ScaTraTimIntImpl::output_nonlin_solver_stats(
     const int& iterations,   //!< iteration count of nonlinear solver
     const double& time,      //!< solver time maximized over all processors
     const int& step,         //!< time step
@@ -1132,7 +1132,7 @@ void SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats(
     // close file
     file.close();
   }
-}  // SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats
+}  // SCATRA::ScaTraTimIntImpl::output_nonlin_solver_stats
 
 
 /*----------------------------------------------------------------------*
@@ -1281,7 +1281,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
   if (outintegrreac_)
   {
     if (!discret_->Filled()) FOUR_C_THROW("FillComplete() was not called");
-    if (!discret_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+    if (!discret_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
     // set scalar values needed by elements
     discret_->SetState("phinp", phinp_);
@@ -1372,7 +1372,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       "action", SCATRA::Action::calc_subgrid_diffusivity_matrix, eleparams);
 
   // add element parameters according to time-integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
 
   // call loop over elements
   discret_->Evaluate(eleparams, sysmat_sd_, residual_);
@@ -1381,7 +1381,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   sysmat_sd_->Complete();
 
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *sysmat_sd_, *phinp_, *residual_, *phinp_, *(dbcmaps_->CondMap()));
 
   // get normalized fine-scale subgrid-diffusivity matrix
@@ -1402,7 +1402,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
           problem_->SolverParams(scale_sep_solvernumber), discret_->Comm()));
       // compute the null space,
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
+      discret_->compute_null_space_if_necessary(solver->Params(), true);
       // and, finally, extract the ML parameters
       mlparams = solver->Params().sublist("ML Parameters");
     }
@@ -1437,7 +1437,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(Sep_->RowMap(), false);
     Sep_->ExtractDiagonalCopy(*diag);
     diag->Update(1.0, *tmp, 1.0);
-    Sep_->ReplaceDiagonalValues(*diag);
+    Sep_->replace_diagonal_values(*diag);
 
     // complete scale-separation matrix and check maps
     Sep_->Complete(Sep_->DomainMap(), Sep_->RangeMap());
@@ -1607,10 +1607,10 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
         "action", SCATRA::Action::calc_mean_Cai, myparams);
 
     // add element parameters according to time-integration scheme
-    AddTimeIntegrationSpecificVectors();
+    add_time_integration_specific_vectors();
 
     // set thermodynamic pressure in case of loma
-    AddProblemSpecificParametersAndVectors(myparams);
+    add_problem_specific_parameters_and_vectors(myparams);
 
     // loop all elements on this proc (excluding ghosted ones)
     for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
@@ -1668,7 +1668,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 /*----------------------------------------------------------------------*
  | calculate intermediate solution                       rasthofer 05/13|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
+void SCATRA::ScaTraTimIntImpl::calc_intermediate_solution()
 {
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" and
       extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") ==
@@ -1710,7 +1710,7 @@ void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
 
       // recompute intermediate values, since they have been likewise overwritten
       // only for gen.-alpha
-      ComputeIntermediateValues();
+      compute_intermediate_values();
 
       homisoturb_forcing_->ActivateForcing(true);
 
@@ -1752,7 +1752,7 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(
 /*----------------------------------------------------------------------*
  | Calculate the reconstructed nodal gradient of phi        winter 04/17|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::compute_superconvergent_patch_recovery(
     Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
     Teuchos::ParameterList& eleparams, const int dim)
 {
@@ -1768,15 +1768,15 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
   switch (dim)
   {
     case 3:
-      return CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+      return CORE::FE::compute_superconvergent_patch_recovery<3>(
           *discret_, *state, statename, numvec, eleparams);
       break;
     case 2:
-      return CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+      return CORE::FE::compute_superconvergent_patch_recovery<2>(
           *discret_, *state, statename, numvec, eleparams);
       break;
     case 1:
-      return CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+      return CORE::FE::compute_superconvergent_patch_recovery<1>(
           *discret_, *state, statename, numvec, eleparams);
       break;
     default:
@@ -1974,7 +1974,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
             "Perturbation could not be imposed on state vector for finite difference check!");
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
-    ComputeIntermediateValues();
+    compute_intermediate_values();
 
     // calculate element right-hand side vector for perturbed state
     AssembleMatAndRHS();
@@ -2107,7 +2107,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
   // undo perturbations of state variables
   phinp_->Update(1., *phinp_original, 0.);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
 
   // recompute system matrix and right-hand side vector based on original state variables
   AssembleMatAndRHS();
@@ -2116,7 +2116,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 /*----------------------------------------------------------------------------------*
  | calculation of relative error with reference to analytical solution   fang 11/16 |
  *----------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
+void SCATRA::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
   switch (calcerror_)
   {
@@ -2332,7 +2332,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       break;
     }
   }
-}  // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
+}  // SCATRA::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol
 
 
 /*------------------------------------------------------------------------------------------------------*
@@ -2349,7 +2349,7 @@ void SCATRA::ScaTraTimIntImpl::ExplicitPredictor() const
 /*--------------------------------------------------------------------------*
  | perform Aitken relaxation                                     fang 08/17 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
+void SCATRA::ScaTraTimIntImpl::perform_aitken_relaxation(
     Epetra_Vector& phinp,  //!< state vector to be relaxed
     const Epetra_Vector&
         phinp_inc_diff  //!< difference between current and previous state vector increments
@@ -2385,23 +2385,23 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
 void SCATRA::ScaTraTimIntImpl::ApplyBCToSystem()
 {
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
-  ComputeIntermediateValues();
+  compute_intermediate_values();
   ApplyNeumannBC(neumann_loads_);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
+void SCATRA::ScaTraTimIntImpl::evaluate_initial_time_derivative(
     Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_initial_time_deriv, eleparams);
-  AddProblemSpecificParametersAndVectors(eleparams);
+  add_problem_specific_parameters_and_vectors(eleparams);
 
   // add state vectors according to time integration scheme
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
   // modify global system of equations as explained above
   discret_->Evaluate(eleparams, matrix, rhs);
 
@@ -2450,7 +2450,7 @@ void SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen(const std::string& d
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::FinalizeScreenOutput()
+void SCATRA::OutputScalarsStrategyBase::finalize_screen_output()
 {
   if (myrank_ == 0)
   {
@@ -2462,7 +2462,7 @@ void SCATRA::OutputScalarsStrategyBase::FinalizeScreenOutput()
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
+void SCATRA::OutputScalarsStrategyBase::output_total_and_mean_scalars(
     const ScaTraTimIntImpl* const scatratimint, const int num)
 {
   // evaluate domain/condition integrals
@@ -2471,7 +2471,7 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
   // print evaluated data to screen
   PrintHeaderToScreen(scatratimint->discret_->Name());
   PrintToScreen();
-  FinalizeScreenOutput();
+  finalize_screen_output();
 
   // write evaluated data to file
   const auto output_data = PrepareCSVOutput();
@@ -2499,12 +2499,12 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
     filename = "scalarvalues";
 
   runtime_csvwriter_.emplace(myrank_, *scatratimint->DiscWriter()->Output(), filename);
-  InitStrategySpecific(scatratimint);
+  init_strategy_specific(scatratimint);
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
+void SCATRA::OutputScalarsStrategyDomain::init_strategy_specific(
     const ScaTraTimIntImpl* const scatratimint)
 {
   if (not scatratimint->scalarhandler_->EqualNumDof())
@@ -2643,7 +2643,7 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
+void SCATRA::OutputScalarsStrategyCondition::init_strategy_specific(
     const ScaTraTimIntImpl* const scatratimint)
 {
   // extract conditions for calculation of total and mean values of transported scalars
@@ -2667,8 +2667,8 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     const int condid = condition->parameters().Get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
-    const int numdofpernode =
-        scatratimint->scalarhandler_->NumDofPerNodeInCondition(*condition, scatratimint->discret_);
+    const int numdofpernode = scatratimint->scalarhandler_->num_dof_per_node_in_condition(
+        *condition, scatratimint->discret_);
     const int numscalpernode = scatratimint->scalarhandler_->NumScal();
 
     // save the number of dofs on the current condition
@@ -2818,7 +2818,7 @@ SCATRA::OutputScalarsStrategyCondition::PrepareCSVOutput()
 /*--------------------------------------------------------------------------------------*
  |  evaluate domain integrals and print them to file and screen        kremheller 11/19 |
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
+void SCATRA::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
     const ScaTraTimIntImpl* const scatratimint, const std::string& condstring)
 {
   // initialize label
@@ -2964,12 +2964,12 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::InitStrategySpecific(
+void SCATRA::OutputScalarsStrategyDomainAndCondition::init_strategy_specific(
     const ScaTraTimIntImpl* const scatratimint)
 {
   // initialize base classes
-  OutputScalarsStrategyCondition::InitStrategySpecific(scatratimint);
-  OutputScalarsStrategyDomain::InitStrategySpecific(scatratimint);
+  OutputScalarsStrategyCondition::init_strategy_specific(scatratimint);
+  OutputScalarsStrategyDomain::init_strategy_specific(scatratimint);
 }
 
 /*----------------------------------------------------------------------------------*
@@ -3057,7 +3057,8 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 /*-------------------------------------------------------------------------*
 |  Determine number of DoFs per node in given condition       vuong   04/16|
  *-------------------------------------------------------------------------*/
-int SCATRA::ScalarHandler::NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition,
+int SCATRA::ScalarHandler::num_dof_per_node_in_condition(
+    const CORE::Conditions::Condition& condition,
     const Teuchos::RCP<const DRT::Discretization>& discret) const
 {
   CheckIsSetup();

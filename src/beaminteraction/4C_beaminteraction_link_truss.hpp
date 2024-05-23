@@ -126,13 +126,13 @@ namespace BEAMINTERACTION
     double GetKineticEnergy() const override;
 
     //! scale linker element reference length
-    void ScaleLinkerReferenceLength(double scalefac) override;
+    void scale_linker_reference_length(double scalefac) override;
 
     //! get force in first or second binding spot
     void GetBindingSpotForce(
         int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override;
 
-    double GetCurrentLinkerLength() const override;
+    double get_current_linker_length() const override;
 
     //@}
 
@@ -174,10 +174,11 @@ namespace BEAMINTERACTION
     /*!
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
-    void FillStateVariablesForElementEvaluation(
+    void fill_state_variables_for_element_evaluation(
         CORE::LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
 
-    void GetDispForElementEvaluation(std::map<std::string, std::vector<double>>& ele_state) const;
+    void get_disp_for_element_evaluation(
+        std::map<std::string, std::vector<double>>& ele_state) const;
 
     //@}
 

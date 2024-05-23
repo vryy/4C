@@ -200,16 +200,16 @@ namespace FSI
     Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
     /// return coupsfm_
-    CORE::ADAPTER::CouplingMortar& StructureFluidCouplingMortar();
+    CORE::ADAPTER::CouplingMortar& structure_fluid_coupling_mortar();
 
     /// return coupsfm_
-    const CORE::ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const;
+    const CORE::ADAPTER::CouplingMortar& structure_fluid_coupling_mortar() const;
 
     /// access to iteration counter
     virtual std::vector<int> IterationCounter() { return counter_; };
 
     /// extract idispn_ iveln_
-    virtual void ExtractPreviousInterfaceSolution();
+    virtual void extract_previous_interface_solution();
 
     /// interface displacement from time step begin
     Teuchos::RCP<Epetra_Vector> idispn_;
@@ -218,7 +218,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> iveln_;
 
     /// setup list with default parameters
-    virtual void SetDefaultParameters(
+    virtual void set_default_parameters(
         const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// write output

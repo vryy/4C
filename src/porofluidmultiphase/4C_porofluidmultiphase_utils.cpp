@@ -257,7 +257,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   Teuchos::RCP<const Epetra_Map> extendedelecolmap =
       Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, contdis->Comm()));
 
-  artdis->ExportColumnElements(*extendedelecolmap);
+  artdis->export_column_elements(*extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
@@ -268,7 +268,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // fill and inform user
   artdis->FillComplete();
-  CORE::REBALANCE::UTILS::PrintParallelDistribution(*artdis);
+  CORE::REBALANCE::UTILS::print_parallel_distribution(*artdis);
 
   // user output
   if (contdis->Comm().MyPID() == 0)
@@ -293,7 +293,7 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
   Teuchos::RCP<DRT::Discretization> artsearchdis =
-      discloner->CreateMatchingDiscretization(artdis, disname, false, false, false, false);
+      discloner->create_matching_discretization(artdis, disname, false, false, false, false);
 
   // ghost on all procs.
   CORE::REBALANCE::GhostDiscretizationOnAllProcs(artsearchdis);

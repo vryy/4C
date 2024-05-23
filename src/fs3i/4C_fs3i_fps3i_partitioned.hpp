@@ -82,7 +82,7 @@ namespace FS3I
     void ReadRestart() override;
 
     /// redistribute FPS3I interface, if running on parallel
-    void RedistributeInterface() override;
+    void redistribute_interface() override;
 
     //! set-up of FPSI and ScaTra systems
     void SetupSystem() override;
@@ -91,13 +91,13 @@ namespace FS3I
     void TestResults(const Epetra_Comm& comm) override;
 
     //! evaluate ScaTra fields
-    void EvaluateScatraFields() override;
+    void evaluate_scatra_fields() override;
 
     //! information transfer FPSI -> ScaTra
     void SetFPSISolution();
 
     /// set scatra solution on structure field
-    void SetStructScatraSolution();
+    void set_struct_scatra_solution();
 
     //! return communicator
     const Epetra_Comm& Comm() const { return comm_; }
@@ -117,7 +117,7 @@ namespace FS3I
     void SetVelocityFields();
 
     /// provide wall shear stresses from FPSI subproblem for scatra subproblem
-    void SetWallShearStresses();
+    void set_wall_shear_stresses();
 
     /// provide pressures from FPSI subproblem for scatra subproblem
     void SetPressureFields();

@@ -342,7 +342,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
         CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->GetSplitCells()[j], to_local, ele);
       }
     }
-    else if (facet->BelongsToLevelSetSide() || facet->CornerPoints().size() == 3 ||
+    else if (facet->belongs_to_level_set_side() || facet->CornerPoints().size() == 3 ||
              facet->CornerPoints().size() == 4)
     {
       CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, facet->CornerPoints(), to_local, ele);
@@ -829,7 +829,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
         // std::cout << "k: " << k << std::endl;
         coord(2, 0) = -1.0 + (2.0 / (double(z_sp) - 1)) * double(k);
 
-        double ls_value = ele->GetLevelSetValueAtLocalCoords(coord);
+        double ls_value = ele->get_level_set_value_at_local_coords(coord);
         if (fabs(ls_value) < tolerance)
         {
           CORE::LINALG::Matrix<3, 1> coord_global;
@@ -1347,7 +1347,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << "    CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "    "
-            "vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
+            "vc->moment_fit_gauss_weights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
             "Tessellation);"
          << "\n";
     file << "    momFitVol.push_back(vc->Volume());"
@@ -1368,7 +1368,8 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << "     CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "     "
-            "vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
+            "vc->direct_divergence_gauss_rule(vc->ParentElement(),mesh,true,INPAR::CUT::"
+            "BCellGaussPts_"
             "Tessellation);"
          << "\n";
     file << "     dirDivVol.push_back(vc->Volume());"
@@ -1423,7 +1424,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
     std::stringstream point_name;
     point_name << "CutPoint" << std::distance(cut.begin(), it);
     CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, nullptr);
-    (*it)->DumpConnectivityInfo();
+    (*it)->dump_connectivity_info();
   }
 
   const PointPositionSet& edge_cut_points = e->CutPoints();
@@ -1462,7 +1463,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
       file << "// original added becase: " << (*it)->GetCreationInfo(cu_pair) << "\n";
 #endif
 
-    (*it)->DumpConnectivityInfo();
+    (*it)->dump_connectivity_info();
   }
   // Compute all possible differences between points
 
@@ -1493,7 +1494,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Sid
     std::stringstream pname;
     pname << "CutPoint" << std::distance(cut.begin(), it);
     CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, nullptr);
-    (*it)->DumpConnectivityInfo();
+    (*it)->dump_connectivity_info();
   }
   file.close();
 

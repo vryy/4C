@@ -162,7 +162,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
       if (pbc_struct.HasPBC())
       {
-        pbc_struct.UpdateDofsForPeriodicBoundaryConditions();
+        pbc_struct.update_dofs_for_periodic_boundary_conditions();
       }
     }
 
@@ -172,7 +172,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
       if (pbc.HasPBC())
       {
-        pbc.UpdateDofsForPeriodicBoundaryConditions();
+        pbc.update_dofs_for_periodic_boundary_conditions();
       }
     }
 
@@ -218,7 +218,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
         ndofpernode_struct, ndofperelement_struct, 0, true));
     if (thermdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
-    // call AssignDegreesOfFreedom also for auxiliary dofsets
+    // call assign_degrees_of_freedom also for auxiliary dofsets
     // note: the order of FillComplete() calls determines the gid numbering!
     // 1. structure dofs
     // 2. thermo dofs
@@ -292,12 +292,12 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*ele2);
+    std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
       DRT::Element* actele1 = dis1->gElement(ids_1[i]);
-      std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*actele1);
+      std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 

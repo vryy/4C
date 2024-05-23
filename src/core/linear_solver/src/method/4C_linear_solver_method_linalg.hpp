@@ -84,7 +84,7 @@ namespace CORE::LINALG
     \brief Constructor taking a validated input parameter list for Solver
 
     Creates a solver using the parameters provided by inparams. They are translated
-    by #TranslateSolverParameters to the format required by Belos, if @p translate_params is true.
+    by #translate_solver_parameters to the format required by Belos, if @p translate_params is true.
     Otherwise, they need to be provided such that Belos understands them.
 
     \param inparams (in): input parameter list as provided by GLOBAL::Problem,
@@ -193,7 +193,8 @@ namespace CORE::LINALG
                           with #params_
     \date 02/07,11/08
     */
-    static Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList translate_solver_parameters(
+        const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Translate 4C dat file parameters
@@ -202,12 +203,13 @@ namespace CORE::LINALG
     static Teuchos::ParameterList TranslateFourCToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static Teuchos::ParameterList TranslateFourCToMuelu(
+    static Teuchos::ParameterList translate_four_c_to_muelu(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static Teuchos::ParameterList TranslateFourCToIfpack(const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList translate_four_c_to_ifpack(
+        const Teuchos::ParameterList& inparams);
 
-    static Teuchos::ParameterList TranslateFourCToBelos(const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal
@@ -220,9 +222,10 @@ namespace CORE::LINALG
     \author bborn
     \date 11/08
     */
-    void PutSolverParamsToSubParams(const std::string name, const Teuchos::ParameterList& inparams)
+    void put_solver_params_to_sub_params(
+        const std::string name, const Teuchos::ParameterList& inparams)
     {
-      (*params_).sublist(name) = TranslateSolverParameters(inparams);
+      (*params_).sublist(name) = translate_solver_parameters(inparams);
     }
     //@}
 

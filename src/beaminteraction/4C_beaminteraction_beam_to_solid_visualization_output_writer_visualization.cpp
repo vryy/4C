@@ -37,15 +37,16 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalReferencePosition(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
+    add_discretization_nodal_reference_position(
+        const Teuchos::RCP<const DRT::Discretization>& discret)
 {
-  auto& visualization_data = GetVisualizationData();
+  auto& visualization_data = get_visualization_data();
 
   // Check that the discretization is not already set, and that all data in the writer is empty.
   if (discret_ != Teuchos::null)
     FOUR_C_THROW(
-        "When calling AddDiscretizationNodalReferencePosition, the discretization can not be "
+        "When calling add_discretization_nodal_reference_position, the discretization can not be "
         "already set. Did you forget to reset the writer?");
   if (visualization_data.GetPointCoordinates().size() != 0)
     FOUR_C_THROW("Point coordinate vector is not empty!");
@@ -92,7 +93,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNod
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNodalData(
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_nodal_data(
     const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector)
 {
   if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
@@ -106,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNod
   // Add the values form the vector to the writer data.
   const int num_my_gid = node_gid_map_->NumMyElements();
   std::vector<double>& data_vector =
-      GetVisualizationData().GetPointData<double>(data_name, 3 * num_my_gid);
+      get_visualization_data().GetPointData<double>(data_name, 3 * num_my_gid);
   data_vector.reserve(3 * num_my_gid);
   for (int i_lid = 0; i_lid < num_my_gid; i_lid++) data_vector.push_back((*vector_extract)[i_lid]);
 }

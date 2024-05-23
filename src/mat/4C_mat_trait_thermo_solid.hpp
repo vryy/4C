@@ -50,7 +50,7 @@ namespace MAT
        * @param stm tensor to be filled with stress-temperature moduli
        * @param stm_deriv tensor to be filled with derivatives
        */
-      virtual void StressTemperatureModulusAndDeriv(
+      virtual void stress_temperature_modulus_and_deriv(
           CORE::LINALG::Matrix<6, 1>& stm, CORE::LINALG::Matrix<6, 1>& stm_dT) = 0;
     };
   }  // namespace TRAIT

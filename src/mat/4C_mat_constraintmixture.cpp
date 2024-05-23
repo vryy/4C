@@ -465,7 +465,8 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   homradius_ = params_->homradius_;
 
   // history
-  const Teuchos::ParameterList& timeintegr = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& timeintegr =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
   double dt = timeintegr.get<double>("TIMESTEP");
   int firstiter = 0;
   if (params_->integration_ == "Explicit") firstiter = 1;
@@ -487,9 +488,9 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
 
   {
     const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
     const double currentTime = params_->starttime_ + dt;
     // prestress time
@@ -870,7 +871,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
           {
             double homstrain = 0.0;
             double fac_cmat = 0.0;
-            EvaluateSingleFiberScalars(
+            evaluate_single_fiber_scalars(
                 localprestretch_->at(gp)(idfiber) * localprestretch_->at(gp)(idfiber), fac_cmat,
                 homstrain);
             homstrain = homstrain * localprestretch_->at(gp)(idfiber);
@@ -883,7 +884,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
               double stretch =
                   localprestretch_->at(gp)(idfiber) * actstretch(idfiber) / depstretch(idfiber);
               double I4 = stretch * stretch;
-              EvaluateSingleFiberScalars(I4, fac_cmat, strain);
+              evaluate_single_fiber_scalars(I4, fac_cmat, strain);
               strain = strain * stretch;
               double olddegrad = 0.0;
               history_->at(idtime).GetVarDegrad(gp, idfiber, &olddegrad);
@@ -1077,28 +1078,28 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       double masstemp = 0.0;
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
-      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
+      mass_production_single_fiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a1_->at(gp), 0, growthfactor);
       massstress(0) = massstresstemp;
       massprodcomp(0) = massprodtemp;
       stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
-      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
+      mass_production_single_fiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a2_->at(gp), 1, growthfactor);
       massstress(1) = massstresstemp;
       massprodcomp(1) = massprodtemp;
       stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
-      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
+      mass_production_single_fiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a3_->at(gp), 2, growthfactor);
       massstress(2) = massstresstemp;
       massprodcomp(2) = massprodtemp;
       stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
-      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
+      mass_production_single_fiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a4_->at(gp), 3, growthfactor);
       massstress(3) = massstresstemp;
       massprodcomp(3) = massprodtemp;
@@ -1137,7 +1138,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         }
         else if (params_->growthforce_ == "Single")
         {
-          EvaluateImplicitSingle(
+          evaluate_implicit_single(
               *defgrd, glstrain, gp, cmat, stress, dt, time, elastin_survival, growthfactor);
         }
         else if (params_->growthforce_ == "ElaCol")
@@ -1343,7 +1344,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
 
     double fac_cmat_loc = 0.0;
     double fac_stress_loc = 0.0;
-    EvaluateSingleFiberScalars(I4_loc, fac_cmat_loc, fac_stress_loc);
+    evaluate_single_fiber_scalars(I4_loc, fac_cmat_loc, fac_stress_loc);
 
     if (params_->initstretch_ == "SetLinearHistory" &&
         time <= (0.9 * params_->starttime_ + 1.0e-12))
@@ -1396,7 +1397,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
 }
 
 /*----------------------------------------------------------------------*
- |  EvaluateSingleFiberScalars                    (private)        02/12|
+ |  evaluate_single_fiber_scalars                    (private)        02/12|
  *----------------------------------------------------------------------*
  strain energy function
 
@@ -1404,7 +1405,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
 
  I_4 .. invariant accounting for the fiber direction
  */
-void MAT::ConstraintMixture::EvaluateSingleFiberScalars(
+void MAT::ConstraintMixture::evaluate_single_fiber_scalars(
     double I4, double& fac_cmat, double& fac_stress)
 {
   const double k1 = params_->k1_;
@@ -1905,7 +1906,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
 }
 
 /*----------------------------------------------------------------------*
- |  MassProductionSingleFiber                     (private)        05/11|
+ |  mass_production_single_fiber                     (private)        05/11|
  *----------------------------------------------------------------------*
 compute new deposition rate for one fiber family
 driving force depends on S^k
@@ -1914,7 +1915,7 @@ m^k = mbasal * (1 + K * ( sqrt(a_i^T*C*S^k*C*S^k*C*a_i/detC)/lambda_k(t) /homeo 
 
 therefore we need C and S as matrices
 */
-void MAT::ConstraintMixture::MassProductionSingleFiber(const int gp,
+void MAT::ConstraintMixture::mass_production_single_fiber(const int gp,
     CORE::LINALG::Matrix<3, 3> defgrd, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S, double* massstress,
     double inner_radius, double* massprodcomp, CORE::LINALG::Matrix<3, 1> a, const int idfiber,
     double growthfactor)
@@ -2353,7 +2354,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
     CORE::LINALG::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, 1> solver;
     solver.SetMatrix(DResidual);             // set A=DResidual
     solver.SetVectors(increment, Residual);  // set X=increment, B=Residual
-    solver.FactorWithEquilibration(true);    // "some easy type of preconditioning" (Michael)
+    solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
     int err2 = solver.Factor();              // ?
     int err = solver.Solve();                // X = A^-1 B
     if ((err != 0) || (err2 != 0))
@@ -2466,11 +2467,11 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
   // solve linear system of equations: A.X=B
   //----------------------------------------------------
   CORE::LINALG::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, NUM_STRESS_3D> solver;
-  solver.SetMatrix(LM);                  // set A=LM
-  solver.SetVectors(*cmat, RHS);         // set X=increment, B=RHS
-  solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
-  int err2 = solver.Factor();            // ?
-  int err = solver.Solve();              // X = A^-1 B
+  solver.SetMatrix(LM);                    // set A=LM
+  solver.SetVectors(*cmat, RHS);           // set X=increment, B=RHS
+  solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
+  int err2 = solver.Factor();              // ?
+  int err = solver.Solve();                // X = A^-1 B
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
   vismassstress_->at(gp)(0) = massstress(0);
@@ -2479,13 +2480,13 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
 }
 
 /*----------------------------------------------------------------------*
- |  EvaluateImplicitSingle                        (private)        11/11|
+ |  evaluate_implicit_single                        (private)        11/11|
  *----------------------------------------------------------------------*
 evaluate stress and cmat for implicit integration
 driving force of massproduction is the fiber stress S^k
 Newton loop only for stresses
 */
-void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> defgrd,
+void MAT::ConstraintMixture::evaluate_implicit_single(CORE::LINALG::Matrix<3, 3> defgrd,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, const int gp,
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress, double dt, double time, double elastin_survival,
@@ -2575,7 +2576,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
     EvaluateFiberFamily(
         C, gp, &cmatfiber, &stressfiber, a, &currmassdensfiber, firstiter, time, idfiber);
     // mass always corresponds to the current stress
-    MassProductionSingleFiber(
+    mass_production_single_fiber(
         gp, defgrd, stressfiber, &massstressfiber, 0.0, &massprodfiber, a, idfiber, growthfactor);
     massprod(idfiber) = massprodfiber;
     history_->back().SetMass(gp, massprod);
@@ -2629,7 +2630,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
       CORE::LINALG::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, 1> solver;
       solver.SetMatrix(DResidual);             // set A=DResidual
       solver.SetVectors(increment, Residual);  // set X=increment, B=Residual
-      solver.FactorWithEquilibration(true);    // "some easy type of preconditioning" (Michael)
+      solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
       int err2 = solver.Factor();              // ?
       int err = solver.Solve();                // X = A^-1 B
       if ((err != 0) || (err2 != 0))
@@ -2648,8 +2649,8 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
         stepstress.Update(1.0, stressfiber, omega, increment);
 
         // corresponding mass
-        MassProductionSingleFiber(gp, defgrd, stepstress, &massstressfiber, 0.0, &massprodfiber, a,
-            idfiber, growthfactor);
+        mass_production_single_fiber(gp, defgrd, stepstress, &massstressfiber, 0.0, &massprodfiber,
+            a, idfiber, growthfactor);
         massprod(idfiber) = massprodfiber;
         history_->back().SetMass(gp, massprod);
         massstress(idfiber) = massstressfiber;
@@ -2716,11 +2717,11 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
     // solve linear system of equations: A.X=B
     //----------------------------------------------------
     CORE::LINALG::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, NUM_STRESS_3D> solver;
-    solver.SetMatrix(LM);                  // set A=LM
-    solver.SetVectors(cmatfiber, RHS);     // set X=increment, B=RHS
-    solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
-    int err2 = solver.Factor();            // ?
-    int err = solver.Solve();              // X = A^-1 B
+    solver.SetMatrix(LM);                    // set A=LM
+    solver.SetVectors(cmatfiber, RHS);       // set X=increment, B=RHS
+    solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
+    int err2 = solver.Factor();              // ?
+    int err = solver.Solve();                // X = A^-1 B
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
     (*stress) += stressfiber;
@@ -2801,7 +2802,7 @@ void MAT::ConstraintMixture::GradStressDMass(const CORE::LINALG::Matrix<NUM_STRE
   double temp = 0.0;
   CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Saniso(A);
   I4 = I4 * stretch * stretch;  // account for prestretch and stretch at deposition time
-  EvaluateSingleFiberScalars(I4, temp, facS);
+  evaluate_single_fiber_scalars(I4, temp, facS);
   facS = facS * stretch * stretch * qdegrad / density * dt;
   Saniso.Scale(facS);
   if (option)
@@ -3202,7 +3203,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
 
       // write prestretch
       // CORE::LINALG::Matrix<3,1> prestretchgp = grow->GetPrestretch(gp);
-      CORE::LINALG::Matrix<3, 1> prestretchgp = grow->GetMassDensityCollagen(gp);
+      CORE::LINALG::Matrix<3, 1> prestretchgp = grow->get_mass_density_collagen(gp);
       gmshfilecontent_pre << "SP(" << std::scientific << point(0, 0) << ",";
       gmshfilecontent_pre << std::scientific << point(0, 1) << ",";
       gmshfilecontent_pre << std::scientific << point(0, 2) << ")";

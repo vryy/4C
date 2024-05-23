@@ -67,9 +67,9 @@ void ELCH::MovingBoundaryAlgorithm::Setup()
   ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup();
 
   // set pointers
-  idispn_ = FluidField()->ExtractInterfaceVeln();
-  idispnp_ = FluidField()->ExtractInterfaceVeln();
-  iveln_ = FluidField()->ExtractInterfaceVeln();
+  idispn_ = FluidField()->extract_interface_veln();
+  idispnp_ = FluidField()->extract_interface_veln();
+  iveln_ = FluidField()->extract_interface_veln();
 
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
@@ -125,7 +125,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // prepare next time step
     PrepareTimeStep();
 
-    auto incr = FluidField()->ExtractInterfaceVeln();
+    auto incr = FluidField()->extract_interface_veln();
     incr->PutScalar(0.0);
     double incnorm = 0.0;
     int iter = 0;
@@ -139,7 +139,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
       iter++;
 
       /// compute interface displacement and velocity
-      ComputeInterfaceVectors(idispnp_, iveln_);
+      compute_interface_vectors(idispnp_, iveln_);
 
       // save guessed value before solve
       incr->Update(1.0, *idispnp_, 0.0);
@@ -151,7 +151,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
       SolveScaTra();
 
       /// compute interface displacement and velocity
-      ComputeInterfaceVectors(idispnp_, iveln_);
+      compute_interface_vectors(idispnp_, iveln_);
 
       // compare with value after solving
       incr->Update(-1.0, *idispnp_, 1.0);
@@ -185,7 +185,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     Update();
 
     // compute error for problems with analytical solution
-    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->evaluate_error_compared_to_analytical_sol();
 
     // write output to screen and files
     Output();
@@ -197,7 +197,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   // screen output
   if (Comm().MyPID() == 0)
@@ -238,7 +238,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveFluidAle()
   }
 
   // solve nonlinear Navier-Stokes system on a moving mesh
-  FluidAleNonlinearSolve(idispnp_, iveln_, pseudotransient_);
+  fluid_ale_nonlinear_solve(idispnp_, iveln_, pseudotransient_);
 }
 
 
@@ -315,12 +315,12 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   }
 
   // now the other physical fiels
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
   AleField()->Output();
 }
 
 
-void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
+void ELCH::MovingBoundaryAlgorithm::compute_interface_vectors(
     Teuchos::RCP<Epetra_Vector> idispnp, Teuchos::RCP<Epetra_Vector> iveln)
 {
   // calculate normal flux vector field at FSI boundaries (no output to file)
@@ -399,7 +399,7 @@ void ELCH::MovingBoundaryAlgorithm::TestResults()
   auto* problem = GLOBAL::Problem::Instance();
   problem->AddFieldTest(FluidField()->CreateFieldTest());
   problem->AddFieldTest(AleField()->CreateFieldTest());
-  problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());
+  problem->AddFieldTest(ScaTraField()->create_sca_tra_field_test());
   problem->TestAll(ScaTraField()->Discretization()->Comm());
 }
 FOUR_C_NAMESPACE_CLOSE

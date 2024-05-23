@@ -248,13 +248,13 @@ namespace XFEM
     void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial,
         enum MapType map_type = map_dofs) const;
 
-    inline void ExtractElementVector(
+    inline void extract_element_vector(
         const Epetra_MultiVector& full, enum FieldName field, Epetra_MultiVector& partial) const
     {
-      ExtractElementVector(full, SlaveId(field), partial);
+      extract_element_vector(full, SlaveId(field), partial);
     }
 
-    void ExtractElementVector(
+    void extract_element_vector(
         const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
     /// @}
 
@@ -421,11 +421,11 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    inline const Epetra_Map& MasterInterfaceNodeRowMap(enum FieldName field) const
+    inline const Epetra_Map& master_interface_node_row_map(enum FieldName field) const
     {
-      return MasterInterfaceNodeRowMap(SlaveId(field));
+      return master_interface_node_row_map(SlaveId(field));
     }
-    const Epetra_Map& MasterInterfaceNodeRowMap(unsigned dis_id) const
+    const Epetra_Map& master_interface_node_row_map(unsigned dis_id) const
     {
       CheckInit();
 
@@ -626,7 +626,7 @@ namespace XFEM
 
     inline unsigned NumSlDis() const { return SlDisVec().size(); }
 
-    const std::set<int>& GInterfaceNodeGidSet() const { return g_interface_node_gid_set_; }
+    const std::set<int>& g_interface_node_gid_set() const { return g_interface_node_gid_set_; }
 
     /** \brief reset class variables at the beginning of each Init() and Setup() call
      *
@@ -638,12 +638,12 @@ namespace XFEM
     /// get the row node/DoF maps of the wrapped discretizations
     void GetDofAndNodeMaps();
 
-    void BuildGlobalInterfaceNodeGidSet();
+    void build_global_interface_node_gid_set();
 
-    void BuildMasterInterfaceNodeMaps(
+    void build_master_interface_node_maps(
         const std::vector<std::vector<int>>& my_master_interface_node_gids);
 
-    void BuildSlaveDiscretIdMap();
+    void build_slave_discret_id_map();
 
     int SlaveId(enum FieldName field) const;
 
@@ -652,26 +652,26 @@ namespace XFEM
       return slave_discret_vec_;
     }
 
-    void BuildSlaveDofMapExtractors();
+    void build_slave_dof_map_extractors();
 
-    void BuildSlaveNodeMapExtractors();
+    void build_slave_node_map_extractors();
 
-    void BuildMasterNodeMapExtractor();
+    void build_master_node_map_extractor();
 
-    void BuildMasterDofMapExtractor();
+    void build_master_dof_map_extractor();
 
-    void BuildElementMapExtractor();
+    void build_element_map_extractor();
 
     /** \brief Build the interface coupling DoF set and complete the interface
      *  discretization
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void BuildInterfaceCouplingDofSet();
+    void build_interface_coupling_dof_set();
 
-    void BuildInterfaceCouplingAdapters();
+    void build_interface_coupling_adapters();
 
-    void BuildInterfaceMatrixTransformers();
+    void build_interface_matrix_transformers();
 
    private:
     /// boolean which indicates, that the Init() routine has been called

@@ -59,8 +59,8 @@ namespace DRT
           const double scalar) override;
 
       //! evaluate an electrode kinetics boundary condition
-      void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                  ///< element matrix
+      void evaluate_elch_boundary_kinetics(const DRT::Element* ele,  ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential

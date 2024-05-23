@@ -53,7 +53,7 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
   {
     // get rigid body data state container
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate =
-        particlerigidbodyinterface_->GetRigidBodyDataState();
+        particlerigidbodyinterface_->get_rigid_body_data_state();
 
     // get result
     std::string quantity;
@@ -94,7 +94,8 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
     else if (quantity == "angvelx" or quantity == "angvely" or quantity == "angvelz")
     {
       // get reference to rigid body angular velocity
-      const std::vector<std::vector<double>>& angvel = rigidbodydatastate->GetRefAngularVelocity();
+      const std::vector<std::vector<double>>& angvel =
+          rigidbodydatastate->get_ref_angular_velocity();
 
       // get actual result
       if (quantity == "angvelx")

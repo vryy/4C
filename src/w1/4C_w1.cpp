@@ -51,7 +51,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create(const int id, const 
 }
 
 
-void DRT::ELEMENTS::Wall1Type::NodalBlockInformation(
+void DRT::ELEMENTS::Wall1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
@@ -65,7 +65,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Wall1Type::SetupElementDefinition(
+void DRT::ELEMENTS::Wall1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALL"];
@@ -314,7 +314,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Surfaces()
 /*-----------------------------------------------------------------------------*
 | Map plane Green-Lagrange strains to 3d                       mayr.mt 05/2014 |
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::GreenLagrangePlane3d(
+void DRT::ELEMENTS::Wall1::green_lagrange_plane3d(
     const CORE::LINALG::SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}

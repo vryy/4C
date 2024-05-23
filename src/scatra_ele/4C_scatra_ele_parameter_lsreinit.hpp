@@ -62,7 +62,7 @@ namespace DRT
       {
         return charelelengthreinit_;
       };
-      double InterfaceThicknessFac() const { return interfacethicknessfac_; };
+      double interface_thickness_fac() const { return interfacethicknessfac_; };
       bool UseProjectedVel() const { return useprojectedreinitvel_; };
       INPAR::SCATRA::LinReinit LinForm() const { return linform_; };
       INPAR::SCATRA::ArtDiff ArtDiff() const { return artdiff_; };

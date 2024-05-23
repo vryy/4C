@@ -58,20 +58,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet10Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT10"; }
+      std::string get_element_type_string() const { return "SOLIDT10"; }
     };
 
     /*!
@@ -147,7 +147,7 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      virtual std::vector<double> ElementCenterRefeCoords();
+      virtual std::vector<double> element_center_refe_coords();
 
       /*!
       \brief Return unique ParObject id
@@ -358,7 +358,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
@@ -443,7 +443,7 @@ namespace DRT
       void MaterialPostSetup(Teuchos::ParameterList& params) override;
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDT10"; }
+      std::string get_element_type_string() const { return "SOLIDT10"; }
     };  // class So_tet10
 
 

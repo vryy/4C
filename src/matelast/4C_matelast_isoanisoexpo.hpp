@@ -116,7 +116,7 @@ namespace MAT
       void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
       /// Add anisotropic modified stresses
-      void AddStressAnisoModified(
+      void add_stress_aniso_modified(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix

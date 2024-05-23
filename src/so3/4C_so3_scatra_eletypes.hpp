@@ -47,14 +47,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8SCATRA"; }
     };
 
 
@@ -77,14 +77,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8fbarScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8FBARSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBARSCATRA"; }
     };
 
 
@@ -107,14 +107,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex27ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH27SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH27SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -136,14 +136,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT4SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -165,14 +165,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet10ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT10SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT10SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -194,14 +194,14 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoWeg6ScatraType instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDW6SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDW6SCATRA"; }
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

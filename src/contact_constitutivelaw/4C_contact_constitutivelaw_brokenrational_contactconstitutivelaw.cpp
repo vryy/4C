@@ -31,7 +31,7 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::BrokenRationalCon
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
-CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::CreateConstitutiveLaw()
+CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams::create_constitutive_law()
 {
   return Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw(this));
 }

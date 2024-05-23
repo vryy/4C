@@ -97,7 +97,7 @@ void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization& dis,
   {
     case LUBRICATION::set_general_lubrication_parameter:
     {
-      DRT::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->SetGeneralParameters(p);
+      DRT::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->set_general_parameters(p);
 
       break;
     }

@@ -78,7 +78,7 @@ void FSI::MonolithicBaseFS::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   PrintHeader();
 
@@ -271,7 +271,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
   // transfer the current ale mesh positions to the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  FluidField()->apply_mesh_displacement(fluiddisp);
 
   {
     Teuchos::Time tf("fluid", true);
@@ -294,7 +294,7 @@ void FSI::MonolithicMainFS::SetDofRowMaps(const std::vector<Teuchos::RCP<const E
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::SetDefaultParameters(
+void FSI::MonolithicMainFS::set_default_parameters(
     const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
   // monolithic solver settings
@@ -464,7 +464,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  SetDefaultParameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, NOXParameterList());
 
   CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
@@ -472,7 +472,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
 
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+  icoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
 
@@ -580,7 +580,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 2);
 
     // extract fluid free surface velocities.
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractFreeSurfaceVeln();
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_free_surface_veln();
 
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
@@ -927,7 +927,7 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
   fx = Extractor().ExtractVector(x, 0);
 
   Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSCondVector(fx);
-  FluidField()->FreeSurfVelocityToDisplacement(fcx);
+  FluidField()->free_surf_velocity_to_displacement(fcx);
 
   // process ale unknowns
 
@@ -1088,7 +1088,7 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(
+void FSI::BlockPreconditioningMatrixFS::local_block_richardson(
     Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& innerOp,
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
     int iterations, double omega, FILE* err, const Epetra_Comm& comm)
@@ -1227,7 +1227,7 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector& X, Epetra_Mult
       fx->Update(-1.0, *tmpfx, 1.0);
       fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-      LocalBlockRichardson(
+      local_block_richardson(
           fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
 
       if (run > 0)
@@ -1259,7 +1259,7 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector& X, Epetra_Mult
 
         fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-        LocalBlockRichardson(
+        local_block_richardson(
             fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
         fy->Update(omega_, *fz, 1.0);
       }

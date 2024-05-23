@@ -200,7 +200,7 @@ namespace CORE::GEO
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
-    void SetMarkedConditionSides(
+    void set_marked_condition_sides(
         // const int mc_idx,
         Teuchos::RCP<DRT::Discretization> cutter_dis,
         // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
@@ -247,11 +247,11 @@ namespace CORE::GEO
     bool HasLSCuttingSide(int sid);
 
     //! update the coordinates of the cut boundary cells
-    void UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void update_boundary_cell_coords(Teuchos::RCP<DRT::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
-    int Get_BC_Cubaturedegree() const;
+    int get_bc_cubaturedegree() const;
 
    protected:
     /** \brief hidden constructor for derived classes only
@@ -263,7 +263,7 @@ namespace CORE::GEO
 
     Teuchos::RCP<const BackMesh> BackMeshPtr() const { return back_mesh_.getConst(); }
 
-    virtual void GetPhysicalNodalCoordinates(
+    virtual void get_physical_nodal_coordinates(
         const DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
     CORE::GEO::CUT::CombIntersection& Intersection()
@@ -288,7 +288,7 @@ namespace CORE::GEO
     void AddMeshCuttingSide();
 
     //! add elements from the background discretization
-    void AddBackgroundElements();
+    void add_background_elements();
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
@@ -342,7 +342,7 @@ namespace CORE::GEO
     void DumpGmshVolumeCells(bool include_inner);
 
     //! Write the integrationcells and boundarycells in GMSH format throughout the domain
-    void DumpGmshIntegrationCells();
+    void dump_gmsh_integration_cells();
 
     //@}
 

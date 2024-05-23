@@ -93,7 +93,7 @@ void IO::MeshReader::ReadAndPartition()
     int local_max_node_id = max_node_id;
     comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
-    if (max_node_id < comm_->NumProc() && reader_.ExcludedSectionLength(node_section_name_) != 0)
+    if (max_node_id < comm_->NumProc() && reader_.excluded_section_length(node_section_name_) != 0)
       FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
           max_node_id);
   }
@@ -175,7 +175,7 @@ void IO::MeshReader::Rebalance()
 
           discret->Redistribute(*rowmap, *colmap, false, false, false);
 
-          Teuchos::RCP<Epetra_MultiVector> coordinates = discret->BuildNodeCoordinates();
+          Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
 
           std::tie(rowmap, colmap) = CORE::REBALANCE::RebalanceNodeMaps(
               graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
@@ -214,7 +214,7 @@ void IO::MeshReader::Rebalance()
 
     discret->Redistribute(*rowmap, *colmap, false, false, false);
 
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*discret);
   }
 }
 
@@ -228,7 +228,7 @@ void IO::MeshReader::CreateInlineMesh(int& max_node_id)
     int local_max_node_id = max_node_id;
     comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
-    domain_reader.CreatePartitionedMesh(max_node_id);
+    domain_reader.create_partitioned_mesh(max_node_id);
     domain_reader.Complete();
     max_node_id = domain_reader.MyDis()->NodeRowMap()->MaxAllGID() + 1;
   }

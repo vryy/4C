@@ -24,25 +24,25 @@ namespace
   inline bool IsMaterialIterative()
   {
     return Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-               GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") ==
+               GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") ==
            INPAR::STR::PreStress::material_iterative;
   }
 
   inline bool IsMaterialIterativeActive(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype == INPAR::STR::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
   }
 
   static inline bool IsMulfActive(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
@@ -76,7 +76,7 @@ void STR::IMPLICIT::PreStress::UpdateStepState()
   // Compute norm of the displacements
   GlobalState().GetDisNp()->NormInf(&absolute_displacement_norm_);
 
-  if (!IsMaterialIterativePrestressConverged())
+  if (!is_material_iterative_prestress_converged())
   {
     // Only update prestress if the material iterative prestress is not converged
     // update model specific variables
@@ -88,7 +88,7 @@ void STR::IMPLICIT::PreStress::UpdateStepElement()
 {
   CheckInitSetup();
 
-  if (!IsMaterialIterativePrestressConverged())
+  if (!is_material_iterative_prestress_converged())
   {
     // Only update prestress if the material iterative prestress is not converged
     ModelEval().UpdateStepElement();
@@ -121,18 +121,18 @@ void STR::IMPLICIT::PreStress::PostUpdate()
   }
 }
 
-bool STR::IMPLICIT::PreStress::IsMaterialIterativePrestressConverged() const
+bool STR::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 {
   return IsMaterialIterative() &&
-         GlobalState().GetStepN() >= SDyn().GetPreStressMinimumNumberOfLoadSteps() &&
-         absolute_displacement_norm_ < SDyn().GetPreStressDisplacementTolerance();
+         GlobalState().GetStepN() >= SDyn().get_pre_stress_minimum_number_of_load_steps() &&
+         absolute_displacement_norm_ < SDyn().get_pre_stress_displacement_tolerance();
 }
 
 bool STR::IMPLICIT::PreStress::EarlyStopping() const
 {
   CheckInitSetup();
 
-  if (IsMaterialIterativePrestressConverged())
+  if (is_material_iterative_prestress_converged())
   {
     if (GlobalState().GetMyRank() == 0)
     {
@@ -150,7 +150,7 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
 {
   if (IsMaterialIterative())
   {
-    if (absolute_displacement_norm_ > SDyn().GetPreStressDisplacementTolerance())
+    if (absolute_displacement_norm_ > SDyn().get_pre_stress_displacement_tolerance())
     {
       FOUR_C_THROW(
           "Prestress algorithm did not converged within the given timesteps. "

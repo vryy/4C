@@ -39,15 +39,15 @@ CORE::GEO::CUT::Parallel::Parallel(const Teuchos::RCP<DRT::Discretization>& disc
 /*------------------------------------------------------------------------------------------------*
  * communicate node positions                                                        schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
+void CORE::GEO::CUT::Parallel::communicate_node_positions()
 {
   // wait for all processors before the Communication starts
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodePositions");
+      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_positions");
 
-  //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodePositions" << std::flush;
+  //  if(myrank_==0) std::cout << "\n\t ... communicate_node_positions" << std::flush;
   //
   //  const double t_start = Teuchos::Time::wallTime();
 
@@ -66,11 +66,11 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     {
       break;
       FOUR_C_THROW(
-          "number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
+          "number of rounds for exchanging data in communicate_node_positions > numproc_+10");
     }
 
     // check if there are undecided node positions on this proc
-    bool undecided_nodes = mesh_.CheckForUndecidedNodePositions(
+    bool undecided_nodes = mesh_.check_for_undecided_node_positions(
         curr_undecided_node_pos_, curr_undecided_node_pos_shadow_);
 
     // no undecided node positions -> procDone=true
@@ -83,7 +83,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     // node positions
     // * after one round all procs have status procDone=true  only if all procs have not undecided
     // node positions
-    exportCommunicationFinished(procDone);
+    export_communication_finished(procDone);
 
     // check: procDone == 1 just if all procs have finished
     if (procDone)
@@ -93,12 +93,12 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
       // perform a new Robin round to gather data from other procs
       // (send from current proc to next proc and receive info from proc before, numproc times)
       // fill the current maps with information (node positions) from myproc
-      exportNodePositionData();
+      export_node_position_data();
 
       //-----------------------------------------------------------------------
       // ... now (back to the original proc) some of the ordered data could have been obtained from
       // other procs try do distribute the information (node positions)
-      distributeMyReceivedNodePositionData();
+      distribute_my_received_node_position_data();
     }
   }  // end while loop
 
@@ -130,7 +130,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
 /*------------------------------------------------------------------------------------------------*
  * export data whether proc has finished to set node positions                       schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::exportCommunicationFinished(bool& procDone)
+void CORE::GEO::CUT::Parallel::export_communication_finished(bool& procDone)
 {
   // Initialization
   int dest = myrank_ + 1;  // destination proc (the "next" one)
@@ -180,7 +180,7 @@ void CORE::GEO::CUT::Parallel::exportCommunicationFinished(bool& procDone)
 /*------------------------------------------------------------------------------------------------*
  * export position data to neighbor proc and receive data from previous proc         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::exportNodePositionData()
+void CORE::GEO::CUT::Parallel::export_node_position_data()
 {
   // destination proc (the "next" one)
   int dest = myrank_ + 1;
@@ -364,14 +364,14 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
   }  // end loop over procs
 
 
-}  // end exportNodePositionData
+}  // end export_node_position_data
 
 
 
 /*------------------------------------------------------------------------------------------------*
  * distribute received node positions on my processor                                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
+void CORE::GEO::CUT::Parallel::distribute_my_received_node_position_data()
 {
   // distribute the received data for myproc
   for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
@@ -457,22 +457,22 @@ void CORE::GEO::CUT::Parallel::setPositionForNode(const Node* n, const Point::Po
 /*------------------------------------------------------------------------------------------------*
  * communicate the node dofset number for single volumecells                         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
+void CORE::GEO::CUT::Parallel::communicate_node_dof_set_numbers(bool include_inner)
 {
   // wait for all processors before the Communication starts
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodeDofSetNumbers");
+      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_dof_set_numbers");
 
-  //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodeDofSetNumbers" << std::flush;
+  //  if(myrank_==0) std::cout << "\n\t ... communicate_node_dof_set_numbers" << std::flush;
   //
   //  const double t_start = Teuchos::Time::wallTime();
 
   dof_set_data_.clear();
 
   // check if there are missing dofset for volumecells on this proc
-  parentintersection_.FillParallelDofSetData(dof_set_data_, *discret_, include_inner);
+  parentintersection_.fill_parallel_dof_set_data(dof_set_data_, *discret_, include_inner);
 
 
   // perform just one Robin round to gather data from other procs
@@ -484,7 +484,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
   //-----------------------------------------------------------------------
   // ... now (back to the original proc) all the ordered data should have been obtained from other
   // procs set the information
-  distributeDofSetData();
+  distribute_dof_set_data();
 
   discret_->Comm().Barrier();
 
@@ -764,14 +764,14 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
   }  // end loop over procs
 
   return;
-}  // end exportNodePositionData
+}  // end export_node_position_data
 
 
 
 /*------------------------------------------------------------------------------------------------*
  * distribute received dofset number for nodes of volumecell on my processor         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::distributeDofSetData()
+void CORE::GEO::CUT::Parallel::distribute_dof_set_data()
 {
   // back to the original proc
 
@@ -798,7 +798,7 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
       {
         const std::vector<plain_volumecell_set>& ele_vc_sets_inside = e->GetVcSetsInside();
         std::vector<std::vector<int>>& nodaldofset_vc_sets_inside =
-            e->GetNodalDofSet_VcSets_Inside();
+            e->get_nodal_dof_set_vc_sets_inside();
 
         ReplaceNdsVectors(e, ele_vc_sets_inside, nodaldofset_vc_sets_inside, (*data)->set_index_,
             (*data)->node_dofsetnumber_map_);
@@ -807,7 +807,7 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
       {
         const std::vector<plain_volumecell_set>& ele_vc_sets_outside = e->GetVcSetsOutside();
         std::vector<std::vector<int>>& nodaldofset_vc_sets_outside =
-            e->GetNodalDofSet_VcSets_Outside();
+            e->get_nodal_dof_set_vc_sets_outside();
 
         ReplaceNdsVectors(e, ele_vc_sets_outside, nodaldofset_vc_sets_outside, (*data)->set_index_,
             (*data)->node_dofsetnumber_map_);

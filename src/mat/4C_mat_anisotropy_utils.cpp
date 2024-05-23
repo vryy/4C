@@ -42,7 +42,7 @@ void MAT::ReadAnisotropyFiber(
 }
 
 template <typename T, unsigned int numfib>
-void MAT::ComputeStructuralTensors(
+void MAT::compute_structural_tensors(
     std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers,
     std::vector<std::array<T, numfib>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy)
@@ -60,7 +60,7 @@ void MAT::ComputeStructuralTensors(
     for (std::vector<CORE::LINALG::Matrix<3, 1>>::size_type i = 0; i < numfib; ++i)
     {
       T A(false);
-      strategy->SetupStructuralTensor(fibers[gp].at(i), A);
+      strategy->setup_structural_tensor(fibers[gp].at(i), A);
 
       structural_tensor[gp].at(i).Update(A);
     }
@@ -126,19 +126,19 @@ void MAT::UnpackFiberArray(std::vector<char>::size_type& position, const std::ve
 
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
-template void MAT::ComputeStructuralTensors<CORE::LINALG::Matrix<6, 1>, 1u>(
+template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<6, 1>, 1u>(
     std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& fibers,
     std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::ComputeStructuralTensors<CORE::LINALG::Matrix<3, 3>, 1u>(
+template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<3, 3>, 1u>(
     std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& fibers,
     std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::ComputeStructuralTensors<CORE::LINALG::Matrix<6, 1>, 2u>(
+template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<6, 1>, 2u>(
     std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& fibers,
     std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::ComputeStructuralTensors<CORE::LINALG::Matrix<3, 3>, 2u>(
+template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<3, 3>, 2u>(
     std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& fibers,
     std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& structural_tensor,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);

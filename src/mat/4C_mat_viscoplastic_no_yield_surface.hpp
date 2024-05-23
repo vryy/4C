@@ -49,7 +49,7 @@ namespace MAT
       //! return gas constant \f$ R \f$
       double GasConstant() const { return gas_constant_; };
       //! return strain-rate-sensitivity \f$ m \f$
-      double StrainRateSensitivity() const { return strain_rate_sensitivity_; };
+      double strain_rate_sensitivity() const { return strain_rate_sensitivity_; };
       //! return flow resistance pre-factor \f$ H_0 \f$
       double FlowResPreFac() const { return flow_res_pre_fac_; };
       //! return initial flow resistance \f$ S^0 \f$
@@ -174,7 +174,7 @@ namespace MAT
      * @param[in] p                 mean normal pressure
      * @return deviatoric trial stresses
      */
-    CORE::LINALG::Matrix<3, 3>& CalculateDeviatoricTrialStresses(
+    CORE::LINALG::Matrix<3, 3>& calculate_deviatoric_trial_stresses(
         const CORE::LINALG::Matrix<6, 1>& Me_trial_Vstress, const double p) const;
 
     /*!
@@ -184,7 +184,7 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return elastic stiffness tensor in intermediate configuration
      */
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& CalculateElasticStiffness(
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& calculate_elastic_stiffness(
         const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
         const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
@@ -196,7 +196,7 @@ namespace MAT
      * @param[in] terms               terms that can be precalculated and reused several times
      * @return Linearization matrix
      */
-    CORE::LINALG::Matrix<2, 2>& CalculateLinearization(const double equ_tens_stress_np,
+    CORE::LINALG::Matrix<2, 2>& calculate_linearization(const double equ_tens_stress_np,
         const double flow_resistance_np, const MAT::PreCalculatedTerms& terms);
 
     /*!
@@ -220,7 +220,7 @@ namespace MAT
      * @param[in] Me        energy conjugated stress tensor
      * @return second Piola--Kirchhoff stresses
      */
-    CORE::LINALG::Matrix<3, 3>& CalculateSecondPiolaKirchhoffStresses(
+    CORE::LINALG::Matrix<3, 3>& calculate_second_piola_kirchhoff_stresses(
         const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>& Re_trial,
         const CORE::LINALG::Matrix<3, 3>& Me) const;
 
@@ -229,7 +229,7 @@ namespace MAT
      * @param[out] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @param[out] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      */
-    void CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
+    void calculate_trial_elastic_defgrad_eigenvalues_and_eigenvectors(
         const CORE::LINALG::Matrix<3, 3>& Fe_trial, CORE::LINALG::Matrix<3, 1>& eigen_values,
         CORE::LINALG::Matrix<3, 3>& eigen_vectors) const;
 
@@ -239,7 +239,7 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return trial elastic rotation tensor \f$ R^{*}_\text{e} \f$
      */
-    CORE::LINALG::Matrix<3, 3>& CalculateTrialElasticRotation(
+    CORE::LINALG::Matrix<3, 3>& calculate_trial_elastic_rotation(
         const CORE::LINALG::Matrix<3, 3>& Fe_trial, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
         const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
@@ -248,7 +248,7 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return logarithmic elastic strains in strain-like Voigt notation
      */
-    CORE::LINALG::Matrix<6, 1>& CalculateLogElasticStrainInStrainLikeVoigtNotation(
+    CORE::LINALG::Matrix<6, 1>& calculate_log_elastic_strain_in_strain_like_voigt_notation(
         const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
         const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
@@ -256,7 +256,7 @@ namespace MAT
      * @param[in] Me_trial_dev  deviatoric part of trial elastic stresses
      * @return trial elastic equivalent stress [sqrt(3/2 * trace(Me_trial_dev . Me_trial_dev))]
      */
-    double CalculateTrialEquivalentStress(const CORE::LINALG::Matrix<3, 3>& Me_trial_dev) const;
+    double calculate_trial_equivalent_stress(const CORE::LINALG::Matrix<3, 3>& Me_trial_dev) const;
 
     /*!
      * @brief inverse viscous deformation gradient is updated and returned
@@ -267,7 +267,7 @@ namespace MAT
      * @param[in] eta            deviatoric elastic deformation share
      * @return inverse viscous deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3>& CalculateUpdatedInverseViscousDefgrad(
+    CORE::LINALG::Matrix<3, 3>& calculate_updated_inverse_viscous_defgrad(
         const CORE::LINALG::Matrix<3, 3>& last_iFv, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
         const CORE::LINALG::Matrix<3, 1>& eigen_values, const double eta) const;
 

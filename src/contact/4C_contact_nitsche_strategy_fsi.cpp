@@ -42,20 +42,20 @@ void CONTACT::NitscheStrategyFsi::DoContactSearch()
   for (auto& interface : interface_)
   {
     interface->Initialize();
-    interface->EvaluateSearchBinarytree();
-    interface->EvaluateNodalNormals();
+    interface->evaluate_search_binarytree();
+    interface->evaluate_nodal_normals();
     interface->ExportNodalNormals();
   }
 }
 
-bool CONTACT::NitscheStrategyFsi::CheckNitscheContactState(CONTACT::Element* cele,
+bool CONTACT::NitscheStrategyFsi::check_nitsche_contact_state(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
-  return CONTACT::UTILS::CheckNitscheContactState(
+  return CONTACT::UTILS::check_nitsche_contact_state(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
-bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterface,
+bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinterface,
     const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
@@ -115,8 +115,8 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
   {
     double center[2] = {0., 0.};
     CORE::LINALG::Matrix<3, 1> sn, mn;
-    cele->ComputeUnitNormalAtXi(center, sn.A());
-    other_cele->ComputeUnitNormalAtXi(center, mn.A());
+    cele->compute_unit_normal_at_xi(center, sn.A());
+    other_cele->compute_unit_normal_at_xi(center, mn.A());
     if (sn.Dot(mn) > 0.) other_cele = nullptr;
   }
   // no master element hit
@@ -140,7 +140,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
   n.Scale(1. / n.Norm2());
   gap = diff.Dot(n);
   CORE::LINALG::Matrix<3, 1> myN;
-  cele->ComputeUnitNormalAtXi(xsi.A(), myN.A());
+  cele->compute_unit_normal_at_xi(xsi.A(), myN.A());
   double dir = n.Dot(myN);
   if (dir > 0)
     gap *= 1.;
@@ -163,7 +163,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
   CORE::LINALG::Matrix<3, 1> ele_n;
-  cele->ComputeUnitNormalAtXi(xsi.A(), ele_n.A());
+  cele->compute_unit_normal_at_xi(xsi.A(), ele_n.A());
 
   double stress_plus_penalty =
       ws * CONTACT::UTILS::SolidCauchyAtXi(cele, xsi, ele_n, ele_n) +

@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall hander
   particlewallinterface_ = particlewallinterface;
@@ -101,42 +101,43 @@ void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double curren
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMass() const
 {
   // clear density sum state
-  ClearDensitySumState();
+  clear_density_sum_state();
 
   // sum weighted mass (self contribution)
-  SumWeightedMassSelfContribution();
+  sum_weighted_mass_self_contribution();
 
   // sum weighted mass (particle contribution)
-  SumWeightedMassParticleContribution();
+  sum_weighted_mass_particle_contribution();
 
   // sum weighted mass (particle-wall contribution)
-  if (virtualwallparticle_) SumWeightedMassParticleWallContribution();
+  if (virtualwallparticle_) sum_weighted_mass_particle_wall_contribution();
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumState() const
+void PARTICLEINTERACTION::SPHDensityBase::clear_density_sum_state() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear density sum state
     container_i->ClearState(PARTICLEENGINE::DensitySum);
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_self_contribution() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_self_contribution");
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -155,13 +156,13 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution() cons
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_particle_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_particle_contribution");
 
   // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  for (auto& particlepair : neighborpairs_->get_ref_to_particle_pair_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -176,10 +177,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() 
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -197,20 +198,20 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() 
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_particle_wall_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::sum_weighted_mass_particle_wall_contribution");
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_wall_pair_indices(fluidtypes_, relindices);
 
   // iterate over relevant particle-wall pairs
   for (const int particlewallpairindex : relindices)
   {
     const SPHParticleWallPair& particlewallpair =
-        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+        neighborpairs_->get_ref_to_particle_wall_pair_data()[particlewallpairindex];
 
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -220,7 +221,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
@@ -238,7 +239,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
 
     // iterate over virtual particles
     for (const std::vector<double>& virtualparticle :
-        virtualwallparticle_->GetRelativePositionsOfVirtualParticles())
+        virtualwallparticle_->get_relative_positions_of_virtual_particles())
     {
       // vector from virtual particle k to particle i
       double r_ik[3];
@@ -266,42 +267,43 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
 void PARTICLEINTERACTION::SPHDensityBase::SumColorfield() const
 {
   // clear colorfield state
-  ClearColorfieldState();
+  clear_colorfield_state();
 
   // sum colorfield (self contribution)
-  SumColorfieldSelfContribution();
+  sum_colorfield_self_contribution();
 
   // sum colorfield (particle contribution)
-  SumColorfieldParticleContribution();
+  sum_colorfield_particle_contribution();
 
   // sum colorfield (particle-wall contribution)
-  if (virtualwallparticle_) SumColorfieldParticleWallContribution();
+  if (virtualwallparticle_) sum_colorfield_particle_wall_contribution();
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ClearColorfieldState() const
+void PARTICLEINTERACTION::SPHDensityBase::clear_colorfield_state() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear colorfield state
     container_i->ClearState(PARTICLEENGINE::Colorfield);
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_self_contribution() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_self_contribution");
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -321,13 +323,13 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution() const
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_particle_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_particle_contribution");
 
   // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  for (auto& particlepair : neighborpairs_->get_ref_to_particle_pair_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -342,17 +344,17 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     const MAT::PAR::ParticleMaterialBase* material_j =
-        particlematerial_->GetPtrToParticleMatParameter(type_j);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -380,20 +382,20 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_particle_wall_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::sum_colorfield_particle_wall_contribution");
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_wall_pair_indices(fluidtypes_, relindices);
 
   // iterate over relevant particle-wall pairs
   for (const int particlewallpairindex : relindices)
   {
     const SPHParticleWallPair& particlewallpair =
-        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+        neighborpairs_->get_ref_to_particle_wall_pair_data()[particlewallpairindex];
 
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -403,11 +405,11 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
@@ -431,7 +433,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
 
     // iterate over virtual particles
     for (const std::vector<double>& virtualparticle :
-        virtualwallparticle_->GetRelativePositionsOfVirtualParticles())
+        virtualwallparticle_->get_relative_positions_of_virtual_particles())
     {
       // vector from virtual particle k to particle i
       double r_ik[3];
@@ -459,36 +461,36 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
 void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 {
   // clear density dot state
-  ClearDensityDotState();
+  clear_density_dot_state();
 
   // continuity equation (particle contribution)
-  ContinuityEquationParticleContribution();
+  continuity_equation_particle_contribution();
 
   // continuity equation (particle-wall contribution)
-  if (virtualwallparticle_) ContinuityEquationParticleWallContribution();
+  if (virtualwallparticle_) continuity_equation_particle_wall_contribution();
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
+void PARTICLEINTERACTION::SPHDensityBase::clear_density_dot_state() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear density dot state
     container_i->ClearState(PARTICLEENGINE::DensityDot);
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_contribution");
 
   // iterate over particle pairs
-  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  for (auto& particlepair : neighborpairs_->get_ref_to_particle_pair_data())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -503,17 +505,17 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     const MAT::PAR::ParticleMaterialBase* material_j =
-        particlematerial_->GetPtrToParticleMatParameter(type_j);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
     const double* vel_i =
@@ -559,10 +561,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribution() const
+void PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_wall_contribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribution");
+      "PARTICLEINTERACTION::SPHDensityBase::continuity_equation_particle_wall_contribution");
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -570,13 +572,13 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticleWallPairIndices(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_wall_pair_indices(fluidtypes_, relindices);
 
   // iterate over relevant particle-wall pairs
   for (const int particlewallpairindex : relindices)
   {
     const SPHParticleWallPair& particlewallpair =
-        neighborpairs_->GetRefToParticleWallPairData()[particlewallpairindex];
+        neighborpairs_->get_ref_to_particle_wall_pair_data()[particlewallpairindex];
 
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -586,11 +588,11 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get pointer to particle states
     const double* vel_i =
@@ -623,7 +625,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       ele->LocationVector(
-          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+          *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // velocity of wall contact point j
@@ -664,7 +666,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
 
     // iterate over virtual particles
     for (const std::vector<double>& virtualparticle :
-        virtualwallparticle_->GetRelativePositionsOfVirtualParticles())
+        virtualwallparticle_->get_relative_positions_of_virtual_particles())
     {
       // vector from virtual particle k to particle i
       double r_ik[3];
@@ -698,21 +700,21 @@ void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
     container_i->UpdateState(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum);
   }
 }
 
-void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
+void PARTICLEINTERACTION::SPHDensityBase::add_time_step_scaled_density_dot() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
     container_i->UpdateState(1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot);
@@ -725,7 +727,7 @@ PARTICLEINTERACTION::SPHDensitySummation::SPHDensitySummation(const Teuchos::Par
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHDensitySummation::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -757,7 +759,7 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   SetDensitySum();
 
   // refresh density of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
 }
 
 PARTICLEINTERACTION::SPHDensityIntegration::SPHDensityIntegration(
@@ -767,7 +769,7 @@ PARTICLEINTERACTION::SPHDensityIntegration::SPHDensityIntegration(
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHDensityIntegration::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -796,10 +798,10 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   ContinuityEquation();
 
   // add time step scaled density dot to density field
-  AddTimeStepScaledDensityDot();
+  add_time_step_scaled_density_dot();
 
   // refresh density of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
 }
 
 PARTICLEINTERACTION::SPHDensityPredictCorrect::SPHDensityPredictCorrect(
@@ -817,7 +819,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Init()
   SPHDensityBase::Init();
 
   // init density correction handler
-  InitDensityCorrectionHandler();
+  init_density_correction_handler();
 }
 
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
@@ -837,7 +839,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
   densitycorrection_->Setup();
 }
 
-void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHDensityPredictCorrect::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -867,10 +869,10 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   ContinuityEquation();
 
   // add time step scaled density dot to density field
-  AddTimeStepScaledDensityDot();
+  add_time_step_scaled_density_dot();
 
   // refresh density of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
 
   // evaluate sum of weighted mass
   SumWeightedMass();
@@ -882,10 +884,10 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   CorrectDensity();
 
   // refresh density of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(densitytorefresh_);
 }
 
-void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler()
+void PARTICLEINTERACTION::SPHDensityPredictCorrect::init_density_correction_handler()
 {
   // get type of density correction scheme
   INPAR::PARTICLE::DensityCorrectionScheme densitycorrectionscheme =
@@ -931,7 +933,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -946,11 +948,11 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get equation of state for current particle type
     const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
-        equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
+        equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
@@ -958,7 +960,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
       if (colorfield[i] >= 1.0)
       {
         // set corrected density of interior particles
-        densitycorrection_->CorrectedDensityInterior(&denssum[i], &dens[i]);
+        densitycorrection_->corrected_density_interior(&denssum[i], &dens[i]);
       }
       else
       {
@@ -970,7 +972,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
         }
 
         // set corrected density of free surface particles
-        densitycorrection_->CorrectedDensityFreeSurface(
+        densitycorrection_->corrected_density_free_surface(
             &denssum[i], &colorfield[i], &dens_bc, &dens[i]);
       }
     }

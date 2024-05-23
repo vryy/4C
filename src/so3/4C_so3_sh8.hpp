@@ -42,20 +42,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoSh8Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDSH8"; }
+      std::string get_element_type_string() const { return "SOLIDSH8"; }
     };
 
     /*!
@@ -332,7 +332,7 @@ namespace DRT
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain) const;
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDSH8"; }
+      std::string get_element_type_string() const { return "SOLIDSH8"; }
     };  // class So_sh8
 
 

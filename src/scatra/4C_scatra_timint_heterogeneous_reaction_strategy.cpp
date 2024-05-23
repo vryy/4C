@@ -92,7 +92,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
   SCATRA::MeshtyingStrategyStd::SetupMeshtying();
 
   // make sure we set up everything properly
-  HeterogeneousReactionSanityCheck();
+  heterogeneous_reaction_sanity_check();
 
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->Discretization()->Comm().Clone());
 
@@ -155,7 +155,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
     if (com->MyPID() == 0 and com->NumProc() > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret_);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*discret_);
   }
 
   SetIsSetup(true);
@@ -214,7 +214,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetState(
 /*----------------------------------------------------------------------*
  | sanity check for some assumptions and conventions        rauch 06/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
+void SCATRA::HeterogeneousReactionStrategy::heterogeneous_reaction_sanity_check()
 {
   bool valid_slave = false;
 

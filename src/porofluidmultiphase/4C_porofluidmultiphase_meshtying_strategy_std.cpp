@@ -45,10 +45,10 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
 /*--------------------------------------------------------------------------*
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::InitializeLinearSolver(
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
     Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
-  porofluidmultitimint_->Discretization()->ComputeNullSpaceIfNecessary(solver->Params());
+  porofluidmultitimint_->Discretization()->compute_null_space_if_necessary(solver->Params());
 }
 
 /*--------------------------------------------------------------------------*
@@ -107,7 +107,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Evaluate() { return; }
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ExtractAndUpdateIter(
+Teuchos::RCP<const Epetra_Vector>
+POROFLUIDMULTIPHASE::MeshtyingStrategyStd::extract_and_update_iter(
     const Teuchos::RCP<const Epetra_Vector> inc)
 {
   return inc;

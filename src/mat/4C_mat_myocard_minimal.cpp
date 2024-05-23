@@ -370,7 +370,7 @@ double MyocardMinimal::ReaCoeffN(const double phi, const double dt, int gp)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardMinimal::GetNumberOfInternalStateVariables() const { return 3; }
+int MyocardMinimal::get_number_of_internal_state_variables() const { return 3; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
@@ -463,7 +463,7 @@ void MyocardMinimal::SetInternalState(const int k, const double val, int gp)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardMinimal::GetNumberOfIonicCurrents() const { return 3; }
+int MyocardMinimal::get_number_of_ionic_currents() const { return 3; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
@@ -514,7 +514,7 @@ void MyocardMinimal::Update(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  resize internal state variables                      hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void MyocardMinimal::ResizeInternalStateVariables(int gp)
+void MyocardMinimal::resize_internal_state_variables(int gp)
 {
   v0_.resize(gp);
   w0_.resize(gp);

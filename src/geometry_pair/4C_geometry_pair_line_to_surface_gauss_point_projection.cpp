@@ -31,11 +31,11 @@ GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTracker();
+      this->line_to_surface_evaluation_data_->get_gauss_point_projection_tracker();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
-    int n_gauss_points = this->line_to_surface_evaluation_data_->GetNumberOfGaussPoints();
+    int n_gauss_points = this->line_to_surface_evaluation_data_->get_number_of_gauss_points();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -77,12 +77,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
  */
 template <typename scalar_type, typename line, typename surface>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::GetLineProjectionVector() const
+    surface>::get_line_projection_vector() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTracker();
+      this->line_to_surface_evaluation_data_->get_gauss_point_projection_tracker();
   return projection_tracker[line_element_id];
 }
 

@@ -175,7 +175,7 @@ namespace INPUT
       Builder& AddNamedDouble(std::string name);
 
       /// Add a name followed by a vector of double variables
-      Builder& AddNamedDoubleVector(std::string name, int length);
+      Builder& add_named_double_vector(std::string name, int length);
 
       /*!
        * Add a name followed by a vector of double variables.
@@ -183,22 +183,22 @@ namespace INPUT
        * The function @p length_definition specifies how to obtain the number of to be read vector
        * entries from the previously added components. See LengthDefinition for details.
        */
-      Builder& AddNamedDoubleVector(std::string name, LengthDefinition length_definition);
+      Builder& add_named_double_vector(std::string name, LengthDefinition length_definition);
 
       /// Add a name followed by a variable string
-      Builder& AddOptionalNamedString(const std::string& name);
+      Builder& add_optional_named_string(const std::string& name);
 
       /// Add a name followed by an integer variable
       Builder& AddOptionalNamedInt(const std::string& name);
 
       /// Add a name followed by a vector of integer variables
-      Builder& AddOptionalNamedIntVector(const std::string& name, int length);
+      Builder& add_optional_named_int_vector(const std::string& name, int length);
 
       /// Add a name followed by a double variable
-      Builder& AddOptionalNamedDouble(const std::string& name);
+      Builder& add_optional_named_double(const std::string& name);
 
       /// Add a name followed by a vector of double variables
-      Builder& AddOptionalNamedDoubleVector(const std::string& name, int length);
+      Builder& add_optional_named_double_vector(const std::string& name, int length);
 
       /*!
        * Add a name followed by a vector of double variables.
@@ -207,10 +207,11 @@ namespace INPUT
        * that gives the length of the vector. The integer component has to
        * precede the vector definition on the input line.
        */
-      Builder& AddOptionalNamedDoubleVector(const std::string& name, LengthDefinition lengthdef);
+      Builder& add_optional_named_double_vector(
+          const std::string& name, LengthDefinition lengthdef);
 
       /// Add a name followed by a vector of string variables.
-      Builder& AddOptionalNamedStringVector(const std::string& name, int length);
+      Builder& add_optional_named_string_vector(const std::string& name, int length);
 
       /**
        * Add a name followed by a vector of string variables.
@@ -220,7 +221,8 @@ namespace INPUT
        * precede the vector definition on the input line.
        * The space defines the separation between a string and the next one.
        */
-      Builder& AddOptionalNamedStringVector(const std::string& name, LengthDefinition lengthdef);
+      Builder& add_optional_named_string_vector(
+          const std::string& name, LengthDefinition lengthdef);
 
       /*!
        * Add a name followed by a vector of double variables.
@@ -229,7 +231,7 @@ namespace INPUT
        * that gives the length of the vector. The integer component has to
        * precede the vector definition on the input line.
        */
-      Builder& AddOptionalNamedPairOfStringAndDoubleVector(
+      Builder& add_optional_named_pair_of_string_and_double_vector(
           const std::string& name, LengthDefinition lengthdef);
 
      private:
@@ -263,7 +265,7 @@ namespace INPUT
     void ExtractDouble(const std::string& name, double& value) const;
     void ExtractDoubleVector(const std::string& name, std::vector<double>& v) const;
     void ExtractStringVector(const std::string& name, std::vector<std::string>& v) const;
-    void ExtractPairOfStringAndDoubleVector(
+    void extract_pair_of_string_and_double_vector(
         const std::string& name, std::vector<std::pair<std::string, double>>& v) const;
 
     //@}

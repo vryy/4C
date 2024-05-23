@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizat
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::AddVisualizationWriter(
+BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name, const std::string& writer_name_key)
 {
   const auto& it = visualization_writers_.find(writer_name_key);
@@ -59,17 +59,17 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::AddVisualizationWrite
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::AddVisualizationWriter(
+BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name)
 {
-  return AddVisualizationWriter(writer_name, writer_name);
+  return add_visualization_writer(writer_name, writer_name);
 }
 
 /**
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
-BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::GetVisualizationWriter(
+BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_writer(
     const std::string& writer_name)
 {
   const auto& it = visualization_writers_.find(writer_name);

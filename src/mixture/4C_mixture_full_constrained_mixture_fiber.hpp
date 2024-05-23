@@ -126,7 +126,7 @@ namespace MIXTURE
      *
      * @param lambda_pre (in) : Scalar for the prestretch of the fiber (in fiber direction)
      */
-    void SetDepositionStretch(double lambda_pre);
+    void set_deposition_stretch(double lambda_pre);
 
     /*!
      * @brief Set deformation state of the fiber and recomputes all needed quantities for
@@ -159,7 +159,7 @@ namespace MIXTURE
      *
      * @return double Last stored time in history
      */
-    [[nodiscard]] double GetLastTimeInHistory() const;
+    [[nodiscard]] double get_last_time_in_history() const;
 
     /*!
      * @brief Adds the time delta to all items in the history.
@@ -172,28 +172,28 @@ namespace MIXTURE
 
     ///@brief Integrands that need to be integrated over for the full constrained mixture model
     ///@{
-    [[nodiscard]] Number GrowthScalarIntegrand(
+    [[nodiscard]] Number growth_scalar_integrand(
         const MassIncrement<Number>& mass_increment, double time) const;
-    [[nodiscard]] Number DGrowthScalarIntegrandDProductionRate(
+    [[nodiscard]] Number d_growth_scalar_integrand_d_production_rate(
         const MassIncrement<Number>& mass_increment, double time) const;
-    [[nodiscard]] Number DGrowthScalarIntegrandDGrowthScalar(
+    [[nodiscard]] Number d_growth_scalar_integrand_d_growth_scalar(
         const MassIncrement<Number>& mass_increment, double time) const;
-    [[nodiscard]] Number ScaledCauchyStressIntegrand(
+    [[nodiscard]] Number scaled_cauchy_stress_integrand(
         const MassIncrement<Number>& mass_increment, double time, Number current_lambda_f) const;
-    [[nodiscard]] Number DScaledCauchyStressIntegrandDProductionRate(
+    [[nodiscard]] Number d_scaled_cauchy_stress_integrand_d_production_rate(
         const MassIncrement<Number>& mass_increment, double time, Number current_lambda_f) const;
-    [[nodiscard]] Number DScaledCauchyStressIntegrandDGrowthScalar(
+    [[nodiscard]] Number d_scaled_cauchy_stress_integrand_d_growth_scalar(
         const MassIncrement<Number>& mass_increment, double time, Number current_lambda_f) const;
-    [[nodiscard]] Number DScaledCauchyStressIntegrandDLambdaFSq(
+    [[nodiscard]] Number d_scaled_cauchy_stress_integrand_d_lambda_f_sq(
         const MassIncrement<Number>& mass_increment, double time, Number current_lambda_f) const;
-    [[nodiscard]] Number DScaledCauchyStressIntegrandDLambdaRefSq(
+    [[nodiscard]] Number d_scaled_cauchy_stress_integrand_d_lambda_ref_sq(
         const MassIncrement<Number>& mass_increment, double time, Number current_lambda_f) const;
     ///@}
 
     ///@brief Evaluator methods to compute the linearization of the local Newton method
     ///@{
-    [[nodiscard]] Number EvaluateDResiduumGrowthScalarDLambdaFSq() const;
-    [[nodiscard]] Number EvaluateDResiduumCauchyStressDLambdaFSq() const;
+    [[nodiscard]] Number evaluate_d_residuum_growth_scalar_d_lambda_f_sq() const;
+    [[nodiscard]] Number evaluate_d_residuum_cauchy_stress_d_lambda_f_sq() const;
     ///@}
 
     /*!
@@ -207,7 +207,7 @@ namespace MIXTURE
      */
     [[nodiscard]] std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>,
         CORE::LINALG::Matrix<2, 2, Number>>(const CORE::LINALG::Matrix<2, 1, Number>&)>
-    GetLocalNewtonEvaluator() const;
+    get_local_newton_evaluator() const;
 
     /*!
      * @brief Evaluate the Cauchy stress of the fiber by integration over the deposition history
@@ -215,28 +215,28 @@ namespace MIXTURE
      * @param lambda_f Current fiber stretch
      * @return Number
      */
-    [[nodiscard]] Number ComputeHistoryCauchyStress(Number lambda_f) const;
+    [[nodiscard]] Number compute_history_cauchy_stress(Number lambda_f) const;
 
     [[nodiscard]] Number EvaluateLambdaRef(Number lambda_f) const;
-    [[nodiscard]] Number EvaluateDLambdaRefSqDLambdaFSq(Number lambda_f) const;
+    [[nodiscard]] Number evaluate_d_lambda_ref_sq_d_lambda_f_sq(Number lambda_f) const;
 
-    MassIncrement<Number> EvaluateCurrentMassIncrement(
+    MassIncrement<Number> evaluate_current_mass_increment(
         Number growth_scalar, Number cauchy_stress) const
     {
       const Number growth_scalar_production_rate =
-          growth_evolution_.EvaluateTrueMassProductionRate((cauchy_stress - sig_h_) / sig_h_);
+          growth_evolution_.evaluate_true_mass_production_rate((cauchy_stress - sig_h_) / sig_h_);
       return {EvaluateLambdaRef(current_state_.lambda_f), growth_scalar,
           growth_scalar_production_rate, current_time_};
     }
 
-    void ComputeInternalVariables();
+    void compute_internal_variables();
 
     /*!
      * @brief Return the current Cauchy fiber stress
      *
      * @return Number
      */
-    [[nodiscard]] Number EvaluateCurrentCauchyStress() const { return computed_sigma_; }
+    [[nodiscard]] Number evaluate_current_cauchy_stress() const { return computed_sigma_; }
 
 
     /*!
@@ -244,7 +244,7 @@ namespace MIXTURE
      *
      * @return Number
      */
-    [[nodiscard]] Number EvaluateCurrentSecondPKStress() const
+    [[nodiscard]] Number evaluate_current_second_pk_stress() const
     {
       return computed_sigma_ / std::pow(current_state_.lambda_f, 2);
     }
@@ -255,7 +255,7 @@ namespace MIXTURE
      *
      * @return Number
      */
-    [[nodiscard]] Number EvaluateDCurrentFiberPK2StressDLambdafsq() const;
+    [[nodiscard]] Number evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const;
 
     /// homeostatic quantities
     /// @{

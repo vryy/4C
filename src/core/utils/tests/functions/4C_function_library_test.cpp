@@ -25,13 +25,13 @@ namespace
     CubicSplineFromCSVTest()
     {
       const std::string csv_template_file_name = "template.csv";
-      SetupTemplateCSVFile(csv_template_file_name);
+      setup_template_csv_file(csv_template_file_name);
 
       cubic_spline_from_csv_ =
           Teuchos::rcp(new CORE::UTILS::CubicSplineFromCSV(csv_template_file_name));
     }
 
-    void SetupTemplateCSVFile(const std::string& csv_template_file_name) const
+    void setup_template_csv_file(const std::string& csv_template_file_name) const
     {
       std::ofstream test_csv_file{csv_template_file_name};
       // include header line

@@ -56,37 +56,37 @@ namespace SSI
     virtual ~ScatraStructureOffDiagCoupling() = default;
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
-    void EvaluateOffDiagBlockScatraStructureDomain(
+    void evaluate_off_diag_block_scatra_structure_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureblock);
 
     //! evaluation contributions to off-diagonal manifold scatra-structure block of global system
     //! matrix
-    virtual void EvaluateOffDiagBlockScatraManifoldStructureDomain(
+    virtual void evaluate_off_diag_block_scatra_manifold_structure_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock);
 
     //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
     //! matrix
-    void EvaluateOffDiagBlockScatraStructureInterface(
+    void evaluate_off_diag_block_scatra_structure_interface(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureinterface);
 
     //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
-    virtual void EvaluateOffDiagBlockStructureScatraDomain(
+    virtual void evaluate_off_diag_block_structure_scatra_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const;
 
    protected:
     //! copy slave side symmetric contributions to the scatra structure interface linearization
     //! entries to master side scaled by -1.0
-    void CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(
+    void copy_slave_to_master_scatra_structure_symmetric_interface_contributions(
         Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
 
     //! evaluate symmetric contributions to the scatra structure interface linearization on the
     //! slave side
-    void EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(
+    void evaluate_scatra_structure_symmetric_interface_contributions_slave_side(
         Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
 
     //! evaluate non-symmetric contributions to the scatra structure interface linearization
-    void EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(
+    void evaluate_scatra_structure_non_symmetric_interface_contributions_slave_side(
         Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix);
 
@@ -128,7 +128,7 @@ namespace SSI
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
         Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
-    void EvaluateOffDiagBlockScatraManifoldStructureDomain(
+    void evaluate_off_diag_block_scatra_manifold_structure_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock) override;
 
    private:
@@ -154,7 +154,7 @@ namespace SSI
         Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 
-    void EvaluateOffDiagBlockStructureScatraDomain(
+    void evaluate_off_diag_block_structure_scatra_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const override;
 
    private:

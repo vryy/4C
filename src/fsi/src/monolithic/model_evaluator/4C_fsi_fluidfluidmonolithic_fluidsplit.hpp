@@ -62,7 +62,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
 
     /// setup of extractor for merged Dirichlet maps
-    void SetupDBCMapExtractor() override;
+    void setup_dbc_map_extractor() override;
 
 
     /// type-cast pointer to problem-specific fluid-wrapper

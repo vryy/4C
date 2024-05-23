@@ -34,9 +34,10 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
       dispincnp_(CORE::LINALG::CreateVector(*structure_->DofRowMap(0), true))
 {
   // call the EHL parameter lists
-  const Teuchos::ParameterList& ehlparams = GLOBAL::Problem::Instance()->ElastoHydroDynamicParams();
+  const Teuchos::ParameterList& ehlparams =
+      GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params();
   const Teuchos::ParameterList& ehlparamspart =
-      GLOBAL::Problem::Instance()->ElastoHydroDynamicParams().sublist("PARTITIONED");
+      GLOBAL::Problem::Instance()->elasto_hydro_dynamic_params().sublist("PARTITIONED");
 
   if (CORE::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {
@@ -72,12 +73,12 @@ void EHL::Partitioned::Timeloop()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
 
   SetStructSolution(structure_->Dispn());
   structure_->PrepareTimeStep();
-  //  SetLubricationSolution(lubrication_->LubricationField()->Quantity()); // todo: what quantity
+  //  set_lubrication_solution(lubrication_->LubricationField()->Quantity()); // todo: what quantity
   lubrication_->LubricationField()->PrepareTimeStep();
 }
 
@@ -106,8 +107,8 @@ void EHL::Partitioned::OuterLoop()
     dispincnp_->Update(1.0, *structure_->Dispnp(), 0.0);
 
     // set the external fluid force on the structure, which result from the fluid pressure
-    SetLubricationSolution(lubrication_->LubricationField()->Prenp());
-    if (itnum != 1) structure_->PreparePartitionStep();
+    set_lubrication_solution(lubrication_->LubricationField()->Prenp());
+    if (itnum != 1) structure_->prepare_partition_step();
     // solve structural system
     DoStructStep();
 
@@ -139,7 +140,7 @@ void EHL::Partitioned::UpdateAndOutput()
   structure_->Update();
   lubrication_->LubricationField()->Update();
 
-  lubrication_->LubricationField()->EvaluateErrorComparedToAnalyticalSol();
+  lubrication_->LubricationField()->evaluate_error_compared_to_analytical_sol();
 
   structure_->Output();
   lubrication_->LubricationField()->Output();

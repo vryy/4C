@@ -27,7 +27,7 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int*
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
 }
 
 /*----------------------------------------------------------------------------*/

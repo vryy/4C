@@ -190,7 +190,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
                                : "connection is added later")
                     << std::endl;
 #endif
-          (*it)->DumpConnectivityInfo();
+          (*it)->dump_connectivity_info();
         }
 
         if (cut_side)

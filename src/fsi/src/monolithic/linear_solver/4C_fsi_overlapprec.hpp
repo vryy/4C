@@ -70,7 +70,7 @@ namespace FSI
     virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
     /// Richardson iteration on one block using the given flags
-    static void LocalBlockRichardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
+    static void local_block_richardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
         const CORE::LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
         Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
         double omega, FILE* err, const Epetra_Comm& comm);

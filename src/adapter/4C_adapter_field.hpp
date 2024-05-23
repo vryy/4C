@@ -103,7 +103,7 @@ namespace ADAPTER
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void UpdateStateIncrementally(
+    virtual void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
         ) = 0;
 

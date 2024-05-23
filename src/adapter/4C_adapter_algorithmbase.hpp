@@ -72,7 +72,7 @@ namespace ADAPTER
     //! @name Time loop building blocks
 
     /// increment time and step value
-    void IncrementTimeAndStep()
+    void increment_time_and_step()
     {
       step_ += 1;
       time_ += dt_;

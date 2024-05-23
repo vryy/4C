@@ -148,14 +148,14 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
 
   FOUR_C_THROW_UNLESS(beamele1, "cast to beam base failed!");
 
-  radius1_ = MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
+  radius1_ = MANIPULATERADIUS * beamele1->get_circular_cross_section_radius_for_interactions();
 
   const DRT::ELEMENTS::Beam3Base* beamele2 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
 
   if (beamele2 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
-  radius2_ = MANIPULATERADIUS * beamele2->GetCircularCrossSectionRadiusForInteractions();
+  radius2_ = MANIPULATERADIUS * beamele2->get_circular_cross_section_radius_for_interactions();
 
 
   if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
@@ -236,12 +236,12 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
   //**********************************************************************
   // (1) Closest Point Projection (CPP)
   //**********************************************************************
-  ClosestPointProjection();
+  closest_point_projection();
 
 // If the contact opens once at a boundary element, the contactflag_ is set to false for the whole
 // Newton iteration
 #ifdef CHECKBOUNDARYCONTACT
-  CheckBoundaryContact();
+  check_boundary_contact();
 #endif
 
   //**********************************************************************
@@ -274,11 +274,11 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
     // update shape functions and their derivatives
     GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, xi1_, xi2_);
     // update coordinates and derivatives of contact points
-    ComputeCoordsAndDerivs(
+    compute_coords_and_derivs(
         r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
 
     // update coordinates and derivatives of current contact points at last time step
-    ComputeOldCoordsAndDerivs(r1_old_, r2_old_, r1_xi_old_, r2_xi_old_, N1, N2, N1_xi, N2_xi);
+    compute_old_coords_and_derivs(r1_old_, r2_old_, r1_xi_old_, r2_xi_old_, N1, N2, N1_xi, N2_xi);
 
     tangentproduct_ = CORE::FADUTILS::Norm(CORE::FADUTILS::ScalarProduct(r1_xi, r2_xi)) /
                       (CORE::FADUTILS::VectorNorm<3>(r1_xi) * CORE::FADUTILS::VectorNorm<3>(r2_xi));
@@ -288,7 +288,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
     // normal_old from the neighbor element!
     if (fabs(xi1_old_) > 1.0 + XIETATOL or fabs(xi2_old_) > 1.0 + XIETATOL)
     {
-      GetNeighborNormalOld(contactpairmap);
+      get_neighbor_normal_old(contactpairmap);
     }
 
     // call function to compute scaled normal and gap of contact point and store this quantities in
@@ -329,7 +329,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
     contactflag_ = false;
     dampingcontactflag_ = false;
     // Iterative Update of class variables
-    UpdateClassVariablesIter();
+    update_class_variables_iter();
 
     return (false);
   }
@@ -359,19 +359,19 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(
   // call function to evaluate and assemble contact forces
   EvaluateFcContact(pp, &fint, N1, N2);
   // call function to evaluate and assemble contact stiffness
-  EvaluateStiffcContact(pp, norm_delta_r, delta_r, stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi,
+  evaluate_stiffc_contact(pp, norm_delta_r, delta_r, stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi,
       r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
 
 // Apply algorithmic contact forces and stiffnesses that may improve the convergence behavior but
 // will not change the physical results!
 #if defined(ALGORITHMICDAMP) or defined(BEAMCONTACTPTC) or defined(BASICSTIFFWEIGHT)
-  EvaluateAlgorithmicForce(pp, &fint, N1, N2);
-  EvaluateAlgorithmicStiff(pp, norm_delta_r, delta_r, stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi,
+  evaluate_algorithmic_force(pp, &fint, N1, N2);
+  evaluate_algorithmic_stiff(pp, norm_delta_r, delta_r, stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi,
       r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
 #endif
 
   // Iterative Update of class variables
-  UpdateClassVariablesIter();
+  update_class_variables_iter();
 
   return (true);
 }
@@ -539,7 +539,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact(const
  |  Evaluate contact stiffness                               meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(const double& pp,
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact(const double& pp,
     const TYPE& norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
     CORE::LINALG::SparseMatrix& stiffmatrix, const CORE::LINALG::Matrix<3, 1, TYPE>& r1,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
@@ -626,7 +626,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     // evaluate linearizations and distance
     //********************************************************************
     // linearization of contact point
-    ComputeLinXiAndLinEta(
+    compute_lin_xi_and_lin_eta(
         delta_xi, delta_eta, delta_r, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi);
 
 #ifdef FADCHECKS
@@ -637,7 +637,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     //      for (int i=0;i<dim1+dim2;i++)
     //        std::cout << delta_eta(i).val() << "  ";
     //      std::cout << std::endl;
-    //      FADCheckLinXiAndLinEta(delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
+    //      fad_check_lin_xi_and_lin_eta(delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
 #endif
 
     // linearization of gap function which is equal to delta d
@@ -1090,8 +1090,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
  |  Compute algorithmic forces                               meier 08/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForce(const double& pp,
-    Epetra_Vector* fint, const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_force(
+    const double& pp, Epetra_Vector* fint,
+    const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
     const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD)
@@ -1304,8 +1305,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
  |  Evaluate algorithmic stiffness                           meier 08/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStiff(const double& pp,
-    const TYPE& norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_stiff(
+    const double& pp, const TYPE& norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
     CORE::LINALG::SparseMatrix& stiffmatrix, const CORE::LINALG::Matrix<3, 1, TYPE>& r1,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
@@ -1484,7 +1485,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
     // evaluate linearizations and distance
     //********************************************************************
     // linearization of contact point
-    ComputeLinXiAndLinEta(
+    compute_lin_xi_and_lin_eta(
         delta_xi, delta_eta, delta_r, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi);
 
     // linearization of gap function which is equal to delta d
@@ -1862,7 +1863,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
  |  Linearizations of contact point                          meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_lin_xi_and_lin_eta(
     CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
     CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
     const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
@@ -2177,7 +2178,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinNormal(
  |  Closest point projection                                  meier 01/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection()
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projection()
 {
   TYPE eta1 = 0.0;
   TYPE eta2 = 0.0;
@@ -2284,7 +2285,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
     // update shape functions and their derivatives
     GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
     // update coordinates and derivatives of contact points
-    ComputeCoordsAndDerivs(
+    compute_coords_and_derivs(
         r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
     // compute delta_r=r1-r2
     for (int j = 0; j < 3; j++) delta_r(j) = r1(j) - r2(j);
@@ -2337,7 +2338,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
         t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
 
     // evaluate f at current eta1, eta2
-    EvaluateOrthogonalityCondition(f, delta_r, norm_delta_r, r1_xi, r2_xi, t1, t2);
+    evaluate_orthogonality_condition(f, delta_r, norm_delta_r, r1_xi, r2_xi, t1, t2);
 
     double jacobi1 = 1.0;
     double jacobi2 = 1.0;
@@ -2357,8 +2358,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
 
     // evaluate Jacobian of f at current eta1, eta2
     // Note: Parallel elements can not be handled with this beam contact formulation; such pairs
-    // are sorted out within ComputeCoordsAndDerivs(...) and the local Newton loop is terminated!
-    EvaluateLinOrthogonalityCondition(
+    // are sorted out within compute_coords_and_derivs(...) and the local Newton loop is terminated!
+    evaluate_lin_orthogonality_condition(
         df, dfinv, delta_r, norm_delta_r, r1_xi, r2_xi, r1_xixi, r2_xixi, t1, t2, t1_xi, t2_xi);
 
     if (elementscolinear_) break;
@@ -2366,7 +2367,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
     //    #ifdef FADCHECKS
     //    std::cout << "df: " << df << std::endl;
     //      BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
-    //      FADCheckLinOrthogonalityCondition(delta_r,r1_xi,r2_xi);
+    //      fad_check_lin_orthogonality_condition(delta_r,r1_xi,r2_xi);
     //    #endif
 
     // update element coordinates of contact point
@@ -2806,8 +2807,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
 
   // Assemble the individual shape functions in matrices, such that: r1=N1*d1, r1_xi=N1_xi*d1,
   // r1_xixi=N1_xixi*d1, r2=N2*d2, r2_xi=N2_xi*d2, r2_xixi=N2_xixi*d2
-  AssembleShapefunctions(N1_i, N1_i_xi, N1_i_xixi, N1, N1_xi, N1_xixi);
-  AssembleShapefunctions(N2_i, N2_i_xi, N2_i_xixi, N2, N2_xi, N2_xixi);
+  assemble_shapefunctions(N1_i, N1_i_xi, N1_i_xixi, N1, N1_xi, N1_xixi);
+  assemble_shapefunctions(N2_i, N2_i_xi, N2_i_xixi, N2, N2_xi, N2_xixi);
 
   return;
 }
@@ -2820,7 +2821,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
  |  Assemble all shape functions meier 01/14|
  *-----------------------------------------------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::assemble_shapefunctions(
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xi,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xixi,
@@ -2880,7 +2881,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
  | compute contact point coordinates and their derivatives   meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_coords_and_derivs(
     CORE::LINALG::Matrix<3, 1, TYPE>& r1, CORE::LINALG::Matrix<3, 1, TYPE>& r2,
     CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi, CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
     CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi, CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
@@ -2935,7 +2936,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
  | compute contact point coordinates at last time step       meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeOldCoordsAndDerivs(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_old_coords_and_derivs(
     CORE::LINALG::Matrix<3, 1, TYPE>& r1_old, CORE::LINALG::Matrix<3, 1, TYPE>& r2_old,
     CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi_old, CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi_old,
     const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
@@ -2972,7 +2973,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeOldCoordsAndDeri
  |  Evaluate function f in CPP                               meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateOrthogonalityCondition(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_orthogonality_condition(
     CORE::LINALG::Matrix<2, 1, TYPE>& f, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
     const double norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& t1,
@@ -3016,7 +3017,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateOrthogonalityCo
  |  Evaluate Jacobian df in CPP                              meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateLinOrthogonalityCondition(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_lin_orthogonality_condition(
     CORE::LINALG::Matrix<2, 2, TYPE>& df, CORE::LINALG::Matrix<2, 2, TYPE>& dfinv,
     const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
@@ -3117,9 +3118,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(
   // Initialize normal_old_ in the first step with valid closest point projection (in this case the
   // vector normal_old_ is zero, since no valid normal vector was available in the last time step).
   // In case of "sliding contact", i.e. when normal_old_ has already been calculated out of the
-  // neighbor element (GetNeighborNormalOld), this is not allowed. Otherwise we would overwrite the
-  // vector normal_old_ which has already been calcualted via the neighbor element. (For this reason
-  // we check with the norm of normal_old_ and not with the variable firstcall_).
+  // neighbor element (get_neighbor_normal_old), this is not allowed. Otherwise we would overwrite
+  // the vector normal_old_ which has already been calcualted via the neighbor element. (For this
+  // reason we check with the norm of normal_old_ and not with the variable firstcall_).
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(
           CORE::FADUTILS::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL)
   {
@@ -3293,7 +3294,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::InvertNormal()
  |  Update all class variables at the end of time step     meier 02/2014|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesStep()
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_step()
 {
   // This method is called at the end of the time step for all element pairs found by the contact
   // search, therefore all updates are done here!
@@ -3413,7 +3414,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesSte
  |  Iterative update of class variables                    meier 08/2014|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesIter()
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_iter()
 {
   for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
   {
@@ -3542,7 +3543,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateElePos(
  |  Update nodal tangents for tangent smoothing (public)      meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateEleSmoothTangents(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tangents(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   // Tangent smoothing is only possible for Reissner beam elements --> FOUR_C_THROW() otherwise
@@ -3613,7 +3614,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNodalPositions()
  |  Get normalold_ from neighbor element pair (public)       meier 03/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old(
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap)
 {
   // In this method we calculate an approximation for the vector normal_old_ based on the neighbor
@@ -3637,8 +3638,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
   bool normaloldset = false;
 
   // If the considered pair had no valid closest point pair in the last time step (see
-  // ClosestPointProjection: eta1=eta2=1e+12), we can not find the correct neighbor element pair! If
-  // the coordinate values of xi1 and xi2 are larger than NEIGHBORNORMALTOL, the normal of the
+  // closest_point_projection: eta1=eta2=1e+12), we can not find the correct neighbor element pair!
+  // If the coordinate values of xi1 and xi2 are larger than NEIGHBORNORMALTOL, the normal of the
   // direct neighbor does not provide a good approximation for the own normal_old_ vector. In both
   // cases, we exit here and calculate no approximation for normal_old_;
   if (fabs(xi1_old_) < NEIGHBORNORMALTOL and fabs(xi2_old_) < NEIGHBORNORMALTOL and beamsclose and
@@ -3814,7 +3815,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
 }
 
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckBoundaryContact()
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_boundary_contact()
 {
   // If the considered element has no neighbor (-> boundary element) and the corresponding
   // parameter coordinate has exceeded the end of the physical beam, the contact is deactivated
@@ -3869,7 +3870,7 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Elemen
  |  FAD-Check for Linearizations of contact point            meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_xi_and_lin_eta(
     const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
@@ -3956,7 +3957,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
  |  FAD-Check for Linearizations of CCP                      meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinOrthogonalityCondition(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_orthogonality_condition(
     const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
     const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi)
 {

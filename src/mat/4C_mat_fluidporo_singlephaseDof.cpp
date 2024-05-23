@@ -153,29 +153,29 @@ double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateSaturation(
 /*--------------------------------------------------------------------------*
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateDerivOfSaturationWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofDiffPressure::evaluate_deriv_of_saturation_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive, pressure);
+  return phaselaw_->evaluate_deriv_of_saturation_wrt_pressure(doftoderive, pressure);
 }
 
 /*--------------------------------------------------------------------------*
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateSecondDerivOfSaturationWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofDiffPressure::evaluate_second_deriv_of_saturation_wrt_pressure(
     int phasenum, int firstdoftoderive, int seconddoftoderive,
     const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateSecondDerivOfSaturationWrtPressure(
+  return phaselaw_->evaluate_second_deriv_of_saturation_wrt_pressure(
       firstdoftoderive, seconddoftoderive, pressure);
 }
 
 /*----------------------------------------------------------------------------------------*
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateDerivOfDofWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofDiffPressure::evaluate_deriv_of_dof_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& state) const
 {
   // derivative is the corresponding coefficient
@@ -247,28 +247,29 @@ double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateSaturation(
 /*--------------------------------------------------------------------------*
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateDerivOfSaturationWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofPressure::evaluate_deriv_of_saturation_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive, pressure);
+  return phaselaw_->evaluate_deriv_of_saturation_wrt_pressure(doftoderive, pressure);
 }
 
 /*--------------------------------------------------------------------------*
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateSecondDerivOfSaturationWrtPressure(int phasenum,
-    int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) const
+double MAT::PAR::FluidPoroPhaseDofPressure::evaluate_second_deriv_of_saturation_wrt_pressure(
+    int phasenum, int firstdoftoderive, int seconddoftoderive,
+    const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateSecondDerivOfSaturationWrtPressure(
+  return phaselaw_->evaluate_second_deriv_of_saturation_wrt_pressure(
       firstdoftoderive, seconddoftoderive, pressure);
 }
 
 /*----------------------------------------------------------------------------------------*
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateDerivOfDofWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofPressure::evaluate_deriv_of_dof_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& state) const
 {
   double presurederiv = 0.0;
@@ -359,33 +360,33 @@ double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateSaturation(
 /*--------------------------------------------------------------------------*
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateDerivOfSaturationWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofSaturation::evaluate_deriv_of_saturation_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive, pressure);
+  return phaselaw_->evaluate_deriv_of_saturation_wrt_pressure(doftoderive, pressure);
 }
 
 /*--------------------------------------------------------------------------*
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
  *---------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateSecondDerivOfSaturationWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofSaturation::evaluate_second_deriv_of_saturation_wrt_pressure(
     int phasenum, int firstdoftoderive, int seconddoftoderive,
     const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateSecondDerivOfSaturationWrtPressure(
+  return phaselaw_->evaluate_second_deriv_of_saturation_wrt_pressure(
       firstdoftoderive, seconddoftoderive, pressure);
 }
 
 /*----------------------------------------------------------------------------------------*
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateDerivOfDofWrtPressure(
+double MAT::PAR::FluidPoroPhaseDofSaturation::evaluate_deriv_of_dof_wrt_pressure(
     int phasenum, int doftoderive, const std::vector<double>& pressure) const
 {
   // call the phase law for the derivative
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive, pressure);
+  return phaselaw_->evaluate_deriv_of_saturation_wrt_pressure(doftoderive, pressure);
 }
 
 /************************************************************************/

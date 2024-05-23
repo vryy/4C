@@ -219,8 +219,8 @@ Teuchos::ParameterList& STR::PREDICT::Generic::NoxParams()
 void STR::PREDICT::Generic::Print() const
 {
   CheckInitSetup();
-  if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->GetPrint2ScreenEveryNStep() and
-      gstate_ptr_->GetStepN() % iodata_ptr_->GetPrint2ScreenEveryNStep() == 0)
+  if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
+      gstate_ptr_->GetStepN() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
   {
     IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << IO::endl;
   }
@@ -228,7 +228,7 @@ void STR::PREDICT::Generic::Print() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::PREDICT::Generic::PreApplyForceExternal(Epetra_Vector& fextnp) const
+bool STR::PREDICT::Generic::pre_apply_force_external(Epetra_Vector& fextnp) const
 {
   // do nothing
   return false;

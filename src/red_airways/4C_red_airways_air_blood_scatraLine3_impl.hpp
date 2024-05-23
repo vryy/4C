@@ -68,7 +68,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
-      virtual void SolveBloodAirTransport(RedAirBloodScatraLine3* ele,
+      virtual void solve_blood_air_transport(RedAirBloodScatraLine3* ele,
           CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) = 0;
@@ -174,7 +174,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override;
 
-      void SolveBloodAirTransport(RedAirBloodScatraLine3* ele,
+      void solve_blood_air_transport(RedAirBloodScatraLine3* ele,
           CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material) override{};

@@ -91,7 +91,7 @@ namespace FLD
     \param vec (in) vector to add to time average
 
     */
-    void AddToCurrentTimeAverage(const double dt, const Teuchos::RCP<Epetra_Vector> vec,
+    void add_to_current_time_average(const double dt, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<Epetra_Vector> scavec = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> scatravec = Teuchos::null);
 
@@ -102,13 +102,13 @@ namespace FLD
     \param dim (in) dimension to average in
 
     */
-    void SpaceAverageInOneDirection(const int dim);
+    void space_average_in_one_direction(const int dim);
 
     /*!
     \brief Add vector to time average from previous steps
 
     */
-    void AddToTotalTimeAverage();
+    void add_to_total_time_average();
 
     //! @name IO
 
@@ -127,7 +127,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void ReadOldStatisticsScaTra(IO::DiscretizationReader& input);
+    void read_old_statistics_sca_tra(IO::DiscretizationReader& input);
 
 
     /*!
@@ -150,7 +150,7 @@ namespace FLD
     \brief Clear all statistics vectors based on fluid maps collected in the current period
 
     */
-    void TimeResetFluidAvgVectors(const Epetra_Map& dofrowmap);
+    void time_reset_fluid_avg_vectors(const Epetra_Map& dofrowmap);
 
     /*!
     \brief Clear all statistics collected up to now
@@ -162,7 +162,7 @@ namespace FLD
     \brief Clear statistics vectors based on fluid maps
 
     */
-    void ResetFluidAvgVectors(const Epetra_Map& dofrowmap);
+    void reset_fluid_avg_vectors(const Epetra_Map& dofrowmap);
 
     /*!
     \brief Redistribute all statistics vectors

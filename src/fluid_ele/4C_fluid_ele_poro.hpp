@@ -43,7 +43,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -144,27 +144,27 @@ namespace DRT
       INPAR::STR::KinemType KinematicType() const { return kintype_; }
 
       //! Set anisotropic permeability directions obtained from structure element during cloning
-      void SetAnisotropicPermeabilityDirections(
+      void set_anisotropic_permeability_directions(
           const std::vector<std::vector<double>>& ref_anisotropic_permeability_directions)
       {
         anisotropic_permeability_directions_ = ref_anisotropic_permeability_directions;
       }
 
       //! Set anisotropic permeability coefficients obtained from structure element during cloning
-      void SetAnisotropicPermeabilityNodalCoeffs(
+      void set_anisotropic_permeability_nodal_coeffs(
           const std::vector<std::vector<double>>& ref_anisotropic_permeability_nodal_coeffs)
       {
         anisotropic_permeability_nodal_coeffs_ = ref_anisotropic_permeability_nodal_coeffs;
       }
 
       //! Provide the anisotropic permeability directions of the element
-      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
+      const std::vector<std::vector<double>>& get_anisotropic_permeability_directions() const
       {
         return anisotropic_permeability_directions_;
       }
 
       //! Provide the nodal anisotropic permeability coefficients of the element
-      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs() const
+      const std::vector<std::vector<double>>& get_anisotropic_permeability_nodal_coeffs() const
       {
         return anisotropic_permeability_nodal_coeffs_;
       }

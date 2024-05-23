@@ -136,11 +136,11 @@ namespace POROELAST
     //!@}
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void UpdateStateIncrementally(
+    void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override
     {
-      FOUR_C_THROW("UpdateStateIncrementally() only available for monolithic schemes!");
+      FOUR_C_THROW("update_state_incrementally() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
@@ -208,13 +208,13 @@ namespace POROELAST
     bool HasSubmeshes() { return submeshes_; }
 
     //! return coupling object
-    CORE::ADAPTER::Coupling& FluidStructureCoupling() { return *coupling_fluid_structure_; }
+    CORE::ADAPTER::Coupling& fluid_structure_coupling() { return *coupling_fluid_structure_; }
 
    protected:
     //! @name Transfer helpers
 
     //! field transform
-    Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<const Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> structure_to_fluid_field(Teuchos::RCP<const Epetra_Vector> iv);
 
     //!@}
 
@@ -276,7 +276,7 @@ namespace POROELAST
     void ReplaceDofSets();
 
     //! check for special poro conditions and set bools
-    void CheckForPoroConditions();
+    void check_for_poro_conditions();
 
     //! flag indicating not fully overlapping fluid and structure discretization
     bool submeshes_;
@@ -319,7 +319,7 @@ namespace POROELAST
     }
 
     //! build map containing dofs with no penetration condition (fluid)
-    void BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
+    void buid_no_penetration_map(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
     void ApplyCondRHS(Teuchos::RCP<Epetra_Vector> iterinc, Teuchos::RCP<Epetra_Vector> rhs);
@@ -349,7 +349,7 @@ namespace POROELAST
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix(POROELAST::Coupltype coupltype);
 
     //! return constraint matrix for structure velocity coupling
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_vel_constraint_matrix(
         POROELAST::Coupltype coupltype);
 
    private:

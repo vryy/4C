@@ -46,7 +46,7 @@ SSI::ContactStrategyBlock::ContactStrategyBlock(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategyBase::ApplyContactToScatraResidual(
+void SSI::ContactStrategyBase::apply_contact_to_scatra_residual(
     Teuchos::RCP<Epetra_Vector> scatra_residual)
 {
   scatra_residual->Update(
@@ -55,7 +55,7 @@ void SSI::ContactStrategyBase::ApplyContactToScatraResidual(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategySparse::ApplyContactToScatraScatra(
+void SSI::ContactStrategySparse::apply_contact_to_scatra_scatra(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_sparse =
@@ -69,7 +69,7 @@ void SSI::ContactStrategySparse::ApplyContactToScatraScatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
+void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_block =
@@ -88,7 +88,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategySparse::ApplyContactToScatraStructure(
+void SSI::ContactStrategySparse::apply_contact_to_scatra_structure(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_sparse =
@@ -103,7 +103,7 @@ void SSI::ContactStrategySparse::ApplyContactToScatraStructure(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
+void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_block =
@@ -123,7 +123,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategySparse::ApplyContactToStructureScatra(
+void SSI::ContactStrategySparse::apply_contact_to_structure_scatra(
     Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_sparse =
@@ -138,7 +138,7 @@ void SSI::ContactStrategySparse::ApplyContactToStructureScatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
+void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
     Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_block =

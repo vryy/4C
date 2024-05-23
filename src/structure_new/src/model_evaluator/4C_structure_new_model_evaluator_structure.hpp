@@ -74,11 +74,11 @@ namespace STR
       /*! \brief Initialize viscous and inertial matrices
        *
        *  This is the place where we calculate the default mass matrix and the
-       *  Rayleigh damping matrix only once during the EquilibrateInitialState routine.
+       *  Rayleigh damping matrix only once during the equilibrate_initial_state routine.
        *
        *  \date 09/16
        *  \author hiermeier */
-      bool InitializeInertiaAndDamping();
+      bool initialize_inertia_and_damping();
 
       //! derived
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -121,7 +121,7 @@ namespace STR
       void UpdateResidual() override;
 
       //! derived
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       //! derived
       void DetermineEnergy() override;
@@ -140,12 +140,12 @@ namespace STR
        *  \param disnp (in): Current displacement vector
        *  \param global (in): If true, sum the result over all procs and
        *                      save the global result. */
-      void DetermineStrainEnergy(const Epetra_Vector& disnp, const bool global);
+      void determine_strain_energy(const Epetra_Vector& disnp, const bool global);
 
       //! derived
-      void DetermineOptionalQuantity() override;
+      void determine_optional_quantity() override;
 
-      bool DetermineElementVolumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
+      bool determine_element_volumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
       //! derived
       void ResetStepState() override;
@@ -154,35 +154,35 @@ namespace STR
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void RuntimePreOutputStepState() override;
+      void runtime_pre_output_step_state() override;
 
       //! derived
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void PostOutput() override;
 
       //! [derived]
-      void EvaluateJacobianContributionsFromElementLevelForPTC() override;
+      void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       //! [derived]
-      void AssembleJacobianContributionsFromElementLevelForPTC(
+      void assemble_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
       void CreateBackupState(const Epetra_Vector& dir) override;
 
       //! [derived]
-      void RecoverFromBackupState() override;
+      void recover_from_backup_state() override;
 
       //! @}
 
@@ -198,21 +198,21 @@ namespace STR
       bool ApplyForceExternal();
 
       //! apply the internal force contributions and the evaluate the structural stiffness terms
-      bool ApplyForceStiffInternal();
+      bool apply_force_stiff_internal();
 
       //! apply the external force contributions and evaluate possible linearization contributions
-      bool ApplyForceStiffExternal();
+      bool apply_force_stiff_external();
 
-      /** \brief Run before ApplyForceStiffExternal is executed
+      /** \brief Run before apply_force_stiff_external is executed
        *
        *  \param(in) fextnp: external force vector
        *  \param(in) stiff : structural tangential stiffness block
        *
-       *  \return TRUE, if the execution of ApplyForceStiffExternal shall be
+       *  \return TRUE, if the execution of apply_force_stiff_external shall be
        *  skipped. Otherwise FALSE will be returned.
        *
        *  \author hiermeier \date 02/18 */
-      bool PreApplyForceStiffExternal(
+      bool pre_apply_force_stiff_external(
           Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const;
 
       //! Set the ParamsInterface in the parameter list and call the other EvaluateNeumann routine
@@ -247,15 +247,16 @@ namespace STR
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief  Set the ParamsInterface in the parameter list and call the other
-       * EvaluateInternalSpecifiedElements routine */
-      void EvaluateInternalSpecifiedElements(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+       * evaluate_internal_specified_elements routine */
+      void evaluate_internal_specified_elements(
+          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief  Check if the given parameter list is valid and call the
        *  Evaluate routine for all elements specified in the element map
        *
        *  \author grill */
-      void EvaluateInternalSpecifiedElements(Teuchos::ParameterList& p,
+      void evaluate_internal_specified_elements(Teuchos::ParameterList& p,
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
@@ -296,7 +297,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void MaterialDampingContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat);
+      void material_damping_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat);
 
       /*! \brief Add mass matrix and inertial force to the evaluate call (optional)
        *
@@ -315,7 +316,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void InertialContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void inertial_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add inertial force to the evaluate call (optional)
@@ -331,14 +332,14 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void InertialContributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void inertial_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Evaluate the inertial forces (for the standard case) and
        *         any viscous damping forces
        *
        *  \date 09/16
        *  \author hiermeier */
-      void InertialAndViscousForces();
+      void inertial_and_viscous_forces();
 
       /*! Check the FillComplete status of the stiffness and mass matrix
        *  and complete them, if necessary */
@@ -347,11 +348,11 @@ namespace STR
       /*! \biref Assemble the Rayleigh damping matrix
        *
        *  Please note, that this has to been done only once during the
-       *  STR::Integrator::EquilibrateInitialState routine!
+       *  STR::Integrator::equilibrate_initial_state routine!
        *
        *  \date 09/16
        *  \author hiermeier */
-      void RayleighDampingMatrix();
+      void rayleigh_damping_matrix();
 
       /*! \brief Returns the interial force vector for non-linear mass problems
        *
@@ -367,66 +368,67 @@ namespace STR
        *
        *  \date 04/17
        *  \author eichinger */
-      void InitOutputRuntimeStructure();
+      void init_output_runtime_structure();
 
       /*!
        * \brief Initialize the gauss point data output routine
        *
        * This method must be called once after the input of all data.
        */
-      void InitOutputRuntimeStructureGaussPointData();
+      void init_output_runtime_structure_gauss_point_data();
 
       /*! \brief writes output for discretization structure at the end of a time step
        *
        *  \date 04/17
        *  \author grill */
-      void WriteTimeStepOutputRuntimeStructure() const;
+      void write_time_step_output_runtime_structure() const;
 
       /*! \brief writes output for discretization structure
        *         at the end of a nonlinear iteration
        *
        *  \date 10/17
        *  \author grill */
-      void WriteIterationOutputRuntimeStructure() const;
+      void write_iteration_output_runtime_structure() const;
 
       /*! \brief writes output for discretization structure
        *
        *  \date 10/17
        *  \author grill */
-      void WriteOutputRuntimeStructure(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+      void write_output_runtime_structure(
+          const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
           double time) const;
 
       /**
        * \brief Calculate the stress and / or strains for runtime output.
        */
-      void OutputRuntimeStructurePostprocessStressStrain();
+      void output_runtime_structure_postprocess_stress_strain();
 
-      void OutputRuntimeStructureGaussPointData();
+      void output_runtime_structure_gauss_point_data();
 
       /*! \brief writes special output for beam elements
        *
        *  \date 04/17
        *  \author eichinger */
-      void InitOutputRuntimeBeams();
+      void init_output_runtime_beams();
 
       /*! \brief writes special output for beam elements at the end of a time step
        *
        *  \date 04/17
        *  \author grill */
-      void WriteTimeStepOutputRuntimeBeams() const;
+      void write_time_step_output_runtime_beams() const;
 
       /*! \brief writes special output for beam elements at the end of a nonlinear iteration
        *
        *  \date 10/17
        *  \author grill */
-      void WriteIterationOutputRuntimeBeams() const;
+      void write_iteration_output_runtime_beams() const;
 
       /*! \brief writes special output for beam elements
        *
        *  \date 10/17
        *  \author grill */
-      void WriteOutputRuntimeBeams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+      void write_output_runtime_beams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           int timestep_number, double time) const;
 
       /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
@@ -440,7 +442,7 @@ namespace STR
        *
        *  \date 12/16
        *  \author seitz */
-      void ParamsInterface2ParameterList(
+      void params_interface2_parameter_list(
           Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params);
 
      private:

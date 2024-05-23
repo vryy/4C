@@ -146,7 +146,7 @@ namespace CONTACT
     in this method, too.
 
     */
-    void UpdateConstraintNorm(int uzawaiter = 0) override;
+    void update_constraint_norm(int uzawaiter = 0) override;
 
     /*!
     \brief Store Lagrange multipliers for next Uzawa step
@@ -156,7 +156,7 @@ namespace CONTACT
     in the variable zuzawa_, which is then used in the next Uzawa step.
 
     */
-    void UpdateUzawaAugmentedLagrange() override;
+    void update_uzawa_augmented_lagrange() override;
 
     /*!
     \brief Tell that this is a penalty strategy
@@ -170,7 +170,7 @@ namespace CONTACT
     // thus they are defined empty here in the case of Penalty meshtying.
 
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
@@ -179,7 +179,7 @@ namespace CONTACT
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     };
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
       FOUR_C_THROW(

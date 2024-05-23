@@ -62,7 +62,7 @@ class PostFilterBase
   virtual void WriteAllResults(PostField* field) = 0;
 
   //! look for problem dependent result entries and write them for one time step
-  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
+  virtual void write_all_results_one_time_step(PostResult& result, bool firststep, bool laststep)
   {
     FOUR_C_THROW("not implemented");
   }

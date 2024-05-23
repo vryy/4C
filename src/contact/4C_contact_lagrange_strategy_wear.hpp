@@ -54,14 +54,14 @@ namespace WEAR
     \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
 
     */
-    void CondenseWearImplExpl(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void condense_wear_impl_expl(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector>& gact);
 
     /*!
     \brief Prepare SaddlePointSystem
 
     */
-    void PrepareSaddlePointSystem(
+    void prepare_saddle_point_system(
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
@@ -103,7 +103,7 @@ namespace WEAR
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
@@ -115,7 +115,7 @@ namespace WEAR
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
@@ -179,19 +179,19 @@ namespace WEAR
 
     \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
+    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
 
     /*!
     \brief Store/Reset nodal wear quantities for pv approach
 
     */
-    void UpdateWearDiscretIterate(bool store);
+    void update_wear_discret_iterate(bool store);
 
     /*!
     \brief Store wear for accumulation due to different pseudo time scales!
 
     */
-    void UpdateWearDiscretAccumulation();
+    void update_wear_discret_accumulation();
 
     /*!
     \brief Update wear contact at end of time step
@@ -203,7 +203,7 @@ namespace WEAR
     \brief Store wear data into wear data container
 
     */
-    void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
+    void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) override;
 
     /*!
     \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!

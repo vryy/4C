@@ -158,7 +158,7 @@ namespace CORE::GEO
       bool Compute(const bool& allow_dist) { return Compute(POSITIONTOL, allow_dist); }
       virtual bool Compute(const double& tol, const bool& allow_dist) = 0;
 
-      virtual bool IsGivenPointWithinElement() = 0;
+      virtual bool is_given_point_within_element() = 0;
 
       virtual const double& NewtonTolerance() const = 0;
 
@@ -273,7 +273,7 @@ namespace CORE::GEO
             bbside_(Teuchos::null)
       {
         ScaleAndShift();
-        ConstructBoundingBox();
+        construct_bounding_box();
       }
 
       /* Don't call any of these methods directly! Use the base class public
@@ -316,7 +316,7 @@ namespace CORE::GEO
 
       bool Compute(const double& tol) override = 0;
 
-      bool IsGivenPointWithinElement() override = 0;
+      bool is_given_point_within_element() override = 0;
 
       const double& NewtonTolerance() const override
       {
@@ -356,7 +356,7 @@ namespace CORE::GEO
 
       /** \brief Construct bounding box over the given element
        *  (after scaling) */
-      void ConstructBoundingBox();
+      void construct_bounding_box();
 
      protected:
       /// @name class internal variables
@@ -431,7 +431,7 @@ namespace CORE::GEO
       }
       bool Compute(const double& Tol) override;
 
-      bool IsGivenPointWithinElement() override { return Position::Compute(); }
+      bool is_given_point_within_element() override { return Position::Compute(); }
 
       bool WithinLimitsTol(const double& Tol) const override
       {
@@ -471,7 +471,7 @@ namespace CORE::GEO
       bool Compute(const double& tol) override { return Compute(tol, false); }
       bool Compute(const double& Tol, const bool& allow_dist) override;
 
-      bool IsGivenPointWithinElement() override;
+      bool is_given_point_within_element() override;
 
       /*! \brief Return the perpendicular distance between given point to the side */
       double Distance() const override
@@ -583,11 +583,11 @@ namespace CORE::GEO
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const;
 
       /// \brief specify general floattype for all geometric operations in CORE::GEO::CUT::POSITON
-      static void SpecifyGeneralPosFloattype(INPAR::CUT::CutFloattype floattype)
+      static void specify_general_pos_floattype(INPAR::CUT::CutFloattype floattype)
       {
         general_pos_floattype_ = floattype;
       }
-      static void SpecifyGeneralDistFloattype(INPAR::CUT::CutFloattype floattype)
+      static void specify_general_dist_floattype(INPAR::CUT::CutFloattype floattype)
       {
         general_dist_floattype_ = floattype;
       }
@@ -794,7 +794,7 @@ namespace CORE::GEO
 
       /// concrete create variant #1
       template <CORE::FE::CellType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
+      Teuchos::RCP<Position> create_concrete_position(const Element& element, const Point& point,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = CORE::FE::dim<eletype>;
@@ -862,7 +862,7 @@ namespace CORE::GEO
      private:
       /// concrete create variant #2
       template <CORE::FE::CellType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
+      Teuchos::RCP<Position> create_concrete_position(const Element& element, const double* xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = CORE::FE::dim<eletype>;
@@ -933,7 +933,7 @@ namespace CORE::GEO
      private:
       /// concrete create variant #3
       template <CORE::FE::CellType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
+      Teuchos::RCP<Position> create_concrete_position(const double* xyze, const double* xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const unsigned num_nodes_ele = CORE::FE::num_nodes<eletype>;
@@ -1012,7 +1012,7 @@ namespace CORE::GEO
      private:
       /// concrete create variant #4
       template <CORE::FE::CellType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const std::vector<Node*> nodes,
+      Teuchos::RCP<Position> create_concrete_position(const std::vector<Node*> nodes,
           const double* xyz,
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {

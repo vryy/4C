@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;

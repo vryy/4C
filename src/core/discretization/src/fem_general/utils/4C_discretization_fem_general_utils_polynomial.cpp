@@ -666,7 +666,7 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void CORE::FE::LagrangeBasisTet<nsd_>::ComputeVandermondeMatrices(const unsigned int degree)
+  void CORE::FE::LagrangeBasisTet<nsd_>::compute_vandermonde_matrices(const unsigned int degree)
   {
     vandermonde_.shape(Size(), Size());
 

@@ -35,7 +35,7 @@ namespace MAT
 
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      virtual void ConstitutiveDerivatives(
+      virtual void constitutive_derivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of viscosity w.r.t. pressure
@@ -59,7 +59,7 @@ namespace MAT
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      void ConstitutiveDerivatives(
+      void constitutive_derivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure
@@ -89,7 +89,7 @@ namespace MAT
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      void ConstitutiveDerivatives(
+      void constitutive_derivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure
@@ -122,7 +122,7 @@ namespace MAT
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
-      void ConstitutiveDerivatives(
+      void constitutive_derivatives(
           const double& press,      ///< (i) lubrication pressure at gauss point
           const double& viscosity,  ///< (i) viscosity at gauss point
           double& dviscosity_dp     ///< (o) derivative of potential w.r.t. pressure

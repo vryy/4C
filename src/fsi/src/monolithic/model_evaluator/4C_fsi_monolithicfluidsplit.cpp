@@ -221,13 +221,13 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   linearsolverstrategy_ =
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  SetDefaultParameters(fsidyn, NOXParameterList());
+  set_default_parameters(fsidyn, NOXParameterList());
 
   // call SetupSystem in base class
   FSI::Monolithic::SetupSystem();
 
   // create combined map
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
@@ -240,7 +240,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
-  SetupDBCMapExtractor();
+  setup_dbc_map_extractor();
   // ---------------------------------------------------------------------------
 
   // enable debugging
@@ -262,7 +262,7 @@ void FSI::MonolithicFluidSplit::CreateSystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::CreateCombinedDofRowMap()
+void FSI::MonolithicFluidSplit::create_combined_dof_row_map()
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
@@ -279,7 +279,7 @@ void FSI::MonolithicFluidSplit::CreateCombinedDofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::SetupDBCMapExtractor()
+void FSI::MonolithicFluidSplit::setup_dbc_map_extractor()
 {
   // Dirichlet maps for structure and fluid do not intersect with interface map.
   // ALE Dirichlet map might intersect with interface map, but ALE interface DOFs
@@ -397,7 +397,7 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const double scale = FluidField()->ResidualScaling();
 
   // old interface velocity of fluid field
-  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+  const Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->extract_interface_veln();
 
   // get fluid matrix
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf =
@@ -589,8 +589,8 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseMatri
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupSystemMatrix");
 
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
+  const CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get info about STC feature
@@ -1220,7 +1220,7 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
 
   // convert ALE solution increment to fluid solution increment at the interface
   Teuchos::RCP<Epetra_Vector> fcx = AleToFluidInterface(acx);
-  FluidField()->DisplacementToVelocity(fcx);
+  FluidField()->displacement_to_velocity(fcx);
 
   // put inner and interface fluid solution increments together
   Teuchos::RCP<Epetra_Vector> f = FluidField()->Interface()->InsertOtherVector(fox);
@@ -1271,10 +1271,10 @@ void FSI::MonolithicFluidSplit::Output()
 
   AleField()->Output();
 
-  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->GetConstraintManager()->PrintMonitorValues();
+    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
+    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -1332,15 +1332,15 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   if (verbosity_ >= INPAR::FSI::verbosity_low) PrintHeader();
 
-  PrepareTimeStepPreconditioner();
+  prepare_time_step_preconditioner();
 
   if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
     StructureField()->SystemMatrix()->Reset();
 
-  PrepareTimeStepFields();
+  prepare_time_step_fields();
 
   // Note: it's important to first prepare the single fields and than the fsi problem
   PrepareTimeStepFSI();
@@ -1351,7 +1351,7 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface   mayr.mt (03/2012) */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
+void FSI::MonolithicFluidSplit::recover_lagrange_multiplier()
 {
   // get time integration parameter of fluid time integrator
   // to enable consistent time integration among the fields
@@ -1458,7 +1458,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 
     // extract inner velocity DOFs after calling AleToFluid()
     Teuchos::RCP<Epetra_Map> velothermap = CORE::LINALG::SplitMap(
-        *FluidField()->VelocityRowMap(), *InterfaceFluidAleCoupling().MasterDofMap());
+        *FluidField()->VelocityRowMap(), *interface_fluid_ale_coupling().MasterDofMap());
     CORE::LINALG::MapExtractor velothermapext =
         CORE::LINALG::MapExtractor(*FluidField()->VelocityRowMap(), velothermap, false);
     auxvec = Teuchos::rcp(new Epetra_Vector(*velothermap, true));
@@ -1484,7 +1484,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   if (firstcall_)
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(fggprev_->RangeMap(), true));
-    fggprev_->Apply(*FluidField()->ExtractInterfaceVeln(), *auxvec);
+    fggprev_->Apply(*FluidField()->extract_interface_veln(), *auxvec);
     tmpvec->Update(Dt() * timescale, *auxvec, 1.0);
   }
   // ---------End of term (8)
@@ -1504,7 +1504,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
+void FSI::MonolithicFluidSplit::calculate_interface_energy_increment()
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -1527,7 +1527,7 @@ void FSI::MonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
 
   energysum_ += energy;
 
-  WriteInterfaceEnergyFile(energy, energysum_);
+  write_interface_energy_file(energy, energysum_);
 
   return;
 }

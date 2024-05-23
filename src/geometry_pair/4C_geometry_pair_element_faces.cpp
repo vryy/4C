@@ -77,7 +77,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositionDouble(
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_position_double(
     const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& r,
     bool reference) const
 {
@@ -97,7 +97,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositi
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormalDouble(
+void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_normal_double(
     const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& n,
     const bool reference, const bool averaged_normal) const
 {
@@ -319,7 +319,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
-    scalar_type>::CalculateAveragedReferenceNormals(const std::unordered_map<int,
+    scalar_type>::calculate_averaged_reference_normals(const std::unordered_map<int,
     Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Parameter coordinates corresponding to LIDs of nodes.
@@ -358,7 +358,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
  *
  */
 template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceNormalDouble(
+void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face_normal_double(
     const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& n,
     const bool reference, const bool averaged_normal) const
 {
@@ -385,7 +385,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceN
   else
   {
     // If no averaged normals should be calculated we can call the base method here.
-    base_class::EvaluateFaceNormalDouble(xi, n, reference, false);
+    base_class::evaluate_face_normal_double(xi, n, reference, false);
   }
 }
 
@@ -607,7 +607,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  */
 template <typename surface, typename scalar_type, typename volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    volume>::evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
     CORE::LINALG::Matrix<3, 1, double>& n, const bool reference, const bool averaged_normal) const
 {
   if (averaged_normal)
@@ -626,7 +626,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
   else
   {
     // If no averaged normals should be calculated we can call the base method here.
-    base_class::EvaluateFaceNormalDouble(xi, n, reference, false);
+    base_class::evaluate_face_normal_double(xi, n, reference, false);
   }
 }
 

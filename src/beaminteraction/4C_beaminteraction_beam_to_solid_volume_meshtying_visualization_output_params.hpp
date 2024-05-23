@@ -50,12 +50,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the output every iteration flag.
      */
-    bool GetOutputEveryIteration() const { return output_every_iteration_; }
+    bool get_output_every_iteration() const { return output_every_iteration_; }
 
     /**
      * \brief Output interval regarding steps: write output every INTERVAL_STEPS steps.
      */
-    int OutputIntervalInSteps() const
+    int output_interval_in_steps() const
     {
       CheckInitSetup();
       return output_interval_steps_;
@@ -69,22 +69,22 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the nodal forces flag.
      */
-    bool GetNodalForceOutputFlag() const { return nodal_forces_; }
+    bool get_nodal_force_output_flag() const { return nodal_forces_; }
 
     /**
      * \brief Return the mortar lambda discrete flag.
      */
-    bool GetMortarLambdaDiscretOutputFlag() const { return mortar_lambda_discret_; }
+    bool get_mortar_lambda_discret_output_flag() const { return mortar_lambda_discret_; }
 
     /**
      * \brief Return the mortar lambda continuous flag.
      */
-    bool GetMortarLambdaContinuousOutputFlag() const { return mortar_lambda_continuous_; }
+    bool get_mortar_lambda_continuous_output_flag() const { return mortar_lambda_continuous_; }
 
     /**
      * \brief Return the number of segments for continuous mortar output.
      */
-    unsigned int GetMortarLambdaContinuousSegments() const
+    unsigned int get_mortar_lambda_continuous_segments() const
     {
       return mortar_lambda_continuous_segments_;
     }
@@ -92,17 +92,17 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the nodal forces flag.
      */
-    bool GetSegmentationOutputFlag() const { return segmentation_; }
+    bool get_segmentation_output_flag() const { return segmentation_; }
 
     /**
      * \brief Return the integration output flag.
      */
-    bool GetIntegrationPointsOutputFlag() const { return integration_points_; }
+    bool get_integration_points_output_flag() const { return integration_points_; }
 
     /**
      * \brief Return the write unique IDs output flag.
      */
-    bool GetWriteUniqueIDsFlag() const { return write_unique_ids_; }
+    bool get_write_unique_i_ds_flag() const { return write_unique_ids_; }
 
    protected:
     /**

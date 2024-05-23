@@ -294,11 +294,12 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
 
     if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
-      WirteDofResultStepNurbsEle(ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
+      wirte_dof_result_step_nurbs_ele(
+          ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
     }
     else if (beamele != nullptr)
     {
-      WriteDofResultStepBeamEle(
+      write_dof_result_step_beam_ele(
           beamele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
     }
     else
@@ -353,7 +354,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
 
 
 
-void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
+void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
@@ -399,7 +400,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
 
     if (CORE::FE::IsNurbsDisType(ele->Shape()))
     {
-      WriteNodalResultStepNurbsEle(ele, ncomponents, numdf, solution, ghostedData);
+      write_nodal_result_step_nurbs_ele(ele, ncomponents, numdf, solution, ghostedData);
     }
     else
     {
@@ -447,7 +448,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
 
 
 
-void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
+void PostVtuWriter::write_element_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
@@ -583,7 +584,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
   const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::FE::dim<nurbs_type>;
 
-  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const CORE::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
@@ -635,7 +636,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
+CORE::FE::CellType PostVtuWriter::map_nurbs_dis_type_to_lagrange_dis_type(
     const CORE::FE::CellType nurbs_dis_type) const
 {
   using namespace FourC;
@@ -689,7 +690,7 @@ void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
   celloffset.push_back(outNodeId);
 }
 
-void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
@@ -699,37 +700,37 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
   {
     case CORE::FE::CellType::nurbs2:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
     case CORE::FE::CellType::nurbs3:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
     case CORE::FE::CellType::nurbs4:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
     case CORE::FE::CellType::nurbs8:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
     case CORE::FE::CellType::nurbs27:
     {
-      WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+      wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
@@ -744,7 +745,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
@@ -756,7 +757,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
-  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const CORE::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
@@ -818,7 +819,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 }
 
 
-void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
@@ -878,7 +879,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
   }
 }
 
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
@@ -888,37 +889,37 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   {
     case CORE::FE::CellType::nurbs2:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
     case CORE::FE::CellType::nurbs3:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
     case CORE::FE::CellType::nurbs4:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
     case CORE::FE::CellType::nurbs9:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
     case CORE::FE::CellType::nurbs8:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
     case CORE::FE::CellType::nurbs27:
     {
-      WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+      write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
@@ -932,7 +933,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <CORE::FE::CellType nurbs_type>
-void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+void PostVtuWriter::write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
@@ -944,7 +945,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
-  const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
+  const CORE::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);
 
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
@@ -1021,42 +1022,42 @@ template void PostVtuWriter::WriteGeoNurbsEle<CORE::FE::CellType::nurbs27>(const
     std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs2>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs3>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs4>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs9>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs8>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<CORE::FE::CellType::nurbs27>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs2>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs2>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs3>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs3>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs4>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs4>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs9>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs9>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs8>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs8>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nurbs27>(
+template void PostVtuWriter::write_nodal_result_step_nurbs_ele<CORE::FE::CellType::nurbs27>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 

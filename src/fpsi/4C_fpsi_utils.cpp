@@ -47,7 +47,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 /*----------------------------------------------------------------------/
 | Setup Discretization                                           rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm& comm,
+Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -189,7 +189,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm
 /*---------------------------------------------------------------------------/
 | Setup Local Interface Facing Element Map (for parallel distr.)      rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& masterdis,
+void FPSI::Utils::setup_local_interface_facing_element_map(DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, const std::string& condname,
     std::map<int, int>& interfacefacingelementmap)
 {
@@ -466,7 +466,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 /*---------------------------------------------------------------------------/
 | Redistribute Interface (for parallel distr.)                        rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis,
+void FPSI::Utils::redistribute_interface(Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<const DRT::Discretization> slavedis, const std::string& condname,
     std::map<int, int>& interfacefacingelementmap)
 {
@@ -625,9 +625,9 @@ void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
   poro_fluid_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
   fluid_poro_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
 
-  SetupLocalInterfaceFacingElementMap(
+  setup_local_interface_facing_element_map(
       *fluiddis, *porofluiddis, "FPSICoupling", *poro_fluid_fluid_interface_map_);
-  SetupLocalInterfaceFacingElementMap(
+  setup_local_interface_facing_element_map(
       *porofluiddis, *fluiddis, "FPSICoupling", *fluid_poro_fluid_interface_map_);
 
   return;
@@ -681,13 +681,13 @@ void FPSI::UTILS::MapExtractor::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FPSI::UTILS::MapExtractor::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> FPSI::UTILS::MapExtractor::conditioned_element_map(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
-      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      CORE::Conditions::ConditionedElementMap(dis, "FPSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FPSICoupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   return condelements;

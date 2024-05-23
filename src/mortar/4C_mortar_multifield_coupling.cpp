@@ -29,9 +29,9 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
 
   Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying =
       Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-          GLOBAL::Problem::Instance()->MortarCouplingParams(),
-          GLOBAL::Problem::Instance()->ContactDynamicParams(),
-          GLOBAL::Problem::Instance()->SpatialApproximationType()));
+          GLOBAL::Problem::Instance()->mortar_coupling_params(),
+          GLOBAL::Problem::Instance()->contact_dynamic_params(),
+          GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
   adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
       false, false, nodeset, nodeset);

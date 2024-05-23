@@ -85,7 +85,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // do polygon clipping
-  bool clip = PolygonClippingConvexHull(SlaveVertices(), MasterVertices(), Clip(), tol);
+  bool clip = polygon_clipping_convex_hull(SlaveVertices(), MasterVertices(), Clip(), tol);
   int clipsize = (int)(Clip().size());
 
   // within polygon clipping we may have performed a second rough check
@@ -215,7 +215,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
 
   // compute the unit normal vector at the master element center
   double nmc[3] = {0.0, 0.0, 0.0};
-  MasterIntElement().ComputeUnitNormalAtXi(loccenter, nmc);
+  MasterIntElement().compute_unit_normal_at_xi(loccenter, nmc);
 
   // check orientation with respect to slave element
   double dot = nmc[0] * Auxn()[0] + nmc[1] * Auxn()[1] + nmc[2] * Auxn()[2];
@@ -255,7 +255,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter, Auxn());
+  Lauxn() = SlaveIntElement().compute_unit_normal_at_xi(loccenter, Auxn());
 
 
   // calculate auxplane with cpp normal!
@@ -389,7 +389,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     std::vector<Vertex>& respoly, double& tol)
 {
   //**********************************************************************
-  FOUR_C_THROW("PolygonClipping outdated, use PolygonClippingConvexHull instead!");
+  FOUR_C_THROW("PolygonClipping outdated, use polygon_clipping_convex_hull instead!");
   //**********************************************************************
 
   // choose output
@@ -1495,7 +1495,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons (NEW version)                    popp 11/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
+bool MORTAR::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1,
     std::vector<Vertex>& poly2, std::vector<Vertex>& respoly, double& tol)
 {
   // choose output
@@ -2717,7 +2717,7 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
     // (2) Triangulation of clip polygon (DELAUNAY-based (new))
     //**********************************************************************
     case INPAR::MORTAR::triangulation_delaunay:
-      if (!DelaunayTriangulation(linvertex, tol))
+      if (!delaunay_triangulation(linvertex, tol))
         // (3) Backup triangulation of clip polygon (CENTER-based (old))
         CenterTriangulation(linvertex, tol);
       break;
@@ -2739,7 +2739,7 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::DelaunayTriangulation(
+bool MORTAR::Coupling3d::delaunay_triangulation(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
@@ -3402,7 +3402,8 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     {
       // call integrator
       MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
-          ->IntegrateCell3DAuxPlane(SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
+          ->integrate_cell3_d_aux_plane(
+              SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
 
     // *******************************************************************
@@ -3417,7 +3418,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
-          ->IntegrateCell3DAuxPlaneQuad(
+          ->integrate_cell3_d_aux_plane_quad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
@@ -3437,7 +3438,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       MORTAR::Integrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
-          ->IntegrateCell3DAuxPlaneQuad(
+          ->integrate_cell3_d_aux_plane_quad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
@@ -4321,7 +4322,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
         // TODO random?
         MORTAR::Projector::Impl(SlaveElement())
-            ->ProjectGaussPointAuxn3D(
+            ->project_gauss_point_auxn3_d(
                 globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 
         // create vector for shape function evaluation
@@ -4330,7 +4331,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
         // evaluate trace space shape functions at Gauss point
         if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
-          SlaveElement().EvaluateShapeLagMultLin(
+          SlaveElement().evaluate_shape_lag_mult_lin(
               INPAR::MORTAR::shape_standard, sxi, sval, sderiv, nnodes);
         else
           SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);

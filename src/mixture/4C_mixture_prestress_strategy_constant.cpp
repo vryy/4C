@@ -32,7 +32,7 @@ MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::ConstantPrestressStrategy::CreatePrestressStrategy()
+MIXTURE::PAR::ConstantPrestressStrategy::create_prestress_strategy()
 {
   std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
       new MIXTURE::ConstantPrestressStrategy(this));

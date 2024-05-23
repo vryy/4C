@@ -130,9 +130,9 @@ namespace MAT
    *
    *  The stress response is achieved by collecting the coefficients
    *  \f$\gamma_\alpha\f$ and \f$\delta_{\alpha\beta}\f$ due to
-   *  MAT::ELASTIC::Summand::AddCoefficientsStretchesPrincipal()
+   *  MAT::ELASTIC::Summand::add_coefficients_stretches_principal()
    *  (and/or \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$
-   *  due to MAT::ELASTIC::Summand::AddCoefficientsStretchesModified()).
+   *  due to MAT::ELASTIC::Summand::add_coefficients_stretches_modified()).
    *  The collected coefficients build the principal 2nd Piola--Kirchhoff
    *  stresses which are transformed into ordinary Cartesian co-ordinates
    *  applying the principal directions. Similarly, the elasticity

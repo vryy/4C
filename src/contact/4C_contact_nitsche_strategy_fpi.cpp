@@ -32,20 +32,20 @@ void CONTACT::NitscheStrategyFpi::DoContactSearch()
   for (auto& interface : interface_)
   {
     interface->Initialize();
-    interface->EvaluateSearchBinarytree();
-    interface->EvaluateNodalNormals();
+    interface->evaluate_search_binarytree();
+    interface->evaluate_nodal_normals();
     interface->ExportNodalNormals();
   }
 }
 
-bool CONTACT::NitscheStrategyFpi::CheckNitscheContactState(
+bool CONTACT::NitscheStrategyFpi::check_nitsche_contact_state(
     CONTACT::Element* cele,                 // the contact element
     const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,        // stressfluid + penalty
     double& gap                             // gap
 )
 {
-  return CONTACT::UTILS::CheckNitscheContactState(
+  return CONTACT::UTILS::check_nitsche_contact_state(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 

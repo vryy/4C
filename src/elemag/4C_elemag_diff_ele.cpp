@@ -67,7 +67,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagDiffType::Create(const int id, c
   return Teuchos::rcp(new DRT::ELEMENTS::ElemagDiff(id, owner));
 }
 
-void DRT::ELEMENTS::ElemagDiffType::NodalBlockInformation(
+void DRT::ELEMENTS::ElemagDiffType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = CORE::FE::getDimension(dwele->Shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
@@ -89,7 +89,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagDiffType::SetupElementDefinition(
+void DRT::ELEMENTS::ElemagDiffType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETICDIFF"];
@@ -243,7 +243,7 @@ DRT::ELEMENTS::ElemagDiffBoundary::ElemagDiffBoundary(int id, int owner, int nno
     const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::ElemagDiff* parent, const int lsurface)
     : ElemagBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
-  //  SetParentMasterElement(parent,lsurface);
+  //  set_parent_master_element(parent,lsurface);
   //  SetNodeIds(nnode,nodeids);
   //  BuildNodalPointers(nodes);
   return;
@@ -386,8 +386,8 @@ DRT::ELEMENTS::ElemagDiffIntFace::ElemagDiffIntFace(int id,  ///< element id
     : ElemagIntFace(id, owner, nnode, nodeids, nodes, parent_master, parent_slave, lsurface_master,
           lsurface_slave, localtrafomap)
 {
-  SetParentMasterElement(parent_master, lsurface_master);
-  SetParentSlaveElement(parent_slave, lsurface_slave);
+  set_parent_master_element(parent_master, lsurface_master);
+  set_parent_slave_element(parent_slave, lsurface_slave);
   SetLocalTrafoMap(localtrafomap);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);

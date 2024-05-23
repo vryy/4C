@@ -692,7 +692,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardSanGarny::GetNumberOfInternalStateVariables() const { return 15; }
+int MyocardSanGarny::get_number_of_internal_state_variables() const { return 15; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
@@ -721,7 +721,7 @@ void MyocardSanGarny::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardSanGarny::GetNumberOfIonicCurrents() const { return 13; }
+int MyocardSanGarny::get_number_of_ionic_currents() const { return 13; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |

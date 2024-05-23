@@ -150,7 +150,7 @@ namespace
     // print valid element lines as proposal (parobjects have to be registered for doing this!)
     defaultbc << std::endl << std::endl;
     INPUT::ElementDefinition ed;
-    ed.PrintElementDatHeaderToStream(defaultbc);
+    ed.print_element_dat_header_to_stream(defaultbc);
 
     // close default bc specification file
     if (defaultbc.is_open()) defaultbc.close();

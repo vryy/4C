@@ -44,7 +44,7 @@ namespace FLD
     \brief set scalar fields within outer iteration loop
 
     */
-    void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
@@ -62,38 +62,38 @@ namespace FLD
     \brief parameter (fix over all time step) are set in this method.
            Therefore, these parameter are accessible in the fluid element
            and in the fluid boundary element*/
-    void SetElementCustomParameter();
+    void set_element_custom_parameter();
 
     /*!
     \brief print turbulence model
 
     */
-    void PrintTurbulenceModel() override;
+    void print_turbulence_model() override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsApplyNonlinearBoundaryConditions(
+    void set_custom_ele_params_apply_nonlinear_boundary_conditions(
         Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_linear_relaxation_solve(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Call statistics manager (special case in TimIntLoma)
 
     */
-    void CallStatisticsManager() override;
+    void call_statistics_manager() override;
 
     /// prepare AVM3-based scale separation
     void AVM3Preparation() override;

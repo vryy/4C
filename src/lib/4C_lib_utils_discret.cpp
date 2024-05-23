@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
+void DRT::UTILS::evaluate_initial_field(const DRT::Discretization& discret,
     const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
     const std::vector<int>& locids)
 {

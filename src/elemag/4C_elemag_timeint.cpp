@@ -133,7 +133,7 @@ void ELEMAG::ElemagTimeInt::Init()
 /*----------------------------------------------------------------------*
  |  Print information to screen (public)               berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::PrintInformationToScreen()
+void ELEMAG::ElemagTimeInt::print_information_to_screen()
 {
   if (!myrank_)
   {
@@ -165,7 +165,7 @@ void ELEMAG::ElemagTimeInt::PrintInformationToScreen()
     std::cout << std::endl;
   }
   return;
-}  //  PrintInformationToScreen
+}  //  print_information_to_screen
 
 
 /*----------------------------------------------------------------------*
@@ -196,17 +196,17 @@ void ELEMAG::ElemagTimeInt::Integrate()
   while (step_ < stepmax_ and time_ < maxtime_)
   {
     // increment time and step
-    IncrementTimeAndStep();
+    increment_time_and_step();
 
     // Apply BCS to RHS
-    ComputeSilverMueller(true);
-    ApplyDirichletToSystem(true);
+    compute_silver_mueller(true);
+    apply_dirichlet_to_system(true);
 
     // Solve for the trace values
     Solve();
 
     // Update the local solutions
-    UpdateInteriorVariablesAndAssembleRHS();
+    update_interior_variables_and_assemble_rhs();
 
     // The output to file only once in a while
     if (step_ % upres_ == 0)
@@ -348,7 +348,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
 /*----------------------------------------------------------------------*
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::SetInitialElectricField(
+void ELEMAG::ElemagTimeInt::set_initial_electric_field(
     Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
@@ -426,7 +426,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
   Output();
 
   return;
-}  // SetInitialElectricField
+}  // set_initial_electric_field
 
 /*----------------------------------------------------------------------*
  |  Compute error routine (public)                     berardocco 08/18 |
@@ -552,7 +552,7 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
 /*----------------------------------------------------------------------*
  |  Project trace variable for testing purposes        berardocco 07/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
+void ELEMAG::ElemagTimeInt::project_field_test_trace(const int startfuncno)
 {
   // This map contains the trace values
   const Epetra_Map *dofrowmap = discret_->DofRowMap();
@@ -610,16 +610,16 @@ void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
     AssembleMatAndRHS();
 
     // increment time and step
-    IncrementTimeAndStep();
+    increment_time_and_step();
 
     // Apply BCS to RHS
-    ComputeSilverMueller(true);
-    ApplyDirichletToSystem(true);
+    compute_silver_mueller(true);
+    apply_dirichlet_to_system(true);
 
     // Solve
     Solve();
 
-    UpdateInteriorVariablesAndAssembleRHS();
+    update_interior_variables_and_assemble_rhs();
 
     // The output to file only once in a while
     if (step_ % upres_ == 0)
@@ -688,8 +688,8 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   sysmat_->Complete();
 
   // Compute matrices and RHS for boundary conditions
-  ComputeSilverMueller(false);
-  ApplyDirichletToSystem(false);
+  compute_silver_mueller(false);
+  apply_dirichlet_to_system(false);
 
   // Equilibrate matrix
   equilibration_->EquilibrateMatrix(sysmat_);
@@ -700,9 +700,9 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
 /*----------------------------------------------------------------------*
  | Updates interior variables and compute RHS (public)  berardocco 06/18|
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
+void ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs");
 
   // create parameterlist
   Teuchos::ParameterList eleparams;
@@ -726,12 +726,12 @@ void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
 
 
   return;
-}  // UpdateInteriorVariablesAndAssembleRHS
+}  // update_interior_variables_and_assemble_rhs
 
 /*----------------------------------------------------------------------*
  |  Apply Dirichlet b.c. to system (public)            gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
+void ELEMAG::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
@@ -739,18 +739,18 @@ void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
   discret_->EvaluateDirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)
-    CORE::LINALG::ApplyDirichletToSystem(*residual_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->CondMap()));
   else
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sysmat_, *trace_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   return;
-}  // ApplyDirichletToSystem
+}  // apply_dirichlet_to_system
 
 /*----------------------------------------------------------------------*
  |  Compute Silver-Mueller         (public)            berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool do_rhs)
+void ELEMAG::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + Compute Silver-Mueller BC");
 
@@ -775,7 +775,7 @@ void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool do_rhs)
   }
 
   return;
-}  // ApplyDirichletToSystem
+}  // apply_dirichlet_to_system
 
 /*----------------------------------------------------------------------*
  |  Solve system for trace (public)                    berardocco 06/18 |
@@ -788,7 +788,7 @@ void ELEMAG::ElemagTimeInt::Solve()
   // This part has only been copied from the fluid part to be able to use algebraic multigrid
   // solvers and has to be checked
 
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(), true);
+  discret_->compute_null_space_if_necessary(solver_->Params(), true);
   // solve for trace
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
@@ -796,7 +796,7 @@ void ELEMAG::ElemagTimeInt::Solve()
 
 
   // Unequilibrate solution vector
-  equilibration_->UnequilibrateIncrement(trace_);
+  equilibration_->unequilibrate_increment(trace_);
 
   return;
 }  // Solve

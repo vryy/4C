@@ -31,7 +31,7 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
   CheckInit();
 
   // setup the nox parameter list for a pseudo transient solution method
-  SetPseudoTransientParams();
+  set_pseudo_transient_params();
 
   // Call the Setup() function of the base class
   // Note, that the issetup_ flag is also updated during this call.
@@ -42,7 +42,7 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
+void STR::NLN::SOLVER::PseudoTransient::set_pseudo_transient_params()
 {
   CheckInit();
 
@@ -82,7 +82,7 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
    * input section "STRUCT NOX/Pseudo Transient" in your input file. */
   Teuchos::ParameterList& pptc = pnox.sublist("Pseudo Transient");
 
-  pptc.set<double>("deltaInit", DataSDyn().GetInitialPTCPseudoTimeStep());
+  pptc.set<double>("deltaInit", DataSDyn().get_initial_ptc_pseudo_time_step());
   pptc.set<double>("deltaMax", std::numeric_limits<double>::max());
   pptc.set<double>("deltaMin", 0.0);
   pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (DataSDyn().GetIterMax() + 1));

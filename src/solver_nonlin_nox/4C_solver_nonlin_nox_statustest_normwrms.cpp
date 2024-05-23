@@ -93,7 +93,7 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
 
   // get the root mean square from the underlying interface classes
   norm_wrms_ =
-      nlnGrp->GetSolutionUpdateRMS(xOld, atol_, rtol_, check_list_, disable_implicit_weighting_);
+      nlnGrp->get_solution_update_rms(xOld, atol_, rtol_, check_list_, disable_implicit_weighting_);
 
   // loop over all quantities
   for (std::size_t i = 0; i < n_checks_; ++i)
@@ -186,7 +186,7 @@ bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormWRMS::GetAbsoluteTolerance(
+double NOX::NLN::StatusTest::NormWRMS::get_absolute_tolerance(
     const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)
@@ -197,7 +197,7 @@ double NOX::NLN::StatusTest::NormWRMS::GetAbsoluteTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormWRMS::GetRelativeTolerance(
+double NOX::NLN::StatusTest::NormWRMS::get_relative_tolerance(
     const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)

@@ -110,7 +110,7 @@ namespace FLD
     }
 
     /// rotate velocity vector used in element routine if necessary
-    void RotateMyValuesIfNecessary(std::vector<double>& myvalues)
+    void rotate_my_values_if_necessary(std::vector<double>& myvalues)
     {
       if (HasRotSymmPBC())
       {
@@ -130,7 +130,8 @@ namespace FLD
     }
 
     /// rotate velocity vector used in element routine if necessary
-    void RotateMyValuesIfNecessary(CORE::LINALG::Matrix<numdofpernode - 1, elenumnode>& myvalues)
+    void rotate_my_values_if_necessary(
+        CORE::LINALG::Matrix<numdofpernode - 1, elenumnode>& myvalues)
     {
       if (HasRotSymmPBC())
       {
@@ -151,7 +152,7 @@ namespace FLD
 
     /// rotate velocity vector used in element routine if necessary
     template <int rows, int cols>
-    void RotateMyValuesIfNecessary(CORE::LINALG::Matrix<rows, cols>& myvalues)
+    void rotate_my_values_if_necessary(CORE::LINALG::Matrix<rows, cols>& myvalues)
     {
       if (HasRotSymmPBC())
       {
@@ -171,7 +172,7 @@ namespace FLD
     }
 
     /// rotate element matrix and vectors if necessary (first version)
-    void RotateMatandVecIfNecessary(
+    void rotate_matand_vec_if_necessary(
         CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
         CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat2,
         CORE::LINALG::Matrix<numdofpernode * elenumnode, 1>& elevec1)
@@ -212,7 +213,7 @@ namespace FLD
     }
 
     /// rotate element matrix and vectors if necessary (second version)
-    void RotateMatandVecIfNecessary(
+    void rotate_matand_vec_if_necessary(
         CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
         CORE::LINALG::Matrix<numdofpernode * elenumnode, 1>& elevec1)
     {

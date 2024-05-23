@@ -52,9 +52,9 @@ namespace DRT
       template <CORE::FE::CellType distype>
       static FluidEleInterface* DefineProblemType(std::string problem);
 
-      //! special DefineProblemTypeXFEM for XFEM problems
+      //! special define_problem_type_xfem for XFEM problems
       template <CORE::FE::CellType distype>
-      static FluidEleInterface* DefineProblemTypeXFEM(std::string problem);
+      static FluidEleInterface* define_problem_type_xfem(std::string problem);
 
     };  // end class FluidFactory
 

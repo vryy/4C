@@ -120,7 +120,7 @@ namespace CONTACT
         const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
 
     template <int dim>
-    void IntegrateAdjointTest(const double fac, const double jac,
+    void integrate_adjoint_test(const double fac, const double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test, const CORE::GEN::Pairedvector<int, double>& deriv_test_d,
         const CORE::GEN::Pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
@@ -129,7 +129,7 @@ namespace CONTACT
         CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void IntegrateThermalTest(const double fac, MORTAR::Element& ele,
+    void integrate_thermal_test(const double fac, MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
@@ -137,7 +137,7 @@ namespace CONTACT
         const CORE::GEN::Pairedvector<int, double>& test_deriv_T);
 
     template <int dim>
-    void IntegrateThermalAdjointTest(const double fac, const double jac,
+    void integrate_thermal_adjoint_test(const double fac, const double jac,
         const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test, const CORE::GEN::Pairedvector<int, double>& deriv_test_d,
         const CORE::GEN::Pairedvector<int, double>& deriv_test_T, MORTAR::Element& moEle,
@@ -175,7 +175,7 @@ namespace CONTACT
         CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
-    void BuildAdjointTestThermo(MORTAR::Element& moEle, const double fac,
+    void build_adjoint_test_thermo(MORTAR::Element& moEle, const double fac,
         const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
         const CORE::LINALG::SerialDenseMatrix& d2q_dT_dd,
         const CORE::LINALG::SerialDenseMatrix& d2q_dT_dn,

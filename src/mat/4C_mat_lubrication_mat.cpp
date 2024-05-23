@@ -158,10 +158,10 @@ double MAT::LubricationMat::ComputeViscosity(const double press)
 /*----------------------------------------------------------------------*
                                                               wirtz 09/16|
 *----------------------------------------------------------------------*/
-double MAT::LubricationMat::ComputeViscosityDeriv(const double press, const double visc)
+double MAT::LubricationMat::compute_viscosity_deriv(const double press, const double visc)
 {
   double visc_dp = -1;
-  params_->lubricationlaw_->ConstitutiveDerivatives(press, visc, visc_dp);
+  params_->lubricationlaw_->constitutive_derivatives(press, visc, visc_dp);
 
   return visc_dp;
 }

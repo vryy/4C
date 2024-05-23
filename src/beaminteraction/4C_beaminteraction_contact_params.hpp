@@ -40,56 +40,57 @@ namespace BEAMINTERACTION
     //! destructor
     virtual ~BeamContactParams() = default;
 
-    //! builds a new BeamToBeamContactParams object
-    void BuildBeamToBeamContactParams();
+    //! builds a new beam_to_beam_contact_params object
+    void build_beam_to_beam_contact_params();
 
-    //! builds a new BeamToSphereContactParams object
-    void BuildBeamToSphereContactParams();
+    //! builds a new beam_to_sphere_contact_params object
+    void build_beam_to_sphere_contact_params();
 
-    //! builds a new BeamToSolidVolumeMeshtyingParams object
-    void BuildBeamToSolidVolumeMeshtyingParams();
+    //! builds a new beam_to_solid_volume_meshtying_params object
+    void build_beam_to_solid_volume_meshtying_params();
 
-    //! builds a new BeamToSolidSurfaceMeshtyingParams object
-    void BuildBeamToSolidSurfaceMeshtyingParams();
+    //! builds a new beam_to_solid_surface_meshtying_params object
+    void build_beam_to_solid_surface_meshtying_params();
 
-    //! builds a new BeamToSolidSurfaceContactParams object
-    void BuildBeamToSolidSurfaceContactParams();
+    //! builds a new beam_to_solid_surface_contact_params object
+    void build_beam_to_solid_surface_contact_params();
 
     //! builds a new BeamContactRuntimeOutputParams object
-    void BuildBeamContactRuntimeOutputParams(double restart_time);
+    void build_beam_contact_runtime_output_params(double restart_time);
 
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> BeamToBeamContactParams() const
+    inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params()
+        const
     {
       return beam_to_beam_contact_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> BeamToSphereContactParams()
+    inline Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params()
         const
     {
       return beam_to_sphere_contact_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
-    BeamToSolidVolumeMeshtyingParams() const
+    beam_to_solid_volume_meshtying_params() const
     {
       return beam_to_solid_volume_meshtying_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
-    BeamToSolidSurfaceMeshtyingParams() const
+    beam_to_solid_surface_meshtying_params() const
     {
       return beam_to_solid_surface_meshtying_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
-    BeamToSolidSurfaceContactParams() const
+    beam_to_solid_surface_contact_params() const
     {
       return beam_to_solid_surface_contact_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
-    BeamContactRuntimeVisualizationOutputParams() const
+    beam_contact_runtime_visualization_output_params() const
     {
       return beam_contact_runtime_output_params_;
     }

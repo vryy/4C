@@ -151,13 +151,13 @@ namespace POROELAST
     void CreateLinearSolver();
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void UpdateStateIncrementally(
+    void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override;
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
     //! increment separately)
-    void UpdateStateIncrementally(
+    void update_state_incrementally(
         Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
@@ -205,14 +205,14 @@ namespace POROELAST
     );
 
     //! contains text to PrintNewtonIter
-    virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
+    virtual void print_newton_iter_text_stream(std::ostringstream& oss);
 
     //! contains header to PrintNewtonIter
-    virtual void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    virtual void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! contains header to PrintNewtonIter
-    virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
+    virtual void print_newton_iter_header_stream(std::ostringstream& oss);
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
@@ -228,11 +228,11 @@ namespace POROELAST
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterTimeStep() {}
+    virtual void recover_lagrange_multiplier_after_time_step() {}
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplierAfterNewtonStep(
+    virtual void recover_lagrange_multiplier_after_newton_step(
         Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! Setup solver for monolithic system
@@ -256,14 +256,14 @@ namespace POROELAST
     );
 
     //! Evaluate fluid-mechanical system matrix
-    virtual void ApplyFluidCouplMatrix(
+    virtual void apply_fluid_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
     //!@}
 
     //! convergence check for Newton solver
-    virtual void BuildConvergenceNorms();
+    virtual void build_convergence_norms();
 
     //! extract the field vectors from a given composed vector. Different for fluid and structure
     //! split
@@ -325,22 +325,22 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructFluidCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_fluid_coupling_matrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> FluidStructCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! return structure fluid coupling block sparse matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> StructFluidCouplingBlockMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> struct_fluid_coupling_block_matrix();
 
     //! return fluid structure coupling block sparse matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluid_struct_coupling_block_matrix();
 
 
     //! @name poro-contact
 
     //! apply current velocity of fluid  to ContactMangager if contact problem
-    void SetPoroContactStates();
+    void set_poro_contact_states();
 
     //! assemble relevant matrixes for porocontact and meshtying
     void EvalPoroMortar();

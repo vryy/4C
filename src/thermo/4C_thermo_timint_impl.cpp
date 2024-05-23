@@ -75,10 +75,11 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     CORE::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)
     {
-      adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-          GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
-          GLOBAL::Problem::Instance()->ContactDynamicParams(),
-          GLOBAL::Problem::Instance()->SpatialApproximationType()));
+      adaptermeshtying_ =
+          Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+              GLOBAL::Problem::Instance()->mortar_coupling_params(),
+              GLOBAL::Problem::Instance()->contact_dynamic_params(),
+              GLOBAL::Problem::Instance()->spatial_approximation_type()));
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(
@@ -122,15 +123,15 @@ void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
   //
   //    // do thermal update with provided residual temperatures
   //    // recent increment: tempi == tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
-  //    thermo_->UpdateIterIncrementally(tempi);
+  //    thermo_->update_iter_incrementally(tempi);
   //  }
   //  else
   //  {
-  //    thermo_->UpdateIterIncrementally(Teuchos::null);
+  //    thermo_->update_iter_incrementally(Teuchos::null);
   //  }
 
   // TSI does not use NOX --> the Newton increment is passed to the field solver
-  UpdateIterIncrementally(tempi);
+  update_iter_incrementally(tempi);
 
   // builds tangent, residual and applies DBC
   Evaluate();
@@ -143,8 +144,8 @@ void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
 void THR::TimIntImpl::Evaluate()
 {
   // builds tangent, residual and applies DBC
-  EvaluateRhsTangResidual();
-  PrepareSystemForNewtonSolve();
+  evaluate_rhs_tang_residual();
+  prepare_system_for_newton_solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -155,17 +156,17 @@ void THR::TimIntImpl::Predict()
   // choose predictor
   if (pred_ == INPAR::THR::pred_consttemp)
   {
-    PredictConstTempConsistRate();
+    predict_const_temp_consist_rate();
     normtempi_ = 1.0e6;
   }
   else if (pred_ == INPAR::THR::pred_consttemprate)
   {
-    PredictConstTempRate();
+    predict_const_temp_rate();
     normtempi_ = 1.0e6;
   }
   else if (pred_ == INPAR::THR::pred_tangtemp)
   {
-    PredictTangTempConsistRate();
+    predict_tang_temp_consist_rate();
     // normtempi_ has been set
   }
   else
@@ -185,7 +186,7 @@ void THR::TimIntImpl::Predict()
   ApplyDirichletBC(timen_, tempn_, raten_, false);
 
   // compute residual forces fres_ and tangent tang_
-  EvaluateRhsTangResidual();
+  evaluate_rhs_tang_residual();
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -203,7 +204,7 @@ void THR::TimIntImpl::Predict()
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
-  normchartemp_ = CalcRefNormTemperature();
+  normchartemp_ = calc_ref_norm_temperature();
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
 
   // output
@@ -217,7 +218,7 @@ void THR::TimIntImpl::Predict()
  | prepare partiton step                                     dano 12/10 |
  | like Predict() but without predict the unknown variables T,R         |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PreparePartitionStep()
+void THR::TimIntImpl::prepare_partition_step()
 {
   // set iteration step to 0
   iter_ = 0;
@@ -226,7 +227,7 @@ void THR::TimIntImpl::PreparePartitionStep()
   ApplyDirichletBC(timen_, tempn_, raten_, false);
 
   // compute residual forces fres_ and stiffness tang_
-  EvaluateRhsTangResidual();
+  evaluate_rhs_tang_residual();
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -245,7 +246,7 @@ void THR::TimIntImpl::PreparePartitionStep()
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
-  normchartemp_ = CalcRefNormTemperature();
+  normchartemp_ = calc_ref_norm_temperature();
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
 
   // output
@@ -260,7 +261,7 @@ void THR::TimIntImpl::PreparePartitionStep()
  | predict solution as constant temperatures,               bborn 08/09 |
  | temperature rates                                                    |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PredictConstTempRate()
+void THR::TimIntImpl::predict_const_temp_rate()
 {
   // constant predictor
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
@@ -274,7 +275,7 @@ void THR::TimIntImpl::PredictConstTempRate()
  | Predict solution as constant temperatures,               bborn 08/09 |
  | temperature rates and tangent                                        |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PredictTangTempConsistRate()
+void THR::TimIntImpl::predict_tang_temp_consist_rate()
 {
   // initialise
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
@@ -297,7 +298,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
 
   // compute residual forces fres_ and tangent tang_
   // at tempn_, etc which are unchanged
-  EvaluateRhsTangResidual();
+  evaluate_rhs_tang_residual();
 
   // add linear reaction forces to residual
   {
@@ -323,7 +324,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
   tang_->Complete();
-  CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -341,7 +342,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   tempi_->Update(1.0, *dbcinc, 1.0);
 
   // update end-point temperatures etc
-  UpdateIterIncrementally();
+  update_iter_incrementally();
   // tempn_->Update(1.0, *tempi_, 1.0);
 
   // MARK:
@@ -508,7 +509,8 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
     // Solve for tempi_
     // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -532,9 +534,9 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // compute residual forces #fres_ and tangent #tang_
     // whose components are globally oriented
-    EvaluateRhsTangResidual();
+    evaluate_rhs_tang_residual();
 
-    BlankDirichletAndCalcNorms();
+    blank_dirichlet_and_calc_norms();
 
     // print stuff
     PrintNewtonIter();
@@ -546,11 +548,11 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
   // correct iteration counter
   iter_ -= 1;
 
-  return NewtonFullErrorCheck();
+  return newton_full_error_check();
 }
 
 
-void THR::TimIntImpl::BlankDirichletAndCalcNorms()
+void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
 {
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -574,7 +576,7 @@ void THR::TimIntImpl::BlankDirichletAndCalcNorms()
 
 
 
-INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFullErrorCheck()
+INPAR::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
 {
   // do some error checks
   if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_stop))
@@ -601,14 +603,14 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFullErrorCheck()
   {
     if (myrank_ == 0)
       FOUR_C_THROW(
-          "Fatal failure in NewtonFullErrorCheck()! divcont_repeat_step and "
+          "Fatal failure in newton_full_error_check()! divcont_repeat_step and "
           "divcont_repeat_simulation not implemented for THR");
     return INPAR::THR::conv_nonlin_fail;
   }
   // if everything is fine print to screen and return
   if (Converged())
   {
-    CheckForTimeStepIncrease();
+    check_for_time_step_increase();
     return INPAR::THR::conv_success;
   }
   else
@@ -647,7 +649,7 @@ void THR::TimIntImpl::HalveTimeStep()
  * check, if according to divercont flag                            proell 09/18
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void THR::TimIntImpl::CheckForTimeStepIncrease()
+void THR::TimIntImpl::check_for_time_step_increase()
 {
   const int maxnumfinestep = 4;
 
@@ -681,7 +683,7 @@ void THR::TimIntImpl::CheckForTimeStepIncrease()
 /*----------------------------------------------------------------------*
  | Prepare system for solving with Newton's method          bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrepareSystemForNewtonSolve()
+void THR::TimIntImpl::prepare_system_for_newton_solve()
 {
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -697,11 +699,11 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
   // at dofs with DBC change tang_:
   // blank all off-diagonal terms and put 1s at diagonal terms of tang_
-  CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // final sip
   return;
-}  // PrepareSystemForNewtonSolve()
+}  // prepare_system_for_newton_solve()
 
 
 /*----------------------------------------------------------------------*
@@ -717,11 +719,11 @@ void THR::TimIntImpl::UpdateIter(const int iter  //!< iteration counter
   // HINT: Sorry, this comment was added delayed and might be inaccurate.
   if (iter <= 1)
   {
-    UpdateIterIncrementally();
+    update_iter_incrementally();
   }
   else
   {
-    UpdateIterIteratively();
+    update_iter_iteratively();
   }
 
   // morning is broken
@@ -733,7 +735,7 @@ void THR::TimIntImpl::UpdateIter(const int iter  //!< iteration counter
  | Update iteration incrementally with prescribed           bborn 08/09 |
  | residual temperatures                                                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateIterIncrementally(
+void THR::TimIntImpl::update_iter_incrementally(
     const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
 )
 {
@@ -745,11 +747,11 @@ void THR::TimIntImpl::UpdateIterIncrementally(
     tempi_->PutScalar(0.0);
 
   // Update using #tempi_
-  UpdateIterIncrementally();
+  update_iter_incrementally();
 
   // leave this place
   return;
-}  // UpdateIterIncrementally()
+}  // update_iter_incrementally()
 
 
 /*----------------------------------------------------------------------*
@@ -782,7 +784,7 @@ void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  UpdateIterIncrementally(tempi);
+  update_iter_incrementally(tempi);
   return;
 
 }  // UpdateNewton()
@@ -837,7 +839,7 @@ void THR::TimIntImpl::PrintNewtonIter()
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and printiter_ and (StepOld() % printscreen_ == 0))
   {
-    if (iter_ == 1) PrintNewtonIterHeader(stdout);
+    if (iter_ == 1) print_newton_iter_header(stdout);
     PrintNewtonIterText(stdout);
   }
 
@@ -847,7 +849,7 @@ void THR::TimIntImpl::PrintNewtonIter()
 /*----------------------------------------------------------------------*
  | print header                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
+void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -903,7 +905,7 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}  // PrintNewtonIterHeader()
+}  // print_newton_iter_header()
 
 
 /*----------------------------------------------------------------------*
@@ -1066,7 +1068,7 @@ void THR::TimIntImpl::FDCheck()
     Evaluate(disturbtempi);
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->CondMap()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb

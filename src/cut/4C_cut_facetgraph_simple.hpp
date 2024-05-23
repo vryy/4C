@@ -35,7 +35,7 @@ namespace CORE::GEO
      private:
       void SortFacets(const Element* element, std::map<double, Facet*>& sorted_facets) const;
 
-      void CombineFacetsToLineVolumes(const std::map<double, Facet*>& sorted_facets,
+      void combine_facets_to_line_volumes(const std::map<double, Facet*>& sorted_facets,
           std::vector<plain_facet_set>& volumes) const;
 
     };  // class  SimpleFacetGraph_1D

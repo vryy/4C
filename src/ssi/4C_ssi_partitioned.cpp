@@ -38,7 +38,7 @@ void SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // safety check
-  if (SSIInterfaceMeshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
+  if (ssi_interface_meshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
   {
     FOUR_C_THROW(
         "Must have TangDis predictor for structural field in partitioned scalar-structure "
@@ -65,9 +65,9 @@ void SSI::SSIPart::SetupModelEvaluator()
   // build and register ssi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
       Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this, false)));
-  StructureBaseAlgorithm()->RegisterModelEvaluator("Partitioned Coupling Model", ssi_model_ptr);
+  structure_base_algorithm()->register_model_evaluator("Partitioned Coupling Model", ssi_model_ptr);
 
-  if (IsS2IKineticsWithPseudoContact()) SetModelevaluatorBaseSSI(ssi_model_ptr);
+  if (is_s2_i_kinetics_with_pseudo_contact()) set_modelevaluator_base_ssi(ssi_model_ptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

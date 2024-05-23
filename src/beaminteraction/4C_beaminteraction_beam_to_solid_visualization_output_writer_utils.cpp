@@ -31,8 +31,8 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
     const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
 {
   // Add the reference geometry and displacement to the visualization.
-  visualization->AddDiscretizationNodalReferencePosition(discret_ptr);
-  visualization->AddDiscretizationNodalData("displacement", displacement);
+  visualization->add_discretization_nodal_reference_position(discret_ptr);
+  visualization->add_discretization_nodal_data("displacement", displacement);
 
   // Create maps with the GIDs of beam and solid nodes.
   std::vector<int> gid_beam_dof;
@@ -58,12 +58,12 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   Teuchos::RCP<Epetra_Vector> force_solid =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(solid_dof_map, true));
   CORE::LINALG::Export(*force, *force_solid);
-  visualization->AddDiscretizationNodalData("force_beam", force_beam);
-  visualization->AddDiscretizationNodalData("force_solid", force_solid);
+  visualization->add_discretization_nodal_data("force_beam", force_beam);
+  visualization->add_discretization_nodal_data("force_solid", force_solid);
 
   if (write_unique_ids)
   {
-    auto& visualization_data = visualization->GetVisualizationData();
+    auto& visualization_data = visualization->get_visualization_data();
     std::vector<double>& unique_id = visualization_data.GetPointData<double>("uid_0_node_id");
     for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
       unique_id.push_back(discret_ptr->lRowNode(i_lid)->Id());
@@ -80,7 +80,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.
-  auto& visualization_data = output_writer_base_ptr->GetVisualizationData();
+  auto& visualization_data = output_writer_base_ptr->get_visualization_data();
   std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
   std::vector<double>& normal_averaged = visualization_data.GetPointData<double>("normal_averaged");
@@ -115,10 +115,10 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, i_node);
-        face_element_iterator.second->EvaluateFacePositionDouble(xi, r);
-        face_element_iterator.second->EvaluateFacePositionDouble(xi, X, true);
-        face_element_iterator.second->EvaluateFaceNormalDouble(xi, n, false, false);
-        face_element_iterator.second->EvaluateFaceNormalDouble(xi, n_averaged, false, true);
+        face_element_iterator.second->evaluate_face_position_double(xi, r);
+        face_element_iterator.second->evaluate_face_position_double(xi, X, true);
+        face_element_iterator.second->evaluate_face_normal_double(xi, n, false, false);
+        face_element_iterator.second->evaluate_face_normal_double(xi, n_averaged, false, true);
 
         u = r;
         u -= X;

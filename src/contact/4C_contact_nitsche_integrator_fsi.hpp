@@ -48,7 +48,7 @@ namespace CONTACT
 
     //! @name currently unsupported derived methods
     //! @{
-    void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+    void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
         MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
@@ -61,7 +61,7 @@ namespace CONTACT
       FOUR_C_THROW("Element based integration in 2D is currently unsupported!");
     }
 
-    void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
@@ -131,7 +131,7 @@ namespace CONTACT
         std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
-    void UpdateEleContactState(MORTAR::Element& sele, int state);
+    void update_ele_contact_state(MORTAR::Element& sele, int state);
 
     /// Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
     int ele_contact_state_;

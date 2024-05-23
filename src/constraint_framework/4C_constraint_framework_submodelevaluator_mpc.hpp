@@ -95,23 +95,24 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     int BuildLinearMPCs();
 
     //! find a node that is member of edge1 and edge2
-    int FindPeriodicRveCornerNodes(const std::vector<int>* edge1, const std::vector<int>* edge2);
+    int find_periodic_rve_corner_nodes(
+        const std::vector<int>* edge1, const std::vector<int>* edge2);
 
     //! find a node that is member of surf1 thru surf3
-    int FindPeriodicRveCornerNodes(const std::vector<int>* surf1, const std::vector<int>* surf2,
+    int find_periodic_rve_corner_nodes(const std::vector<int>* surf1, const std::vector<int>* surf2,
         const std::vector<int>* surf3);
 
     //! find the nodes containted i a mpc for the pbcs
-    int FindOppositeEdgeNode(const int nodeID, INPAR::RVE_MPC::RveEdgeIdentifiers edge,
+    int find_opposite_edge_node(const int nodeID, INPAR::RVE_MPC::RveEdgeIdentifiers edge,
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
 
     //! find the corner nodes of the periodic rve
-    void BuildPeriodicRveCornerNodeMap(
+    void build_periodic_rve_corner_node_map(
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap,
         std::map<std::string, int>& rveCornerNodeIdMap_);
 
     //! retrive design line periodic rve boundary condition
-    void BuildPeriodicRveBoundaryNodeMap(
+    void build_periodic_rve_boundary_node_map(
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
     //@}
   };

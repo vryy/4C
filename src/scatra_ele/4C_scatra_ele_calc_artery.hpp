@@ -53,23 +53,23 @@ namespace DRT
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsAtIntPoint(
+      double eval_shape_func_and_derivs_at_int_point(
           const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad                                            //!< id of current Gauss point
           ) override
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // scale fac with the area of the artery pi*D^2/4
         return fac * M_PI * VarManager()->Diam() * VarManager()->Diam() / 4.0;
       }
 
       //! evaluate shape functions and their derivatives at element center
-      double EvalShapeFuncAndDerivsAtEleCenter() override
+      double eval_shape_func_and_derivs_at_ele_center() override
       {
         // use one-point Gauss rule to do calculations at the element center
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
@@ -78,7 +78,7 @@ namespace DRT
         // volume of the element (2D: element surface area; 1D: element length)
         // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
         // base class has to be called since we do not want the scaling with artery area here
-        const double vol = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau, 0);
+        const double vol = my::eval_shape_func_and_derivs_at_int_point(intpoints_tau, 0);
 
         return vol;
       }
@@ -106,7 +106,7 @@ namespace DRT
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
-      void CalcMatConvAddConsODFluid(
+      void calc_mat_conv_add_cons_od_fluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
@@ -127,7 +127,7 @@ namespace DRT
       };
 
       //! set internal variables
-      void SetInternalVariablesForMatAndRHS() override;
+      void set_internal_variables_for_mat_and_rhs() override;
 
       //! artery pressure values at t_(n+1)
       CORE::LINALG::Matrix<nen_, 1> earterypressurenp_;
@@ -146,7 +146,7 @@ namespace DRT
       }
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
-      void SetInternalVariablesArtery(
+      void set_internal_variables_artery(
           const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
@@ -163,7 +163,7 @@ namespace DRT
         // call base class (scatra) with dummy variable econvelnp
         const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
         const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
-        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
+        my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         static CORE::LINALG::Matrix<NSD, 1> pressuregrad(true);
         pressuregrad.Multiply(derxy, earterypressure);

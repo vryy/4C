@@ -49,7 +49,7 @@ namespace CONTACT
       //! @name 2D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+      void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
           MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
@@ -62,7 +62,7 @@ namespace CONTACT
       //! @name 3D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+      void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
           Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
@@ -74,9 +74,9 @@ namespace CONTACT
       //! @}
 
       //! Build remaining integrals and linearizations on the 1-D/2-D slave interface
-      void IntegrateDerivSlaveElement(MORTAR::Element& sele, const Epetra_Comm& comm,
+      void integrate_deriv_slave_element(MORTAR::Element& sele, const Epetra_Comm& comm,
           const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
-      void IntegrateDerivSlaveElement(MORTAR::Element& sele, const Epetra_Comm& comm,
+      void integrate_deriv_slave_element(MORTAR::Element& sele, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
      private:
@@ -147,11 +147,11 @@ namespace CONTACT
       //! @name segment based integration methods
       //! @{
 
-      virtual void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+      virtual void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
           MORTAR::Element& mele, double& mxia, double& mxib) = 0;
 
       //! [derived]
-      virtual void IntegrateDerivCell3DAuxPlane(
+      virtual void integrate_deriv_cell3_d_aux_plane(
           MORTAR::Element& sele, MORTAR::Element& mele, MORTAR::IntCell& cell, double* auxn) = 0;
       //! @}
 
@@ -160,7 +160,7 @@ namespace CONTACT
 
 
       //! Build the remaining integrals and linearizations on the 1-D/2-D slave interface
-      virtual void IntegrateDerivSlaveElement(MORTAR::Element& sele) = 0;
+      virtual void integrate_deriv_slave_element(MORTAR::Element& sele) = 0;
 
      protected:
       INPAR::MORTAR::ShapeFcn ShapeFcn() { return Wrapper().shapefcn_; }
@@ -223,11 +223,11 @@ namespace CONTACT
       //! @name segment based integration methods
       //! @{
 
-      void IntegrateDerivSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
+      void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
           MORTAR::Element& mele, double& mxia, double& mxib) override;
 
       //! [derived]
-      void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+      void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
           MORTAR::IntCell& cell, double* auxn) override;
 
       //! element based evaluation
@@ -240,7 +240,7 @@ namespace CONTACT
        *          slave interface
        *
        *  \author hiermeier */
-      void IntegrateDerivSlaveElement(MORTAR::Element& sele) override;
+      void integrate_deriv_slave_element(MORTAR::Element& sele) override;
 
      private:
       class Evaluator;
@@ -253,14 +253,14 @@ namespace CONTACT
       void IntegrateDerivEle(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
-      void IntegrateWeightedGap(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      void integrate_weighted_gap(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
       //! integrate the weighted gap gradient error
-      void IntegrateWeightedGapGradientError(MORTAR::Element& sele, MORTAR::Element& mele,
+      void integrate_weighted_gap_gradient_error(MORTAR::Element& sele, MORTAR::Element& mele,
           bool boundary_ele, const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
-      void ExtractActiveSlaveNodeLIDs(
+      void extract_active_slave_node_li_ds(
           std::vector<unsigned>& active_nlids, const MORTAR::Element& sele) const;
 
       int GetLinSize(MORTAR::Element& sele) const;
@@ -301,7 +301,7 @@ namespace CONTACT
        *  the neglected term wouldn't be equal to zero.
        *
        *  \author hiermeier */
-      void GP_Normal_DerivNormal(MORTAR::Element& sele,
+      void gp_normal_deriv_normal(MORTAR::Element& sele,
           const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
           Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
           Deriv2ndVecMap& ddn_unit);

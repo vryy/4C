@@ -84,46 +84,46 @@ namespace PARTICLEINTERACTION
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! get reference to particle tangential history pair data
-    inline DEMHistoryPairTangentialData& GetRefToParticleTangentialHistoryData()
+    inline DEMHistoryPairTangentialData& get_ref_to_particle_tangential_history_data()
     {
       return particletangentialhistorydata_;
     };
 
     //! get reference to particle-wall tangential history pair data
-    inline DEMHistoryPairTangentialData& GetRefToParticleWallTangentialHistoryData()
+    inline DEMHistoryPairTangentialData& get_ref_to_particle_wall_tangential_history_data()
     {
       return particlewalltangentialhistorydata_;
     };
 
     //! get reference to particle rolling history pair data
-    inline DEMHistoryPairRollingData& GetRefToParticleRollingHistoryData()
+    inline DEMHistoryPairRollingData& get_ref_to_particle_rolling_history_data()
     {
       return particlerollinghistorydata_;
     };
 
     //! get reference to particle-wall rolling history pair data
-    inline DEMHistoryPairRollingData& GetRefToParticleWallRollingHistoryData()
+    inline DEMHistoryPairRollingData& get_ref_to_particle_wall_rolling_history_data()
     {
       return particlewallrollinghistorydata_;
     };
 
     //! get reference to particle adhesion history pair data
-    inline DEMHistoryPairAdhesionData& GetRefToParticleAdhesionHistoryData()
+    inline DEMHistoryPairAdhesionData& get_ref_to_particle_adhesion_history_data()
     {
       return particleadhesionhistorydata_;
     };
 
     //! get reference to particle-wall adhesion history pair data
-    inline DEMHistoryPairAdhesionData& GetRefToParticleWallAdhesionHistoryData()
+    inline DEMHistoryPairAdhesionData& get_ref_to_particle_wall_adhesion_history_data()
     {
       return particlewalladhesionhistorydata_;
     };
 
     //! distribute history pairs
-    void DistributeHistoryPairs();
+    void distribute_history_pairs();
 
     //! communicate history pairs
-    void CommunicateHistoryPairs();
+    void communicate_history_pairs();
 
     //! update history pairs
     void UpdateHistoryPairs();
@@ -131,13 +131,13 @@ namespace PARTICLEINTERACTION
    private:
     //! communicate specific history pairs
     template <typename historypairtype>
-    void CommunicateSpecificHistoryPairs(const std::vector<std::vector<int>>& particletargets,
+    void communicate_specific_history_pairs(const std::vector<std::vector<int>>& particletargets,
         std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
             historydata);
 
     //! erase untouched history pairs
     template <typename historypairtype>
-    void EraseUntouchedHistoryPairs(
+    void erase_untouched_history_pairs(
         std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
             historydata);
 
@@ -155,7 +155,7 @@ namespace PARTICLEINTERACTION
 
     //! add history pair to buffer
     template <typename historypairtype>
-    void AddHistoryPairToBuffer(std::vector<char>& buffer, int globalid_i, int globalid_j,
+    void add_history_pair_to_buffer(std::vector<char>& buffer, int globalid_i, int globalid_j,
         const historypairtype& historypair) const;
 
     //! communication

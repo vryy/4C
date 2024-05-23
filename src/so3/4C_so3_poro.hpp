@@ -264,10 +264,10 @@ namespace DRT
           double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save);
 
       //! return time derivative of reference porosity
-      virtual double RefPorosityTimeDeriv();
+      virtual double ref_porosity_time_deriv();
 
       //! evaluate Cauchy stress at given point in parameter space
-      virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const std::vector<double>& pres,
           const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
           double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -277,13 +277,13 @@ namespace DRT
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
       //! return anisotropic permeability directions (used for cloning)
-      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections() const
+      const std::vector<std::vector<double>>& get_anisotropic_permeability_directions() const
       {
         return anisotropic_permeability_directions_;
       }
 
       //! return scaling coefficients for anisotropic permeability (used for cloning)
-      const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs() const
+      const std::vector<std::vector<double>>& get_anisotropic_permeability_nodal_coeffs() const
       {
         return anisotropic_permeability_nodal_coeffs_;
       }
@@ -319,7 +319,7 @@ namespace DRT
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
-      virtual void ComputePorosityAndLinearization(Teuchos::ParameterList& params,
+      virtual void compute_porosity_and_linearization(Teuchos::ParameterList& params,
           const double& press, const double& J, const int& gp,
           const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<numnod_, 1>* myporosity,
@@ -327,7 +327,7 @@ namespace DRT
           CORE::LINALG::Matrix<1, numdof_>& dphi_dus);
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
-      virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params,
+      virtual void compute_porosity_and_linearization_od(Teuchos::ParameterList& params,
           const double& press, const double& J, const int& gp,
           const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
           const CORE::LINALG::Matrix<numnod_, 1>* myporosity, double& porosity, double& dphi_dp);
@@ -353,7 +353,7 @@ namespace DRT
       std::vector<CORE::LINALG::Matrix<numdim_, 1>> xsi_;
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-      void NonlinearStiffnessPoroelast(std::vector<int>& lm,    //!< location matrix
+      void nonlinear_stiffness_poroelast(std::vector<int>& lm,  //!< location matrix
           CORE::LINALG::Matrix<numdim_, numnod_>& disp,         //! current displacements
           CORE::LINALG::Matrix<numdim_, numnod_>& vel,          //! current velocities
           CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,       //! fluid velocity of element
@@ -366,7 +366,7 @@ namespace DRT
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems (pressure
       //! based formulation)
-      virtual void NonlinearStiffnessPoroelastPressureBased(
+      virtual void nonlinear_stiffness_poroelast_pressure_based(
           std::vector<int>& lm,                          //!< location matrix
           CORE::LINALG::Matrix<numdim_, numnod_>& disp,  //! current displacements
           const std::vector<double>& ephi,  //! current primary variable for poro-multiphase flow
@@ -392,15 +392,15 @@ namespace DRT
 
       //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity
       //! problems (pressure based formulation)
-      virtual void CouplingPoroelastPressureBased(std::vector<int>& lm,  //!< location matrix
-          CORE::LINALG::Matrix<numdim_, numnod_>& disp,                  //! current displacements
+      virtual void coupling_poroelast_pressure_based(std::vector<int>& lm,  //!< location matrix
+          CORE::LINALG::Matrix<numdim_, numnod_>& disp,  //! current displacements
           const std::vector<double>& ephi,  //! current primary variable for poro-multiphase flow
           CORE::LINALG::SerialDenseMatrix& couplmat,  //!< element stiffness matrix
           Teuchos::ParameterList& params              //!< algorithmic parameters e.g. time
       );
 
       //! Calculate coupling stress for poroelasticity problems
-      virtual void CouplingStressPoroelast(
+      virtual void coupling_stress_poroelast(
           CORE::LINALG::Matrix<numdim_, numnod_>& disp,    //! current displacements
           CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  //! fluid velocity of element
           CORE::LINALG::Matrix<numnod_, 1>& epreaf,        //! fluid pressure of element
@@ -424,7 +424,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force);
 
       //! Gauss Point Loop evaluating stiffness and force
-      void GaussPointLoopPressureBased(Teuchos::ParameterList& params,
+      void gauss_point_loop_pressure_based(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
@@ -432,14 +432,14 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force);
 
       //! Gauss Point Loop evaluating stiffness (off diagonal)
-      void GaussPointLoopODPressureBased(Teuchos::ParameterList& params,
+      void gauss_point_loop_od_pressure_based(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
           CORE::LINALG::SerialDenseMatrix& couplmat);
 
       //! fill stiffness matrix and rhs vector for darcy flow
-      void FillMatrixAndVectors(const int& gp, const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
+      void fill_matrix_and_vectors(const int& gp, const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
           const double& porosity, const CORE::LINALG::Matrix<numdim_, 1>& velint,
           const CORE::LINALG::Matrix<numdim_, 1>& fvelint,
@@ -458,7 +458,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force, CORE::LINALG::Matrix<numstr_, 1>& fstress);
 
       //! fill stiffness matrix and rhs vector for brinkman flow
-      void FillMatrixAndVectorsBrinkman(const int& gp, const double& J, const double& porosity,
+      void fill_matrix_and_vectors_brinkman(const int& gp, const double& J, const double& porosity,
           const CORE::LINALG::Matrix<numdim_, numdim_>& fvelder,
           const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
           const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
@@ -471,7 +471,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force, CORE::LINALG::Matrix<numstr_, 1>& fstress);
 
       //! fill stiffness matrix and rhs vector for pressure-based formulation
-      void FillMatrixAndVectorsPressureBased(const int& gp,
+      void fill_matrix_and_vectors_pressure_based(const int& gp,
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
           const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
@@ -483,7 +483,8 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, 1>* force);
 
       //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
-      void FillMatrixAndVectorsOD(const int& gp, const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
+      void fill_matrix_and_vectors_od(const int& gp,
+          const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
           const double& porosity, const double& dphi_dp,
           const CORE::LINALG::Matrix<numdim_, 1>& velint,
@@ -495,7 +496,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
 
       //! fill stiffness matrix (off diagonal terms) -- pressure-based formulation
-      void FillMatrixAndVectorsODPressureBased(const int& gp,
+      void fill_matrix_and_vectors_od_pressure_based(const int& gp,
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
           const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
@@ -503,7 +504,7 @@ namespace DRT
           const std::vector<double>& solpressderiv, CORE::LINALG::SerialDenseMatrix& couplmat);
 
       //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
-      void FillMatrixAndVectorsBrinkmanOD(const int& gp,
+      void fill_matrix_and_vectors_brinkman_od(const int& gp,
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
           const double& porosity, const double& dphi_dp,
@@ -524,7 +525,7 @@ namespace DRT
           CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
 
       //! helper functions to get element vectors from global vector
-      void ExtractValuesFromGlobalVector(
+      void extract_values_from_global_vector(
           const DRT::Discretization& discretization,             //!< discretization
           const int& dofset,                                     //!< number of dofset
           const std::vector<int>& lm,                            //!< location vector
@@ -542,33 +543,33 @@ namespace DRT
       void GetMaterials();
 
       //! get materials (solid and fluid) for pressure based formulation
-      void GetMaterialsPressureBased();
+      void get_materials_pressure_based();
 
       //! Compute Solid-pressure derivative w.r.t. primary variable at GP
-      void ComputeSolPressureDeriv(const std::vector<double>& phiAtGP,  //!<< primary variable
-          const int numfluidphases,                                     //!<< number of fluid phases
+      void compute_sol_pressure_deriv(const std::vector<double>& phiAtGP,  //!<< primary variable
+          const int numfluidphases,             //!<< number of fluid phases
           std::vector<double>& solidpressderiv  //!<< solid pressure derivative at GP
       );
 
       //! Compute solid pressure at GP
-      double ComputeSolPressureAtGP(
+      double compute_sol_pressure_at_gp(
           const int totalnumdofpernode,       //!<< total number of multiphase dofs
           const int numfluidphases,           //!<< number of fluid phases
           const std::vector<double>& phiAtGP  //!<< primary variable
       );
 
       //! recalculate solid pressure at GP in case of volfracs
-      double RecalculateSolPressureAtGP(double press, const double porosity,
+      double recalculate_sol_pressure_at_gp(double press, const double porosity,
           const int totalnumdofpernode, const int numfluidphases, const int numvolfrac,
           const std::vector<double>& phiAtGP);
 
       //! recalculate solid pressure derivative in case of volfracs
-      void RecalculateSolPressureDeriv(const std::vector<double>& phiAtGP,
+      void recalculate_sol_pressure_deriv(const std::vector<double>& phiAtGP,
           const int totalnumdofpernode, const int numfluidphases, const int numvolfrac,
           const double press, const double porosity, std::vector<double>& solidpressderiv);
 
       //! Compute primary variable for multiphase flow at GP
-      void ComputePrimaryVariableAtGP(
+      void compute_primary_variable_at_gp(
           const std::vector<double>& ephi,                   //!<< primary variable at node
           const int totalnumdofpernode,                      //!<< total number of multiphase dofs
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct,  //!<< shapefct
@@ -578,24 +579,25 @@ namespace DRT
       //! Compute linearizaton of solid press w.r.t. displacements
       //! only needed if additional volume fractions are present and porosity depends on
       //! Jacobian of deformation gradient
-      void ComputeLinearizationOfSolPressWrtDisp(const double fluidpress, const double porosity,
-          const int totalnumdofpernode, const int numfluidphases, const int numvolfrac,
-          const std::vector<double>& phiAtGP, const CORE::LINALG::Matrix<1, numdof_>& dphi_dus,
+      void compute_linearization_of_sol_press_wrt_disp(const double fluidpress,
+          const double porosity, const int totalnumdofpernode, const int numfluidphases,
+          const int numvolfrac, const std::vector<double>& phiAtGP,
+          const CORE::LINALG::Matrix<1, numdof_>& dphi_dus,
           CORE::LINALG::Matrix<1, numdof_>& dps_dus);
 
       //! evaluate shape functions and their derivatives at gauss point
-      void ComputeShapeFunctionsAndDerivatives(const int& gp,
+      void compute_shape_functions_and_derivatives(const int& gp,
           CORE::LINALG::Matrix<numnod_, 1>& shapefct, CORE::LINALG::Matrix<numdim_, numnod_>& deriv,
           CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ);
 
       //! Compute Jacobian Determinant and the volume change
-      void ComputeJacobianDeterminantVolumeChange(double& J, double& volchange,
+      void compute_jacobian_determinant_volume_change(double& J, double& volchange,
           const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp);
 
       //! Compute Jacobian Determinant and the volume change and its linearizations
-      virtual void ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+      virtual void compute_jacobian_determinant_volume_change_and_linearizations(
           double& J,          //!< (o) Jacobian Determinant
           double& volchange,  //!< (o) Change of Volume
           CORE::LINALG::Matrix<1, numdof_>&
@@ -611,12 +613,12 @@ namespace DRT
       );
 
       //! Compute Linearization Of Jacobian
-      void ComputeLinearizationOfJacobian(CORE::LINALG::Matrix<1, numdof_>& dJ_dus, const double& J,
-          const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
+      void compute_linearization_of_jacobian(CORE::LINALG::Matrix<1, numdof_>& dJ_dus,
+          const double& J, const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
           const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv);
 
       //! Compute Linearization some Auxiliary Values in gauss point loop
-      void ComputeAuxiliaryValues(const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
+      void compute_auxiliary_values(const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
           const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
           const CORE::LINALG::Matrix<numdim_, numdim_>& C_inv,
           const CORE::LINALG::Matrix<numdim_, 1>& Gradp,
@@ -640,15 +642,15 @@ namespace DRT
       );
 
       //! read anisotropic permeability directions in the element definition
-      void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
+      void read_anisotropic_permeability_directions_from_element_line_definition(
           INPUT::LineDefinition* linedef);
 
       //! read nodal anisotropic permeability scaling coefficients in the element definition
-      void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
+      void read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
           INPUT::LineDefinition* linedef);
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
-      std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP(
+      std::vector<double> compute_anisotropic_permeability_coeffs_at_gp(
           const CORE::LINALG::Matrix<numnod_, 1>& shapefct) const;
 
       //! Gauss integration rule

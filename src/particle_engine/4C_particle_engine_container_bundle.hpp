@@ -85,7 +85,7 @@ namespace PARTICLEENGINE
      *
      * @return pointer to particle container
      */
-    inline ParticleContainer* GetSpecificContainer(ParticleType type, ParticleStatus status) const
+    inline ParticleContainer* get_specific_container(ParticleType type, ParticleStatus status) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
@@ -107,7 +107,7 @@ namespace PARTICLEENGINE
      * \param[in] state particle state
      * \param[in] type  particle type
      */
-    inline void ScaleStateSpecificContainer(
+    inline void scale_state_specific_container(
         double fac, ParticleState state, ParticleType type) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -130,7 +130,7 @@ namespace PARTICLEENGINE
      * \param[in] stateB second particle state
      * \param[in] type   particle type
      */
-    inline void UpdateStateSpecificContainer(double facA, ParticleState stateA, double facB,
+    inline void update_state_specific_container(double facA, ParticleState stateA, double facB,
         ParticleState stateB, ParticleType type) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -150,7 +150,7 @@ namespace PARTICLEENGINE
      * \param[in] state particle state
      * \param[in] type  particle type
      */
-    inline void SetStateSpecificContainer(
+    inline void set_state_specific_container(
         std::vector<double> val, ParticleState state, ParticleType type) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -169,7 +169,7 @@ namespace PARTICLEENGINE
      * \param[in] state particle state
      * \param[in] type  particle type
      */
-    inline void ClearStateSpecificContainer(ParticleState state, ParticleType type) const
+    inline void clear_state_specific_container(ParticleState state, ParticleType type) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
@@ -192,7 +192,7 @@ namespace PARTICLEENGINE
      * \param[in] fac   scale factor
      * \param[in] state particle state
      */
-    inline void ScaleStateAllContainers(double fac, ParticleState state) const
+    inline void scale_state_all_containers(double fac, ParticleState state) const
     {
       for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ScaleState(fac, state);
     };
@@ -208,7 +208,7 @@ namespace PARTICLEENGINE
      * \param[in] facB   second scale factor
      * \param[in] stateB second particle state
      */
-    inline void UpdateStateAllContainers(
+    inline void update_state_all_containers(
         double facA, ParticleState stateA, double facB, ParticleState stateB) const
     {
       for (const auto& type : storedtypes_)
@@ -223,7 +223,7 @@ namespace PARTICLEENGINE
      * \param[in] val   particle state value
      * \param[in] state particle state
      */
-    inline void SetStateAllContainers(std::vector<double> val, ParticleState state) const
+    inline void set_state_all_containers(std::vector<double> val, ParticleState state) const
     {
       for (const auto& type : storedtypes_) ((containers_[type])[Owned])->SetState(val, state);
     };
@@ -235,7 +235,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] state particle state
      */
-    inline void ClearStateAllContainers(ParticleState state) const
+    inline void clear_state_all_containers(ParticleState state) const
     {
       for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ClearState(state);
     };
@@ -252,10 +252,11 @@ namespace PARTICLEENGINE
      *
      * \param[in] status particle status
      */
-    inline void CheckAndDecreaseSizeAllContainersOfSpecificStatus(ParticleStatus status) const
+    inline void check_and_decrease_size_all_containers_of_specific_status(
+        ParticleStatus status) const
     {
       for (const auto& type : storedtypes_)
-        ((containers_[type])[status])->CheckAndDecreaseContainerSize();
+        ((containers_[type])[status])->check_and_decrease_container_size();
     }
 
     /*!
@@ -265,7 +266,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] status particle status
      */
-    inline void ClearAllContainersOfSpecificStatus(ParticleStatus status) const
+    inline void clear_all_containers_of_specific_status(ParticleStatus status) const
     {
       for (const auto& type : storedtypes_) ((containers_[type])[status])->ClearContainer();
     };
@@ -282,7 +283,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlebuffer buffer of packed particle objects of all containers
      */
-    void GetPackedParticleObjectsOfAllContainers(
+    void get_packed_particle_objects_of_all_containers(
         std::shared_ptr<std::vector<char>>& particlebuffer) const;
 
     /*!
@@ -292,7 +293,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlesstored particle objects of all containers
      */
-    void GetVectorOfParticleObjectsOfAllContainers(
+    void get_vector_of_particle_objects_of_all_containers(
         std::vector<ParticleObjShrdPtr>& particlesstored) const;
 
     //! @}

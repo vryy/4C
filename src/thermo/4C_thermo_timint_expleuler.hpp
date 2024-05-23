@@ -90,7 +90,7 @@ namespace THR
     int MethodSteps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() override { return 1; }
+    int method_order_of_accuracy() override { return 1; }
 
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff() override

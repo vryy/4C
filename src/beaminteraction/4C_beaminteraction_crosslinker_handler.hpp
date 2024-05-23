@@ -63,7 +63,7 @@ namespace BEAMINTERACTION
     virtual inline BINSTRATEGY::BinningStrategy const& BinStrategy() const { return *binstrategy_; }
 
     /// initial distribution of linker ( more general nodes of bindis_ ) to bins
-    virtual void DistributeLinkerToBins(Teuchos::RCP<Epetra_Map> const& linkerrowmap);
+    virtual void distribute_linker_to_bins(Teuchos::RCP<Epetra_Map> const& linkerrowmap);
 
     /// remove all linker
     virtual void RemoveAllLinker();
@@ -85,29 +85,30 @@ namespace BEAMINTERACTION
     );
 
     /// round robin loop to fill linker into its correct bin on according proc
-    virtual void FillLinkerIntoBinsRoundRobin(
+    virtual void fill_linker_into_bins_round_robin(
         std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< list of homeless linker
     );
 
     /// get neighbouring bins of linker containing boundary row bins
-    virtual void GetNeighbouringBinsOfLinkerContainingBoundaryRowBins(std::set<int>& colbins) const;
+    virtual void get_neighbouring_bins_of_linker_containing_boundary_row_bins(
+        std::set<int>& colbins) const;
 
    protected:
     /// fill linker into their correct bin on according proc using remote id list
-    virtual Teuchos::RCP<std::list<int>> FillLinkerIntoBinsRemoteIdList(
+    virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_remote_id_list(
         std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// fill linker into their correct bin on according proc using one layer ghosting
     /// note, this is faster than the other two method as there is no communication required
     /// to find new owner ( complete one layer bin ghosting is required though)
-    virtual Teuchos::RCP<std::list<int>> FillLinkerIntoBinsUsingGhosting(
+    virtual Teuchos::RCP<std::list<int>> fill_linker_into_bins_using_ghosting(
         std::list<Teuchos::RCP<DRT::Node>>& homelesslinker  ///< set of homeless linker
     );
 
     /// receive linker and fill them in correct bin
-    virtual void ReceiveLinkerAndFillThemInBins(int const numrec, CORE::COMM::Exporter& exporter,
-        std::list<Teuchos::RCP<DRT::Node>>& homelesslinker);
+    virtual void receive_linker_and_fill_them_in_bins(int const numrec,
+        CORE::COMM::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelesslinker);
 
    private:
     /// binning strategy

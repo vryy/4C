@@ -104,7 +104,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
     Facet* fe = *iter;
     FacetIntegration faee1(fe, elem1_, position_, false, false);
 
-    faee1.DivergenceIntegrationRuleNew(mesh_, cgp);
+    faee1.divergence_integration_rule_new(mesh_, cgp);
   }
 
   return cgp;
@@ -139,7 +139,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
     const std::vector<Point*>& corn = fe->CornerPoints();
     bool isPlanar = fe->IsPlanar(mesh_, corn);  // triangulates non-planar facets.
 
-    if (isPlanar == false)  // and !(fe->BelongsToLevelSetSide()) )
+    if (isPlanar == false)  // and !(fe->belongs_to_level_set_side()) )
     {
       warpFac.push_back(i);
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
@@ -259,7 +259,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
   // this plane, this line of projection must be completely within the background element
   DirectDivergenceGlobalRefplane ddg(elem1_, volcell_, mesh_.GetOptions());
   RefPlaneEqn = ddg.GetReferencePlane();
-  ref_pts_gmsh_ = ddg.GetReferencePointGmsh();
+  ref_pts_gmsh_ = ddg.get_reference_point_gmsh();
 #endif
 
   // if a1x+a2y+a3z=a4 is the equation of reference plane and
@@ -533,25 +533,25 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     {
       case CORE::FE::CellType::hex8:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex8>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::hex8>(
             TotalInteg, "LocalToGlobal");
         break;
       }
       case CORE::FE::CellType::tet4:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet4>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::tet4>(
             TotalInteg, "LocalToGlobal");
         break;
       }
       case CORE::FE::CellType::wedge6:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::wedge6>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::wedge6>(
             TotalInteg, "LocalToGlobal");
         break;
       }
       case CORE::FE::CellType::pyramid5:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::pyramid5>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::pyramid5>(
             TotalInteg, "LocalToGlobal");
         break;
       }
@@ -566,19 +566,19 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     {
       case CORE::FE::CellType::hex20:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex20>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::hex20>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
       case CORE::FE::CellType::hex27:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex27>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::hex27>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
       case CORE::FE::CellType::tet10:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet10>(
+        volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::tet10>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
@@ -616,7 +616,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     std::cout << "There are two possible sources of this problem \n";
     std::cout
         << "1. divCells created from facet may fall on a line. Print the main Gauss points from "
-           "CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(),"
+           "CORE::GEO::CUT::FacetIntegration::divergence_integration_rule(),"
            " if this is the case, all points belong to a particular divCells have NaN weights\n";
     std::cout << "2. GLOBAL::: The reference plane is not correctly chosen. Print the equation of "
                  "reference plane and if the first component "

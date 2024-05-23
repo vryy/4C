@@ -65,7 +65,7 @@ SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupl
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDomain(
+void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structure_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureblock)
 {
   // create parameter list for element evaluation
@@ -76,7 +76,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->AddTimeIntegrationSpecificVectors();
+  ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-structure matrix block
   DRT::AssembleStrategy strategyscatrastructure(
@@ -94,7 +94,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
+void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_manifold_structure_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
 {
   FOUR_C_THROW("not implemented");
@@ -102,8 +102,9 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStru
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
+void SSI::ScatraManifoldStructureOffDiagCoupling::
+    evaluate_off_diag_block_scatra_manifold_structure_domain(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
@@ -113,7 +114,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
-  scatra_manifold_->AddTimeIntegrationSpecificVectors();
+  scatra_manifold_->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-structure matrix block
   DRT::AssembleStrategy strategyscatrastructure(
@@ -131,7 +132,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInterface(
+void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structure_interface(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureinterface)
 {
   // slave and master matrix for evaluation of conditions
@@ -166,13 +167,15 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
   }
 
   // evaluate symmetric interface contributions on slave side
-  EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(slavematrix);
+  evaluate_scatra_structure_symmetric_interface_contributions_slave_side(slavematrix);
 
   // copy symmetric interface contributions from slave side to master side
-  CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(slavematrix, mastermatrix);
+  copy_slave_to_master_scatra_structure_symmetric_interface_contributions(
+      slavematrix, mastermatrix);
 
   // evaluate non-symmetric interface contributions
-  EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(slavematrix, mastermatrix);
+  evaluate_scatra_structure_non_symmetric_interface_contributions_slave_side(
+      slavematrix, mastermatrix);
 
   // add contributions from slave side and master side
   scatrastructureinterface->Add(*slavematrix, false, 1.0, 1.0);
@@ -181,7 +184,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(
+void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scatra_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const
 {
   // create parameter list for element evaluation and fill it
@@ -226,7 +229,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
-    CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(
+    copy_slave_to_master_scatra_structure_symmetric_interface_contributions(
         Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
 {
@@ -319,7 +322,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
-    EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(
+    evaluate_scatra_structure_non_symmetric_interface_contributions_slave_side(
         Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix)
 {
@@ -335,7 +338,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->AddTimeIntegrationSpecificVectors();
+  ScaTraField()->add_time_integration_specific_vectors();
 
   // set up necessary matrices
   Teuchos::RCP<CORE::LINALG::SparseOperator>
@@ -382,13 +385,15 @@ void SSI::ScatraStructureOffDiagCoupling::
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface coupling
-  for (auto kinetics_slave_cond : meshtying_strategy_s2i_->KineticsConditionsMeshtyingSlaveSide())
+  for (auto kinetics_slave_cond :
+      meshtying_strategy_s2i_->kinetics_conditions_meshtying_slave_side())
   {
     if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") ==
         static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+      meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
+          *kinetics_slave_cond.second);
       // evaluate the condition
       ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatras2istructure, "S2IKinetics", kinetics_slave_cond.first);
@@ -422,7 +427,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
 
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
@@ -497,7 +502,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
@@ -572,7 +577,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
-    EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(
+    evaluate_scatra_structure_symmetric_interface_contributions_slave_side(
         Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix)
 {
   // create parameter list for element evaluation
@@ -587,7 +592,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
-  ScaTraField()->AddTimeIntegrationSpecificVectors();
+  ScaTraField()->add_time_integration_specific_vectors();
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> evaluate_matrix;
   if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
@@ -613,13 +618,15 @@ void SSI::ScatraStructureOffDiagCoupling::
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface coupling
-  for (auto kinetics_slave_cond : meshtying_strategy_s2i_->KineticsConditionsMeshtyingSlaveSide())
+  for (auto kinetics_slave_cond :
+      meshtying_strategy_s2i_->kinetics_conditions_meshtying_slave_side())
   {
     if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
         static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+      meshtying_strategy_s2i_->set_condition_specific_sca_tra_parameters(
+          *kinetics_slave_cond.second);
       // evaluate the condition
       ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
@@ -643,7 +650,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
@@ -682,7 +689,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
@@ -728,10 +735,11 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatraDomain(
+void SSI::ScatraStructureOffDiagCouplingSSTI::evaluate_off_diag_block_structure_scatra_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const
 {
-  ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(structurescatradomain);
+  ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scatra_domain(
+      structurescatradomain);
 
   // finalize structure-scatra matrix block
   switch (ScaTraField()->MatrixType())

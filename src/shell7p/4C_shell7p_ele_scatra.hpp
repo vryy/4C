@@ -32,7 +32,7 @@ namespace DRT::ELEMENTS
   class Shell7pScatraType : public DRT::ElementType
   {
    public:
-    void SetupElementDefinition(
+    void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
@@ -46,7 +46,7 @@ namespace DRT::ELEMENTS
 
     int Initialize(DRT::Discretization& dis) override;
 
-    void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+    void nodal_block_information(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
@@ -151,7 +151,7 @@ namespace DRT::ELEMENTS
       return *interface_ptr_;
     }
 
-    void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
+    void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
     //! @}
 
     [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
@@ -171,7 +171,7 @@ namespace DRT::ELEMENTS
       return nodal_directors_;
     }
 
-    inline void SetAllNodalDirectors(const CORE::LINALG::SerialDenseMatrix& nodal_directors)
+    inline void set_all_nodal_directors(const CORE::LINALG::SerialDenseMatrix& nodal_directors)
     {
       nodal_directors_ = nodal_directors;
     }

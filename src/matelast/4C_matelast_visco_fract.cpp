@@ -22,7 +22,7 @@ MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<CORE::MAT::PAR::Material>& ma
 
 MAT::ELASTIC::Fract::Fract(MAT::ELASTIC::PAR::Fract* params) : params_(params) {}
 
-void MAT::ELASTIC::Fract::ReadMaterialParametersVisco(
+void MAT::ELASTIC::Fract::read_material_parameters_visco(
     double& tau, double& beta, double& alpha, std::string& solve)
 {
   tau = params_->tau_;

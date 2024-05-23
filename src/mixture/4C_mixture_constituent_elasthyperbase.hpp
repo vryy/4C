@@ -38,7 +38,7 @@ namespace MIXTURE
      public:
       explicit MixtureConstituentElastHyperBase(
           const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
-      int GetPrestressingMatId() const { return matid_prestress_strategy_; }
+      int get_prestressing_mat_id() const { return matid_prestress_strategy_; }
 
       /// @name material parameters
       /// @{
@@ -97,7 +97,7 @@ namespace MIXTURE
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
     /*!
      * Initialize the constituent with the parameters of the input line
@@ -153,7 +153,7 @@ namespace MIXTURE
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
@@ -177,7 +177,7 @@ namespace MIXTURE
      * \return const MAT::CylinderCoordinateSystemProvider&
      */
     const MAT::CylinderCoordinateSystemAnisotropyExtension&
-    CylinderCoordinateSystemAnisotropyExtension() const
+    cylinder_coordinate_system_anisotropy_extension() const
     {
       return cosy_anisotropy_extension_;
     }

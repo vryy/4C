@@ -47,12 +47,12 @@ namespace DRT
 
      private:
       // calculate error compared to analytical solution
-      void CalErrorComparedToAnalytSolution(const DRT::Element* ele,
+      void cal_error_compared_to_analyt_solution(const DRT::Element* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors);
 
       // smoothed heaviside function
-      void SmoothHeavisideFunction(const double charelelength, const double phi, double& smoothH);
+      void smooth_heaviside_function(const double charelelength, const double phi, double& smoothH);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

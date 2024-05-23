@@ -46,7 +46,7 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
 
   // get local index in specific particle container
   PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
-      particleengineinterface_->GetLocalIndexInSpecificContainer(globalid);
+      particleengineinterface_->get_local_index_in_specific_container(globalid);
 
   // particle with global id found on this processor
   if (localindextuple)
@@ -62,11 +62,11 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
     {
       // get particle container bundle
       PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-          particleengineinterface_->GetParticleContainerBundle();
+          particleengineinterface_->get_particle_container_bundle();
 
       // get container of owned particles of current particle type
       PARTICLEENGINE::ParticleContainer* container =
-          particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+          particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
       // get result
       std::string quantity;

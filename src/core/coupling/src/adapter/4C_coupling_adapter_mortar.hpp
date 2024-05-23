@@ -135,7 +135,7 @@ feel free to write your own tailored Setup() method.
     );
 
     //! Compute mortar matrices after performing a mesh correction step
-    virtual void EvaluateWithMeshRelocation(
+    virtual void evaluate_with_mesh_relocation(
         Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
         Teuchos::RCP<Epetra_Vector>& idisp,          ///< ALE displacements
@@ -298,13 +298,13 @@ feel free to write your own tailored Setup() method.
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void CheckSlaveDirichletOverlap(
+    void check_slave_dirichlet_overlap(
         const Teuchos::RCP<DRT::Discretization>& slavedis,  ///< [in] Slave discretization
         const Epetra_Comm& comm                             ///< [in] Communicator
     );
 
     /// back transformation to initial parallel distribution
-    void MatrixRowColTransform();
+    void matrix_row_col_transform();
 
     /// check setup call
     const bool& IsSetup() const { return issetup_; };

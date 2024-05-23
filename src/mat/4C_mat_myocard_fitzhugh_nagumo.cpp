@@ -79,7 +79,7 @@ double MyocardFitzhughNagumo::ReaCoeff(const double phi, const double dt, int gp
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardFitzhughNagumo::GetNumberOfInternalStateVariables() const { return 1; }
+int MyocardFitzhughNagumo::get_number_of_internal_state_variables() const { return 1; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
@@ -149,7 +149,7 @@ void MyocardFitzhughNagumo::SetInternalState(const int k, const double val, int 
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardFitzhughNagumo::GetNumberOfIonicCurrents() const { return 2; }
+int MyocardFitzhughNagumo::get_number_of_ionic_currents() const { return 2; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents                       cbert 08/13 |

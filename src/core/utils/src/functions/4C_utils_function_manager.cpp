@@ -103,11 +103,11 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
           .AddNamedString("NAME")
           .AddNamedString("TYPE")
           .AddOptionalNamedInt("NUMPOINTS")
-          .AddOptionalNamedString("BYNUM")
-          .AddOptionalNamedDoubleVector("TIMERANGE", 2)
-          .AddOptionalNamedDoubleVector("TIMES", LengthFromIntNamed("NUMPOINTS"))
-          .AddOptionalNamedDoubleVector("VALUES", LengthFromIntNamed("NUMPOINTS"))
-          .AddOptionalNamedStringVector("DESCRIPTION",
+          .add_optional_named_string("BYNUM")
+          .add_optional_named_double_vector("TIMERANGE", 2)
+          .add_optional_named_double_vector("TIMES", LengthFromIntNamed("NUMPOINTS"))
+          .add_optional_named_double_vector("VALUES", LengthFromIntNamed("NUMPOINTS"))
+          .add_optional_named_string_vector("DESCRIPTION",
               // Special case where only NUMPOINTS-1 are taken
               [](const IO::InputParameterContainer& already_read_line)
               {
@@ -122,19 +122,19 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
                   return 1;
                 }
               })
-          .AddOptionalNamedString("PERIODIC")
-          .AddOptionalNamedDouble("T1")
-          .AddOptionalNamedDouble("T2")
+          .add_optional_named_string("PERIODIC")
+          .add_optional_named_double("T1")
+          .add_optional_named_double("T2")
           .Build(),
 
       LineDefinition::Builder()
           .AddNamedString("VARFUNCTION")
           .AddOptionalNamedInt("NUMCONSTANTS")
-          .AddOptionalNamedPairOfStringAndDoubleVector(
+          .add_optional_named_pair_of_string_and_double_vector(
               "CONSTANTS", LengthFromIntNamed("NUMCONSTANTS"))
           .Build()};
 
-  function_manager.AddFunctionDefinition(possible_lines, CreateBuiltinFunctionDispatch);
+  function_manager.add_function_definition(possible_lines, CreateBuiltinFunctionDispatch);
 }
 
 
@@ -155,7 +155,7 @@ INPUT::Lines CORE::UTILS::FunctionManager::ValidFunctionLines()
 }
 
 
-void CORE::UTILS::FunctionManager::AddFunctionDefinition(
+void CORE::UTILS::FunctionManager::add_function_definition(
     std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));

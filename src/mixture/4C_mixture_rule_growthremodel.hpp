@@ -105,7 +105,7 @@ namespace MIXTURE
     void UnpackMixtureRule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
@@ -122,17 +122,17 @@ namespace MIXTURE
      * \param constituent
      * \return double
      */
-    double GetConstituentInitialReferenceMassDensity(
+    double get_constituent_initial_reference_mass_density(
         const MIXTURE::MixtureConstituent& constituent) const;
 
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
         const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
-    double ComputeCurrentReferenceGrowthScalar(int gp) const;
+    double compute_current_reference_growth_scalar(int gp) const;
 
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};

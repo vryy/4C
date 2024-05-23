@@ -36,19 +36,19 @@ MAT::ELASTIC::CoupAnisoExpoActive::CoupAnisoExpoActive(
     MAT::ELASTIC::PAR::CoupAnisoExpoActive* params)
     : params_(params),
       anisotropy_extension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
-          params_->StructuralTensorStrategy(), {0})
+          params_->structural_tensor_strategy(), {0})
 {
   d_p_iact_ = 0.0;
   lambdaact_ = 1.0;
-  anisotropy_extension_.RegisterNeededTensors(
+  anisotropy_extension_.register_needed_tensors(
       FiberAnisotropyExtension<1>::FIBER_VECTORS |
       FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
       FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+void MAT::ELASTIC::CoupAnisoExpoActive::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
+  anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(CORE::COMM::PackBuffer& data) const
@@ -87,7 +87,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
   rcg(4) = 2.0 * glstrain(4);
   rcg(5) = 2.0 * glstrain(5);
 
-  double I4 = anisotropy_extension_.GetStructuralTensor_stress(gp, 0).Dot(glstrain);
+  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).Dot(glstrain);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -113,7 +113,8 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc(
 {
   T I4_fad;
   static CORE::LINALG::Matrix<6, 1, T> Av_T(true);
-  for (int i = 0; i < 6; ++i) Av_T(i) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(i);
+  for (int i = 0; i < 6; ++i)
+    Av_T(i) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(i);
   I4_fad = Av_T(0) * rcg(0, 0) + Av_T(1) * rcg(1, 1) + Av_T(2) * rcg(2, 2) +
            Av_T(3) * (rcg(0, 1) + rcg(1, 0)) + Av_T(4) * (rcg(1, 2) + rcg(2, 1)) +
            Av_T(5) * (rcg(0, 2) + rcg(2, 0));
@@ -131,13 +132,14 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc(
 };
 
 template <typename T>
-void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(
+void MAT::ELASTIC::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso(
     CORE::LINALG::Matrix<3, 3, T> const& CM, CORE::LINALG::Matrix<6, 6, T>& cmat,
     CORE::LINALG::Matrix<6, 1, T>& stress, const int gp, const int eleGID) const
 {
   T lambda_sq = 0.0;
   static CORE::LINALG::Matrix<6, 1, T> Av_T(true);
-  for (int i = 0; i < 6; ++i) Av_T(i) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(i);
+  for (int i = 0; i < 6; ++i)
+    Av_T(i) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(i);
   lambda_sq = Av_T(0) * CM(0, 0) + Av_T(1) * CM(1, 1) + Av_T(2) * CM(2, 2) + Av_T(3) * CM(0, 1) +
               Av_T(4) * CM(1, 2) + Av_T(5) * CM(0, 2) + Av_T(3) * CM(1, 0) + Av_T(4) * CM(2, 1) +
               Av_T(5) * CM(2, 0);
@@ -148,7 +150,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(
   cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 0.0);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::AddActiveStressCmatAniso(
+void MAT::ELASTIC::CoupAnisoExpoActive::add_active_stress_cmat_aniso(
     CORE::LINALG::Matrix<3, 3> const& CM, CORE::LINALG::Matrix<6, 6>& cmat,
     CORE::LINALG::Matrix<6, 1>& stress, const int gp, const int eleGID) const
 {
@@ -157,13 +159,13 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddActiveStressCmatAniso(
   double dPIact_T = 0.0;
   dPIact_T = d_p_iact_;
   stress.Update(
-      dPIact_T * 1. / lambda_sq, anisotropy_extension_.GetStructuralTensor_stress(gp, 0), 1.0);
+      dPIact_T * 1. / lambda_sq, anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
   cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq),
-      anisotropy_extension_.GetStructuralTensor_stress(gp, 0),
-      anisotropy_extension_.GetStructuralTensor_stress(gp, 0), 1.0);
+      anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+      anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFirstDerivativesAniso(
+void MAT::ELASTIC::CoupAnisoExpoActive::evaluate_first_derivatives_aniso(
     CORE::LINALG::Matrix<2, 1>& dPI_aniso, CORE::LINALG::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
@@ -181,7 +183,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFirstDerivativesAniso(
   dPI_aniso(0) = k1 * (I4 - 1.0) * exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 }
 
-void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateSecondDerivativesAniso(
+void MAT::ELASTIC::CoupAnisoExpoActive::evaluate_second_derivatives_aniso(
     CORE::LINALG::Matrix<3, 1>& ddPII_aniso, CORE::LINALG::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
@@ -208,10 +210,11 @@ void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso(
 {
   T I4 = 0.0;
   CORE::LINALG::Matrix<3, 3, T> AM(true);
-  for (int i = 0; i < 3; ++i) AM(i, i) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(i);
-  AM(0, 1) = AM(1, 0) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(3);
-  AM(2, 1) = AM(1, 2) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(4);
-  AM(0, 2) = AM(2, 0) = anisotropy_extension_.GetStructuralTensor_stress(gp, 0)(5);
+  for (int i = 0; i < 3; ++i)
+    AM(i, i) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(i);
+  AM(0, 1) = AM(1, 0) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(3);
+  AM(2, 1) = AM(1, 2) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(4);
+  AM(0, 2) = AM(2, 0) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(5);
 
   I4 = AM.Dot(rcg);
 
@@ -234,12 +237,12 @@ void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso(
                      exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 };
 
-void MAT::ELASTIC::CoupAnisoExpoActive::AddStressAnisoPrincipal(
+void MAT::ELASTIC::CoupAnisoExpoActive::add_stress_aniso_principal(
     const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
     CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  double I4 = anisotropy_extension_.GetStructuralTensor_stress(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).Dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -251,12 +254,12 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStressAnisoPrincipal(
   }
 
   double gamma = 2. * (k1 * (I4 - 1.) * exp(k2 * (I4 - 1.) * (I4 - 1.)));
-  stress.Update(gamma, anisotropy_extension_.GetStructuralTensor_stress(gp, 0), 1.0);
+  stress.Update(gamma, anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 
   double delta =
       2. * (1. + 2. * k2 * (I4 - 1.) * (I4 - 1.)) * 2. * k1 * exp(k2 * (I4 - 1.) * (I4 - 1.));
-  cmat.MultiplyNT(delta, anisotropy_extension_.GetStructuralTensor_stress(gp, 0),
-      anisotropy_extension_.GetStructuralTensor_stress(gp, 0), 1.0);
+  cmat.MultiplyNT(delta, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+      anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoActive::GetFiberVecs(
@@ -288,10 +291,10 @@ template void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso<double>(
 template void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso<FAD>(
     CORE::LINALG::Matrix<2, 1, FAD>&, CORE::LINALG::Matrix<3, 1, FAD>&,
     CORE::LINALG::Matrix<4, 1, FAD>&, CORE::LINALG::Matrix<3, 3, FAD> const&, int, const int) const;
-template void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso<double>(
+template void MAT::ELASTIC::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso<double>(
     CORE::LINALG::Matrix<3, 3, double> const&, CORE::LINALG::Matrix<6, 6, double>&,
     CORE::LINALG::Matrix<6, 1, double>&, int, const int) const;
-template void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso<FAD>(
+template void MAT::ELASTIC::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso<FAD>(
     CORE::LINALG::Matrix<3, 3, FAD> const&, CORE::LINALG::Matrix<6, 6, FAD>&,
     CORE::LINALG::Matrix<6, 1, FAD>&, int, const int) const;
 template void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc<double>(

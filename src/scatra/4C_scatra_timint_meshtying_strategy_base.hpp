@@ -102,20 +102,21 @@ namespace SCATRA
     }
 
     //! provide global state vectors for element evaluation
-    virtual void AddTimeIntegrationSpecificVectors() const { return; };
+    virtual void add_time_integration_specific_vectors() const { return; };
 
 
-    virtual void EquipExtendedSolverWithNullSpaceInfo() const
+    virtual void equip_extended_solver_with_null_space_info() const
     {
       FOUR_C_THROW(
-          "EquipExtendedSolverWithNullSpaceInfo() is not implemented in MeshtyingStrategyBase.");
+          "equip_extended_solver_with_null_space_info() is not implemented in "
+          "MeshtyingStrategyBase.");
     }
 
     //! compute time step size
     virtual void ComputeTimeStepSize(double& dt) { return; };
 
     //! compute time derivatives of discrete state variables
-    virtual void ComputeTimeDerivative() const { return; };
+    virtual void compute_time_derivative() const { return; };
 
     /*!
      * @brief condense global system of equations
@@ -170,20 +171,20 @@ namespace SCATRA
     virtual void EvaluateMeshtying() = 0;
 
     //! evaluate coupling between two points/nodes. Does not need to be evaluated on element level
-    virtual void EvaluatePointCoupling(){};
+    virtual void evaluate_point_coupling(){};
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
     virtual void ExplicitPredictor() const { return; };
 
     //! include Dirichlet conditions into condensation
-    virtual void IncludeDirichletInCondensation() const { return; };
+    virtual void include_dirichlet_in_condensation() const { return; };
 
     //! init meshtying objects
     virtual void InitMeshtying() = 0;
 
     // flag returning whether this meshtying strategy needs to initialize the system matrix due to
     // special requirements
-    virtual bool SystemMatrixInitializationNeeded() const = 0;
+    virtual bool system_matrix_initialization_needed() const = 0;
 
     //! initialize system matrix
     virtual Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const = 0;
@@ -207,7 +208,10 @@ namespace SCATRA
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const {};
 
     //! set general parameters for element evaluation
-    virtual void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const { return; };
+    virtual void set_element_general_parameters(Teuchos::ParameterList& parameters) const
+    {
+      return;
+    };
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
@@ -265,7 +269,7 @@ namespace SCATRA
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    virtual void InitConvCheckStrategy() = 0;
+    virtual void init_conv_check_strategy() = 0;
 
     //! strategy for Newton-Raphson convergence check called by scalar transport time integrator
     Teuchos::RCP<SCATRA::ConvCheckStrategyBase> convcheckstrategy_;

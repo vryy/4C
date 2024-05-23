@@ -52,9 +52,10 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
-    std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
-    const
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
+    insert_particle_states_of_particle_types(
+        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
+            particlestatestotypes) const
 {
   // iterate over particle types subjected to temperature boundary conditions
   for (auto& particleType : typessubjectedtotemperaturebc_)
@@ -64,30 +65,30 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::InsertParticleState
   }
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::SetParticleReferencePosition() const
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::set_particle_reference_position() const
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types subjected to temperature boundary conditions
   for (auto& particleType : typessubjectedtotemperaturebc_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
     container->UpdateState(0.0, PARTICLEENGINE::ReferencePosition, 1.0, PARTICLEENGINE::Position);
   }
 }
 
-void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperatureBoundaryCondition(
-    const double& evaltime) const
+void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
+    evaluate_temperature_boundary_condition(const double& evaltime) const
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types subjected to temperature boundary conditions
   for (auto& typeIt : temperaturebctypetofunctid_)
@@ -97,7 +98,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();

@@ -66,10 +66,10 @@ namespace CORE::GEO
       void FindCuttingSides();
 
       /// if there are two nodes from cut sides are at the same position, we merge it into one node
-      bool MergeCoincidingNodes(Side* keep, Side* replace);
+      bool merge_coinciding_nodes(Side* keep, Side* replace);
 
       /// opearations to modify the nodal ids of sides and corresponding edges are performed
-      void operationsForNodeMerging(
+      void operations_for_node_merging(
           std::vector<std::pair<const Node*, const Node*>> repl, bool initial);
 
       /// templated function to delete "nod" by "replwith" in both edge and side data-structures
@@ -95,7 +95,7 @@ namespace CORE::GEO
 
       /// finds triangles with respect to the self cut by using a pointgraph and a triangulation
       /// method
-      void FindSelfCutTriangulation();
+      void find_self_cut_triangulation();
 
       /// creates triangular sides out of the self cut triangles
       void CreateSelfCutSides();
@@ -107,10 +107,10 @@ namespace CORE::GEO
       void EraseCuttedEdges();
 
       /// Is this edge connected to the backgound mesh
-      bool ConnectedtoBackground(Edge* edge);
+      bool connectedto_background(Edge* edge);
 
       /// Is this node connected to the backgound mesh
-      bool ConnectedtoBackground(Node* node);
+      bool connectedto_background(Node* node);
 
       /*========================================================================*/
       //! @name Basic routines to run the element selection
@@ -118,10 +118,10 @@ namespace CORE::GEO
 
       /// locates the position of nodes, edges and sides of a structure body with respect to the
       /// other bodys
-      void DetermineSelfCutPosition();
+      void determine_self_cut_position();
 
       /// locates the position of nodes, edges and sides for special cases
-      void PropagateSelfCutPosition();
+      void propagate_self_cut_position();
 
       /// erases sides which lies inside a structure body by locating there position
       void EraseInsideSides();
@@ -133,7 +133,7 @@ namespace CORE::GEO
       void EraseInsideNodes();
 
       /// construct the connectivity of the nodes toi find potential islands in the cut mesh
-      void ConstructConnectivity();
+      void construct_connectivity();
 
       /// find the next node for the construction of the connectivity
       void NextNode(Node* node, plain_node_set& remainingnodes, int count);
@@ -151,7 +151,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// Status of the cutted sides for text viewer
-      void CuttedSideStatusText();
+      void cutted_side_status_text();
 
       /// Status of the cutmesh for text viewer
       void CutMeshStatusText();
@@ -160,7 +160,7 @@ namespace CORE::GEO
       void ErrorStatusText(Side& cutside);
 
       /// Status of the cutted sides for gmsh
-      void CuttedSideStatusGmsh(const std::string& name);
+      void cutted_side_status_gmsh(const std::string& name);
 
       /// Status of the cutmesh in gmsh
       void WallGmsh(const std::string& name);

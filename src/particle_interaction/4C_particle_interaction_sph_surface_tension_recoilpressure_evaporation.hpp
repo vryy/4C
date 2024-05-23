@@ -51,7 +51,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! compute evaporation induced recoil pressure contribution
-    void ComputeRecoilPressureContribution() const;
+    void compute_recoil_pressure_contribution() const;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list

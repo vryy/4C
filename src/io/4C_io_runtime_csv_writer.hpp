@@ -47,14 +47,14 @@ namespace IO
     void RegisterDataVector(const std::string& dataname, unsigned int numcomponents, int precision);
 
     //! set current time and time step number
-    void ResetTimeAndTimeStep(double time, unsigned int timestep);
+    void reset_time_and_time_step(double time, unsigned int timestep);
 
     //! append data @p datavalues to column @p dataname. In case of sub columns @p datavalues must
     //! have as many entries as the number of subcolumns
     void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
 
     //! write one line to csv file. Data must have been passed via AppendDataVector()
-    void WriteCollectedDataToFile();
+    void write_collected_data_to_file();
 
     //! write @p data to file at @p time and @p timestep
     void WriteDataToFile(double time, unsigned int timestep,

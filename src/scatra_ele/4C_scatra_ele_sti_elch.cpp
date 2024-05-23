@@ -68,7 +68,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatSourceOD(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_values(
     DRT::Element* ele,                    //!< current element
     Teuchos::ParameterList& params,       //!< parameter list
     DRT::Discretization& discretization,  //!< discretization

@@ -64,7 +64,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
       CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   // geometry of bfs
-  convertStringToGeoType(geotype);
+  convert_string_to_geo_type(geotype);
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
@@ -1782,7 +1782,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
+void FLD::TurbulenceStatisticsBfs::dump_scatra_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
@@ -1944,13 +1944,13 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
 
   return;
 
-}  // TurbulenceStatisticsBfs::DumpScatraStatistics
+}  // TurbulenceStatisticsBfs::dump_scatra_statistics
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(const std::string& geotype)
+void FLD::TurbulenceStatisticsBfs::convert_string_to_geo_type(const std::string& geotype)
 {
   FOUR_C_ASSERT(geotype != "none", "No geometry supplied");
 

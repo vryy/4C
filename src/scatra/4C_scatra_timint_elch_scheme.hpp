@@ -43,20 +43,20 @@ namespace SCATRA
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-    void PreCalcInitialPotentialField() override;
+    void pre_calc_initial_potential_field() override;
 
-    void PostCalcInitialPotentialField() override;
+    void post_calc_initial_potential_field() override;
 
    protected:
     void WriteRestart() const override;
 
-    void ElectrodeKineticsTimeUpdate() override;
+    void electrode_kinetics_time_update() override;
 
     void ExplicitPredictor() const override;
 
-    void ComputeTimeDerivPot0(const bool init) override;
+    void compute_time_deriv_pot0(const bool init) override;
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
   };
 
   class ScaTraTimIntElchSCLOST : public ScaTraTimIntElchSCL, public TimIntOneStepTheta
@@ -69,13 +69,13 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     void Init() override;
 
-    void PostCalcInitialPotentialField() override;
+    void post_calc_initial_potential_field() override;
 
-    void PreCalcInitialPotentialField() override;
+    void pre_calc_initial_potential_field() override;
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
@@ -84,13 +84,13 @@ namespace SCATRA
     void Update() override;
 
    protected:
-    void ComputeTimeDerivPot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override{};
 
-    void ElectrodeKineticsTimeUpdate() override{};
+    void electrode_kinetics_time_update() override{};
 
     void ExplicitPredictor() const override;
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     void WriteRestart() const override;
   };
@@ -114,18 +114,18 @@ namespace SCATRA
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-    void PreCalcInitialPotentialField() override;
+    void pre_calc_initial_potential_field() override;
 
-    void PostCalcInitialPotentialField() override{};
+    void post_calc_initial_potential_field() override{};
 
    protected:
     void WriteRestart() const override;
 
-    void ElectrodeKineticsTimeUpdate() override;
+    void electrode_kinetics_time_update() override;
 
-    void ComputeTimeDerivPot0(const bool init) override;
+    void compute_time_deriv_pot0(const bool init) override;
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
   };
 
 
@@ -147,16 +147,16 @@ namespace SCATRA
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-    void PreCalcInitialPotentialField() override;
+    void pre_calc_initial_potential_field() override;
 
-    void PostCalcInitialPotentialField() override;
+    void post_calc_initial_potential_field() override;
 
    protected:
     void WriteRestart() const override;
 
-    void ElectrodeKineticsTimeUpdate() override;
+    void electrode_kinetics_time_update() override;
 
-    void ComputeTimeDerivPot0(const bool init) override;
+    void compute_time_deriv_pot0(const bool init) override;
   };
 
 
@@ -178,20 +178,20 @@ namespace SCATRA
 
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-    void PreCalcInitialPotentialField() override;
+    void pre_calc_initial_potential_field() override;
 
-    void PostCalcInitialPotentialField() override{};
+    void post_calc_initial_potential_field() override{};
 
    protected:
     void WriteRestart() const override;
 
-    void ElectrodeKineticsTimeUpdate() override
+    void electrode_kinetics_time_update() override
     {
       FOUR_C_THROW(
           "Galvanostatic-BC is not implemented for the stationary time-integration scheme");
     };
 
-    void ComputeTimeDerivPot0(const bool init) override;
+    void compute_time_deriv_pot0(const bool init) override;
   };
 }  // namespace SCATRA
 

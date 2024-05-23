@@ -51,38 +51,38 @@ namespace POROMULTIPHASESCATRA
     void ApplyMeshMovement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
+    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
    private:
     //! pre-evaluate the pairs and sort out duplicates
-    void PreEvaluateCouplingPairs();
+    void pre_evaluate_coupling_pairs();
 
     //! fill the length not changed through deformation and initialize curr length
-    void FillUnaffectedArteryLength();
+    void fill_unaffected_artery_length();
 
     //! fill the integrated diameter not changed through varying blood vessel diameter
-    void FillUnaffectedIntegratedDiam();
+    void fill_unaffected_integrated_diam();
 
     //! calculate the volume fraction occupied by blood vessels
-    void CalculateBloodVesselVolumeFraction();
+    void calculate_blood_vessel_volume_fraction();
 
     //! create the GID to segment vector
-    void CreateGIDToSegmentVector();
+    void create_gid_to_segment_vector();
 
     //! fill the GID to segment vector
-    void FillGIDToSegmentVector(
+    void fill_gid_to_segment_vector(
         const std::vector<Teuchos::RCP<
             POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         std::map<int, std::vector<double>>& gid_to_seglength);
 
     //! set the artery diameter in column based vector
-    void FillArteryEleDiamCol();
+    void fill_artery_ele_diam_col();
 
     //! (re-)set the artery diameter in material to be able to use it on 1D discretization
-    void SetArteryDiamInMaterial() override;
+    void set_artery_diam_in_material() override;
 
     //! reset the integrated diameter vector to zero
-    void ResetIntegratedDiamToZero() override;
+    void reset_integrated_diam_to_zero() override;
 
     /*!
      * @brief Utility function for depth-first search for the connected components of the 1D artery
@@ -95,7 +95,7 @@ namespace POROMULTIPHASESCATRA
      * format
      * @param this_connected_comp : current connected component
      */
-    void DepthFirstSearchUtil(DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    void depth_first_search_util(DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
         Teuchos::RCP<DRT::Discretization> artconncompdis,
         Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);
@@ -109,11 +109,11 @@ namespace POROMULTIPHASESCATRA
      * threshold, all its elements are taken out
      * @param : eles_to_be_deleted vector of free-hanging elements
      */
-    void FindFreeHanging1DElements(std::vector<int>& eles_to_be_deleted);
+    void find_free_hanging1_d_elements(std::vector<int>& eles_to_be_deleted);
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
-    void EvaluateAdditionalLinearizationofIntegratedDiam() override;
+    void evaluate_additional_linearizationof_integrated_diam() override;
 
     /*!
      * @brief apply additional Dirichlet boundary condition for collapsed 1D elements to avoid
@@ -129,19 +129,20 @@ namespace POROMULTIPHASESCATRA
      * @param[in,out]   rhs_art_with_collapsed right hand side of artery subpart
      * @returns dbcmap, also containing additional boundary condition for collapsed eles
      */
-    Teuchos::RCP<Epetra_Map> GetAdditionalDBCForCollapsedEles(
+    Teuchos::RCP<Epetra_Map> get_additional_dbc_for_collapsed_eles(
         Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art,
         Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed);
 
     //! FE-assemble into global force and stiffness
-    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+    void fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid,
+        const int& ele2gid, const double& integrated_diam,
+        std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! get the segment lengths of element 'artelegid'
-    std::vector<double> GetEleSegmentLengths(const int artelegid) override;
+    std::vector<double> get_ele_segment_lengths(const int artelegid) override;
 
     //! check for duplicate segment
     bool IsDuplicateSegment(
@@ -163,7 +164,7 @@ namespace POROMULTIPHASESCATRA
     void OutputSummary() const;
 
     //! print out the coupling method
-    void PrintOutCouplingMethod() const override;
+    void print_out_coupling_method() const override;
 
     //! maximum number of segments per artery element
     int maxnumsegperartele_;

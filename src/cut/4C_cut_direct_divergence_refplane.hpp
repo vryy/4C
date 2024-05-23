@@ -49,7 +49,7 @@ namespace CORE::GEO
       \brief Get the reference points that are used to define the reference plane. This is used in
       gmsh output of volume cells
        */
-      std::vector<Point*> GetReferencePointGmsh() { return ref_pts_gmsh_; }
+      std::vector<Point*> get_reference_point_gmsh() { return ref_pts_gmsh_; }
 
      private:
       /*!
@@ -70,13 +70,13 @@ namespace CORE::GEO
       /*!
       \brief Returns true if all the projected points are within the element
        */
-      bool isAllProjectedCornersInsideEle(
+      bool is_all_projected_corners_inside_ele(
           std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol = 1e-8);
 
       /*!
       \brief Scale the given equation of plane
        */
-      void scaleEquationOfPlane(std::vector<double>& RefPlaneEqn);
+      void scale_equation_of_plane(std::vector<double>& RefPlaneEqn);
 
       /*!
       \brief Class used to sort maps in descending order

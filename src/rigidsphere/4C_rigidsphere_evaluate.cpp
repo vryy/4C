@@ -36,7 +36,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // start with "none"
   ELEMENTS::ActionType act = ParamsInterface().GetActionType();
@@ -105,9 +105,9 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
-        CalcBrownianForcesAndStiff(params, myvel, mydisp, nullptr, &elevec1);
+        calc_brownian_forces_and_stiff(params, myvel, mydisp, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_brownianstiff)
-        CalcBrownianForcesAndStiff(params, myvel, mydisp, &elemat1, &elevec1);
+        calc_brownian_forces_and_stiff(params, myvel, mydisp, &elemat1, &elevec1);
       else
         FOUR_C_THROW("You shouldn't be here.");
 
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
  | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics grill
  03/14|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
     std::vector<double>& vel, std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<3, 3> velbackgroundgrad;  // is a dummy so far
 
   // Compute background velocity
-  GetBackgroundVelocity(params, velbackground, velbackgroundgrad);
+  get_background_velocity(params, velbackground, velbackgroundgrad);
 
   // Drag force contribution
   if (force != nullptr)
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
  in       | |the physical space                                                         (public)
  grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(
+void DRT::ELEMENTS::Rigidsphere::get_background_velocity(
     Teuchos::ParameterList& params,                 //!< parameter list
     CORE::LINALG::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
     CORE::LINALG::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
@@ -314,7 +314,7 @@ void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(
 double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
 {
   // (dynamic) viscosity of background fluid
-  double eta = ParamsInterface().GetBrownianDynParamInterface()->GetViscosity();
+  double eta = ParamsInterface().get_brownian_dyn_param_interface()->GetViscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
   return 6 * M_PI * eta * radius_;
@@ -324,7 +324,7 @@ double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
  |computes the number of different random numbers required in each time step for generation of
  stochastic    | |forces; (public)           grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
+int DRT::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 {
   /*three randomly excited (translational) DOFs for Rigidsphere element*/
   return 3;
@@ -353,7 +353,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.
-  const double safety_factor = params.GetSphereBoundingVolumeScaling();
+  const double safety_factor = params.get_sphere_bounding_volume_scaling();
   const double radius = Radius();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 
@@ -362,7 +362,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixVariationsAtXi(
+void DRT::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_variations_at_xi(
     CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
@@ -372,7 +372,7 @@ void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixVariationsAtXi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixIncrementsAtXi(
+void DRT::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increments_at_xi(
     CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5*/
   Teuchos::RCP<Epetra_MultiVector> randomnumbers =
-      ParamsInterface().GetBrownianDynParamInterface()->GetRandomForces();
+      ParamsInterface().get_brownian_dyn_param_interface()->GetRandomForces();
 
   if (force != nullptr)
   {

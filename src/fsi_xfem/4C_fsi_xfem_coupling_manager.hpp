@@ -42,7 +42,7 @@ namespace XFEM
     /// virtual to get polymorph destruction
     virtual ~CouplingManager() = default;
     //! predict states in the coupling object
-    virtual void PredictCouplingStates() = 0;
+    virtual void predict_coupling_states() = 0;
 
     //! Set required states in the coupling object
     virtual void SetCouplingStates() = 0;

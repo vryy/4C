@@ -71,7 +71,7 @@ namespace CORE::UTILS
      *                      which should be evaluated
      * \return first spatial derivative of function
      */
-    virtual std::vector<double> EvaluateSpatialDerivative(
+    virtual std::vector<double> evaluate_spatial_derivative(
         const double* x, double t, std::size_t component) const
     {
       FOUR_C_THROW("The evaluation of the derivative is not implemented for this function");
@@ -92,7 +92,7 @@ namespace CORE::UTILS
      *                      which should be evaluated
      * @return vector containing value and time derivative(s)
      */
-    virtual std::vector<double> EvaluateTimeDerivative(
+    virtual std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const
     {
       FOUR_C_THROW("The evaluation of the time derivative is not implemented for this function");
@@ -127,10 +127,10 @@ namespace CORE::UTILS
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateSpatialDerivative(
+    std::vector<double> evaluate_spatial_derivative(
         const double* x, double t, std::size_t component) const override;
 
-    std::vector<double> EvaluateTimeDerivative(
+    std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     [[nodiscard]] std::size_t NumberComponents() const override { return (expr_.size()); }

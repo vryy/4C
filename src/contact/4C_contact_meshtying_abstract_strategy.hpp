@@ -123,7 +123,7 @@ namespace CONTACT
     @param InnerDofMap Dof row map of interior volume
     @param ActiveDofMap Dof row map of active slave contact interface
     */
-    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
+    void collect_maps_for_preconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const override;
 
@@ -184,7 +184,7 @@ namespace CONTACT
     \post If desired by the user, all meshtying interface discretizations have been re-distributed,
     such that load balancing among processors is closer to optimal.
     */
-    void RedistributeMeshtying() final;
+    void redistribute_meshtying() final;
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -285,7 +285,7 @@ namespace CONTACT
     \param type (in): enum defining which quantity to store into MORTAR::Node(s)
 
     */
-    void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
+    void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) override;
 
     /*!
     \brief Get dirichlet B.C. status and store into MORTAR::Node(s)
@@ -296,7 +296,7 @@ namespace CONTACT
     \param dbcmaps (in): MapExtractor carrying global dbc map
 
     */
-    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
+    void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
 
     /*!
     \brief Update meshtying at end of time step
@@ -356,7 +356,8 @@ namespace CONTACT
 
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
-    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+    void postprocess_quantities_per_interface(
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
 
     //! @}
 
@@ -396,7 +397,7 @@ namespace CONTACT
      * (3) activeDofMap
      *
      * \author hiermeier */
-    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
+    void fill_maps_for_preconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
 
     //! compute the preconditioner operator
     bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
@@ -421,14 +422,14 @@ namespace CONTACT
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
     void ResetPenalty() override = 0;
     void ModifyPenalty() override = 0;
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override = 0;
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
-    void UpdateUzawaAugmentedLagrange() override = 0;
-    void UpdateConstraintNorm(int uzawaiter = 0) override = 0;
+    void update_uzawa_augmented_lagrange() override = 0;
+    void update_constraint_norm(int uzawaiter = 0) override = 0;
 
     //! @}
 
@@ -440,12 +441,12 @@ namespace CONTACT
      */
 
     bool ActiveSetConverged() override { return true; }
-    bool ActiveSetSemiSmoothConverged() const override { return true; }
+    bool active_set_semi_smooth_converged() const override { return true; }
     bool Friction() const override { return false; }
     bool WearBothDiscrete() const override { return false; }
     bool IsInContact() const override { return true; }
     bool WasInContact() const override { return true; }
-    bool WasInContactLastTimeStep() const override { return true; }
+    bool was_in_contact_last_time_step() const override { return true; }
     Teuchos::RCP<Epetra_Vector> ContactNorStress() override { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> ContactTanStress() override { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> ContactNorForce() override { return Teuchos::null; }
@@ -462,7 +463,7 @@ namespace CONTACT
     void Inttime_init() override { inttime_ = 0.0; };
     int NumberOfActiveNodes() const override { return 0; }
     int NumberOfSlipNodes() const override { return 0; }
-    void ComputeContactStresses() final{};
+    void compute_contact_stresses() final{};
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
     bool RedistributeContact(
@@ -473,20 +474,20 @@ namespace CONTACT
     void ResetActiveSet() override {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
     void UpdateActiveSet() override {}
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override {}
+    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
     Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(
         Teuchos::RCP<Epetra_Vector> dis) override
     {
       return Teuchos::null;
     }
-    void EvaluateReferenceState() override {}
+    void evaluate_reference_state() override {}
     void EvaluateRelMov() override {}
-    void EvaluateRelMovPredict() override {}
+    void evaluate_rel_mov_predict() override {}
     Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return gsnoderowmap_; }
     Teuchos::RCP<Epetra_Map> ActiveRowNodes() override { return Teuchos::null; }
     Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() override { return pgsdofrowmap_; }
-    Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() override { return pgmdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> not_re_dist_slave_row_dofs() override { return pgsdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> not_re_dist_master_row_dofs() override { return pgmdofrowmap_; }
     Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return Teuchos::null; }
 
     //! @}
@@ -536,13 +537,13 @@ namespace CONTACT
     };
 
     //! Modify system before linear solve
-    virtual void RunPreApplyJacobianInverse(
+    virtual void run_pre_apply_jacobian_inverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
     }
 
     //! modify result after linear solve
-    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result)
+    virtual void run_post_apply_jacobian_inverse(Epetra_Vector& result)
     { /* do nothing */
     }
 
@@ -565,7 +566,7 @@ namespace CONTACT
      *
      * @param[in/out] rhs Right-hand side vector
      */
-    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const {};
+    virtual void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const {};
 
     //!@}
 
@@ -633,7 +634,7 @@ namespace CONTACT
     input file. Thus, it is computed here.
 
     */
-    void RestrictMeshtyingZone() override;
+    void restrict_meshtying_zone() override;
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)

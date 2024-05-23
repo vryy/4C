@@ -82,23 +82,23 @@ namespace PARTICLEINTERACTION
     inline double GetAdhesionDistance() const { return adhesion_distance_; };
 
     //! add adhesion contribution to force field
-    void AddForceContribution();
+    void add_force_contribution();
 
    private:
     //! init adhesion law handler
-    void InitAdhesionLawHandler();
+    void init_adhesion_law_handler();
 
     //! init adhesion surface energy handler
-    void InitAdhesionSurfaceEnergyHandler();
+    void init_adhesion_surface_energy_handler();
 
     //! setup particle interaction writer
-    void SetupParticleInteractionWriter();
+    void setup_particle_interaction_writer();
 
     //! evaluate particle adhesion contribution
-    void EvaluateParticleAdhesion();
+    void evaluate_particle_adhesion();
 
     //! evaluate particle-wall adhesion contribution
-    void EvaluateParticleWallAdhesion();
+    void evaluate_particle_wall_adhesion();
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

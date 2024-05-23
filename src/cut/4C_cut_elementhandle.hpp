@@ -119,16 +119,16 @@ namespace CORE::GEO
        \brief  Collect the Gaussian points of all volume-cells belonging to this element in such a
        way that Gaussian rule for every volume-cell can be separated
         */
-      void VolumeCellGaussPoints(
+      void volume_cell_gauss_points(
           plain_volumecell_set& cells, std::vector<CORE::FE::GaussIntegration>& intpoints);
 
-      void AppendVolumeCellGaussPoints_Tessellation(
+      void append_volume_cell_gauss_points_tessellation(
           Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
-      void AppendVolumeCellGaussPoints_MomentFitting(
+      void append_volume_cell_gauss_points_moment_fitting(
           Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
-      void AppendVolumeCellGaussPoints_DirectDivergence(
+      void append_volume_cell_gauss_points_direct_divergence(
           Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
 
 
@@ -136,12 +136,12 @@ namespace CORE::GEO
        \brief Collect the Gaussian points of all the volume-cells belonging to this element.
               The integration rules over all the volume-cells are connected.
        */
-      Teuchos::RCP<CORE::FE::GaussPointsComposite> GaussPointsConnected(
+      Teuchos::RCP<CORE::FE::GaussPointsComposite> gauss_points_connected(
           plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype);
 
 
       //! ...
-      virtual int NumVolumeCellGaussPoints() = 0;
+      virtual int num_volume_cell_gauss_points() = 0;
 
       //@}
 
@@ -156,7 +156,7 @@ namespace CORE::GEO
       \brief Collect the Gauss points of all the boundary-cells belong to this element.
       This is the method used now in the new implementation
        */
-      void BoundaryCellGaussPointsLin(
+      void boundary_cell_gauss_points_lin(
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
           std::map<int, std::vector<CORE::FE::GaussIntegration>>& intpoints,
           const int bc_cubaturedegree);
@@ -168,7 +168,7 @@ namespace CORE::GEO
       //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
       //! get all the element' sets of volume-cells, nds-vectors and integration points
-      virtual bool GetCellSets_DofSets_GaussPoints(std::vector<plain_volumecell_set>& cell_sets,
+      virtual bool get_cell_sets_dof_sets_gauss_points(std::vector<plain_volumecell_set>& cell_sets,
           std::vector<std::vector<int>>& nds_sets,
           std::vector<std::vector<CORE::FE::GaussIntegration>>& intpoints_sets, bool include_inner);
 
@@ -177,7 +177,7 @@ namespace CORE::GEO
       virtual void VolumeCellSets() = 0;
 
       //! get all the element' sets of volume-cells and nds-vectors
-      void GetVolumeCellsDofSets(std::vector<plain_volumecell_set>& cellsets,
+      void get_volume_cells_dof_sets(std::vector<plain_volumecell_set>& cellsets,
           std::vector<std::vector<int>>& nds_sets, bool include_inner);
 
       void GetBoundaryCellSets(
@@ -208,25 +208,25 @@ namespace CORE::GEO
       virtual const std::vector<plain_volumecell_set>& GetVcSetsOutside() = 0;
 
       //! get the element's sets of nodal dofset vectors (nds-vectors) with inside position
-      std::vector<std::vector<int>>& GetNodalDofSet_VcSets_Inside()
+      std::vector<std::vector<int>>& get_nodal_dof_set_vc_sets_inside()
       {
         return nodaldofset_vc_sets_inside_;
       };
 
       //! get the element's sets of nodal dofset vectors (nds-vectors) with outside position
-      std::vector<std::vector<int>>& GetNodalDofSet_VcSets_Outside()
+      std::vector<std::vector<int>>& get_nodal_dof_set_vc_sets_outside()
       {
         return nodaldofset_vc_sets_outside_;
       };
 
       //! ...
-      std::vector<std::map<int, int>>& Get_NodeDofsetMap_VcSets_Inside_forCommunication()
+      std::vector<std::map<int, int>>& get_node_dofset_map_vc_sets_inside_for_communication()
       {
         return vcsets_nid_dofsetnumber_toComm_inside_;
       };
 
       //! ...
-      std::vector<std::map<int, int>>& Get_NodeDofsetMap_VcSets_Outside_forCommunication()
+      std::vector<std::map<int, int>>& get_node_dofset_map_vc_sets_outside_for_communication()
       {
         return vcsets_nid_dofsetnumber_toComm_outside_;
       };
@@ -341,7 +341,7 @@ namespace CORE::GEO
       }
 
       //! ...
-      int NumVolumeCellGaussPoints() override { return element_->NumGaussPoints(Shape()); }
+      int num_volume_cell_gauss_points() override { return element_->NumGaussPoints(Shape()); }
 
       //@}
 
@@ -499,7 +499,7 @@ namespace CORE::GEO
       void GetIntegrationCells(plain_integrationcell_set& cells) override;
 
       //! ...
-      int NumVolumeCellGaussPoints() override
+      int num_volume_cell_gauss_points() override
       {
         int numgp = 0;
         for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
@@ -555,7 +555,7 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      void ConnectBoundaryCells(Point::PointPosition position);
+      void connect_boundary_cells(Point::PointPosition position);
 
       /** \brief After the volume cells have been connected, the connected boundary
        *  cells are build
@@ -564,7 +564,7 @@ namespace CORE::GEO
        *  \param connected_bcell_set (out) : connected boundary cell sets
        *
        *  \author hiermeier \date 01/17 */
-      void BuildBoundaryCellSets(const std::vector<plain_volumecell_set>& connected_vcell_set,
+      void build_boundary_cell_sets(const std::vector<plain_volumecell_set>& connected_vcell_set,
           std::vector<plain_boundarycell_set>& connected_bcell_set) const;
 
       /// @}

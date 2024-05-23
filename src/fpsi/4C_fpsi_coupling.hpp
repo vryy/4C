@@ -65,13 +65,13 @@ namespace FPSI
         Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap);
 
     // Setup the Coupling Objects
-    void SetupInterfaceCoupling();
+    void setup_interface_coupling();
 
     // Method reinitializes the matrix transformation objects
-    void ReInitCouplingMatrixTransform();
+    void re_init_coupling_matrix_transform();
 
     // Evaluate Coupling Matrixes and Coupling RHS
-    void EvaluateCouplingMatrixesRHS();
+    void evaluate_coupling_matrixes_rhs();
 
     //! @name access coupling matrixes
 
@@ -137,25 +137,25 @@ namespace FPSI
 
     //! @name access coupling objects
 
-    CORE::ADAPTER::Coupling& PoroFluidFluidCoupling() { return *icoup_pf_f_; }
+    CORE::ADAPTER::Coupling& poro_fluid_fluid_coupling() { return *icoup_pf_f_; }
 
-    CORE::ADAPTER::Coupling& PoroStructureFluidCoupling() { return *icoup_ps_f_; }
+    CORE::ADAPTER::Coupling& poro_structure_fluid_coupling() { return *icoup_ps_f_; }
 
-    CORE::ADAPTER::Coupling& PoroStructureAleCoupling() { return *icoup_ps_a_; }
+    CORE::ADAPTER::Coupling& poro_structure_ale_coupling() { return *icoup_ps_a_; }
 
     //@}
 
     //! @name access extractors
 
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& FluidFpsiVelPresExtractor() const
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& fluid_fpsi_vel_pres_extractor() const
     {
       return fluidvelpres_extractor_;
     }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& FluidFpsiVelExtractor() const
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& fluid_fpsi_vel_extractor() const
     {
       return fluidvel_extractor_;
     }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& PoroFluidFpsiVelPresExtractor() const
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& poro_fluid_fpsi_vel_pres_extractor() const
     {
       return porofluid_extractor_;
     }
@@ -163,7 +163,7 @@ namespace FPSI
     {
       return poro_extractor_;
     }
-    const Teuchos::RCP<FPSI::UTILS::MapExtractor>& FluidFsiFpsiExtractor() const
+    const Teuchos::RCP<FPSI::UTILS::MapExtractor>& fluid_fsi_fpsi_extractor() const
     {
       return fluid_fsifpsi_extractor_;
     }
@@ -180,7 +180,7 @@ namespace FPSI
     const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
 
     // Initialize Coupling Matrixes and Coupling RHS
-    void InitCouplingMatrixesRHS();
+    void init_coupling_matrixes_rhs();
 
     // underlying poroelast problem
     Teuchos::RCP<POROELAST::Monolithic> poro_;

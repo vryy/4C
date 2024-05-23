@@ -47,17 +47,17 @@ void LUBRICATION::TimIntStationary::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralParameters(),
+  //       - order is important here: for safety checks in set_element_general_parameters(),
   //         we have to know the time-integration parameters
-  SetElementTimeParameter();
-  SetElementGeneralParameters();
+  set_element_time_parameter();
+  set_element_general_parameters();
 }
 
 
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::SetElementTimeParameter() const
+void LUBRICATION::TimIntStationary::set_element_time_parameter() const
 {
   Teuchos::ParameterList eleparams;
 
@@ -78,7 +78,7 @@ void LUBRICATION::TimIntStationary::SetElementTimeParameter() const
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
+void LUBRICATION::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
@@ -87,7 +87,7 @@ void LUBRICATION::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::Paramet
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                                 wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::AddNeumannToResidual()
+void LUBRICATION::TimIntStationary::add_neumann_to_residual()
 {
   residual_->Update(1.0, *neumann_loads_, 1.0);
 }
@@ -97,7 +97,8 @@ void LUBRICATION::TimIntStationary::AddNeumannToResidual()
  | add global state vectors specific for time-integration scheme            |
  |                                                              wirtz 11/15 |
  *--------------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
+    bool forcedincrementalsolver)
 {
   discret_->SetState("prenp", prenp_);
 }
@@ -133,11 +134,11 @@ void LUBRICATION::TimIntStationary::ReadRestart(int step)
 /*----------------------------------------------------------------------*
  | incremental iteration update of state                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::UpdateIterIncrementally()
+void LUBRICATION::TimIntStationary::update_iter_incrementally()
 {
   //! new end-point temperatures
   //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
   prenp_->Update(1.0, *prei_, 1.0);
-}  // UpdateIterIncrementally()
+}  // update_iter_incrementally()
 
 FOUR_C_NAMESPACE_CLOSE

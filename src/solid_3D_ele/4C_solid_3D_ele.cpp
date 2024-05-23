@@ -33,13 +33,13 @@ namespace
         .AddIntVector(CORE::FE::CellTypeToString(celltype), CORE::FE::num_nodes<celltype>)
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
-        .AddOptionalNamedString("PRESTRESS_TECH")
-        .AddOptionalNamedDoubleVector("RAD", 3)
-        .AddOptionalNamedDoubleVector("AXI", 3)
-        .AddOptionalNamedDoubleVector("CIR", 3)
-        .AddOptionalNamedDoubleVector("FIBER1", 3)
-        .AddOptionalNamedDoubleVector("FIBER2", 3)
-        .AddOptionalNamedDoubleVector("FIBER3", 3);
+        .add_optional_named_string("PRESTRESS_TECH")
+        .add_optional_named_double_vector("RAD", 3)
+        .add_optional_named_double_vector("AXI", 3)
+        .add_optional_named_double_vector("CIR", 3)
+        .add_optional_named_double_vector("FIBER1", 3)
+        .add_optional_named_double_vector("FIBER2", 3)
+        .add_optional_named_double_vector("FIBER3", 3);
   }
 }  // namespace
 
@@ -47,14 +47,14 @@ DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
 DRT::ELEMENTS::SolidType& DRT::ELEMENTS::SolidType::Instance() { return instance_; }
 
-void DRT::ELEMENTS::SolidType::SetupElementDefinition(
+void DRT::ELEMENTS::SolidType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLID"];
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
-          .AddOptionalNamedString("TECH")
+          .add_optional_named_string("TECH")
           .Build();
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex18)] =
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::pyramid5)] =
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::pyramid5>()
-          .AddOptionalNamedString("TECH")
+          .add_optional_named_string("TECH")
           .Build();
 
 
@@ -108,7 +108,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>&
   return object;
 }
 
-void DRT::ELEMENTS::SolidType::NodalBlockInformation(
+void DRT::ELEMENTS::SolidType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
-void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {

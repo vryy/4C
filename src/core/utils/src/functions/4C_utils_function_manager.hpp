@@ -68,7 +68,7 @@ namespace CORE::UTILS
      * that was passed alongside these lines is called with the parsed data. @p function_factory
      * needs to return the actual function object wrapped in a Teuchos::RCP.
      */
-    void AddFunctionDefinition(
+    void add_function_definition(
         std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory);
 
     /**

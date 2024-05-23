@@ -29,7 +29,7 @@ namespace MAT
           : Parameter(matdata){};
 
       //! compute derivative of density w.r.t. pressure
-      virtual double ComputeCurDensityDerivative(
+      virtual double compute_cur_density_derivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) = 0;
@@ -41,17 +41,17 @@ namespace MAT
           ) = 0;
 
       /// compute relation of reference density to current density
-      virtual double ComputeRefDensityToCurDensity(
+      virtual double compute_ref_density_to_cur_density(
           const double& press  ///< (i) pressure at gauss point
           ) = 0;
 
       /// compute derivative of relation of reference density to current density w.r.t. pressure
-      virtual double ComputeRefDensityToCurDensityDerivative(
+      virtual double compute_ref_density_to_cur_density_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) = 0;
       /// compute second derivative of relation of reference density to current density w.r.t.
       /// pressure
-      virtual double ComputeRefDensityToCurDensitySecondDerivative(
+      virtual double compute_ref_density_to_cur_density_second_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) = 0;
 
@@ -74,7 +74,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       //! compute derivative of density w.r.t. pressure
-      double ComputeCurDensityDerivative(
+      double compute_cur_density_derivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) override
@@ -92,14 +92,15 @@ namespace MAT
       };
 
       /// compute relation of reference density to current density
-      double ComputeRefDensityToCurDensity(const double& press  ///< (i) pressure at gauss point
+      double compute_ref_density_to_cur_density(
+          const double& press  ///< (i) pressure at gauss point
           ) override
       {
         return 1.0;
       };
 
       /// compute derivative of relation of reference density to current density w.r.t. pressure
-      double ComputeRefDensityToCurDensityDerivative(
+      double compute_ref_density_to_cur_density_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) override
       {
@@ -107,7 +108,7 @@ namespace MAT
       };
       /// compute second derivative of relation of reference density to current density w.r.t.
       /// pressure
-      double ComputeRefDensityToCurDensitySecondDerivative(
+      double compute_ref_density_to_cur_density_second_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) override
       {
@@ -129,7 +130,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! compute derivative of density w.r.t. pressure
-      double ComputeCurDensityDerivative(
+      double compute_cur_density_derivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) override;
@@ -141,16 +142,17 @@ namespace MAT
           ) override;
 
       /// compute relation of reference density to current density
-      double ComputeRefDensityToCurDensity(const double& press  ///< (i) pressure at gauss point
+      double compute_ref_density_to_cur_density(
+          const double& press  ///< (i) pressure at gauss point
           ) override;
 
       /// compute derivative ofrelation of reference density to current density w.r.t. pressure
-      double ComputeRefDensityToCurDensityDerivative(
+      double compute_ref_density_to_cur_density_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) override;
       /// compute second derivative of relation of reference density to current density w.r.t.
       /// pressure
-      double ComputeRefDensityToCurDensitySecondDerivative(
+      double compute_ref_density_to_cur_density_second_derivative(
           const double& press  ///< (i) pressure at gauss point
           ) override;
 

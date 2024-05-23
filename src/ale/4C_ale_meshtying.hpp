@@ -85,8 +85,8 @@ namespace ALE
     );
 
     //! Prepare matrix and residual for meshtying
-    void PrepareMeshtyingSystem(Teuchos::RCP<CORE::LINALG::SparseOperator>&
-                                    sysmat,     ///> sysmat established by the element routine
+    void prepare_meshtying_system(Teuchos::RCP<CORE::LINALG::SparseOperator>&
+                                      sysmat,   ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
         Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current ALE displacement vector
 
@@ -118,7 +118,7 @@ namespace ALE
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
-    virtual void CondensationOperationBlockMatrix(
+    virtual void condensation_operation_block_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator>&
             sysmat,                             ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
@@ -160,7 +160,7 @@ namespace ALE
 
    private:
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
-    void SplitVectorBasedOn3x3(
+    void split_vector_based_on3x3(
         Teuchos::RCP<Epetra_Vector> orgvector,  ///> original vector based on 3x3 blockmatrix
         Teuchos::RCP<Epetra_Vector> vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 

@@ -63,10 +63,10 @@ namespace SSI
 
     //! Check, if Newton-Raphson of initial potential calculation has converged and print residuals
     //! and increments to screen
-    virtual bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) = 0;
+    virtual bool exit_newton_raphson_init_pot_calc(const SSI::SSIMono& ssi_mono) = 0;
 
     //! print all time steps that have not been converged
-    void PrintNonConvergedSteps(int pid) const;
+    void print_non_converged_steps(int pid) const;
 
    protected:
     //! get L2 norms from structure field and check if they are reasonable
@@ -75,7 +75,7 @@ namespace SSI
     //! \param incnorm   (out) L2 norm of increment
     //! \param resnorm   (out) L2 norm of residual
     //! \param dofnorm   (out) L2 norm of displacement
-    void GetAndCheckL2NormStructure(
+    void get_and_check_l2_norm_structure(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
     //! check, if L2 norm is inf or nan. For dofnom: check if it is numerical zero
@@ -125,7 +125,7 @@ namespace SSI
     //! \param converged  convergence of Newton loop?
     //! \param exit       exit of Newton loop?
     //! \param norms      computed L2 norms
-    virtual void PrintNewtonIterationInformation(const SSI::SSIMono& ssi_mono, bool converged,
+    virtual void print_newton_iteration_information(const SSI::SSIMono& ssi_mono, bool converged,
         bool exit, const std::map<L2norm, double>& norms) const = 0;
   };
 
@@ -135,7 +135,7 @@ namespace SSI
     ConvCheckStrategyStd(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyBase(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override
+    bool exit_newton_raphson_init_pot_calc(const SSI::SSIMono& ssi_mono) override
     {
       FOUR_C_THROW("Caluclation of initial potential only for Elch");
       return {};
@@ -143,7 +143,7 @@ namespace SSI
 
    protected:
     //! get L2 norms from scatra field and check if they are reasonable
-    void GetAndCheckL2NormScaTra(
+    void get_and_check_l2_norm_sca_tra(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:
@@ -152,7 +152,7 @@ namespace SSI
 
     std::map<SSI::L2norm, double> ComputeNorms(const SSI::SSIMono& ssi_mono) const override;
 
-    void PrintNewtonIterationInformation(const SSI::SSIMono& ssi_mono, const bool converged,
+    void print_newton_iteration_information(const SSI::SSIMono& ssi_mono, const bool converged,
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 
@@ -163,15 +163,15 @@ namespace SSI
     ConvCheckStrategyElch(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyBase(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override;
+    bool exit_newton_raphson_init_pot_calc(const SSI::SSIMono& ssi_mono) override;
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable
-    void GetAndCheckL2NormConc(
+    void get_and_check_l2_norm_conc(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
     //! get L2 norms from potential field and check if they are reasonable
-    void GetAndCheckL2NormPot(
+    void get_and_check_l2_norm_pot(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:
@@ -180,7 +180,7 @@ namespace SSI
 
     std::map<SSI::L2norm, double> ComputeNorms(const SSI::SSIMono& ssi_mono) const override;
 
-    void PrintNewtonIterationInformation(const SSI::SSIMono& ssi_mono, const bool converged,
+    void print_newton_iteration_information(const SSI::SSIMono& ssi_mono, const bool converged,
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 
@@ -190,15 +190,15 @@ namespace SSI
     ConvCheckStrategyElchScaTraManifold(const Teuchos::ParameterList& global_time_parameters)
         : ConvCheckStrategyElch(global_time_parameters){};
 
-    bool ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono) override;
+    bool exit_newton_raphson_init_pot_calc(const SSI::SSIMono& ssi_mono) override;
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable
-    void GetAndCheckL2NormScaTraManifoldConc(
+    void get_and_check_l2_norm_sca_tra_manifold_conc(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
     //! get L2 norms from potential field and check if they are reasonable
-    void GetAndCheckL2NormScaTraManifoldPot(
+    void get_and_check_l2_norm_sca_tra_manifold_pot(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:
@@ -207,7 +207,7 @@ namespace SSI
 
     std::map<SSI::L2norm, double> ComputeNorms(const SSI::SSIMono& ssi_mono) const override;
 
-    void PrintNewtonIterationInformation(const SSI::SSIMono& ssi_mono, const bool converged,
+    void print_newton_iteration_information(const SSI::SSIMono& ssi_mono, const bool converged,
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 }  // namespace SSI

@@ -193,7 +193,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! add global state vectors specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const;
@@ -205,7 +205,7 @@ namespace SCATRA
     virtual void PrepareTimeStep();
 
     //! initialization procedure prior to evaluation of first time step
-    virtual void PrepareFirstTimeStep();
+    virtual void prepare_first_time_step();
 
     //! preparations for solve
     virtual void PrepareLinearSolve();
@@ -220,14 +220,14 @@ namespace SCATRA
     }
 
     //! set time stepping information from this time integration to micro scales
-    void SetTimeSteppingToMicroScale();
+    void set_time_stepping_to_micro_scale();
 
     //! set timestep value
     virtual void SetDt(const double newdt)
     {
       dta_ = newdt;
       // We have to set the newdt in the ele_calc's as well:
-      SetElementTimeParameter();
+      set_element_time_parameter();
     }
 
     //! do explicit predictor step to obtain better starting value for Newton-Raphson iteration
@@ -262,15 +262,15 @@ namespace SCATRA
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
-    void SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss);
+    void set_wall_shear_stresses(Teuchos::RCP<const Epetra_Vector> wss);
 
     void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure);
 
-    void SetMembraneConcentration(Teuchos::RCP<const Epetra_Vector> MembraneConc);
+    void set_membrane_concentration(Teuchos::RCP<const Epetra_Vector> MembraneConc);
 
-    void SetMeanConcentration(Teuchos::RCP<const Epetra_Vector> MeanConc);
+    void set_mean_concentration(Teuchos::RCP<const Epetra_Vector> MeanConc);
 
-    void ClearExternalConcentrations()
+    void clear_external_concentrations()
     {
       mean_conc_ = Teuchos::null;
       membrane_conc_ = Teuchos::null;
@@ -283,49 +283,49 @@ namespace SCATRA
     virtual void SetupNatConv();
 
     //! set number of dofset to write displacement values on
-    void SetNumberOfDofSetDisplacement(int nds_disp)
+    void set_number_of_dof_set_displacement(int nds_disp)
     {
       FOUR_C_ASSERT(nds_disp_ == -1, "Don't set 'nds_disp_' twice!");
       nds_disp_ = nds_disp;
     }
 
     //! set number of dofset to write interface growth values on
-    void SetNumberOfDofSetGrowth(int nds_growth)
+    void set_number_of_dof_set_growth(int nds_growth)
     {
       FOUR_C_ASSERT(nds_growth_ == -1, "Don't set 'nds_growth_' twice!");
       nds_growth_ = nds_growth;
     }
 
     //! set number of dofset to write micro scale values on
-    void SetNumberOfDofSetMicroScale(int nds_micro)
+    void set_number_of_dof_set_micro_scale(int nds_micro)
     {
       FOUR_C_ASSERT(nds_micro_ == -1, "Don't set 'nds_micro_' twice!");
       nds_micro_ = nds_micro;
     }
 
     //! set number of dofset to write pressure values on
-    void SetNumberOfDofSetPressure(int nds_pressure)
+    void set_number_of_dof_set_pressure(int nds_pressure)
     {
       FOUR_C_ASSERT(nds_pres_ == -1, "Don't set 'nds_pres_' twice!");
       nds_pres_ = nds_pressure;
     }
 
     //! set number of dofset to write scalar transport values on
-    void SetNumberOfDofSetScaTra(int nds_scatra)
+    void set_number_of_dof_set_sca_tra(int nds_scatra)
     {
       FOUR_C_ASSERT(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
       nds_scatra_ = nds_scatra;
     }
 
     //! set number of dofset to write thermo values on
-    void SetNumberOfDofSetThermo(int nds_thermo)
+    void set_number_of_dof_set_thermo(int nds_thermo)
     {
       FOUR_C_ASSERT(nds_thermo_ == -1, "Don't set 'nds_thermo_' twice!");
       nds_thermo_ = nds_thermo;
     }
 
     //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
-    void SetNumberOfDofSetTwoTensorQuantity(int nds_two_tensor_quantitiy)
+    void set_number_of_dof_set_two_tensor_quantity(int nds_two_tensor_quantitiy)
     {
       FOUR_C_ASSERT(
           nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
@@ -333,14 +333,14 @@ namespace SCATRA
     }
 
     //! set number of dofset to write velocity values on
-    void SetNumberOfDofSetVelocity(int nds_velocity)
+    void set_number_of_dof_set_velocity(int nds_velocity)
     {
       FOUR_C_ASSERT(nds_vel_ == -1, "Don't set 'nds_vel_' twice!");
       nds_vel_ = nds_velocity;
     }
 
     //! set number of dofset to write wall shear stress values on
-    void SetNumberOfDofSetWallShearStress(int nds_wall_shear_stress)
+    void set_number_of_dof_set_wall_shear_stress(int nds_wall_shear_stress)
     {
       FOUR_C_ASSERT(nds_wss_ == -1, "Don't set 'nds_wss_' twice!");
       nds_wss_ = nds_wall_shear_stress;
@@ -350,13 +350,13 @@ namespace SCATRA
     [[nodiscard]] int GetMaxDofSetNumber() const;
 
     //! store reaction coefficient for macro-micro coupling with deforming macro dis
-    void SetMacroMicroReaCoeff(const double macro_micro_rea_coeff)
+    void set_macro_micro_rea_coeff(const double macro_micro_rea_coeff)
     {
       macro_micro_rea_coeff_ = macro_micro_rea_coeff;
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest();
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test();
 
     //! Add tests to global problem and start tests
     virtual void TestResults();
@@ -397,24 +397,24 @@ namespace SCATRA
     Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(const bool writetofile);
 
     //! calculation of relative error with reference to analytical solution
-    virtual void EvaluateErrorComparedToAnalyticalSol();
+    virtual void evaluate_error_compared_to_analytical_sol();
 
     //! Calculate the reconstructed nodal gradient of phi from L2-projection
-    Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesL2Projection(
+    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_l2_projection(
         const Teuchos::RCP<const Epetra_Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from super convergent patch recovery
-    Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesPatchRecon(
+    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_patch_recon(
         const Teuchos::RCP<const Epetra_Vector> phi, const int dimension = 3,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
-    Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesMeanAverage(
+    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_mean_average(
         Teuchos::RCP<const Epetra_Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
@@ -429,18 +429,18 @@ namespace SCATRA
     //! apply Neumann and Dirichlet BC to system
     void ApplyBCToSystem();
 
-    void EvaluateInitialTimeDerivative(
+    void evaluate_initial_time_derivative(
         Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
-    virtual void PreCalcInitialTimeDerivative(){};
+    virtual void pre_calc_initial_time_derivative(){};
 
-    //! clean up settings from PreCalcInitialTimeDerivative() after initial time derivative is
+    //! clean up settings from pre_calc_initial_time_derivative() after initial time derivative is
     //! calculated
-    virtual void PostCalcInitialTimeDerivative(){};
+    virtual void post_calc_initial_time_derivative(){};
 
     //! calculate mean concentrations of micro discretization at nodes
-    void CalcMeanMicroConcentration();
+    void calc_mean_micro_concentration();
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -460,7 +460,7 @@ namespace SCATRA
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
     //! Provide title of time integration scheme
-    std::string MethodTitle() { return MapTimIntEnumToString(MethodName()); }
+    std::string MethodTitle() { return map_tim_int_enum_to_string(MethodName()); }
 
     //! return flag for micro scale in multi-scale simulations
     bool MicroScale() const { return micro_scale_; };
@@ -472,13 +472,13 @@ namespace SCATRA
     virtual void PrintTimeStepInfo();
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
-    [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToComponentwiseNodeVector(
+    [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_componentwise_node_vector(
         const Teuchos::RCP<const Epetra_Vector>& dof_vector,  ///< dof-based result vector
         const int nds                                         ///< number of dofset to convert
     ) const;
 
     //! return system matrix as sparse operator
-    Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrixOperator() { return sysmat_; };
+    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_operator() { return sysmat_; };
 
     //! return system matrix downcasted as sparse matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
@@ -523,7 +523,7 @@ namespace SCATRA
     int NdsThermo() const { return nds_thermo_; }
 
     //! return number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
-    int NdsTwoTensorQuantity() const { return nds_two_tensor_quantitiy_; }
+    int nds_two_tensor_quantity() const { return nds_two_tensor_quantitiy_; }
 
     //! return number of dofset associated with velocity dofs
     int NdsVel() const { return nds_vel_; }
@@ -557,8 +557,8 @@ namespace SCATRA
 
     //! return the parameter lists
     Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_; }
-    Teuchos::RCP<Teuchos::ParameterList> ScatraExtraParameterList() { return extraparams_; }
-    virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() = 0;
+    Teuchos::RCP<Teuchos::ParameterList> scatra_extra_parameter_list() { return extraparams_; }
+    virtual Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() = 0;
 
     //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() const { return output_; }
@@ -567,7 +567,7 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
 
     //! Checks if output of results or restart information is required and writes data to disk
-    virtual void CheckAndWriteOutputAndRestart();
+    virtual void check_and_write_output_and_restart();
 
     //! write restart data to disk
     virtual void WriteRestart() const;
@@ -602,7 +602,7 @@ namespace SCATRA
     const Teuchos::RCP<std::vector<double>>& RelErrors() const { return relerrors_; };
 
     //! output performance statistics associated with linear solver into *.csv file
-    static void OutputLinSolverStats(const CORE::LINALG::Solver& solver,  //!< linear solver
+    static void output_lin_solver_stats(const CORE::LINALG::Solver& solver,  //!< linear solver
         const double& time,    //!< solver time maximized over all processors
         const int& step,       //!< time step
         const int& iteration,  //!< Newton-Raphson iteration number
@@ -610,7 +610,7 @@ namespace SCATRA
     );
 
     //! output performance statistics associated with nonlinear solver into *.csv file
-    static void OutputNonlinSolverStats(
+    static void output_nonlin_solver_stats(
         const int& iterations,   //!< iteration count of nonlinear solver
         const double& time,      //!< solver time maximized over all processors
         const int& step,         //!< time step
@@ -670,14 +670,14 @@ namespace SCATRA
     virtual void SetupSplitter(){};
 
     //! set up the (block) maps of the scatra system matrix and the meshtying object
-    void SetupMatrixBlockMapsAndMeshtying();
+    void setup_matrix_block_maps_and_meshtying();
 
     //! set up the (block) maps of the scatra system matrix
-    void SetupMatrixBlockMaps();
+    void setup_matrix_block_maps();
 
     //! some of the set up of the (block) maps of the scatra system matrix has to be done after
     //! SetupMeshtying() has been called
-    void PostSetupMatrixBlockMaps();
+    void post_setup_matrix_block_maps();
 
     /*!
      * @brief build maps associated with blocks of global system matrix
@@ -691,7 +691,7 @@ namespace SCATRA
 
     //! build null spaces associated with blocks of global system matrix. Hand in solver to access
     //! parameter list and initial number of block (e.g. for coupled problems)
-    virtual void BuildBlockNullSpaces(
+    virtual void build_block_null_spaces(
         Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
@@ -700,22 +700,22 @@ namespace SCATRA
     virtual void AssembleMatAndRHS();
 
     //! compute time derivatives of discrete state variables
-    virtual void ComputeTimeDerivative();
+    virtual void compute_time_derivative();
 
     //! compute parameters of the Input voltage to use for the double layer current density
-    virtual void ComputeTimeDerivPot0(const bool init) = 0;
+    virtual void compute_time_deriv_pot0(const bool init) = 0;
 
     //! compute values at intermediate time steps (required for generalized-alpha) ? rename?
-    virtual void ComputeIntermediateValues() = 0;
+    virtual void compute_intermediate_values() = 0;
 
     //! compute values at the interior of the elements (required for hdg)
-    virtual void ComputeInteriorValues() = 0;
+    virtual void compute_interior_values() = 0;
 
     //! compute nodal density values from nodal concentration values (natural convection)
     void ComputeDensity();
 
     //! evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
-    void EvaluateMacroMicroCoupling();
+    void evaluate_macro_micro_coupling();
 
     //! iterative update of phinp
     void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc  //!< increment vector for phi
@@ -730,12 +730,12 @@ namespace SCATRA
     int NumDofPerNode() const;
 
     //! return number of dofs per node in condition
-    int NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition) const;
+    int num_dof_per_node_in_condition(const CORE::Conditions::Condition& condition) const;
 
     //! return number of transported scalars per node in condition
     virtual int NumScalInCondition(const CORE::Conditions::Condition& condition) const
     {
-      return NumDofPerNodeInCondition(condition);
+      return num_dof_per_node_in_condition(condition);
     };
 
     //! return relaxation parameters
@@ -788,10 +788,10 @@ namespace SCATRA
     virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
 
     //! output total and mean values of transported scalars
-    virtual void OutputTotalAndMeanScalars(const int num = 0);
+    virtual void output_total_and_mean_scalars(const int num = 0);
 
     //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
-    void OutputDomainOrBoundaryIntegrals(const std::string& condstring);
+    void output_domain_or_boundary_integrals(const std::string& condstring);
 
     //! output of reaction(s) integral
     void OutputIntegrReac(const int num = 0);
@@ -800,10 +800,10 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> Densafnp() { return densafnp_; }
 
     //! problem-specific outputs
-    virtual void OutputProblemSpecific(){};
+    virtual void output_problem_specific(){};
 
     //! problem-specific restart
-    virtual void ReadRestartProblemSpecific(const int step, IO::DiscretizationReader& reader){};
+    virtual void read_restart_problem_specific(const int step, IO::DiscretizationReader& reader){};
 
     //! return time for evaluation of elements
     const double& DtEle() const { return dtele_; };
@@ -858,7 +858,7 @@ namespace SCATRA
     void AccessVreman(Teuchos::RCP<FLD::Vreman> vrem);
 
     ///! calculate intermediate solution to determine forcing for homogeneous isotropic turbulence
-    void CalcIntermediateSolution();
+    void calc_intermediate_solution();
 
     /*========================================================================*/
     //! @name  fs3i methods
@@ -891,39 +891,40 @@ namespace SCATRA
     void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
 
     //! set ptr to wrapper of this time integrator
-    void SetModelEvaluatroPtr(ADAPTER::AdapterScatraWrapper* adapter_scatra_wrapper)
+    void set_model_evaluatro_ptr(ADAPTER::AdapterScatraWrapper* adapter_scatra_wrapper)
     {
       additional_model_evaluator_ = adapter_scatra_wrapper;
     };
 
    protected:
     //! create vectors for Krylov projection if necessary
-    void PrepareKrylovProjection();
+    void prepare_krylov_projection();
 
     /*========================================================================*/
     //! @name set element parameters
     /*========================================================================*/
 
-    virtual void SetElementTimeParameter(bool forcedincrementalsolver = false) const = 0;
+    virtual void set_element_time_parameter(bool forcedincrementalsolver = false) const = 0;
 
     //! Set backward Euler time parameter
-    virtual void SetElementTimeParameterBackwardEuler() const {};
+    virtual void set_element_time_parameter_backward_euler() const {};
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
+    virtual void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) = 0;
 
     //! Set general element parameters
-    void SetElementGeneralParameters(bool calcinitialtimederivative = false) const;
+    void set_element_general_parameters(bool calcinitialtimederivative = false) const;
 
     //! Set node set parameters
-    void SetElementNodesetParameters() const;
+    void set_element_nodeset_parameters() const;
 
     //! Set additional problem-specific parameters for non-standard scalar transport problems
     //! (electrochemistry etc.)
-    virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const {};
+    virtual void set_element_specific_sca_tra_parameters(
+        Teuchos::ParameterList& eleparams) const {};
 
     //! Set element parameter specific for turbulence
-    void SetElementTurbulenceParameters(bool calcinitialtimederivative = false) const;
+    void set_element_turbulence_parameters(bool calcinitialtimederivative = false) const;
 
     /*========================================================================*/
     //! @name general framework
@@ -933,27 +934,27 @@ namespace SCATRA
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
-    virtual void SetOldPartOfRighthandside();
+    virtual void set_old_part_of_righthandside();
 
     //! create Krylov space projector
-    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond);
+    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond);
     //! update Krylov space projector
-    void UpdateKrylovSpaceProjection();
+    void update_krylov_space_projection();
 
     //! compute approximation for fluxes and add it to a parameter list
-    void AddFluxApproxToParameterList(Teuchos::ParameterList& p);
+    void add_flux_approx_to_parameter_list(Teuchos::ParameterList& p);
 
     //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
     //! this function is never called directly, but only via overloading
-    virtual void CalcInitialTimeDerivative();
+    virtual void calc_initial_time_derivative();
 
     //! initialize meshtying strategy (including standard case without meshtying)
-    virtual void CreateMeshtyingStrategy();
+    virtual void create_meshtying_strategy();
 
     /*--- calculate and update -----------------------------------------------*/
 
     //! apply Dirichlet boundary conditions to linear system of equations
-    void ApplyDirichletToSystem();
+    void apply_dirichlet_to_system();
 
     //! Apply Dirichlet boundary conditions on provided state vector
     virtual void ApplyDirichletBC(const double time,  //!< evaluation time
@@ -962,32 +963,33 @@ namespace SCATRA
     );
 
     //! compute outward pointing unit normal vectors at given bc's
-    Teuchos::RCP<Epetra_MultiVector> ComputeNormalVectors(
+    Teuchos::RCP<Epetra_MultiVector> compute_normal_vectors(
         const std::vector<std::string>& condnames  //!< ?
     );
 
     //! evaluate Neumann inflow boundary condition
-    void ComputeNeumannInflow(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                                           //!< ?
+    void compute_neumann_inflow(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+        Teuchos::RCP<Epetra_Vector> rhs                                             //!< ?
     );
 
     //! evaluate boundary condition due to convective heat transfer
-    void EvaluateConvectiveHeatTransfer(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                                                     //!< ?
+    void evaluate_convective_heat_transfer(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+        Teuchos::RCP<Epetra_Vector> rhs                     //!< ?
     );
 
     //! potential residual scaling and potential addition of Neumann terms
     void ScalingAndNeumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
-    virtual void AddNeumannToResidual() = 0;
+    virtual void add_neumann_to_residual() = 0;
 
     //! evaluate Neumann boundary conditions
     virtual void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
-    virtual void AddProblemSpecificParametersAndVectors(
+    virtual void add_problem_specific_parameters_and_vectors(
         Teuchos::ParameterList& params  //!< parameter list
     );
 
@@ -1001,42 +1003,42 @@ namespace SCATRA
     virtual void NonlinearSolve();
 
     //! contains the nonlinear iteration loop for truly partitioned multi-scale simulations
-    void NonlinearMultiScaleSolve();
+    void nonlinear_multi_scale_solve();
 
     //! solve micro scale in truly partitioned multi-scale simulations
-    void NonlinearMicroScaleSolve();
+    void nonlinear_micro_scale_solve();
 
     //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
-    Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+    Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
         const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename,
         const int numvec, Teuchos::ParameterList& params, const int solvernumber);
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
-    Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
+    Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
         Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
         Teuchos::ParameterList& params, const int dim);
 
     //! compute contributions of solution-depending boundary and interface conditions to global
     //! system of equations
-    virtual void EvaluateSolutionDependingConditions(
+    virtual void evaluate_solution_depending_conditions(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
     //! compute contribution of Robin boundary condition to eq. system
-    void EvaluateRobinBoundaryConditions(
+    void evaluate_robin_boundary_conditions(
         Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
     );
 
     //! compute contributions of additional solution-depending models to global system of equations
-    virtual void EvaluateAdditionalSolutionDependingModels(
+    virtual void evaluate_additional_solution_depending_models(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
     //! perform Aitken relaxation
-    virtual void PerformAitkenRelaxation(Epetra_Vector& phinp,  //!< state vector to be relaxed
+    virtual void perform_aitken_relaxation(Epetra_Vector& phinp,  //!< state vector to be relaxed
         const Epetra_Vector&
             phinp_inc_diff  //!< difference between current and previous state vector increments
     );
@@ -1056,12 +1058,12 @@ namespace SCATRA
     void CheckIsInit() const;
 
     //! helper function to get algorithm title
-    std::string MapTimIntEnumToString(
+    std::string map_tim_int_enum_to_string(
         const enum INPAR::SCATRA::TimeIntegrationScheme term  //!< the enum
     );
 
     //! do we need a statistical sampling for boundary flux at the current time step?
-    bool DoBoundaryFluxStatistics()
+    bool do_boundary_flux_statistics()
     {
       return ((step_ >= samstart_) and (step_ <= samstop_) and
               ((calcflux_boundary_ == INPAR::SCATRA::flux_total) or
@@ -1093,7 +1095,7 @@ namespace SCATRA
     virtual void ComputeTimeStepSize(double& dt);
 
     //! increment time and step value
-    void IncrementTimeAndStep();
+    void increment_time_and_step();
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -1106,7 +1108,7 @@ namespace SCATRA
 
     /*--- set, prepare, and predict ------------------------------------------*/
     //! compute null space information associated with global system matrix if applicable
-    virtual void ComputeNullSpaceIfNecessary() const;
+    virtual void compute_null_space_if_necessary() const;
 
     //! create scalar handler
     virtual void CreateScalarHandler();
@@ -1140,10 +1142,10 @@ namespace SCATRA
     /*========================================================================*/
 
     //! dynamic Smagorinsk model
-    virtual void DynamicComputationOfCs() = 0;
+    virtual void dynamic_computation_of_cs() = 0;
 
     //! dynamic Vreman model
-    virtual void DynamicComputationOfCv() = 0;
+    virtual void dynamic_computation_of_cv() = 0;
 
     //! calculate mean CsgsB to estimate CsgsD for multifractal subgrid-scale model
     void RecomputeMeanCsgsB();
@@ -1197,7 +1199,7 @@ namespace SCATRA
     //! That wrapper holds a ptr to this time integrator in turn.
     //! This Ptr is uneqal nullptr only if a scatra adapter was constructed.
     //! Class AdapterScatraWrapper sets this pointer during construction
-    //! by calling \ref SetModelEvaluatroPtr .
+    //! by calling \ref set_model_evaluatro_ptr .
     ADAPTER::AdapterScatraWrapper* additional_model_evaluator_;
 
     /*========================================================================*/
@@ -1643,14 +1645,14 @@ namespace SCATRA
     /*========================================================================*/
 
     //! return maximum number of dofs per node
-    int NumDofPerNodeInCondition(const CORE::Conditions::Condition& condition,
+    int num_dof_per_node_in_condition(const CORE::Conditions::Condition& condition,
         const Teuchos::RCP<const DRT::Discretization>& discret) const;
 
     //! return maximum number of transported scalars per node
     virtual int NumScalInCondition(const CORE::Conditions::Condition& condition,
         const Teuchos::RCP<const DRT::Discretization>& discret) const
     {
-      return NumDofPerNodeInCondition(condition, discret);
+      return num_dof_per_node_in_condition(condition, discret);
     };
 
     //! return maximum number of dofs per node
@@ -1703,7 +1705,7 @@ namespace SCATRA
     void Init(const ScaTraTimIntImpl* const scatratimint);
 
     //! do the output
-    void OutputTotalAndMeanScalars(const ScaTraTimIntImpl* const scatratimint, const int num);
+    void output_total_and_mean_scalars(const ScaTraTimIntImpl* const scatratimint, const int num);
 
     /*========================================================================*/
     //! @name Access methods
@@ -1724,10 +1726,10 @@ namespace SCATRA
     virtual void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) = 0;
 
     //! print bar to screen as bottom of table
-    void FinalizeScreenOutput();
+    void finalize_screen_output();
 
     //! init objects that are specific for output strategy
-    virtual void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) = 0;
+    virtual void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) = 0;
 
     //! evluate csv data and return it in a map
     virtual std::map<std::string, std::vector<double>> PrepareCSVOutput() = 0;
@@ -1784,7 +1786,7 @@ namespace SCATRA
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+    void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
     std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
@@ -1812,7 +1814,7 @@ namespace SCATRA
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+    void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
     std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
@@ -1840,7 +1842,7 @@ namespace SCATRA
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+    void init_strategy_specific(const ScaTraTimIntImpl* const scatratimint) override;
 
     std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
@@ -1866,7 +1868,7 @@ namespace SCATRA
     void Init(const ScaTraTimIntImpl* const scatratimint);
 
     //! evaluate domain integrals and print to screen
-    void EvaluateIntegralsAndPrintResults(
+    void evaluate_integrals_and_print_results(
         const ScaTraTimIntImpl* const scatratimint, const std::string& condstring);
 
     /*========================================================================*/

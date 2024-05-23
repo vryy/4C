@@ -144,7 +144,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Print(std::ostr
  */
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
-    fluid>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+    fluid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   this->CheckInitSetup();
 
@@ -163,7 +163,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
     out << "eta in [" << this->line_to_3D_segments_[index_segment].GetEtaA() << ", "
         << this->line_to_3D_segments_[index_segment].GetEtaB() << "]";
     out << ", Gauss points = "
-        << this->line_to_3D_segments_[index_segment].GetNumberOfProjectionPoints();
+        << this->line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";
   }
 }
@@ -172,17 +172,17 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
  *
  */
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualization(
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
-  BeamContactPair::GetPairVisualization(visualization_writer, visualization_params);
+  BeamContactPair::get_pair_visualization(visualization_writer, visualization_params);
 
 
   // If a writer exists for integration point data, add the integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
-      visualization_writer->GetVisualizationWriter("integration-points");
+      visualization_writer->get_visualization_writer("integration-points");
   if (visualization != Teuchos::null)
   {
     // Setup variables.
@@ -194,7 +194,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     CORE::LINALG::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization->GetVisualizationData();
+    auto& visualization_data = visualization->get_visualization_data();
     std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
     std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
 
@@ -204,8 +204,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
       // Add the integration points.
       for (const auto& projection_point : segment.GetProjectionPoints())
       {
-        EvaluateBeamPosition(projection_point, X, true);
-        EvaluateBeamPosition(projection_point, r, false);
+        evaluate_beam_position(projection_point, X, true);
+        evaluate_beam_position(projection_point, r, false);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 
 
   // If a writer exists for segmentation point data, add the segmentation point data.
-  visualization = visualization_writer->GetVisualizationWriter("segmentation");
+  visualization = visualization_writer->get_visualization_writer("segmentation");
   if (visualization != Teuchos::null)
   {
     // Setup variables.
@@ -228,7 +228,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization->GetVisualizationData();
+    auto& visualization_data = visualization->get_visualization_data();
     std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
     std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
 
@@ -253,7 +253,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 }
 
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::EvaluateBeamPosition(
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::evaluate_beam_position(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {

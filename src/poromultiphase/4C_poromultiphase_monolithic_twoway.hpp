@@ -80,7 +80,7 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables) public for access from monolithic scatra problem
-    void UpdateFieldsAfterConvergence(
+    void update_fields_after_convergence(
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     // access to monolithic rhs vector
@@ -110,7 +110,7 @@ namespace POROMULTIPHASE
 
     virtual void SetupRHS();
 
-    virtual Teuchos::RCP<Epetra_Vector> SetupStructurePartofRHS();
+    virtual Teuchos::RCP<Epetra_Vector> setup_structure_partof_rhs();
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
@@ -134,7 +134,7 @@ namespace POROMULTIPHASE
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      */
-    void ExtractStructureAndFluidVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_structure_and_fluid_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     /// setup composed system matrix from field solvers
@@ -150,7 +150,7 @@ namespace POROMULTIPHASE
     bool SetupSolver() override;
 
     //! build the block null spaces
-    void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override;
+    void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override;
 
     //! Evaluate mechanical-fluid system matrix
     virtual void ApplyStrCouplMatrix(
@@ -158,7 +158,7 @@ namespace POROMULTIPHASE
     );
 
     //! Evaluate fluid-mechanical system matrix
-    virtual void ApplyFluidCouplMatrix(
+    virtual void apply_fluid_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
@@ -166,10 +166,10 @@ namespace POROMULTIPHASE
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructFluidCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_fluid_coupling_matrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> FluidStructCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! Solve the linear system of equations
     void LinearSolve();
@@ -186,10 +186,10 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    void UpdateFieldsAfterConvergence();
+    void update_fields_after_convergence();
 
     //! build norms for convergence check
-    virtual void BuildConvergenceNorms();
+    virtual void build_convergence_norms();
 
     void PoroFDCheck();
 
@@ -197,7 +197,7 @@ namespace POROMULTIPHASE
     bool Converged();
 
     /// Print user output that structure field is disabled
-    void PrintStructureDisabledInfo();
+    void print_structure_disabled_info();
 
     //! convergence tolerance for increments
     double ittolinc_;
@@ -310,7 +310,7 @@ namespace POROMULTIPHASE
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     //! build norms for convergence check
-    void BuildConvergenceNorms() override;
+    void build_convergence_norms() override;
 
    protected:
     /// setup composed system matrix from field solvers
@@ -330,7 +330,7 @@ namespace POROMULTIPHASE
         const CORE::LINEAR_SOLVER::SolverType solvertype) override;
 
     //! build the block null spaces
-    void BuildArteryBlockNullSpace(
+    void build_artery_block_null_space(
         Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override;
 
     //! dof row map (not splitted)

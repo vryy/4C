@@ -121,7 +121,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case get_junction_volume_mix:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetJunctionVolumeMix(
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->get_junction_volume_mix(
           this, params, discretization, elevec1, lm, mat);
     }
     break;
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case solve_junction_scatra:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->SolveScatraBifurcations(
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->solve_scatra_bifurcations(
           this, params, discretization, elevec1, elevec2, lm, mat);
     }
     break;
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case eval_nodal_ess_vals:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvalNodalEssentialValues(
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->eval_nodal_essential_values(
           this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
     }
     break;
@@ -242,7 +242,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(const CORE::FE::CellType distype) const
+bool DRT::ELEMENTS::RedAirway::is_higher_order_element(const CORE::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)

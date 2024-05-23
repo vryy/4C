@@ -511,10 +511,10 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   {
     // calculate the isotropic hardening modulus with old plastic strains
     // Hiso = dsigma_y / d astrain^p
-    Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+    Hiso = get_iso_hard_at_strainbarnp(strainbar_p);
 
     // calculate the uniaxial yield stress out of samples
-    sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+    sigma_y = get_sigma_y_at_strainbarnp(strainbar_p);
   }
 
   // calculate the yield function with Dgamma = 0
@@ -659,9 +659,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
       else  // constant_Hiso == false
       {
         // Hiso = dsigma_y / d astrain^p_{n+1}
-        Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+        Hiso = get_iso_hard_at_strainbarnp(strainbar_p);
         // sigma_y = sigma_y(astrain^p_{n+1})
-        sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+        sigma_y = get_sigma_y_at_strainbarnp(strainbar_p);
       }
 
 #ifdef DEBUGMATERIAL
@@ -826,7 +826,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
 
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
-  SetupCmatElastoPlastic(*cmat, Dgamma, G, qbar, N, Nbar, heaviside, Hiso, Hkin);
+  setup_cmat_elasto_plastic(*cmat, Dgamma, G, qbar, N, Nbar, heaviside, Hiso, Hkin);
 
 #ifdef DEBUGMATERIAL
   std::cout << "Nach Setup Cep\n" << std::endl;
@@ -870,7 +870,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   if (tracestrainp > 1.0E-8) FOUR_C_THROW("trace of plastic strains is not equal to zero!");
 
   // ----------------------------------- linearisation of D_mech for k_Td
-  DissipationCouplCond(*cmat, gp, G, Hiso, Hkin, heaviside, etanorm, Dgamma, N, *stress);
+  dissipation_coupl_cond(*cmat, gp, G, Hiso, Hkin, heaviside, etanorm, Dgamma, N, *stress);
 
   // ----------------------------------------------------- postprocessing
 
@@ -963,7 +963,7 @@ void MAT::ThermoPlasticLinElast::SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, N
  | computes isotropic elasticity tensor in matrix notion     dano 05/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
+void MAT::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,                                           // elasto-plastic tangent modulus (out)
     double Dgamma,                                      // plastic multiplier
@@ -1080,7 +1080,7 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
   std::cout << " cmat " << cmat << std::endl;
 #endif  // #ifdef DEBUGMATERIAL
 
-}  // SetupCmatElastoPlastic()
+}  // setup_cmat_elasto_plastic()
 
 
 /*----------------------------------------------------------------------*
@@ -1151,7 +1151,7 @@ void MAT::ThermoPlasticLinElast::Dissipation(int gp,  // current Gauss point
 /*----------------------------------------------------------------------*
  | compute linearisation of internal dissipation for k_Td    dano 04/13 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::DissipationCouplCond(
+void MAT::ThermoPlasticLinElast::dissipation_coupl_cond(
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
         cmat,                                       // elasto-plastic tangent modulus (out)
     int gp,                                         // current Gauss point
@@ -1298,7 +1298,7 @@ void MAT::ThermoPlasticLinElast::DissipationCouplCond(
   // update history
   dmech_d_->at(gp) = D_mech_d;
 
-}  // DissipationCouplCond()
+}  // dissipation_coupl_cond()
 
 
 /*----------------------------------------------------------------------*
@@ -1412,7 +1412,7 @@ double MAT::ThermoPlasticLinElast::STModulus()
  | yield stress, i.e. isotropic hardening modulus at current            |
  | accumulated plastic strain                                           |
  *----------------------------------------------------------------------*/
-double MAT::ThermoPlasticLinElast::GetIsoHardAtStrainbarnp(
+double MAT::ThermoPlasticLinElast::get_iso_hard_at_strainbarnp(
     const double strainbar_p  // current accumulated strain
 )
 {
@@ -1470,7 +1470,7 @@ double MAT::ThermoPlasticLinElast::GetIsoHardAtStrainbarnp(
  | compute current yield stress sigma_y(astrain^p)           dano 02/14 |
  | calculate yield stress from (sigma_y-astrain^p)-samples              |
  *----------------------------------------------------------------------*/
-double MAT::ThermoPlasticLinElast::GetSigmaYAtStrainbarnp(
+double MAT::ThermoPlasticLinElast::get_sigma_y_at_strainbarnp(
     const double strainbar_p  // current accumulated strain, in case of dependent hardening
                               // if damage!=0: isotropic hardening internal variable
 )
@@ -1531,7 +1531,7 @@ double MAT::ThermoPlasticLinElast::GetSigmaYAtStrainbarnp(
   // return current yield stress
   return sigma_y_interpol;
 
-}  // GetSigmaYAtStrainbarnp()
+}  // get_sigma_y_at_strainbarnp()
 
 
 /*---------------------------------------------------------------------*

@@ -30,7 +30,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
    */
   bool use_safe_ghosting_branch = false;
   {
-    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
     const enum INPAR::STR::IntegrationStrategy intstrat =
         CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
@@ -38,7 +38,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
     {
       /* Enable new safe ghosting only for interface discretization type "mortar"
        *
-       * There's a conflict with CreateVolumeGhosting(). This affects all Nitsche-type algorithms
+       * There's a conflict with create_volume_ghosting(). This affects all Nitsche-type algorithms
        * and also classical Penalty with Gauss-point-to-segment (GPTS).
        *
        * In theory, penalty with GPTS should work just fine, because it should never need a volume

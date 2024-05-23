@@ -45,13 +45,13 @@ void CORE::Dofsets::DofSetProxy::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetProxy::AssignDegreesOfFreedom(
+int CORE::Dofsets::DofSetProxy::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // This method does nothing, because the DofSetProxy is not supposed to assign dofs itself.
   // Instead, the original dofset assigns dofs when FillComplete() is called on its discretization.
-  // This invokes the call to AssignDegreesOfFreedom on the original dofset. In
-  // AssignDegreesOfFreedom NotifyAssigned() is called. This calls NotifyAssigned() on all
+  // This invokes the call to assign_degrees_of_freedom on the original dofset. In
+  // assign_degrees_of_freedom NotifyAssigned() is called. This calls NotifyAssigned() on all
   // registered proxies.
   NotifyAssigned();
   return start;
@@ -109,7 +109,7 @@ void CORE::Dofsets::DofSetProxy::CheckIsAssigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,
-      "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
+      "assign_degrees_of_freedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
   FOUR_C_ASSERT(dofset_ != nullptr, "dofset_ pointer is nullptr");
 

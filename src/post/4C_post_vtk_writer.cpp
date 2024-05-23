@@ -262,10 +262,10 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     result = Teuchos::rcp(new PostResult(field_));
     result->next_result(groupname);
   }
-  if (not(field_->problem()->SpatialApproximationType() ==
+  if (not(field_->problem()->spatial_approximation_type() ==
               CORE::FE::ShapeFunctionType::polynomial or
-          field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
-          field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs))
+          field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
+          field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs))
     FOUR_C_THROW(
         "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
         "given type.");
@@ -284,13 +284,13 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     case nodebased:
     {
       const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
-      this->WriteNodalResultStep(currentout_, data, dummy, groupname, name, numdf);
+      this->write_nodal_result_step(currentout_, data, dummy, groupname, name, numdf);
       break;
     }
     case elementbased:
     {
       const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
-      this->WriteElementResultStep(currentout_, data, dummy, groupname, name, numdf, from);
+      this->write_element_result_step(currentout_, data, dummy, groupname, name, numdf, from);
       break;
     }
     default:

@@ -66,15 +66,15 @@ void SCATRA::TimIntOneStepTheta::Setup()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralParameters(),
+  //       - order is important here: for safety checks in set_element_general_parameters(),
   //         we have to know the time-integration parameters
-  SetElementTimeParameter();
-  SetElementGeneralParameters();
-  SetElementTurbulenceParameters();
-  SetElementNodesetParameters();
+  set_element_time_parameter();
+  set_element_general_parameters();
+  set_element_turbulence_parameters();
+  set_element_nodeset_parameters();
 
   // setup krylov
-  PrepareKrylovProjection();
+  prepare_krylov_projection();
 
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
@@ -112,7 +112,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementalsolver) const
+void SCATRA::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -138,7 +138,7 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
+void SCATRA::TimIntOneStepTheta::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
@@ -161,10 +161,10 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
+void SCATRA::TimIntOneStepTheta::set_old_part_of_righthandside()
 {
   // call base class routine
-  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+  ScaTraTimIntImpl::set_old_part_of_righthandside();
 
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dta_ * (1.0 - theta_), *phidtn_, 0.0);
@@ -183,7 +183,7 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AddNeumannToResidual()
+void SCATRA::TimIntOneStepTheta::add_neumann_to_residual()
 {
   residual_->Update(theta_ * dta_, *neumann_loads_, 1.0);
 }
@@ -204,35 +204,36 @@ void SCATRA::TimIntOneStepTheta::AVM3Separation()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
+void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cs()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(
+    DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
+void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cv()
 {
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+    Vrem_->apply_filter_for_dynamic_computation_of_dt(
+        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
   }
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntOneStepTheta::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // call base class routine
-  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+  ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
 
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp", phinp_);
@@ -240,10 +241,10 @@ void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
+void SCATRA::TimIntOneStepTheta::compute_time_derivative()
 {
   // call base class routine
-  ScaTraTimIntImpl::ComputeTimeDerivative();
+  ScaTraTimIntImpl::compute_time_derivative();
 
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
@@ -263,7 +264,7 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 void SCATRA::TimIntOneStepTheta::Update()
 {
   // compute time derivative at time n+1
-  ComputeTimeDerivative();
+  compute_time_derivative();
 
   // call base class routine
   ScaTraTimIntImpl::Update();
@@ -273,11 +274,11 @@ void SCATRA::TimIntOneStepTheta::Update()
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (IsResultStep() or DoBoundaryFluxStatistics()) CalcFlux(true);
+    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
   }
 
   // after the next command (time shift of solutions) do NOT call
-  // ComputeTimeDerivative() anymore within the current time step!!!
+  // compute_time_derivative() anymore within the current time step!!!
 
   // solution of this step becomes most recent solution of the last step
   phin_->Update(1.0, *phinp_, 0.0);
@@ -348,7 +349,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
   reader->ReadVector(phin_, "phin");
   reader->ReadVector(phidtn_, "phidtn");
 
-  ReadRestartProblemSpecific(step, *reader);
+  read_restart_problem_specific(step, *reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -373,40 +374,40 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
+void SCATRA::TimIntOneStepTheta::calc_initial_time_derivative()
 {
-  PreCalcInitialTimeDerivative();
+  pre_calc_initial_time_derivative();
 
   // call core algorithm
-  ScaTraTimIntImpl::CalcInitialTimeDerivative();
+  ScaTraTimIntImpl::calc_initial_time_derivative();
 
-  PostCalcInitialTimeDerivative();
+  post_calc_initial_time_derivative();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::PreCalcInitialTimeDerivative()
+void SCATRA::TimIntOneStepTheta::pre_calc_initial_time_derivative()
 {
   // standard general element parameter without stabilization
-  SetElementGeneralParameters(true);
+  set_element_general_parameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial time derivatives,
   // but the rhs of the standard element routine is used as starting point for this special system
   // of equations. Therefore, the rhs vector has to be scaled correctly.
-  SetElementTimeParameter(true);
+  set_element_time_parameter(true);
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  set_element_turbulence_parameters(true);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::PostCalcInitialTimeDerivative()
+void SCATRA::TimIntOneStepTheta::post_calc_initial_time_derivative()
 {  // and finally undo our temporary settings
-  SetElementGeneralParameters(false);
-  SetElementTimeParameter(false);
-  SetElementTurbulenceParameters(false);
+  set_element_general_parameters(false);
+  set_element_time_parameter(false);
+  set_element_turbulence_parameters(false);
 }
 
 /*--------------------------------------------------------------------*

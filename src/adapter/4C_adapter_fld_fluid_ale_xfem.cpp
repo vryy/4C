@@ -32,7 +32,7 @@ ADAPTER::FluidAleXFEM::FluidAleXFEM(const Teuchos::ParameterList& prbdyn, std::s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleXFEM::BoundaryDiscretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleXFEM::boundary_discretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -42,7 +42,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleXFEM::BoundaryDiscretization(
 
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
 
-  return xfluid->BoundaryDiscretization();
+  return xfluid->boundary_discretization();
 }
 
 
@@ -69,17 +69,17 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
 
   // set idispnp in Xfluid
-  if (idisp != Teuchos::null) xfluid->ApplyStructMeshDisplacement(idisp);
+  if (idisp != Teuchos::null) xfluid->apply_struct_mesh_displacement(idisp);
 
   // set ivelnp in Xfluid
-  if (ivel != Teuchos::null) xfluid->ApplyStructInterfaceVelocities(ivel);
+  if (ivel != Teuchos::null) xfluid->apply_struct_interface_velocities(ivel);
 
   // Update the ale update part
   if (FluidField()->Interface()->AUCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> audispnp = FluidField()->Interface()->ExtractAUCondVector(dispnp);
-    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+    AleField()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
@@ -87,7 +87,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
-    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -98,7 +98,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
 
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  FluidField()->apply_mesh_displacement(fluiddisp);
   FluidField()->Solve();
 }
 
@@ -120,29 +120,29 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::extract_interface_forces()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceForces();
+  return xfluid->extract_struct_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceVelnp();
+  return xfluid->extract_struct_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::extract_interface_veln()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
-  return xfluid->ExtractStructInterfaceVeln();
+  return xfluid->extract_struct_interface_veln();
 }
 
 FOUR_C_NAMESPACE_CLOSE

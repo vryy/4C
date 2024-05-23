@@ -113,7 +113,7 @@ void CORE::LINALG::Equilibration::ComputeInvSymmetry(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::EquilibrateMatrixRows(
+void CORE::LINALG::Equilibration::equilibrate_matrix_rows(
     CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) FOUR_C_THROW("Row equilibration of matrix failed!");
@@ -121,7 +121,7 @@ void CORE::LINALG::Equilibration::EquilibrateMatrixRows(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::EquilibrateMatrixColumns(
+void CORE::LINALG::Equilibration::equilibrate_matrix_columns(
     CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const
 {
   if (matrix.RightScale(*invcolsums)) FOUR_C_THROW("Column equilibration of matrix failed!");
@@ -142,7 +142,7 @@ void CORE::LINALG::Equilibration::EquilibrateSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationUniversal::UnequilibrateIncrement(
+void CORE::LINALG::EquilibrationUniversal::unequilibrate_increment(
     Teuchos::RCP<Epetra_Vector> increment) const
 {
   // unequilibrate global increment vector if necessary
@@ -172,7 +172,7 @@ void CORE::LINALG::EquilibrationUniversal::EquilibrateRHS(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationBlockSpecific::UnequilibrateIncrement(
+void CORE::LINALG::EquilibrationBlockSpecific::unequilibrate_increment(
     Teuchos::RCP<Epetra_Vector> increment) const
 {
   if (increment->Multiply(1.0, *invcolsums_, *increment, 0.0))
@@ -215,7 +215,7 @@ void CORE::LINALG::EquilibrationSparse::EquilibrateMatrix(
     ComputeInvRowSums(*sparsematrix, invrowsums_, Method());
 
     // perform row equilibration of global system matrix
-    EquilibrateMatrixRows(*sparsematrix, invrowsums_);
+    equilibrate_matrix_rows(*sparsematrix, invrowsums_);
   }
 
   // perform column equilibration
@@ -228,7 +228,7 @@ void CORE::LINALG::EquilibrationSparse::EquilibrateMatrix(
     ComputeInvColSums(*sparsematrix, invcolsums_, Method());
 
     // perform column equilibration of global system matrix
-    EquilibrateMatrixColumns(*sparsematrix, invcolsums_);
+    equilibrate_matrix_columns(*sparsematrix, invcolsums_);
   }
 }
 
@@ -303,7 +303,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
       // perform row equilibration of matrix blocks in current row block of global system
       // matrix
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-        EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums);
+        equilibrate_matrix_rows(blocksparsematrix->Matrix(i, j), invrowsums);
 
       // insert inverse row sums of current main diagonal matrix block into global vector
       blockmaps->InsertVector(invrowsums, i, invrowsums_);
@@ -374,7 +374,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
       // perform column equilibration of matrix blocks in current column block of global
       // system matrix
       for (int i = 0; i < blocksparsematrix->Rows(); ++i)
-        EquilibrateMatrixColumns(blocksparsematrix->Matrix(i, j), invcolsums);
+        equilibrate_matrix_columns(blocksparsematrix->Matrix(i, j), invcolsums);
 
       // insert inverse column sums of current main diagonal matrix block into global vector
       blockmaps->InsertVector(invcolsums, j, invcolsums_);
@@ -411,7 +411,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateMatrix(
       // perform row equilibration of matrix blocks in current row block of global system
       // matrix
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-        EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invrowsums);
+        equilibrate_matrix_rows(blocksparsematrix->Matrix(i, j), invrowsums);
 
       // insert inverse row sums of current main diagonal matrix block into global vector
       blockmaps->InsertVector(invrowsums, i, invrowsums_);
@@ -426,7 +426,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateMatrix(
       // perform column equilibration of matrix blocks in current column block of global
       // system matrix
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
-        EquilibrateMatrixColumns(blocksparsematrix->Matrix(j, i), invcolsums);
+        equilibrate_matrix_columns(blocksparsematrix->Matrix(j, i), invcolsums);
 
       // insert inverse column sums of current main diagonal matrix block into global vector
       blockmaps->InsertVector(invcolsums, i, invcolsums_);
@@ -440,8 +440,8 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateMatrix(
 
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
       {
-        EquilibrateMatrixRows(blocksparsematrix->Matrix(i, j), invsymmetry);
-        EquilibrateMatrixColumns(blocksparsematrix->Matrix(j, i), invsymmetry);
+        equilibrate_matrix_rows(blocksparsematrix->Matrix(i, j), invsymmetry);
+        equilibrate_matrix_columns(blocksparsematrix->Matrix(j, i), invsymmetry);
       }
 
       // insert inverse row sums of current main diagonal matrix block into global vector

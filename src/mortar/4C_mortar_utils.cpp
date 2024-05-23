@@ -405,7 +405,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransform(
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix              popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::matrix_row_col_transform(
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap,
     Teuchos::RCP<const Epetra_Map> newdomainmap)
 {
@@ -714,7 +714,7 @@ int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& tran
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
+void MORTAR::UTILS::create_volume_ghosting(const DRT::Discretization& dis_src,
     const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
     bool check_on_in, bool check_on_exit)
 {
@@ -790,23 +790,23 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       int volgid = faceele->ParentElementId();
 
       if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-        FOUR_C_THROW("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
+        FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis[0]->gElement(volgid);
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
-      faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+      faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
 
       if (voldis.size() == 2)
       {
         const auto* elecolmap2 = voldis[1]->ElementColMap();
         if (elecolmap2->LID(volgid) == -1)
-          faceele->SetParentSlaveElement(nullptr, -1);
+          faceele->set_parent_slave_element(nullptr, -1);
         else
         {
           auto* volele = voldis[1]->gElement(volgid);
           if (volele == nullptr) FOUR_C_THROW("Cannot find element with gid %", volgid);
-          faceele->SetParentSlaveElement(volele, faceele->FaceParentNumber());
+          faceele->set_parent_slave_element(volele, faceele->FaceParentNumber());
         }
       }
     }
@@ -857,7 +857,7 @@ void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
 
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-  bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+  bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
   // store nurbs specific data to node

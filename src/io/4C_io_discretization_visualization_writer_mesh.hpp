@@ -76,7 +76,8 @@ namespace IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void AppendDofBasedResultDataVector(const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+    void append_dof_based_result_data_vector(
+        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         const std::string& resultname);
 
@@ -96,7 +97,7 @@ namespace IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void AppendNodeBasedResultDataVector(
+    void append_node_based_result_data_vector(
         const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string& resultname);
 
@@ -111,7 +112,7 @@ namespace IO
      * @param result_num_components_per_element (in) Number of scalar values per element
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void AppendElementBasedResultDataVector(
+    void append_element_based_result_data_vector(
         const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
         unsigned int result_num_components_per_element, const std::string& resultname);
 
@@ -136,9 +137,9 @@ namespace IO
     /**
      * \brief Write ghosting information to the elements
      *
-     * For more details look at the documentation to IO::AppendElementGhostingInformation
+     * For more details look at the documentation to IO::append_element_ghosting_information
      */
-    void AppendElementGhostingInformation();
+    void append_element_ghosting_information();
 
     /**
      * \brief Write the 4C internal node GIDs for each node
@@ -160,7 +161,7 @@ namespace IO
      * nodes of adjacent elements are not connected in the output file. In ParaView the global
      * nodal connectivity can be restored with the CleanToGrid filter.
      */
-    void SetGeometryFromDiscretization();
+    void set_geometry_from_discretization();
 
 
    private:
@@ -186,7 +187,7 @@ namespace IO
    * @param element_predicate (in) A predicate function which returns whether a given element
    * should be included in the output.
    */
-  void AppendElementGhostingInformation(const DRT::Discretization& discretization,
+  void append_element_ghosting_information(const DRT::Discretization& discretization,
       VisualizationManager& visualization_manager,
       const std::function<bool(const DRT::Element* ele)>& element_predicate);
 

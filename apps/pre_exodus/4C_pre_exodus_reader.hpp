@@ -170,8 +170,8 @@ namespace EXODUS
     void PlotNodesGmsh() const;
 
     //! Plot all ElementBlocks into Gmsh-file
-    void PlotElementBlocksGmsh(const std::string fname, const EXODUS::Mesh& mymesh) const;
-    void PlotElementBlocksGmsh(
+    void plot_element_blocks_gmsh(const std::string fname, const EXODUS::Mesh& mymesh) const;
+    void plot_element_blocks_gmsh(
         const std::string fname, const EXODUS::Mesh& mymesh, const std::vector<int>& ebids) const;
 
     //! Plot Connectivity into Gmsh-file

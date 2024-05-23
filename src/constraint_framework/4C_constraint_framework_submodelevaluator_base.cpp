@@ -26,7 +26,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
   if (me_stiff_ptr != Teuchos::null)
   {
     if (!(Q_Ld_->Filled() && Q_dd_->Filled() && Q_dL_->Filled()))
-      FOUR_C_THROW("Call EvaluateCouplingTerms() first.");
+      FOUR_C_THROW("Call evaluate_coupling_terms() first.");
 
     // evaluate the stiffness contribution of this sme:
     auto sme_stiff_ptr = CORE::LINALG::Multiply(*Q_dL_, false, *Q_Ld_, false, false);
@@ -48,7 +48,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
   return true;
 }
 
-void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateCouplingTerms(
+void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
     STR::TIMINT::BaseDataGlobalState& gstate)
 {
   // Get the number of multipoint equations

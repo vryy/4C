@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
      * (and probably can not) have a RCP to itself.
      * @param i_iteration (in) current number of iteration.
      */
-    void WriteOutputRuntimeIteration(
+    void write_output_runtime_iteration(
         const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
         int i_step, double time) const;
 
@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
      * iteration visualization).
      * @param time (in) Scalar time value for this visualization step.
      */
-    void WriteOutputBeamToFluidMeshTying(
+    void write_output_beam_to_fluid_mesh_tying(
         const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_step,
         double time) const;
 

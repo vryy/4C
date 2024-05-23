@@ -127,7 +127,7 @@ namespace CONTACT
 
     */
 
-    void EvaluateRelMovPredict() override;
+    void evaluate_rel_mov_predict() override;
 
     /*!
     \brief Initialize general contact variables for next Newton step
@@ -199,7 +199,7 @@ namespace CONTACT
     in this method, too.
 
     */
-    void UpdateConstraintNorm(int uzawaiter = 0) override;
+    void update_constraint_norm(int uzawaiter = 0) override;
 
     /*!
     \brief Store Lagrange multipliers for next Uzawa step
@@ -209,7 +209,7 @@ namespace CONTACT
     in the variable zuzawa_, which is then used in the next Uzawa step.
 
     */
-    void UpdateUzawaAugmentedLagrange() override;
+    void update_uzawa_augmented_lagrange() override;
 
     /*! \brief Compute force terms
      *
@@ -265,14 +265,17 @@ namespace CONTACT
 
     // All these functions only have functionality in Lagrange contact simulations,
     // thus they are defined empty here in the case of Penalty contact.
-    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
+    {
+      return Teuchos::null;
+    };
     Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return Teuchos::null; };
-    bool ActiveSetSemiSmoothConverged() const override { return true; }
+    bool active_set_semi_smooth_converged() const override { return true; }
     bool ActiveSetConverged() override { return true; }
     int ActiveSetSteps() override { return 0; }
     void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
@@ -281,7 +284,7 @@ namespace CONTACT
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     }
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
       FOUR_C_THROW(
@@ -290,9 +293,9 @@ namespace CONTACT
     }
     void EvalConstrRHS() override {}
     void UpdateActiveSet() override {}
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override {}
+    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
     bool IsPenalty() const override { return true; };
-    void ResetLagrangeMultipliers(
+    void reset_lagrange_multipliers(
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override
     {
     }

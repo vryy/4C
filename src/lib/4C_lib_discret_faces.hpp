@@ -75,7 +75,10 @@ namespace DRT
       the master parent element's face's coordinate system and the slave element's face's coordinate
       system
       */
-      void SetLocalNumberingMap(std::vector<int> localtrafomap) { localtrafomap_ = localtrafomap; }
+      void set_local_numbering_map(std::vector<int> localtrafomap)
+      {
+        localtrafomap_ = localtrafomap;
+      }
 
 
       /*--- get ------------------------------------------*/
@@ -95,7 +98,7 @@ namespace DRT
       //! get the transformation map between the local coordinate systems of the face w.r.t the
       //! master parent element's face's coordinate system and the slave element's face's coordinate
       //! system
-      const std::vector<int>& GetLocalNumberingMap() const { return localtrafomap_; }
+      const std::vector<int>& get_local_numbering_map() const { return localtrafomap_; }
 
       //! get surface's nodes (unsorted, original)
       const std::vector<DRT::Node*>& GetNodes() const { return nodes_; }
@@ -143,7 +146,7 @@ namespace DRT
     \param solveparams (in): List of parameters
     \param recompute (in)  : force method to recompute the nullspace
     */
-    void ComputeNullSpaceIfNecessary(
+    void compute_null_space_if_necessary(
         Teuchos::ParameterList& solveparams, bool recompute = false) override
     {
       // remark: the null space is not computed correctly for XFEM discretizations, since the number
@@ -153,7 +156,7 @@ namespace DRT
       //           (having XFEM dofs seems to render the system non-singular, but it should be
       //           singular so the null space has a non-zero dimension)
       //         - the ML preconditioner also relies on a fixed number of dofs per node
-      DRT::Discretization::ComputeNullSpaceIfNecessary(solveparams, recompute);
+      DRT::Discretization::compute_null_space_if_necessary(solveparams, recompute);
     }
 
     /*!
@@ -202,7 +205,7 @@ namespace DRT
         bool doboundaryconditions = true, bool createinternalfaces = false);
 
     /*!
-    \brief Get flag indicating whether CreateInternalFacesExtension() has been called
+    \brief Get flag indicating whether create_internal_faces_extension() has been called
     */
     virtual inline bool FilledExtension() const { return extension_filled_; }
 
@@ -285,7 +288,7 @@ namespace DRT
     /*!
     \brief Build internal faces extension
     */
-    void CreateInternalFacesExtension(const bool verbose = false);
+    void create_internal_faces_extension(const bool verbose = false);
 
     /*!
     \brief Complete construction of a face elements

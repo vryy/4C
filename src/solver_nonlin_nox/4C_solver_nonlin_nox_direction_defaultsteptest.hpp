@@ -110,14 +110,14 @@ namespace NOX
           /// fill the diagonal with the value one at the location of bad element DOFs
           inline void fillDiagonal(Epetra_Vector& diagonal) const override
           {
-            fillDiagonalAtBadDofs(diagonal);
+            fill_diagonal_at_bad_dofs(diagonal);
           }
 
           /// return true if all volumes are valid under the specified criteria
-          bool isValidElementVolumes() const;
+          bool is_valid_element_volumes() const;
 
           /// return true if step length decreases
-          bool isValidDirectionLength() const;
+          bool is_valid_direction_length() const;
 
           /** \brief return true if the direction indicates a positive definite system matrix
            *
@@ -128,11 +128,11 @@ namespace NOX
           bool isPositiveDefinite() const;
 
           /// compute scalar quality quantities based on the primal search direction
-          void computePrimalDirectionMeasures(
+          void compute_primal_direction_measures(
               ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp);
 
           /// compute element volumes
-          ::NOX::Abstract::Group::ReturnType computeElementVolumes(
+          ::NOX::Abstract::Group::ReturnType compute_element_volumes(
               ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp);
 
           /// detected bad elements based on the user-defined criteria
@@ -145,7 +145,7 @@ namespace NOX
           Teuchos::RCP<Epetra_Vector> getEmptyDiagonal(const NOX::NLN::Group& grp) const;
 
           /// fill the diagonal vector at all dofs of bad elements
-          void fillDiagonalAtBadDofs(Epetra_Vector& diagonal) const;
+          void fill_diagonal_at_bad_dofs(Epetra_Vector& diagonal) const;
 
          private:
           /** reference element volumes (volumes corresponding to previously

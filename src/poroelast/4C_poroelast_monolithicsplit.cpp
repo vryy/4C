@@ -53,7 +53,7 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   POROELAST::Monolithic::PrepareTimeStep();
 
   // counter and print header
-  // IncrementTimeAndStep();
+  // increment_time_and_step();
   // PrintHeader();
 
   //  // call the predictor
@@ -75,8 +75,8 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
         StructureField()->Interface()->ExtractFSICondVector(StructureField()->Dispn());
     Teuchos::RCP<const Epetra_Vector> ivelnp =
         StructureField()->Interface()->ExtractFSICondVector(StructureField()->Velnp());
-    Teuchos::RCP<Epetra_Vector> ifvelnp = FluidField()->ExtractInterfaceVelnp();
-    Teuchos::RCP<Epetra_Vector> ifveln = FluidField()->ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ifvelnp = FluidField()->extract_interface_velnp();
+    Teuchos::RCP<Epetra_Vector> ifveln = FluidField()->extract_interface_veln();
 
     ddi_->Update(1.0, *idispnp, -1.0, *idispn, 0.0);
     ddi_->Update(-1.0, *ifveln, timescale);
@@ -86,9 +86,9 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
       // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
       Teuchos::RCP<Epetra_Vector> ibcveln =
-          fsibcextractor_->ExtractCondVector(StructureToFluidAtInterface(ivelnp));
+          fsibcextractor_->ExtractCondVector(structure_to_fluid_at_interface(ivelnp));
       Teuchos::RCP<Epetra_Vector> inobcveln =
-          fsibcextractor_->ExtractOtherVector(StructureToFluidAtInterface(ddi_));
+          fsibcextractor_->ExtractOtherVector(structure_to_fluid_at_interface(ddi_));
 
       // DBCs at FSI-Interface
       fsibcextractor_->InsertCondVector(ibcveln, ifvelnp);
@@ -97,19 +97,19 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
     }
     else
       // no DBCs on FSI interface -> just make preconditioners consistent (structure decides)
-      ifvelnp = StructureToFluidAtInterface(ddi_);
+      ifvelnp = structure_to_fluid_at_interface(ddi_);
 
-    FluidField()->ApplyInterfaceVelocities(ifvelnp);
+    FluidField()->apply_interface_velocities(ifvelnp);
   }
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::StructureToFluidAtInterface(
+Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::structure_to_fluid_at_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->MasterToSlave(iv);
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::FluidToStructureAtInterface(
+Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::fluid_to_structure_at_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->SlaveToMaster(iv);
@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   }
 
   // transfer to fluid side
-  Teuchos::RCP<Epetra_Vector> gidmarker_fluid = StructureToFluidAtInterface(gidmarker_struct);
+  Teuchos::RCP<Epetra_Vector> gidmarker_fluid = structure_to_fluid_at_interface(gidmarker_struct);
 
   std::vector<int> structfsidbcvector;
   const int numgids = gidmarker_fluid->MyLength();  // on each processor (lids)
@@ -176,10 +176,10 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   return structfsidbcmap;
 }
 
-void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
+void POROELAST::MonolithicSplit::setup_coupling_and_matrices()
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
-  icoupfs_->SetupConditionCoupling(*StructureField()->Discretization(),
+  icoupfs_->setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
@@ -251,7 +251,7 @@ void POROELAST::MonolithicSplit::Solve()
 
   // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
   // (i.e. condensed forces onto the structure) needed for rhs in next time step
-  RecoverLagrangeMultiplierAfterTimeStep();
+  recover_lagrange_multiplier_after_time_step();
 }
 
 FOUR_C_NAMESPACE_CLOSE

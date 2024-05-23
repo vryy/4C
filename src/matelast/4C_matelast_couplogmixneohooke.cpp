@@ -74,7 +74,7 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
   psi += mue * 0.5 * (prinv(0) - 3.) - mue * log(sq) + lambda * 0.5 * pow((sq - 1.), 2.);
 }
 
-void MAT::ELASTIC::CoupLogMixNeoHooke::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+void MAT::ELASTIC::CoupLogMixNeoHooke::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {

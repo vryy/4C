@@ -30,7 +30,7 @@ namespace DRT
           CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R);
 
       template <CORE::FE::CellType distype>
-      void GetTemperatureForStructuralMaterial(
+      void get_temperature_for_structural_material(
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& shapefctsGP,
           Teuchos::ParameterList& params);
 
@@ -45,7 +45,7 @@ namespace DRT
        * @param[in] xdisp    nodal displacements of the element
        */
       template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
-      void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
+      void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp);
 
@@ -60,7 +60,7 @@ namespace DRT
        * @param[in] displacement  displacement vector of the element
        */
       template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
-      void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
+      void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
           DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
           const std::vector<double>& displacement);
 
@@ -80,7 +80,7 @@ namespace DRT
        * \param gp [in] : Gauss point
        */
       template <CORE::FE::CellType distype>
-      void ComputeDeformationGradient(
+      void compute_deformation_gradient(
           CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& defgrd,
           INPAR::STR::KinemType kinemType,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xdisp,

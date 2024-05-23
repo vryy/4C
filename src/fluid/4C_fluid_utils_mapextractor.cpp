@@ -73,19 +73,19 @@ void FLD::UTILS::MapExtractor::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::conditioned_element_map(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
-      CORE::Conditions::ConditionedElementMap(dis, "FSICoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FSICoupling");
   Teuchos::RCP<std::set<int>> condelements2 =
-      CORE::Conditions::ConditionedElementMap(dis, "FREESURFCoupling");
+      CORE::Conditions::conditioned_element_map(dis, "FREESURFCoupling");
   Teuchos::RCP<std::set<int>> condelements3 =
-      CORE::Conditions::ConditionedElementMap(dis, "StructAleCoupling");
+      CORE::Conditions::conditioned_element_map(dis, "StructAleCoupling");
   Teuchos::RCP<std::set<int>> condelements4 =
-      CORE::Conditions::ConditionedElementMap(dis, "Mortar");
+      CORE::Conditions::conditioned_element_map(dis, "Mortar");
   Teuchos::RCP<std::set<int>> condelements5 =
-      CORE::Conditions::ConditionedElementMap(dis, "ALEUPDATECoupling");
+      CORE::Conditions::conditioned_element_map(dis, "ALEUPDATECoupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));
   std::copy(condelements3->begin(), condelements3->end(),
@@ -120,11 +120,11 @@ void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::ConditionedElementMap(
+Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map(
     const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
-      CORE::Conditions::ConditionedElementMap(dis, "KrylovSpaceProjection");
+      CORE::Conditions::conditioned_element_map(dis, "KrylovSpaceProjection");
   return condelements;
 }
 

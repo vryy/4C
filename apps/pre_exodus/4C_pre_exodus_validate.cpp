@@ -70,7 +70,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly
-  reader.PrintUnknownSections();
+  reader.print_unknown_sections();
 
   // the input file seems to be valid
   std::cout << "...OK" << std::endl << std::endl;

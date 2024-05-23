@@ -31,7 +31,7 @@ void thr_dyn_drt()
   // set degrees of freedom in the discretization
   if (not thermodis->Filled()) thermodis->FillComplete();
 
-  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->thermal_dynamic_params();
 
   // create instance of thermo basis algorithm (no structure discretization)
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermoonly =

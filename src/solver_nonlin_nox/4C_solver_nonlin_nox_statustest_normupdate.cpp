@@ -63,10 +63,10 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
   const ::NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
 
   // (1) of the increment of the given quantities
-  normUpdate_ =
-      nlngrp->GetSolutionUpdateNorms(xOld, normType_, checkList_, Teuchos::rcp(&scaleType_, false));
+  normUpdate_ = nlngrp->get_solution_update_norms(
+      xOld, normType_, checkList_, Teuchos::rcp(&scaleType_, false));
   // (2) of the last accepted Newton step
-  normRefSol_ = nlngrp->GetPreviousSolutionNorms(
+  normRefSol_ = nlngrp->get_previous_solution_norms(
       xOld, normType_, checkList_, Teuchos::rcp(&scaleType_, false));
 
   for (std::size_t i = 0; i < nChecks_; ++i)
@@ -103,7 +103,7 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
   // we should return the test as unconverged until there is a valid
   // old solution (i.e. the number of iterations is greater than zero).
   int niters = problem.getNumIterations();
-  if (niters == 0) return checkStatusFirstIter();
+  if (niters == 0) return check_status_first_iter();
 
   // ---------------------------------------------------------
   // Begin check for convergence criteria #1 (local check)
@@ -195,7 +195,7 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatusFirstIter()
+::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::check_status_first_iter()
 {
   // set some default values
   normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_, 1.0e+12));
@@ -317,7 +317,8 @@ void NOX::NLN::StatusTest::NormUpdate::throwError(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdateSkipFirstIter::checkStatusFirstIter()
+::NOX::StatusTest::StatusType
+NOX::NLN::StatusTest::NormUpdateSkipFirstIter::check_status_first_iter()
 {
   // set some default values
   normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_, 0.0));

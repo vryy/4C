@@ -40,8 +40,8 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
     const STR::TIMINT::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::Integrator> int_ptr = Teuchos::null;
-  int_ptr = BuildImplicitIntegrator(datasdyn);
-  if (int_ptr.is_null()) int_ptr = BuildExplicitIntegrator(datasdyn);
+  int_ptr = build_implicit_integrator(datasdyn);
+  if (int_ptr.is_null()) int_ptr = build_explicit_integrator(datasdyn);
   FOUR_C_ASSERT(
       !int_ptr.is_null(), "We could not find a suitable dynamic integrator (Dynamic Type).");
 
@@ -50,7 +50,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
+Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
     const STR::TIMINT::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
@@ -109,7 +109,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::BuildExplicitIntegrator(
+Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
     const STR::TIMINT::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;

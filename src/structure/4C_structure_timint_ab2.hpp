@@ -131,13 +131,13 @@ namespace STR
     int MethodSteps() const override { return 2; }
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() const override { return 2; }
+    int method_order_of_accuracy_dis() const override { return 2; }
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() const override { return 2; }
+    int method_order_of_accuracy_vel() const override { return 2; }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override
+    double method_lin_err_coeff_dis() const override
     {
       const double dt = (*dt_)[0];
       const double dto = (*dt_)[-1];
@@ -145,7 +145,7 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }
+    double method_lin_err_coeff_vel() const override { return method_lin_err_coeff_dis(); }
 
     //@}
 

@@ -179,7 +179,7 @@ namespace FLD
 
 
     */
-    virtual void SetOldPartOfRighthandside() = 0;
+    virtual void set_old_part_of_righthandside() = 0;
 
     /*!
     \brief Set gamma to a value
@@ -197,7 +197,7 @@ namespace FLD
     /*!
      * \brief Create internal faces extension
      */
-    void CreateFacesExtension();
+    void create_faces_extension();
 
 
     /*!
@@ -234,7 +234,7 @@ namespace FLD
     \brief Insert Womersley condition
 
     */
-    virtual void InsertVolumetricSurfaceFlowCondVector(
+    virtual void insert_volumetric_surface_flow_cond_vector(
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res)
     {
       return;
@@ -244,37 +244,37 @@ namespace FLD
     \brief treat turbulence models in AssembleMatAndRHS
 
     */
-    virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+    virtual void treat_turbulence_models(Teuchos::ParameterList& eleparams);
 
     /*!
     \brief Evaluate for AVM3 Separation
 
     */
-    virtual void AVM3AssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    virtual void av_m3_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams);
 
     /*!
     \brief Get scale separation matrix
 
     */
-    virtual void AVM3GetScaleSeparationMatrix();
+    virtual void av_m3_get_scale_separation_matrix();
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) {}
+    virtual void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) {}
 
     /*!
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
 
     */
-    virtual void ClearStateAssembleMatAndRHS() { discret_->ClearState(); }
+    virtual void clear_state_assemble_mat_and_rhs() { discret_->ClearState(); }
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsApplyNonlinearBoundaryConditions(
+    virtual void set_custom_ele_params_apply_nonlinear_boundary_conditions(
         Teuchos::ParameterList& eleparams)
     {
     }
@@ -283,16 +283,16 @@ namespace FLD
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) {}
+    virtual void set_custom_ele_params_linear_relaxation_solve(Teuchos::ParameterList& eleparams) {}
 
     /*!
     \brief Prepare calculation of acceleration
 
     */
-    virtual void TimIntCalculateAcceleration();
+    virtual void tim_int_calculate_acceleration();
 
     /*!
-    \brief Additional function for RedModels in LinearRelaxationSolve
+    \brief Additional function for RedModels in linear_relaxation_solve
 
     */
     virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax) {}
@@ -301,7 +301,7 @@ namespace FLD
     \brief Call statistics manager (special case in TimIntLoma)
 
     */
-    virtual void CallStatisticsManager();
+    virtual void call_statistics_manager();
 
     /*!
     \brief return thermpressaf_ in TimIntLoma
@@ -314,7 +314,7 @@ namespace FLD
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    virtual void CalculateAcceleration(
+    virtual void calculate_acceleration(
         const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at     n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
@@ -330,7 +330,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementGeneralFluidParameter();
+    virtual void set_element_general_fluid_parameter();
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -340,7 +340,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTurbulenceParameters();
+    virtual void set_element_turbulence_parameters();
 
     //! @name Set general parameter in class fluid_ele_parameter_intface
     /*!
@@ -348,10 +348,10 @@ namespace FLD
     \brief parameter (fix over all time step) are set in this method.
 
     */
-    virtual void SetFaceGeneralFluidParameter();
+    virtual void set_face_general_fluid_parameter();
 
     /// initialize vectors and flags for turbulence approach
-    virtual void SetGeneralTurbulenceParameters();
+    virtual void set_general_turbulence_parameters();
 
     /*!
     \brief do explicit predictor step to start nonlinear iteration from
@@ -389,10 +389,10 @@ namespace FLD
     \brief preparations for Krylov space projection
 
     */
-    virtual void InitKrylovSpaceProjection();
-    void SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond) override;
-    void UpdateKrylovSpaceProjection() override;
-    void CheckMatrixNullspace() override;
+    virtual void init_krylov_space_projection();
+    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond) override;
+    void update_krylov_space_projection() override;
+    void check_matrix_nullspace() override;
 
     /*!
     \brief update within iteration
@@ -429,13 +429,13 @@ namespace FLD
     */
     virtual void TimeUpdateStresses();
 
-    virtual void TimeUpdateNonlinearBC();
+    virtual void time_update_nonlinear_bc();
 
     /*!
     \ Update of external forces
 
     */
-    virtual void TimeUpdateExternalForces();
+    virtual void time_update_external_forces();
 
     /// Implement ADAPTER::Fluid
     void Update() override { TimeUpdate(); }
@@ -486,26 +486,26 @@ namespace FLD
     void ResetTime(const double dtold) override { SetTimeStep(Time() - dtold, Step() - 1); }
 
     //! Give order of accuracy
-    virtual int MethodOrderOfAccuracy() const
+    virtual int method_order_of_accuracy() const
     {
-      return std::min(MethodOrderOfAccuracyVel(), MethodOrderOfAccuracyPres());
+      return std::min(method_order_of_accuracy_vel(), method_order_of_accuracy_pres());
     }
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const
+    virtual int method_order_of_accuracy_vel() const
     {
       FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
     }
 
     //! Give local order of accuracy of pressure part
-    virtual int MethodOrderOfAccuracyPres() const
+    virtual int method_order_of_accuracy_pres() const
     {
       FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
     }
     //! Return linear error coefficient of velocity
-    virtual double MethodLinErrCoeffVel() const
+    virtual double method_lin_err_coeff_vel() const
     {
       FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
@@ -546,7 +546,7 @@ namespace FLD
     \output of external forces for restart
 
     */
-    virtual void OutputExternalForces();
+    virtual void output_external_forces();
 
     /*!
     \brief get access to map extractor for velocity and pressure
@@ -580,7 +580,7 @@ namespace FLD
            numerical solution of a test problems
 
     */
-    virtual Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol();
+    virtual Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol();
 
     /*!
     \brief evaluate divergence of velocity field
@@ -592,7 +592,7 @@ namespace FLD
     \brief calculate adaptive time step with the CFL number
 
     */
-    virtual double EvaluateDtViaCflIfApplicable();
+    virtual double evaluate_dt_via_cfl_if_applicable();
 
     /*!
     \brief read restart data
@@ -707,7 +707,7 @@ namespace FLD
     virtual Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> ImpedanceBC_() { return impedancebc_; }
 
     //! Evaluate Dirichlet and Neumann boundary conditions
-    virtual void SetDirichletNeumannBC();
+    virtual void set_dirichlet_neumann_bc();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     virtual void ApplyDirichletBC(Teuchos::ParameterList& params,
@@ -790,7 +790,7 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    virtual void GenAlphaIntermediateValues(
+    virtual void gen_alpha_intermediate_values(
         Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn)
     {
       return;
@@ -830,7 +830,7 @@ namespace FLD
     }
 
     /// provide access to turbulence statistics manager
-    Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override;
+    Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override;
     /// provide access to the box filter for dynamic Smagorinsky model
     Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override;
     /// provide access to the box filter for Vreman model
@@ -862,7 +862,7 @@ namespace FLD
     /*!
       Needed for Mortar coupling at the FSI interface
      */
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+    virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape(std::string condname);
 
     /// switch fluid field to block matrix
     virtual void UseBlockMatrix(
@@ -891,31 +891,32 @@ namespace FLD
     /*!
       This is the linear solve as needed for steepest descent FSI.
      */
-    virtual void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+    virtual void linear_relaxation_solve(Teuchos::RCP<Epetra_Vector> relax);
 
     //@}
 
     //! @name methods for turbulence models
 
-    virtual void ApplyScaleSeparationForLES();
+    virtual void apply_scale_separation_for_les();
 
     virtual void OutputofFilteredVel(
         Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) = 0;
 
-    virtual void PrintTurbulenceModel();
+    virtual void print_turbulence_model();
     //@}
 
     /// set the initial porosity field
-    void SetInitialPorosityField(const INPAR::POROELAST::InitialField,  ///< type of initial field
-                                                                        // const int, ///< type of
-                                                                        // initial field
-        const int startfuncno  ///< number of spatial function
+    void set_initial_porosity_field(
+        const INPAR::POROELAST::InitialField,  ///< type of initial field
+                                               // const int, ///< type of
+                                               // initial field
+        const int startfuncno                  ///< number of spatial function
         ) override
     {
       FOUR_C_THROW("not implemented in base class");
     }
 
-    virtual void UpdateIterIncrementally(
+    virtual void update_iter_incrementally(
         Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
 
@@ -953,13 +954,13 @@ namespace FLD
     \brief evaluate and update problem-specific boundary conditions
 
     */
-    virtual void DoProblemSpecificBoundaryConditions() { return; }
+    virtual void do_problem_specific_boundary_conditions() { return; }
 
     ///< Print stabilization details to screen
-    virtual void PrintStabilizationDetails() const;
+    virtual void print_stabilization_details() const;
 
     ///< Add contribution to external load vector ( add possibly pre-existing external_loads_);
-    void AddContributionToExternalLoads(
+    void add_contribution_to_external_loads(
         const Teuchos::RCP<const Epetra_Vector> contributing_vector) override;
 
     ///< Update slave dofs for multifield simulations with fluid mesh tying
@@ -973,7 +974,8 @@ namespace FLD
      * \param[in] matrix (size fluid_dof x fluid_dof) linear matrix containing entries that need
      * to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
+    virtual void set_coupling_contributions(
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
 
     void ResetExternalForces();
 
@@ -993,7 +995,7 @@ namespace FLD
     \brief  increment time and step value
 
     */
-    void IncrementTimeAndStep() override
+    void increment_time_and_step() override
     {
       step_ += 1;
       time_ += dta_;
@@ -1015,43 +1017,43 @@ namespace FLD
     \brief calculate intermediate solution
 
     */
-    void CalcIntermediateSolution() override;
+    void calc_intermediate_solution() override;
 
     /*!
     \brief apply Dirichlet boundary conditions to system of equations
 
     */
-    virtual void ApplyDirichletToSystem();
+    virtual void apply_dirichlet_to_system();
 
     /*!
     \brief apply weak or mixed hybrid Dirichlet boundary conditions to system of equations
 
     */
-    virtual void ApplyNonlinearBoundaryConditions();
+    virtual void apply_nonlinear_boundary_conditions();
 
     /*!
     \brief update acceleration for generalized-alpha time integration
 
     */
-    virtual void GenAlphaUpdateAcceleration() { return; }
+    virtual void gen_alpha_update_acceleration() { return; }
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    virtual void GenAlphaIntermediateValues() { return; }
+    virtual void gen_alpha_intermediate_values() { return; }
 
     //! Predict velocities which satisfy exactly the Dirichlet BCs
     //! and the linearised system at the previously converged state.
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
-    virtual void PredictTangVelConsistAcc();
+    virtual void predict_tang_vel_consist_acc();
 
     /*!
     \brief update surface tension (free surface flow only)
 
     */
-    virtual void FreeSurfaceFlowSurfaceTensionUpdate();
+    virtual void free_surface_flow_surface_tension_update();
 
     /*!
     \brief Update of an Ale field based on the fluid state
@@ -1063,14 +1065,14 @@ namespace FLD
     \brief For a given node, obtain local indices of dofs in a vector (like e.g. velnp)
 
     */
-    void GetDofsVectorLocalIndicesforNode(int nodeGid, Teuchos::RCP<Epetra_Vector> vec,
+    void get_dofs_vector_local_indicesfor_node(int nodeGid, Teuchos::RCP<Epetra_Vector> vec,
         bool withPressure, std::vector<int>* dofsLocalInd);
 
     /*!
     \brief add mat and rhs of edge-based stabilization
 
     */
-    virtual void AssembleEdgeBasedMatandRHS();
+    virtual void assemble_edge_based_matand_rhs();
 
     /*!
     \brief Setup meshtying
@@ -1088,7 +1090,7 @@ namespace FLD
       \brief add problem dependent vectors
 
      */
-    virtual void AddProblemDependentVectors() { return; };
+    virtual void add_problem_dependent_vectors() { return; };
 
     /*!
     \brief Initialize forcing
@@ -1106,7 +1108,7 @@ namespace FLD
      * \brief Here, the coupling contributions collected in the linear matrix couplingcontributions_
      * will be added to the system matrix
      */
-    virtual void AssembleCouplingContributions();
+    virtual void assemble_coupling_contributions();
 
     //! @name general algorithm parameters
 
@@ -1389,7 +1391,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTimeParameter() = 0;
+    virtual void set_element_time_parameter() = 0;
 
    private:
     //! @name Special method for turbulent variable-density flow at low Mach number with
@@ -1407,10 +1409,10 @@ namespace FLD
     /*! \brief Prepares the locsys manager by calculating the node normals
      *
      */
-    void SetupLocsysDirichletBC(const double time);
+    void setup_locsys_dirichlet_bc(const double time);
 
     /// prepares and evalutes egde-based internal face integrals
-    void EvaluateFluidEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    void evaluate_fluid_edge_based(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
@@ -1421,7 +1423,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void WriteOutputKineticEnergy();
+    virtual void write_output_kinetic_energy();
 
     ///< Evaluate mass matrix
     virtual void EvaluateMassMatrix();

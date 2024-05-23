@@ -99,7 +99,7 @@ namespace NOX
       //! @{
 
       /// compute element volumes
-      ::NOX::Abstract::Group::ReturnType computeElementVolumes(
+      ::NOX::Abstract::Group::ReturnType compute_element_volumes(
           Teuchos::RCP<Epetra_Vector>& ele_vols) const;
 
       /*! get the nodal dofs from the elements corresponding to the provided
@@ -108,14 +108,14 @@ namespace NOX
           const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const;
 
       /// compute trial element volumes
-      ::NOX::Abstract::Group::ReturnType computeTrialElementVolumes(
+      ::NOX::Abstract::Group::ReturnType compute_trial_element_volumes(
           Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step);
 
       //! @}
 
       /// compute the correction system of equations (e.g. in case of a second order correction
       /// step)
-      ::NOX::Abstract::Group::ReturnType computeCorrectionSystem(
+      ::NOX::Abstract::Group::ReturnType compute_correction_system(
           const enum NOX::NLN::CorrectionType type);
 
       //! set right hand side
@@ -146,15 +146,15 @@ namespace NOX
       /// @name access the eigenvalue data
       /// @{
 
-      const CORE::LINALG::SerialDenseVector& getJacobianRealEigenvalues() const;
-      const CORE::LINALG::SerialDenseVector& getJacobianImaginaryEigenvalues() const;
-      double getJacobianMaxRealEigenvalue() const;
-      double getJacobianMinRealEigenvalue() const;
+      const CORE::LINALG::SerialDenseVector& get_jacobian_real_eigenvalues() const;
+      const CORE::LINALG::SerialDenseVector& get_jacobian_imaginary_eigenvalues() const;
+      double get_jacobian_max_real_eigenvalue() const;
+      double get_jacobian_min_real_eigenvalue() const;
 
       /// @}
 
       //! returns the nox_nln_interface_required pointer
-      Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
+      Teuchos::RCP<const NOX::NLN::Interface::Required> get_nln_req_interface_ptr() const;
 
       //! returns the primary rhs norms
       virtual Teuchos::RCP<const std::vector<double>> GetRHSNorms(
@@ -164,7 +164,7 @@ namespace NOX
               Teuchos::null) const;
 
       //! returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
-      virtual Teuchos::RCP<std::vector<double>> GetSolutionUpdateRMS(
+      virtual Teuchos::RCP<std::vector<double>> get_solution_update_rms(
           const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
           const std::vector<double>& rTol,
           const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
@@ -175,7 +175,7 @@ namespace NOX
           const StatusTest::NormUpdate::ScaleType scale = StatusTest::NormUpdate::Unscaled) const;
 
       //! returns the desired norm of the primary solution updates
-      virtual Teuchos::RCP<std::vector<double>> GetSolutionUpdateNorms(
+      virtual Teuchos::RCP<std::vector<double>> get_solution_update_norms(
           const ::NOX::Abstract::Vector& xOld,
           const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<StatusTest::QuantityType>& chQ,
@@ -183,7 +183,7 @@ namespace NOX
               Teuchos::null) const;
 
       //! returns the desired norm of the previous solution
-      virtual Teuchos::RCP<std::vector<double>> GetPreviousSolutionNorms(
+      virtual Teuchos::RCP<std::vector<double>> get_previous_solution_norms(
           const ::NOX::Abstract::Vector& xOld,
           const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<StatusTest::QuantityType>& chQ,
@@ -193,54 +193,54 @@ namespace NOX
       void CreateBackupState(const ::NOX::Abstract::Vector& dir) const;
 
       //! recover from stored backup state
-      void RecoverFromBackupState();
+      void recover_from_backup_state();
 
       //! @name reset the pre/post operator wrapper objects
       //! @{
       /*! \brief Resets the pre/post operator for the nln group
        *  Default call to the two parameter version, without resetting the isValid flags.
        *  @param[in] grpOptionParams   ParameterList which holds the new pre/post operator. */
-      void ResetPrePostOperator(Teuchos::ParameterList& grpOptionParams)
+      void reset_pre_post_operator(Teuchos::ParameterList& grpOptionParams)
       {
-        ResetPrePostOperator(grpOptionParams, false);
+        reset_pre_post_operator(grpOptionParams, false);
       };
 
       /*! \brief Resets the pre/post operator wrapper for the nln group
        *  @param[in] grpOptionsParams   ParameterList which holds the new pre/post operator
        *  @param[in] resetIsValidFlag   If true, this forces the computeJacobian(), computeF() etc.
        * routines to reevaluate the linear system after setting a new pre/post operator. */
-      void ResetPrePostOperator(
+      void reset_pre_post_operator(
           Teuchos::ParameterList& grpOptionParams, const bool& resetIsValidFlags);
 
       /*! \brief Resets the pre/post operator wrapper for the nln linear system
        *  Default call to the two parameter version, without resetting the isValid flags.
        *  @param[in] linearSolverParams ParameterList which holds the new pre/post operator. */
-      void ResetLinSysPrePostOperator(Teuchos::ParameterList& linearSolverParams)
+      void reset_lin_sys_pre_post_operator(Teuchos::ParameterList& linearSolverParams)
       {
-        ResetLinSysPrePostOperator(linearSolverParams, false);
+        reset_lin_sys_pre_post_operator(linearSolverParams, false);
       };
 
       /*! \brief Resets the pre/post operator wrapper for the nln linear system
        *  @param[in] linearSolverParams   ParameterList which holds the new pre/post operator.
        *  @param[in] resetIsValidFlag     If true, this forces the computeJacobian(), computeF()
        * etc. routines to reevaluate the linear system after setting a new pre/post operator. */
-      void ResetLinSysPrePostOperator(
+      void reset_lin_sys_pre_post_operator(
           Teuchos::ParameterList& linearSolverParams, const bool& resetIsValidFlags);
       //! @}
 
       //! @name PTC related methods
       //! @{
       //! adjust the pseudo time step length for the ptc nln solver
-      void adjustPseudoTimeStep(double& delta, const double& stepSize,
+      void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
-      void adjustPseudoTimeStep(double& delta, const double& stepSize,
+      void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
       //! get the lumped mass matrix
-      Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
+      Teuchos::RCP<const Epetra_Vector> get_lumped_mass_matrix_ptr() const;
 
       // Get element based scaling operator
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetContributionsFromElementLevel();
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_contributions_from_element_level();
       //! @}
 
       //! @name XFEM related methods
@@ -255,7 +255,7 @@ namespace NOX
       virtual double GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const;
 
       //! compute contributions to a linear model
-      virtual double GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
+      virtual double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
           enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           enum NOX::NLN::MeritFunction::LinOrder linorder,
           enum NOX::NLN::MeritFunction::LinType lintype) const;
@@ -267,17 +267,17 @@ namespace NOX
       const Epetra_Map& getJacobianRangeMap(unsigned rbid, unsigned cbid) const;
 
       /// return a copy of the Jacobian diagonal block \c diag_bid
-      Teuchos::RCP<Epetra_Vector> getDiagonalOfJacobian(unsigned diag_bid) const;
+      Teuchos::RCP<Epetra_Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
 
       /// replace the Jacobian diagonal block \c diag_bid
-      void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
+      void replace_diagonal_of_jacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
 
       /// compute the condition number of the Jacobian matrix (serial mode)
-      ::NOX::Abstract::Group::ReturnType computeSerialJacobianConditionNumber(
+      ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_condition_number(
           const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput);
 
       /// compute the eigenvalues of the Jacobian matrix (serial mode)
-      ::NOX::Abstract::Group::ReturnType computeSerialJacobianEigenvalues(bool printOutput);
+      ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_eigenvalues(bool printOutput);
 
       /// reset is valid Newton member
       inline void resetIsValidNewton() { isValidNewton = false; };

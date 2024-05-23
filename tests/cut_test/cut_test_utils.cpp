@@ -278,7 +278,7 @@ void cutmesh(CORE::GEO::CUT::Mesh& mesh)
     mesh.FindNodalDOFSets(true);
   }
 
-  mesh.CreateIntegrationCells(0);
+  mesh.create_integration_cells(0);
 
   // Run safety checks
   mesh.TestElementVolume(false);

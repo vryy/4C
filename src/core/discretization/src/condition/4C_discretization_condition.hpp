@@ -190,7 +190,7 @@ namespace CORE::Conditions
     In case the condition refers to lines, surfaces or volumes, a
     geometry description might be needed to properly evaluate the condition
     (e.g. in the case of Neumann conditions).
-    Such a geometry description is build in \ref DRT::Discretization::BoundaryConditionsGeometry
+    Such a geometry description is build in \ref DRT::Discretization::boundary_conditions_geometry
     and then added to this Condition.
     The geometry description consists of elements that are capable to
     perform the necessary operations on the condition (e.g. integrate a Neumann BC

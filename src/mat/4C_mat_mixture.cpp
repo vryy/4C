@@ -81,7 +81,7 @@ MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
   for (auto const& constituent : params_->constituents_)
   {
     constituents_->emplace_back(constituent->CreateConstituent(id));
-    constituents_->back()->RegisterAnisotropyExtensions(anisotropy_);
+    constituents_->back()->register_anisotropy_extensions(anisotropy_);
 
     ++id;
   }
@@ -89,7 +89,7 @@ MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
   // create instance of mixture rule
   mixture_rule_ = params->mixture_rule_->CreateRule();
   mixture_rule_->SetConstituents(constituents_);
-  mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
+  mixture_rule_->register_anisotropy_extensions(anisotropy_);
 }
 
 // Pack data
@@ -202,13 +202,13 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
       for (const auto& constituent : *constituents_)
       {
         constituent->UnpackConstituent(position, data);
-        constituent->RegisterAnisotropyExtensions(anisotropy_);
+        constituent->register_anisotropy_extensions(anisotropy_);
       }
 
       // unpack mixturerule
       mixture_rule_->UnpackMixtureRule(position, data);
       mixture_rule_->SetConstituents(constituents_);
-      mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
+      mixture_rule_->register_anisotropy_extensions(anisotropy_);
 
       // position checking is not available in post processing mode
       if (position != data.size())
@@ -228,8 +228,8 @@ void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
   is_pre_evaluated_.resize(numgp, false);
 
   // Setup anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 
   // Let all constituents read the line definition
   for (const auto& constituent : *constituents_)
@@ -244,7 +244,7 @@ void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
 void MAT::Mixture::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
   So3Material::PostSetup(params, eleGID);
-  anisotropy_.ReadAnisotropyFromParameterList(params);
+  anisotropy_.read_anisotropy_from_parameter_list(params);
   if (constituents_ != nullptr)
   {
     for (const auto& constituent : *constituents_)
@@ -298,13 +298,13 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-void MAT::Mixture::RegisterOutputDataNames(
+void MAT::Mixture::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  mixture_rule_->RegisterOutputDataNames(names_and_size);
+  mixture_rule_->register_output_data_names(names_and_size);
   for (const auto& constituent : *constituents_)
   {
-    constituent->RegisterOutputDataNames(names_and_size);
+    constituent->register_output_data_names(names_and_size);
   }
 }
 

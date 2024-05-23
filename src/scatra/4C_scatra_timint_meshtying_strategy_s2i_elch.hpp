@@ -50,7 +50,7 @@ namespace SCATRA
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() override;
 
-    void EvaluatePointCoupling() override;
+    void evaluate_point_coupling() override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     void Update() const override;
@@ -66,7 +66,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
 
     //! minimum interfacial overpotential associated with scatra-scatra interface layer growth
     double etagrowthmin_;
@@ -84,7 +84,7 @@ namespace SCATRA
     explicit MeshtyingStrategyS2IElchSCL(
         SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters);
 
-    void AddTimeIntegrationSpecificVectors() const override{};
+    void add_time_integration_specific_vectors() const override{};
 
     void EvaluateMeshtying() override{};
 
@@ -152,7 +152,7 @@ namespace SCATRA
         ) override;
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
-    void EvaluateConditionNTS(
+    void evaluate_condition_nts(
         CORE::Conditions::Condition& condition,  //!< scatra-scatra interface coupling condition
         const MORTAR::Node& slavenode,           //!< slave-side node
         const double&

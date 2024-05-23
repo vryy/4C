@@ -39,14 +39,14 @@ namespace BEAMINTERACTION
       //! destructor
       virtual ~Factory() = default;
 
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BuildModelEvaluators(
+      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> build_model_evaluators(
           const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes) const;
 
      private:
     };
 
     //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BuildModelEvaluators(
+    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> build_model_evaluators(
         const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes);
 
   }  // namespace SUBMODELEVALUATOR

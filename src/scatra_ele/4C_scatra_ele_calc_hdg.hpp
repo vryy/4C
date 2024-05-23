@@ -95,7 +95,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1);
 
       //! update interior variables
-      int UpdateInteriorVariables(DRT::ELEMENTS::ScaTraHDG* ele, Teuchos::ParameterList& params,
+      int update_interior_variables(DRT::ELEMENTS::ScaTraHDG* ele, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector& elevec);
 
       //! set initial field
@@ -108,7 +108,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2, DRT::Element::LocationArray& la);
 
       //! project material field
-      virtual int ProjectMaterialField(const DRT::Element* ele) { return 0; };
+      virtual int project_material_field(const DRT::Element* ele) { return 0; };
 
       //! calc p-adaptivity
       int CalcPAdaptivity(const DRT::Element* ele, DRT::Discretization& discretization,
@@ -129,7 +129,7 @@ namespace DRT
       );
 
       //! get the material parameters before first timestep
-      virtual void PrepareMaterialParams(DRT::Element* ele  //!< the element we are dealing with
+      virtual void prepare_material_params(DRT::Element* ele  //!< the element we are dealing with
       );
 
       //! evaluate material
@@ -154,15 +154,15 @@ namespace DRT
       );
 
       //! stores the material internal state in a vector for output and restart
-      virtual void GetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization)
+      virtual void get_material_internal_state(const DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization)
       {
         return;
       };
 
       //! stores the restart information in the material internal state
-      virtual void SetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization)
+      virtual void set_material_internal_state(const DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization)
       {
         return;
       };
@@ -230,13 +230,13 @@ namespace DRT
             CORE::LINALG::SerialDenseVector& elevec, int indexstart);
 
         //! compute interior matrices
-        void ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices(DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! compute interior matrices for Tet elements
-        void ComputeInteriorMatricesTet(DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices_tet(DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! compute interior matrices
-        void ComputeInteriorMatricesAll(DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices_all(DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! calls local solver to compute matrices: internal and face
         void ComputeMatrices(DRT::Element* ele);
@@ -261,12 +261,12 @@ namespace DRT
             CORE::LINALG::SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! set material parameter
-        void SetMaterialParameter(DRT::ELEMENTS::ScaTraHDG* hdgele,
+        void set_material_parameter(DRT::ELEMENTS::ScaTraHDG* hdgele,
             CORE::LINALG::SerialDenseVector& ivecn, CORE::LINALG::SerialDenseVector& ivecnp,
             CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
 
         //! prepare material parameter in first timestep
-        void PrepareMaterialParameter(
+        void prepare_material_parameter(
             DRT::ELEMENTS::ScaTraHDG* hdgele, CORE::LINALG::SerialDenseMatrix& difftensor);
 
 

@@ -28,7 +28,7 @@ namespace DRT
 }
 namespace CORE::GEOMETRICSEARCH
 {
-  class GeometricSearchParams;
+  class geometric_search_params;
   class GeometricSearchVisualization;
 }  // namespace CORE::GEOMETRICSEARCH
 namespace BEAMINTERACTION
@@ -89,13 +89,13 @@ namespace BEAMINTERACTION
       void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      bool PreUpdateStepElement(bool beam_redist) override;
+      bool pre_update_step_element(bool beam_redist) override;
 
       //! derived
       void UpdateStepElement(bool repartition_was_done) override;
 
       //! derived
-      void PostUpdateStepElement() override;
+      void post_update_step_element() override;
 
       //! derived
       std::map<STR::EnergyType, double> GetEnergy() const override;
@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
       //! derived
       void ResetStepState() override;
@@ -127,17 +127,18 @@ namespace BEAMINTERACTION
       void RunPostIterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void InitSubmodelDependencies(
+      void init_submodel_dependencies(
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void AddBinsToBinColMap(std::set<int>& colbins) override;
 
       //! derived
-      void AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const override;
+      void add_bins_with_relevant_content_for_ia_discret_col_map(
+          std::set<int>& colbins) const override;
 
       //! derived
-      void GetHalfInteractionDistance(double& half_interaction_distance) override;
+      void get_half_interaction_distance(double& half_interaction_distance) override;
 
       /**
        * \brief Return the assembly managers in this submodel evaluator.
@@ -175,10 +176,10 @@ namespace BEAMINTERACTION
       bool HaveContactType(BINSTRATEGY::UTILS::BinContentType const& contacttype) const;
 
       /// print
-      void PrintAllBeamContactElementPairs(std::ostream& out) const;
+      void print_all_beam_contact_element_pairs(std::ostream& out) const;
 
       /// print
-      void PrintActiveBeamContactSet(std::ostream& out) const;
+      void print_active_beam_contact_set(std::ostream& out) const;
 
       //! @}
 
@@ -195,7 +196,7 @@ namespace BEAMINTERACTION
         return *beam_contact_params_ptr_;
       }
 
-      inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> BeamContactParamsPtr() const
+      inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr() const
       {
         CheckInit();
         return beam_contact_params_ptr_;
@@ -205,16 +206,16 @@ namespace BEAMINTERACTION
       //! @{
 
       //! init output for contact forces in VTP format
-      void InitOutputRuntimeBeamContact();
+      void init_output_runtime_beam_contact();
 
       //! writes visualization output for contact forces at the end of a time step
-      void WriteTimeStepOutputRuntimeBeamContact() const;
+      void write_time_step_output_runtime_beam_contact() const;
 
       //! writes visualization output for contact forces at the end of a nonlinear iteration
-      void WriteIterationOutputRuntimeBeamContact(int iteration_number) const;
+      void write_iteration_output_runtime_beam_contact(int iteration_number) const;
 
       //! writes visualization output for contact forces
-      void WriteOutputRuntimeBeamContact(int timestep_number, double time) const;
+      void write_output_runtime_beam_contact(int timestep_number, double time) const;
 
 
       //! @}
@@ -223,10 +224,10 @@ namespace BEAMINTERACTION
       //! @{
 
       // init element types considered for beam to ? contact
-      void InitElementTypesConsideredForContact();
+      void init_element_types_considered_for_contact();
 
       /// get neighbouring eles in discret
-      void FindAndStoreNeighboringElements();
+      void find_and_store_neighboring_elements();
 
       /// exclude certain neighbors from interaction evaluation
       /*
@@ -238,16 +239,16 @@ namespace BEAMINTERACTION
        *   second are considered
        * - elements sharing nodes don't interact
        */
-      void SelectElesToBeConsideredForContactEvaluation(
+      void select_eles_to_be_considered_for_contact_evaluation(
           DRT::Element* currele, std::set<DRT::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
-      void CreateBeamContactElementPairs();
+      void create_beam_contact_element_pairs();
 
       /// Add the restart displacement to the pairs, if the coupling should be evaluated with
       /// respect to the restart state.
-      void SetRestartDisplacementInPairs();
+      void set_restart_displacement_in_pairs();
 
       //! @}
 

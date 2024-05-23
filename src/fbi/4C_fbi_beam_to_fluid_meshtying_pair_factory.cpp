@@ -31,7 +31,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
 
   // Get the meshtying discretization method.
   INPAR::FBI::BeamToFluidDiscretization meshtying_discretization =
-      params_ptr->GetContactDiscretization();
+      params_ptr->get_contact_discretization();
 
   // Check which contact discretization is wanted.
   if (meshtying_discretization == INPAR::FBI::BeamToFluidDiscretization::gauss_point_to_segment)
@@ -65,7 +65,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
   else if (meshtying_discretization == INPAR::FBI::BeamToFluidDiscretization::mortar)
   {
     INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function =
-        params_ptr->GetMortarShapeFunctionType();
+        params_ptr->get_mortar_shape_function_type();
 
     switch (mortar_shape_function)
     {

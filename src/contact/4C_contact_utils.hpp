@@ -142,7 +142,7 @@ namespace CONTACT
        *                              contain at least one DBC slave node
        *
        *  \author hiermeier \date 01/18 */
-      static void DetectDbcSlaveNodesAndElements(const DRT::Discretization& str_discret,
+      static void detect_dbc_slave_nodes_and_elements(const DRT::Discretization& str_discret,
           const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
           std::set<const DRT::Node*>& dbc_slave_nodes,
           std::set<const DRT::Element*>& dbc_slave_eles);
@@ -152,7 +152,7 @@ namespace CONTACT
           const DRT::Discretization& str_discret,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
 
-      static void DetectDbcSlaveElements(std::set<const DRT::Element*>& dbc_slave_eles,
+      static void detect_dbc_slave_elements(std::set<const DRT::Element*>& dbc_slave_eles,
           const std::map<const DRT::Node*, int>& dbc_slave_nodes,
           const std::vector<const CORE::Conditions::Condition*>& sl_conds);
     };  // class DbcHandler

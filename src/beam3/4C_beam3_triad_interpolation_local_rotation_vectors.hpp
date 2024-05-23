@@ -80,14 +80,14 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedTriadAtXi(
+    void get_interpolated_triad_at_xi(
         CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const override;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedQuaternionAtXi(
+    void get_interpolated_quaternion_at_xi(
         CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const override;
 
     //@}
@@ -98,28 +98,28 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedTriad(
+    void get_interpolated_triad(
         CORE::LINALG::Matrix<3, 3, T>& triad, const CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
 
     /** \brief compute the interpolated quaternion based on given local rotation vector
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedQuaternion(CORE::LINALG::Matrix<4, 1, T>& quaternion,
+    void get_interpolated_quaternion(CORE::LINALG::Matrix<4, 1, T>& quaternion,
         const CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
 
     /** \brief compute the local rotation vector at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedLocalRotationVectorAtXi(
+    void get_interpolated_local_rotation_vector_at_xi(
         CORE::LINALG::Matrix<3, 1, T>& Psi_l, const double xi) const;
 
     /** \brief compute the local rotation vector based on given shape function values
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedLocalRotationVector(CORE::LINALG::Matrix<3, 1, T>& Psi_l,
+    void get_interpolated_local_rotation_vector(CORE::LINALG::Matrix<3, 1, T>& Psi_l,
         const CORE::LINALG::Matrix<1, numnodes, double>& I_i) const;
 
 
@@ -128,7 +128,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedLocalRotationVectorDerivativeAtXi(
+    void get_interpolated_local_rotation_vector_derivative_at_xi(
         CORE::LINALG::Matrix<3, 1, T>& Psi_l_s, const double jacobifac, const double xi) const;
 
     /** \brief compute the arc-length derivative of the local rotation vector based on given
@@ -136,7 +136,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetInterpolatedLocalRotationVectorDerivative(CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
+    void get_interpolated_local_rotation_vector_derivative(CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
         const CORE::LINALG::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const;
 
 
@@ -145,7 +145,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+    void get_nodal_generalized_rotation_interpolation_matrices_at_xi(
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde, const double xi) const;
 
     /** \brief compute the generalized rotational interpolation matrices for all nodes
@@ -153,7 +153,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetNodalGeneralizedRotationInterpolationMatrices(
+    void get_nodal_generalized_rotation_interpolation_matrices(
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde,
         const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
         const CORE::LINALG::Matrix<1, numnodes, double>& I_i) const;
@@ -164,7 +164,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetNodalGeneralizedRotationInterpolationMatricesDerivative(
+    void get_nodal_generalized_rotation_interpolation_matrices_derivative(
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde_prime,
         const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
         const CORE::LINALG::Matrix<1, numnodes, double>& I_i,
@@ -175,7 +175,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void GetNodalGeneralizedRotationInterpolationMatricesDerivative(
+    void get_nodal_generalized_rotation_interpolation_matrices_derivative(
         std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde_prime,
         const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
         const CORE::LINALG::Matrix<1, numnodes, double>& I_i,

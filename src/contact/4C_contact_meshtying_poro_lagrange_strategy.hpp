@@ -41,7 +41,7 @@ namespace CONTACT
     /*!
     /brief modify off diagonal system matrix for structural displacement meshtying
      */
-    void EvaluateMeshtyingPoroOffDiag(Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag);
+    void evaluate_meshtying_poro_off_diag(Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag);
 
     /*!
     \brief Recovery method
@@ -50,7 +50,7 @@ namespace CONTACT
     additionally. This is not needed for solving the problem in pure elast-poroelast meshtying
     cases. It is needed for postprocessing though.*/
 
-    void RecoverCouplingMatrixPartofLMP(Teuchos::RCP<Epetra_Vector> veli);
+    void recover_coupling_matrix_partof_lmp(Teuchos::RCP<Epetra_Vector> veli);
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
 

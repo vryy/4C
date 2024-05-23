@@ -72,7 +72,7 @@ namespace STR
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_meshtying; }
 
       //! [derived]
-      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) override;
+      void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) override;
 
       //! [derived]
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -103,11 +103,11 @@ namespace STR
       void RunPostIterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! [derived]
-      void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+      void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+      void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
@@ -117,13 +117,13 @@ namespace STR
       void UpdateStepElement() override{};
 
       //! [derived]
-      void DetermineStressStrain() override{};
+      void determine_stress_strain() override{};
 
       //! [derived]
       void DetermineEnergy() override{};
 
       //! [derived]
-      void DetermineOptionalQuantity() override{};
+      void determine_optional_quantity() override{};
 
       //! [derived]
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override{};
@@ -132,13 +132,13 @@ namespace STR
       void ResetStepState() override{};
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void PostOutput() override{};
@@ -172,7 +172,7 @@ namespace STR
        *  \param[in] apply_dbc             Apply Dirichlet boundary conditions
        *
        *  \author hiermeier \date 08/17 */
-      Teuchos::RCP<Epetra_Vector> AssembleForceOfModels(
+      Teuchos::RCP<Epetra_Vector> assemble_force_of_models(
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
@@ -181,7 +181,7 @@ namespace STR
         return Teuchos::null;
       };
 
-      void EvaluateWeightedGapGradientError();
+      void evaluate_weighted_gap_gradient_error();
 
       //! [derived]
       bool EvaluateForce() override;
@@ -202,7 +202,7 @@ namespace STR
 
       @param[in] Xslavemod Vector with modified nodal positions
       */
-      void ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
+      void apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
 
       //!@}
 
@@ -221,7 +221,7 @@ namespace STR
      protected:
      private:
       /// Set the correct time integration parameters within the meshtying strategy
-      void SetTimeIntegrationInfo(CONTACT::MtAbstractStrategy& strategy) const;
+      void set_time_integration_info(CONTACT::MtAbstractStrategy& strategy) const;
 
       //! meshtying strategy
       Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr_;

@@ -61,7 +61,7 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
 /*----------------------------------------------------------------------*
  | exchange material pointers of both discretizations  kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::UTILS::AssignMaterialPointers(
+void ART::UTILS::assign_material_pointers(
     const std::string& artery_disname, const std::string& scatra_disname)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();

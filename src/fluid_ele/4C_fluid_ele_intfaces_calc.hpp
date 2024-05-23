@@ -57,7 +57,7 @@ namespace DRT
       /// Empty destructor
       virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      virtual void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
@@ -70,7 +70,7 @@ namespace DRT
           ) = 0;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
+      virtual int evaluate_internal_faces(
           DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
@@ -128,7 +128,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      void AssembleInternalFacesUsingNeighborData(
+      void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
@@ -141,7 +141,7 @@ namespace DRT
           ) override;
 
       //! Evaluate internal faces
-      int EvaluateInternalFaces(DRT::ELEMENTS::FluidIntFace* intface,  ///< internal face element
+      int evaluate_internal_faces(DRT::ELEMENTS::FluidIntFace* intface,  ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
           DRT::Discretization& discretization,          ///< discretization

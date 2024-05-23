@@ -32,7 +32,7 @@ IO::VisualizationManager::VisualizationManager(
 /**
  *
  */
-const IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
+const IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
     const std::string& visualization_data_name) const
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end())
@@ -46,24 +46,25 @@ const IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
 /**
  *
  */
-IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
+IO::VisualizationData& IO::VisualizationManager::get_visualization_data(
     const std::string& visualization_data_name)
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end() &&
       visualization_data_name == "")
   {
     // The default visualization data is registered the first time it is requested
-    RegisterVisualizationData("");
+    register_visualization_data("");
   }
   // The const_cast can be done here, since we know that the underlying data is not const
   return const_cast<VisualizationData&>(
-      const_cast<const VisualizationManager&>(*this).GetVisualizationData(visualization_data_name));
+      const_cast<const VisualizationManager&>(*this).get_visualization_data(
+          visualization_data_name));
 }
 
 /**
  *
  */
-IO::VisualizationData& IO::VisualizationManager::RegisterVisualizationData(
+IO::VisualizationData& IO::VisualizationManager::register_visualization_data(
     const std::string& visualization_data_name)
 {
   if (visualization_map_.find(visualization_data_name) != visualization_map_.end())
@@ -73,16 +74,16 @@ IO::VisualizationData& IO::VisualizationManager::RegisterVisualizationData(
         "visualization data is already registered, this is not possible",
         visualization_data_name.c_str());
   }
-  visualization_map_[visualization_data_name] = std::make_pair(
-      VisualizationData(), VisualizationWriterFactory(parameters_, comm_,
-                               GetVisualizationDataNameForOutputFiles(visualization_data_name)));
+  visualization_map_[visualization_data_name] = std::make_pair(VisualizationData(),
+      VisualizationWriterFactory(parameters_, comm_,
+          get_visualization_data_name_for_output_files(visualization_data_name)));
   return visualization_map_[visualization_data_name].first;
 }
 
 /**
  *
  */
-bool IO::VisualizationManager::VisualizationDataExists(
+bool IO::VisualizationManager::visualization_data_exists(
     const std::string& visualization_data_name) const
 {
   return visualization_map_.find(visualization_data_name) != visualization_map_.end();
@@ -104,8 +105,8 @@ void IO::VisualizationManager::WriteToDisk(
 {
   for (auto& [key, visualization_pair] : visualization_map_)
   {
-    visualization_pair.first.ConsistencyCheckAndCompleteData();
-    visualization_pair.second->WriteVisualizationDataToDisk(
+    visualization_pair.first.consistency_check_and_complete_data();
+    visualization_pair.second->write_visualization_data_to_disk(
         visualization_pair.first, visualziation_time, visualization_step);
   }
 }
@@ -113,7 +114,7 @@ void IO::VisualizationManager::WriteToDisk(
 /**
  *
  */
-std::string IO::VisualizationManager::GetVisualizationDataNameForOutputFiles(
+std::string IO::VisualizationManager::get_visualization_data_name_for_output_files(
     const std::string& visualization_data_name) const
 {
   if (visualization_data_name == "")

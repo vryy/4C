@@ -223,7 +223,7 @@ namespace ADAPTER
      In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
      which is then transformed into an iteration increment
      */
-    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector>
+    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
@@ -257,11 +257,11 @@ namespace ADAPTER
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) override = 0;
+    void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) override = 0;
 
     /// Update iteration
     /// Add residual increment to pressures stored in Cardiovascular0D manager
-    void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
+    void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
 
     /// Access to output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override = 0;
@@ -341,7 +341,7 @@ namespace ADAPTER
 
     \note Can only be called after a valid structural solve.
     */
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
+    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
     {
       FOUR_C_THROW(
           "In the new structural timeintegration this method is"
@@ -380,7 +380,7 @@ namespace ADAPTER
     /// In partitioned solution schemes, it is better to keep the current
     /// solution instead of evaluating the initial guess (as the predictor)
     /// does.
-    void PreparePartitionStep() override = 0;
+    void prepare_partition_step() override = 0;
 
     //@}
 
@@ -388,8 +388,8 @@ namespace ADAPTER
     ///@{
     /// unknown material displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp() = 0;
-    Teuchos::RCP<Epetra_Vector> DispMat() override { return WriteAccessDispMatNp(); }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() = 0;
+    Teuchos::RCP<Epetra_Vector> DispMat() override { return write_access_disp_mat_np(); }
 
     /// set/apply material displacements to structure field (structure with ale)
     virtual void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) = 0;
@@ -423,7 +423,7 @@ namespace ADAPTER
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
 
     /// return contact/meshtying bridge
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override = 0;
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override = 0;
 
     /// access to locsys manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override = 0;
@@ -442,7 +442,7 @@ namespace ADAPTER
     bool HaveConstraint() override = 0;
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override = 0;
+    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
     INPAR::STR::StcScale GetSTCAlgo() override = 0;
@@ -478,7 +478,7 @@ namespace ADAPTER
     }
 
     /// get SpringDashpot manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
+    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
       FOUR_C_THROW("This function seems to be unused!");
       return Teuchos::null;
@@ -557,7 +557,7 @@ namespace ADAPTER
      *  This can be used e.g. by coupled problems.
      *
      *  \date 11/16 */
-    void RegisterModelEvaluator(
+    void register_model_evaluator(
         const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me);
 
     /// structural field solver
@@ -624,7 +624,7 @@ namespace ADAPTER
     void SetModelTypes(std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 
     /// Set all found model types.
-    void DetectElementTechnologies(std::set<enum INPAR::STR::EleTech>& eletechs) const;
+    void detect_element_technologies(std::set<enum INPAR::STR::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
@@ -635,7 +635,7 @@ namespace ADAPTER
         const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
-    virtual void SetTimeIntegrationStrategy(Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
+    virtual void set_time_integration_strategy(Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
         const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart);

@@ -34,7 +34,7 @@ namespace DRT
 
       std::string Name() const override { return "Truss3ScatraType"; }
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -74,7 +74,8 @@ namespace DRT
         return Truss3ScatraType::Instance().UniqueParObjectId();
       }
 
-      void CalcInternalForceStiffTotLag(const std::map<std::string, std::vector<double>>& ele_state,
+      void calc_internal_force_stiff_tot_lag(
+          const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::SerialDenseVector& forcevec,
           CORE::LINALG::SerialDenseMatrix& stiffmat) override;
 
@@ -85,7 +86,7 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
      protected:
-      void ExtractElementalVariables(LocationArray& la, const DRT::Discretization& discretization,
+      void extract_elemental_variables(LocationArray& la, const DRT::Discretization& discretization,
           const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state) override;
 
@@ -104,14 +105,14 @@ namespace DRT
       //! displacement
       //! @param[out] dN_dx               derivative of shape functions
       //! @param[out] nodal_concentration nodal concentrations
-      void PrepCalcInternalForceStiffTotLagScaTra(
+      void prep_calc_internal_force_stiff_tot_lag_sca_tra(
           const std::map<std::string, std::vector<double>>& ele_state,
           CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
           CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx,
           CORE::LINALG::Matrix<2, 1>& nodal_concentration);
 
       //! calculation of concentration at Gauss Points, given concentration at nodes
-      double ProjectScalarToGaussPoint(double xi, const CORE::LINALG::Matrix<2, 1>& c) const;
+      double project_scalar_to_gauss_point(double xi, const CORE::LINALG::Matrix<2, 1>& c) const;
 
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);

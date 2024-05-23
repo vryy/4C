@@ -63,7 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagType::Create(const int id, const
 }
 
 
-void DRT::ELEMENTS::ElemagType::NodalBlockInformation(
+void DRT::ELEMENTS::ElemagType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   nv = CORE::FE::getDimension(dwele->Shape()) - 1;
@@ -82,7 +82,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagType::ComputeNullSpace(
 }
 
 
-void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
+void DRT::ELEMENTS::ElemagType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
@@ -308,7 +308,7 @@ DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, cons
     DRT::Node** nodes, DRT::ELEMENTS::Elemag* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -498,8 +498,8 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
     )
     : DRT::FaceElement(id, owner)
 {
-  SetParentMasterElement(parent_master, lsurface_master);
-  SetParentSlaveElement(parent_slave, lsurface_slave);
+  set_parent_master_element(parent_master, lsurface_master);
+  set_parent_slave_element(parent_slave, lsurface_slave);
 
   if (parent_slave != nullptr)
     degree_ = std::max(parent_master->Degree(), parent_slave->Degree());

@@ -119,9 +119,9 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
  | set internal variables                              kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::set_internal_variables_for_mat_and_rhs()
 {
-  VarManager()->SetInternalVariablesArtery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
+  VarManager()->set_internal_variables_artery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
       my::ephinp_, my::ephin_, my::ehist_, earterypressurenp_);
 
   return;
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetInternalVariablesF
  | extract element based or nodal values               kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_node_values(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
       my::edispnp_(d, 1) = (curr_ele_length / arteryreflength - 1.0) * dist0(d);
     }
 
-    my::UpdateNodeCoordinates();
+    my::update_node_coordinates();
   }
 
   int ndsscatra_artery = 1;
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
   // further node-based source terms not given via Neumann volume condition
   // i.e., set special body force for homogeneous isotropic turbulence
   //--------------------------------------------------------------------------------
-  my::OtherNodeBasedSourceTerms(lm, discretization, params);
+  my::other_node_based_source_terms(lm, discretization, params);
 }
 
 /*-----------------------------------------------------------------------------*

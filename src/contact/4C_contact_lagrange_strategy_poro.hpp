@@ -71,7 +71,7 @@ namespace CONTACT
     /*!
     /brief Activate the No Penetration Condition for the active contact surface!
      */
-    void SetupNoPenetrationCondition();
+    void setup_no_penetration_condition();
 
     /*!
     \brief Initialize poro contact variables for next Newton step
@@ -91,13 +91,13 @@ namespace CONTACT
     /*!
     \brief Prepare Matrices D and M, that are not Computed coming from the mortar adapter
     */
-    void PoroMtPrepareFluidCoupling();
+    void poro_mt_prepare_fluid_coupling();
 
     /*!
     \brief
     set some coupling matrices for the proro meshtying case mhataam-, dhat_ and invda_
     */
-    void PoroMtSetCouplingMatrices();
+    void poro_mt_set_coupling_matrices();
 
     /*!
     \brief
@@ -111,8 +111,9 @@ namespace CONTACT
      Evaluate poro coupling contact matrices for no penetration
      condition on contact surface
     */
-    void EvaluatePoroNoPenContact(Teuchos::RCP<CORE::LINALG::SparseMatrix>&
-                                      k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
+    void evaluate_poro_no_pen_contact(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>&
+            k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff,  // global fluid Matrix in poro
         Teuchos::RCP<Epetra_Vector>& feff);              // global RHS of fluid in poro
 
@@ -122,7 +123,7 @@ namespace CONTACT
      Evaluate poro coupling contact matrices for no penetration
      condition on contact surface
     */
-    void EvaluatePoroNoPenContact(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff,
+    void evaluate_poro_no_pen_contact(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff,
         std::map<int, Teuchos::RCP<CORE::LINALG::SparseMatrix>*>& Feff,
         Teuchos::RCP<Epetra_Vector>& feff);
 
@@ -131,16 +132,16 @@ namespace CONTACT
 
      Evaluate all other matrixes here!
     */
-    void EvaluateMatPoroNoPen(Teuchos::RCP<CORE::LINALG::SparseMatrix>&
-                                  k_fseff,   // global poro Coupling Matrix Fluid Structure K_FS
-        Teuchos::RCP<Epetra_Vector>& feff);  // global RHS of fluid in poro
+    void evaluate_mat_poro_no_pen(Teuchos::RCP<CORE::LINALG::SparseMatrix>&
+                                      k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
+        Teuchos::RCP<Epetra_Vector>& feff);     // global RHS of fluid in poro
 
     /*!
     \brief Evaluate poro no penetration contact
 
      Evaluate all other matrixes here!
     */
-    void EvaluateOtherMatPoroNoPen(
+    void evaluate_other_mat_poro_no_pen(
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff, int Column_Block_Id);
 
     /*!
@@ -176,7 +177,7 @@ namespace CONTACT
         const Teuchos::RCP<DRT::Discretization> dis) override;
 
     // Flag for Poro No Penetration Condition
-    bool HasPoroNoPenetration() const override { return no_penetration_; }
+    bool has_poro_no_penetration() const override { return no_penetration_; }
 
     // Return Lagrange Multiplier for No Penetration Condition!
     Teuchos::RCP<Epetra_Vector> LambdaNoPen() { return lambda_; }

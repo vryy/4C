@@ -73,9 +73,9 @@ namespace ADAPTER
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override
     {
-      FOUR_C_THROW("Do not call ExtractInterfaceForces for XFFSI.");
+      FOUR_C_THROW("Do not call extract_interface_forces for XFFSI.");
       return Teuchos::null;
     }
 
@@ -111,18 +111,18 @@ namespace ADAPTER
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& XFluidFluidMapExtractor();
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
 
     //@}
 
     /// Apply initial mesh displacement
-    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
+    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid
-    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
+    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
@@ -138,7 +138,7 @@ namespace ADAPTER
     bool IsAleRelaxationStep(int step) const;
 
     /// get type of monolithic XFFSI approach
-    INPAR::XFEM::MonolithicXffsiApproach MonolithicXffsiApproach() const
+    INPAR::XFEM::MonolithicXffsiApproach monolithic_xffsi_approach() const
     {
       return monolithic_approach_;
     }
@@ -153,7 +153,7 @@ namespace ADAPTER
     /// prepare underlying extended shape derivatives matrix, that is based
     /// on the merged fluid dof-map (with background fluid dof set to zero),
     /// as it may change
-    void PrepareShapeDerivatives();
+    void prepare_shape_derivatives();
 
     /// type cast pointer to XFluidFluid
     Teuchos::RCP<FLD::XFluidFluid> xfluidfluid_;

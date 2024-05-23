@@ -241,7 +241,7 @@ namespace NOX
       void ApplyPlaneRotation(double& dx, double& dy, double& cs, double& sn);
 
       /// helper for GMRES
-      void GeneratePlaneRotation(double& dx, double& dy, double& cs, double& sn);
+      void generate_plane_rotation(double& dx, double& dy, double& cs, double& sn);
 
       virtual void throwError(const std::string& functionName, const std::string& errorMsg) const;
 

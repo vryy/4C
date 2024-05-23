@@ -54,7 +54,7 @@ namespace STR
       bool AssembleJacobian(
           CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
-      void DetermineStressStrain() override{};
+      void determine_stress_strain() override{};
 
       void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override;

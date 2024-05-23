@@ -107,12 +107,12 @@ namespace DRT
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) = 0;
 
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
+      virtual int integrate_shape_function(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints) = 0;
 
-      virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
+      virtual int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
@@ -130,11 +130,11 @@ namespace DRT
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints2) = 0;
 
-      virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
-          DRT::Discretization& dis,                                  ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
+      virtual int compute_error_interface(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+          DRT::Discretization& dis,                                   ///< background discretization
+          const std::vector<int>& lm,                                 ///< element local map
+          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
+          Teuchos::RCP<CORE::MAT::Material>& mat,                     ///< material
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
@@ -144,7 +144,7 @@ namespace DRT
           Teuchos::ParameterList& params                      ///< parameter list
           ) = 0;
 
-      virtual void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      virtual void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -168,7 +168,7 @@ namespace DRT
           ) = 0;
 
       /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
-      virtual void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+      virtual void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -189,11 +189,11 @@ namespace DRT
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) = 0;
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      virtual void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) = 0;
 
-      virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      virtual void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
     };
 

@@ -75,7 +75,7 @@ namespace THR
     int MethodSteps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() override
+    int method_order_of_accuracy() override
     {
       FOUR_C_THROW("Sensible to ask?");
       return 0;
@@ -91,10 +91,10 @@ namespace THR
 
     //! Consistent predictor with constant temperatures
     //! and consistent temperature rates and temperatures
-    void PredictConstTempConsistRate() override;
+    void predict_const_temp_consist_rate() override;
 
     //! Evaluate ordinary internal force, its tangent at state
-    void ApplyForceTangInternal(const double time,     //!< evaluation time
+    void apply_force_tang_internal(const double time,  //!< evaluation time
         const double dt,                               //!< step size
         const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
         const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
@@ -112,7 +112,7 @@ namespace THR
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void ApplyForceExternalConv(const double time,     //!< evaluation time
+    void apply_force_external_conv(const double time,  //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> tempn,       //!< temperature state T_n
         const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
         Teuchos::RCP<Epetra_Vector> fext,              //!< internal force
@@ -120,15 +120,15 @@ namespace THR
     );
 
     //! Create force residual #fres_ and its tangent #tang_
-    void EvaluateRhsTangResidual() override;
+    void evaluate_rhs_tang_residual() override;
 
     //! Evaluate/define the residual force vector #fres_ for
-    //! relaxation solution with SolveRelaxationLinear
+    //! relaxation solution with solve_relaxation_linear
     // void EvaluateForceTangResidualRelax();
 
     //! Determine characteristic norm for temperatures
     //! \author lw (originally)
-    double CalcRefNormTemperature() override;
+    double calc_ref_norm_temperature() override;
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
@@ -140,8 +140,8 @@ namespace THR
     //! from scratch by using the newly updated #tempn_. The method
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors
-    //! (like #PredictConstTempConsistRate)
-    void UpdateIterIncrementally() override;
+    //! (like #predict_const_temp_consist_rate)
+    void update_iter_incrementally() override;
 
     //! Update iteration iteratively
     //!
@@ -150,7 +150,7 @@ namespace THR
     //! temperatures #tempi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual temperatures #tempi_ are blanked at these DOFs.
-    void UpdateIterIteratively() override;
+    void update_iter_iteratively() override;
 
     //! Update step
     void UpdateStepState() override;

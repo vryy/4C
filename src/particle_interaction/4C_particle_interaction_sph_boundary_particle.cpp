@@ -48,7 +48,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -103,18 +103,18 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
   sumj_vel_j_wij_.resize(typevectorsize);
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
+void PARTICLEINTERACTION::SPHBoundaryParticleAdami::init_boundary_particle_states(
     std::vector<double>& gravity)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates");
+      "PARTICLEINTERACTION::SPHBoundaryParticleAdami::init_boundary_particle_states");
 
   // iterate over boundary particle types
   for (const auto& type_i : boundarytypes_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -128,14 +128,14 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+  neighborpairs_->get_relevant_particle_pair_indices_for_disjoint_combination(
       boundarytypes_, fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -153,7 +153,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     {
       // get container of owned particles
       PARTICLEENGINE::ParticleContainer* container_j =
-          particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+          particlecontainerbundle_->get_specific_container(type_j, status_j);
 
       // get pointer to particle states
       const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
@@ -175,7 +175,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     {
       // get container of owned particles
       PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+          particlecontainerbundle_->get_specific_container(type_i, status_i);
 
       // get pointer to particle states
       const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
@@ -198,7 +198,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
   {
     // get container of owned particles
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear modified boundary particle states
     container_i->ClearState(PARTICLEENGINE::BoundaryPressure);
@@ -240,7 +240,8 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
   }
 
   // refresh modified states of ghosted boundary particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(boundarystatestorefresh_);
+  particleengineinterface_->refresh_particles_of_specific_states_and_types(
+      boundarystatestorefresh_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

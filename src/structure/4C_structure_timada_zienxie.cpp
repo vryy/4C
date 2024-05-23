@@ -32,12 +32,12 @@ STR::TimAdaZienXie::TimAdaZienXie(
     : TimAda(timeparams, adaparams, tis)
 {
   // check if marching TIS is second order accurate
-  if (sti_->MethodOrderOfAccuracyDis() != 2)
+  if (sti_->method_order_of_accuracy_dis() != 2)
   {
     FOUR_C_THROW(
         "%s can only work with 2nd order accurate marching scheme,"
         " whereas the actual %s is of order %i",
-        MethodTitle().c_str(), sti_->MethodTitle().c_str(), sti_->MethodOrderOfAccuracyDis());
+        MethodTitle().c_str(), sti_->MethodTitle().c_str(), sti_->method_order_of_accuracy_dis());
   }
 
   return;
@@ -45,7 +45,7 @@ STR::TimAdaZienXie::TimAdaZienXie(
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::TimAdaZienXie::IntegrateStepAuxiliar()
+void STR::TimAdaZienXie::integrate_step_auxiliar()
 {
   // get state vectors of marching integrator
   const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();      // D_{n}^{A2}

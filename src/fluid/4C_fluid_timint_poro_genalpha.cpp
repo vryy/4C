@@ -35,7 +35,7 @@ void FLD::TimIntPoroGenAlpha::Init()
   TimIntPoro::Init();
 }
 
-void FLD::TimIntPoroGenAlpha::GenAlphaIntermediateValues()
+void FLD::TimIntPoroGenAlpha::gen_alpha_intermediate_values()
 {
   // set intermediate values for acceleration and potential temporal
   // derivatives

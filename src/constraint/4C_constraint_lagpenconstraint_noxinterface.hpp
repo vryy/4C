@@ -44,21 +44,21 @@ namespace LAGPENCONSTRAINT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    double GetConstraintRHSNorms(const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ,
+    double get_constraint_rhs_norms(const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ,
         ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
-    double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
+    double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
         double aTol, double rTol, NOX::NLN::StatusTest::QuantityType checkQuantity,
         bool disable_implicit_weighting) const override;
 
     /// Returns the increment norm of the largange multiplier DoFs
-    double GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
-        bool isScaled) const override;
+    double get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
+        const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
-    double GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
+    double get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
         NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
     /// @}
@@ -115,7 +115,7 @@ namespace LAGPENCONSTRAINT
 
     bool IsCondensedSystem() const override;
 
-    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
+    void fill_maps_for_preconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
 
     bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
         Teuchos::ParameterList* precParams = nullptr) override;

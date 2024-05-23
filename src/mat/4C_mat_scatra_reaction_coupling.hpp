@@ -58,9 +58,9 @@ namespace MAT
         virtual bool IsInit() const = 0;
 
         /// helper for calculating advanced reaction terms
-        virtual double CalcReaBodyForceTerm(int k,  //!< current scalar id
-            int numscal,                            //!< number of scalars
-            const std::vector<double>& phinp,       //!< scalar values at t_(n+1)
+        virtual double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                                //!< number of scalars
+            const std::vector<double>& phinp,           //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -72,10 +72,10 @@ namespace MAT
             ) = 0;
 
         /// helper for calculating advanced reaction term derivatives
-        virtual void CalcReaBodyForceDeriv(int k,  //!< current scalar id
-            int numscal,                           //!< number of scalars
-            std::vector<double>& derivs,           //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,      //!< scalar values at t_(n+1)
+        virtual void calc_rea_body_force_deriv(int k,  //!< current scalar id
+            int numscal,                               //!< number of scalars
+            std::vector<double>& derivs,               //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,          //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -87,7 +87,7 @@ namespace MAT
             ) = 0;
 
         /// add additional variables for by-function reaction
-        virtual void AddAdditionalVariables(const int k,                   //!< current scalar id
+        virtual void add_additional_variables(const int k,                 //!< current scalar id
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<double>& couprole                            //!< coupling role vector
         )
@@ -100,7 +100,7 @@ namespace MAT
         }
 
         /// helper for calculating advanced reaction term derivatives w.r.t. additional variables
-        virtual void CalcReaBodyForceDerivAddVariables(const int k,  //!< current scalar id
+        virtual void calc_rea_body_force_deriv_add_variables(const int k,  //!< current scalar id
             std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<std::pair<std::string, double>>&
@@ -143,9 +143,9 @@ namespace MAT
         bool IsInit() const override { return reaction_->IsInit(); };
 
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -157,7 +157,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+        void calc_rea_body_force_deriv(int k,  //!< current scalar id
             int numscal,                       //!< number of scalars
             std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
             const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -205,9 +205,9 @@ namespace MAT
         bool IsInit() const override { return reaction_->IsInit(); };
 
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -219,7 +219,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+        void calc_rea_body_force_deriv(int k,  //!< current scalar id
             int numscal,                       //!< number of scalars
             std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
             const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -234,7 +234,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives after additional variables
-        void CalcReaBodyForceDerivAddVariables(const int k,  //!< current scalar id
+        void calc_rea_body_force_deriv_add_variables(const int k,  //!< current scalar id
             std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<std::pair<std::string, double>>&
@@ -247,12 +247,12 @@ namespace MAT
             ) override;
 
         /// add additional variables for by-function reaction
-        void AddAdditionalVariables(const int k,                           //!< current scalar id
+        void add_additional_variables(const int k,                         //!< current scalar id
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<double>& couprole                            //!< coupling role vector
             ) override
         {
-          reaction_->AddAdditionalVariables(k, variables, couprole);
+          reaction_->add_additional_variables(k, variables, couprole);
         }
 
        protected:
@@ -286,9 +286,9 @@ namespace MAT
         bool IsInit() const override { return isinit_; };
 
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -303,11 +303,11 @@ namespace MAT
           FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
-          return CalcReaBodyForceTerm(k, numscal, phinp, constants, couprole, scale_reac);
+          return calc_rea_body_force_term(k, numscal, phinp, constants, couprole, scale_reac);
         };
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+        void calc_rea_body_force_deriv(int k,  //!< current scalar id
             int numscal,                       //!< number of scalars
             std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
             const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -325,15 +325,15 @@ namespace MAT
           FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
-          CalcReaBodyForceDeriv(k, numscal, derivs, phinp, constants, couprole, scale_reac);
+          calc_rea_body_force_deriv(k, numscal, derivs, phinp, constants, couprole, scale_reac);
           return;
         };
 
        private:
         /// helper for calculating advanced reaction terms
-        virtual double CalcReaBodyForceTerm(int k,  //!< current scalar id
-            int numscal,                            //!< number of scalars
-            const std::vector<double>& phinp,       //!< scalar values at t_(n+1)
+        virtual double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                                //!< number of scalars
+            const std::vector<double>& phinp,           //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -343,10 +343,10 @@ namespace MAT
             ) = 0;
 
         /// helper for calculating advanced reaction term derivatives
-        virtual void CalcReaBodyForceDeriv(int k,  //!< current scalar id
-            int numscal,                           //!< number of scalars
-            std::vector<double>& derivs,           //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,      //!< scalar values at t_(n+1)
+        virtual void calc_rea_body_force_deriv(int k,  //!< current scalar id
+            int numscal,                               //!< number of scalars
+            std::vector<double>& derivs,               //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,          //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -378,9 +378,9 @@ namespace MAT
 
        private:
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -390,7 +390,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+        void calc_rea_body_force_deriv(int k,  //!< current scalar id
             int numscal,                       //!< number of scalars
             std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
             const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -420,9 +420,9 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -432,7 +432,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+        void calc_rea_body_force_deriv(int k,  //!< current scalar id
             int numscal,                       //!< number of scalars
             std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
             const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -463,9 +463,9 @@ namespace MAT
 
        private:
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(int k,     //!< current scalar id
-            int numscal,                       //!< number of scalars
-            const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(int k,  //!< current scalar id
+            int numscal,                        //!< number of scalars
+            const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -475,10 +475,10 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(const int k,  //!< current scalar id
-            int numscal,                         //!< number of scalars
-            std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        void calc_rea_body_force_deriv(const int k,  //!< current scalar id
+            int numscal,                             //!< number of scalars
+            std::vector<double>& derivs,             //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,        //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -506,9 +506,9 @@ namespace MAT
 
        private:
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(const int k,  //!< current scalar id
-            int numscal,                          //!< number of scalars
-            const std::vector<double>& phinp,     //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(const int k,  //!< current scalar id
+            int numscal,                              //!< number of scalars
+            const std::vector<double>& phinp,         //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -518,10 +518,10 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(const int k,  //!< current scalar id
-            int numscal,                         //!< number of scalars
-            std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        void calc_rea_body_force_deriv(const int k,  //!< current scalar id
+            int numscal,                             //!< number of scalars
+            std::vector<double>& derivs,             //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,        //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -548,7 +548,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives after additional variables
-        void CalcReaBodyForceDerivAddVariables(const int k,  //!< current scalar id
+        void calc_rea_body_force_deriv_add_variables(const int k,  //!< current scalar id
             std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<std::pair<std::string, double>>&
@@ -564,20 +564,21 @@ namespace MAT
           FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
-          CalcReaBodyForceDerivAddVariables(k, derivs, variables, constants, couprole, scale_reac);
+          calc_rea_body_force_deriv_add_variables(
+              k, derivs, variables, constants, couprole, scale_reac);
         }
 
         /// add additional variables for by-function reaction
-        void AddAdditionalVariables(const int k,                           //!< current scalar id
+        void add_additional_variables(const int k,                         //!< current scalar id
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<double>& couprole                            //!< coupling role vector
             ) override;
 
        private:
         /// helper for calculating advanced reaction terms
-        double CalcReaBodyForceTerm(const int k,  //!< current scalar id
-            int numscal,                          //!< number of scalars
-            const std::vector<double>& phinp,     //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term(const int k,  //!< current scalar id
+            int numscal,                              //!< number of scalars
+            const std::vector<double>& phinp,         //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -587,10 +588,10 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives
-        void CalcReaBodyForceDeriv(const int k,  //!< current scalar id
-            int numscal,                         //!< number of scalars
-            std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        void calc_rea_body_force_deriv(const int k,  //!< current scalar id
+            int numscal,                             //!< number of scalars
+            std::vector<double>& derivs,             //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,        //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -600,7 +601,7 @@ namespace MAT
             ) override;
 
         /// helper for calculating advanced reaction term derivatives after additional variables
-        void CalcReaBodyForceDerivAddVariables(const int k,  //!< current scalar id
+        void calc_rea_body_force_deriv_add_variables(const int k,  //!< current scalar id
             std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<std::pair<std::string, double>>&
@@ -611,22 +612,22 @@ namespace MAT
         );
 
         /// helper for evaluation by function
-        void BuildPhiVectorForFunction(
+        void build_phi_vector_for_function(
             const std::vector<double>& phinp_org,  //!< scalar values at t_(n+1)
             int numscal                            //!< number of scalars
         );
 
 
-        //! templated internal AddAdditionalVariables implementation
+        //! templated internal add_additional_variables implementation
         template <int dim>
-        void AddAdditionalVariablesInternal(const int k,                   //!< current scalar id
+        void add_additional_variables_internal(const int k,                //!< current scalar id
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<double>& couprole                            //!< coupling role vector
         );
 
-        //! templated internal CalcReaBodyForceDerivAddVariables implementation
+        //! templated internal calc_rea_body_force_deriv_add_variables implementation
         template <int dim>
-        void CalcReaBodyForceDerivAddVariablesInternal(const int k,  //!< current scalar id
+        void calc_rea_body_force_deriv_add_variables_internal(const int k,  //!< current scalar id
             std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
             const std::vector<std::pair<std::string, double>>& variables,  //!< variables
             const std::vector<std::pair<std::string, double>>&
@@ -636,12 +637,12 @@ namespace MAT
                                //!< stoichometry)
         );
 
-        //! templated internal CalcReaBodyForceDeriv implementation
+        //! templated internal calc_rea_body_force_deriv implementation
         template <int dim>
-        void CalcReaBodyForceDerivInternal(int k,  //!< current scalar id
-            int numscal,                           //!< number of scalars
-            std::vector<double>& derivs,           //!< vector with derivatives (to be filled)
-            const std::vector<double>& phinp,      //!< scalar values at t_(n+1)
+        void calc_rea_body_force_deriv_internal(int k,  //!< current scalar id
+            int numscal,                                //!< number of scalars
+            std::vector<double>& derivs,                //!< vector with derivatives (to be filled)
+            const std::vector<double>& phinp,           //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)
@@ -650,11 +651,11 @@ namespace MAT
                                //!< stoichometry)
         );
 
-        //! templated internal CalcReaBodyForceTerm implementation
+        //! templated internal calc_rea_body_force_term implementation
         template <int dim>
-        double CalcReaBodyForceTermInternal(int k,  //!< current scalar id
-            int numscal,                            //!< number of scalars
-            const std::vector<double>& phinp,       //!< scalar values at t_(n+1)
+        double calc_rea_body_force_term_internal(int k,  //!< current scalar id
+            int numscal,                                 //!< number of scalars
+            const std::vector<double>& phinp,            //!< scalar values at t_(n+1)
             const std::vector<std::pair<std::string, double>>&
                 constants,  //!< vector containing values which are independent of the scalars (e.g.
                             //!< t,x,y,z)

@@ -73,7 +73,7 @@ namespace CONTACT
 
 
     // Flag for Poro No Penetration Condition
-    bool HasPoroNoPenetration() const override { return no_penetration_; }
+    bool has_poro_no_penetration() const override { return no_penetration_; }
 
     // don't want = operator and cctor
     NitscheStrategyPoro operator=(const NitscheStrategyPoro& old) = delete;
@@ -89,7 +89,7 @@ namespace CONTACT
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void CompleteMatrixBlockPtr(
+    void complete_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     bool no_penetration_;

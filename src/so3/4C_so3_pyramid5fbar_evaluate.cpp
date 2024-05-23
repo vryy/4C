@@ -39,7 +39,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat2(elemat2_epetra.values(), true);
@@ -309,7 +309,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       }
 
       // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+      update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
       if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
     if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
-      GetTemperatureForStructuralMaterial(shapefcts[gp], params);
+      get_temperature_for_structural_material(shapefcts[gp], params);
     }
 
     if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
@@ -1427,7 +1427,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::DefGradient(const std::vector<double>& disp,
 /*------------------------------------------------------------------------*
  | compute Jac.mapping wrt deformed configuration (protected) seitz 03/15 |
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5fbar::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoPyramid5fbar::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();

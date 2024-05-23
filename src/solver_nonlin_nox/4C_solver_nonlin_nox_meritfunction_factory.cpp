@@ -40,9 +40,9 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::Bu
   const std::string& mftype = solverOptionsList.get<std::string>("Merit Function");
 
   if (noxNlnGlobalData.GetIsConstrained())
-    mrtFctPtr = BuildConstrainedMeritFunction(mftype, noxNlnGlobalData);
+    mrtFctPtr = build_constrained_merit_function(mftype, noxNlnGlobalData);
   else
-    mrtFctPtr = BuildUnconstrainedMeritFunction(mftype, noxNlnGlobalData);
+    mrtFctPtr = build_unconstrained_merit_function(mftype, noxNlnGlobalData);
 
   return mrtFctPtr;
 }
@@ -50,7 +50,7 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::Bu
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
-NOX::NLN::MeritFunction::Factory::BuildUnconstrainedMeritFunction(
+NOX::NLN::MeritFunction::Factory::build_unconstrained_merit_function(
     const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
@@ -77,7 +77,7 @@ NOX::NLN::MeritFunction::Factory::BuildUnconstrainedMeritFunction(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
-NOX::NLN::MeritFunction::Factory::BuildConstrainedMeritFunction(
+NOX::NLN::MeritFunction::Factory::build_constrained_merit_function(
     const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;

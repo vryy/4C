@@ -55,15 +55,15 @@ namespace STR
           const Teuchos::ParameterList& sdyn) const;
 
       //! Build the global state data container
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> BuildDataGlobalState() const;
+      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> build_data_global_state() const;
 
      private:
       //! Build the implicit time integration strategies
-      Teuchos::RCP<STR::TIMINT::Base> BuildImplicitStrategy(
+      Teuchos::RCP<STR::TIMINT::Base> build_implicit_strategy(
           const Teuchos::ParameterList& sdyn) const;
 
       //! Build the explicit time integration strategies
-      Teuchos::RCP<STR::TIMINT::Base> BuildExplicitStrategy(
+      Teuchos::RCP<STR::TIMINT::Base> build_explicit_strategy(
           const Teuchos::ParameterList& sdyn) const;
     };  // class Factory
 
@@ -87,7 +87,7 @@ namespace STR
 
     /*! Non-member function, which relates to the STR::TIMINT::Factory
      *  Please call this method, if you want to build a new global state data container. */
-    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> BuildDataGlobalState();
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> build_data_global_state();
   }  // namespace TIMINT
 }  // namespace STR
 

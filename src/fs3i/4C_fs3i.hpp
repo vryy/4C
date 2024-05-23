@@ -79,11 +79,11 @@ namespace FS3I
     virtual void ReadRestart() = 0;
 
     /// needed for redistribution of FPS3I interface, if running on parallel
-    virtual void RedistributeInterface() = 0;
+    virtual void redistribute_interface() = 0;
 
     //! make sure potential Dirichlet conditions at the scatra coupling
     //! interface are defined on both discretizations
-    void CheckInterfaceDirichletBC();
+    void check_interface_dirichlet_bc();
 
     //! Check FS3I specific inputs
     void CheckFS3IInputs();
@@ -92,38 +92,38 @@ namespace FS3I
     void ScatraOutput();
 
     //! increment step and time
-    void IncrementTimeAndStep();
+    void increment_time_and_step();
 
     //! update ScaTra solution vectors (new time step)
     void UpdateScatraFields();
 
     //! evaluate, solve and iteratively update coupled ScaTra problem
-    void ScatraEvaluateSolveIterUpdate();
+    void scatra_evaluate_solve_iter_update();
 
     //! @name monolithic ScaTra problem
     //@{
 
     //! evaluate ScaTra fields
-    virtual void EvaluateScatraFields();
+    virtual void evaluate_scatra_fields();
 
     //! set Membrane concentration in scatra fields
-    void SetMembraneConcentration() const;
+    void set_membrane_concentration() const;
 
     //! set-up of global matrix and rhs of the monolithic ScaTra problem
-    void SetupCoupledScatraSystem();
+    void setup_coupled_scatra_system();
 
     //! set-up of global rhs of the monolithic ScaTra problem
-    void SetupCoupledScatraVector(
+    void setup_coupled_scatra_vector(
         Teuchos::RCP<Epetra_Vector> globalvec,    //!< resulting global vector
         Teuchos::RCP<const Epetra_Vector>& vec1,  //!< vector in fluid ScaTra map
         Teuchos::RCP<const Epetra_Vector>& vec2   //!< vector in solid ScaTra map
     );
 
     //! set-up of global rhs of the monolithic ScaTra problem
-    void SetupCoupledScatraRHS();
+    void setup_coupled_scatra_rhs();
 
     //! set-up of global matrix of the monolithic ScaTra problem
-    void SetupCoupledScatraMatrix();
+    void setup_coupled_scatra_matrix();
 
     Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<const Epetra_Vector> iv) const;
 
@@ -136,19 +136,20 @@ namespace FS3I
     void ScatraIterUpdate();
 
     //! extraction of field-specific vectors from global ScaTra vector
-    void ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,  //!< global vector
-        Teuchos::RCP<const Epetra_Vector>& vec1,  //!< resulting vector in fluid ScaTra map
-        Teuchos::RCP<const Epetra_Vector>& vec2   //!< resulting vector in solid ScaTra map
+    void extract_scatra_field_vectors(
+        Teuchos::RCP<const Epetra_Vector> globalvec,  //!< global vector
+        Teuchos::RCP<const Epetra_Vector>& vec1,      //!< resulting vector in fluid ScaTra map
+        Teuchos::RCP<const Epetra_Vector>& vec2       //!< resulting vector in solid ScaTra map
     );
 
    private:
     /// extracts membrane concentration in membrane (interface)
-    void ExtractMembraneConcentration(
+    void extract_membrane_concentration(
         std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const;
 
     /// Calculation of membane concentration in the membrane between fluid-scatra and
     /// structure-scatra
-    Teuchos::RCP<Epetra_Vector> CalcMembraneConcentration() const;
+    Teuchos::RCP<Epetra_Vector> calc_membrane_concentration() const;
 
    protected:
     /// vector of scatra algorithms

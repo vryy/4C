@@ -1254,7 +1254,7 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // extract single field rhs vectors
   Teuchos::RCP<const Epetra_Vector> artscatrarhs;
   Teuchos::RCP<const Epetra_Vector> contscatrarhs;
-  scatramsht->ExtractSingleFieldVectors(scatramsht->CombinedRHS(), contscatrarhs, artscatrarhs);
+  scatramsht->extract_single_field_vectors(scatramsht->CombinedRHS(), contscatrarhs, artscatrarhs);
 
   // compute Rms norm of concentration residual vector
   double conc_res_Rms(0.);
@@ -1267,7 +1267,7 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // extract single field increment vectors
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> contscatrainc;
-  scatramsht->ExtractSingleFieldVectors(
+  scatramsht->extract_single_field_vectors(
       scatramsht->CombinedIncrement(), contscatrainc, artscatrainc);
 
   // compute L2 norm of concentration increment vector

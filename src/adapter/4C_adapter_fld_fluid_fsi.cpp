@@ -73,7 +73,7 @@ void ADAPTER::FluidFSI::Init()
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -107,9 +107,9 @@ void ADAPTER::FluidFSI::Init()
     if (auxintegrator_ != INPAR::FSI::timada_fld_none)
     {
       // determine type of adaptivity
-      if (AuxMethodOrderOfAccuracy() > fluidimpl_->MethodOrderOfAccuracy())
+      if (aux_method_order_of_accuracy() > fluidimpl_->method_order_of_accuracy())
         methodadapt_ = ada_upward;
-      else if (AuxMethodOrderOfAccuracy() < fluidimpl_->MethodOrderOfAccuracy())
+      else if (aux_method_order_of_accuracy() < fluidimpl_->method_order_of_accuracy())
         methodadapt_ = ada_downward;
       else
         methodadapt_ = ada_orderequal;
@@ -161,7 +161,7 @@ double ADAPTER::FluidFSI::TimeScaling() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::Update()
 {
-  if (GLOBAL::Problem::Instance()->SpatialApproximationType() !=
+  if (GLOBAL::Problem::Instance()->spatial_approximation_type() !=
       CORE::FE::ShapeFunctionType::hdg)  // TODO als fix this!
   {
     Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
@@ -180,8 +180,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::RelaxationSolve(Teuchos::RCP<Epet
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
   Teuchos::RCP<Epetra_Vector> relax = CORE::LINALG::CreateVector(*dofrowmap, true);
   Interface()->InsertFSICondVector(ivel, relax);
-  fluidimpl_->LinearRelaxationSolve(relax);
-  return ExtractInterfaceForces();
+  fluidimpl_->linear_relaxation_solve(relax);
+  return extract_interface_forces();
 }
 
 /*----------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFSI::InnerVelocityRowMap() { return
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::extract_interface_forces()
 {
   Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
 
@@ -201,7 +201,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*
  | Return interface velocity at new time level n+1                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::extract_interface_velnp()
 {
   return Interface()->ExtractFSICondVector(Velnp());
 }
@@ -210,21 +210,21 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVelnp()
 /*----------------------------------------------------------------------*
  | Return interface velocity at old time level n                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::extract_interface_veln()
 {
   return Interface()->ExtractFSICondVector(Veln());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::extract_free_surface_veln()
 {
   return Interface()->ExtractFSCondVector(Veln());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+void ADAPTER::FluidFSI::apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   // apply the interface velocities
   Interface()->InsertFSICondVector(ivel, fluidimpl_->WriteAccessVelnp());
@@ -241,7 +241,7 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::ApplyInitialMeshDisplacement(
+void ADAPTER::FluidFSI::apply_initial_mesh_displacement(
     Teuchos::RCP<const Epetra_Vector> initfluiddisp)
 {
   // cast fluid to fluidimplicit
@@ -257,7 +257,7 @@ void ADAPTER::FluidFSI::ApplyInitialMeshDisplacement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+void ADAPTER::FluidFSI::apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   meshmap_->InsertCondVector(fluiddisp, fluidimpl_->WriteAccessDispnp());
 
@@ -291,7 +291,7 @@ void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidFSI::displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
@@ -317,7 +317,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidFSI::velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
@@ -343,7 +343,7 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidFSI::free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
@@ -358,7 +358,7 @@ void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidFSI::free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
@@ -373,16 +373,17 @@ void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::integrate_interface_shape()
 {
-  return Interface()->ExtractFSICondVector(fluidimpl_->IntegrateInterfaceShape("FSICoupling"));
+  return Interface()->ExtractFSICondVector(fluidimpl_->integrate_interface_shape("FSICoupling"));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int>> condelements = Interface()->ConditionedElementMap(*Discretization());
+  Teuchos::RCP<std::set<int>> condelements =
+      Interface()->conditioned_element_map(*Discretization());
   fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), splitmatrix);
 }
 
@@ -546,7 +547,7 @@ void ADAPTER::FluidFSI::Reset(bool completeReset, int numsteps, int iter)
 void ADAPTER::FluidFSI::CalculateError()
 
 {
-  fluidimpl_->EvaluateErrorComparedToAnalyticalSol();
+  fluidimpl_->evaluate_error_compared_to_analytical_sol();
   return;
 }
 
@@ -638,8 +639,8 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
   // compute estimation of local discretization error
   if (methodadapt_ == ada_orderequal)
   {
-    const double coeffmarch = fluidimpl_->MethodLinErrCoeffVel();
-    const double coeffaux = AuxMethodLinErrCoeffVel();
+    const double coeffmarch = fluidimpl_->method_lin_err_coeff_vel();
+    const double coeffaux = aux_method_lin_err_coeff_vel();
     locerrvelnp_->Update(-1.0, *Velnp(), 1.0);
     locerrvelnp_->Scale(coeffmarch / (coeffaux - coeffmarch));
   }
@@ -651,13 +652,14 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
 
   // set '0' on all pressure DOFs
   auto zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  CORE::LINALG::ApplyDirichletToSystem(*locerrvelnp_, *zeros, *PressureRowMap());
-  // TODO: Do not misuse ApplyDirichletToSystem()...works for this purpose here: writes zeros into
-  // all pressure DoFs
+  CORE::LINALG::apply_dirichlet_to_system(*locerrvelnp_, *zeros, *PressureRowMap());
+  // TODO: Do not misuse apply_dirichlet_to_system()...works for this purpose here: writes zeros
+  // into all pressure DoFs
 
   // set '0' on Dirichlet DOFs
   zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  CORE::LINALG::ApplyDirichletToSystem(*locerrvelnp_, *zeros, *(GetDBCMapExtractor()->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(
+      *locerrvelnp_, *zeros, *(GetDBCMapExtractor()->CondMap()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond =
@@ -687,7 +689,7 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::calculate_wall_shear_stresses()
 {
   // get inputs
   Teuchos::RCP<const Epetra_Vector> trueresidual = fluidimpl_->TrueResidual();
@@ -702,7 +704,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
   if (not stressmanager->IsInit()) FOUR_C_THROW("StressManager has not been initialized jet!");
 
   // Call StressManager to calculate WSS from residual
-  Teuchos::RCP<Epetra_Vector> wss = stressmanager->GetWallShearStresses(trueresidual, dt);
+  Teuchos::RCP<Epetra_Vector> wss = stressmanager->get_wall_shear_stresses(trueresidual, dt);
 
   return wss;
 }
@@ -725,7 +727,7 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec, const int
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
+int ADAPTER::FluidFSI::aux_method_order_of_accuracy() const
 {
   if (auxintegrator_ == INPAR::FSI::timada_fld_none)
     return 0;
@@ -742,7 +744,7 @@ int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
+double ADAPTER::FluidFSI::aux_method_lin_err_coeff_vel() const
 {
   if (auxintegrator_ == INPAR::FSI::timada_fld_none)
     return 0.0;
@@ -771,9 +773,9 @@ double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
   if (auxintegrator_ != INPAR::FSI::timada_fld_none)
   {
     if (methodadapt_ == ada_upward)
-      return fluidimpl_->MethodOrderOfAccuracyVel();
+      return fluidimpl_->method_order_of_accuracy_vel();
     else
-      return AuxMethodOrderOfAccuracy();
+      return aux_method_order_of_accuracy();
   }
   else
   {

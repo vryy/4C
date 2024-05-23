@@ -55,13 +55,13 @@ namespace CONTACT
 
    protected:
     //! access method to scatra time integration factors
-    const DRT::ELEMENTS::ScaTraEleParameterTimInt* GetScaTraEleParameterTimInt() const
+    const DRT::ELEMENTS::ScaTraEleParameterTimInt* get_sca_tra_ele_parameter_tim_int() const
     {
       return scatraparamstimint_;
     }
 
     //! access method to scatra-scatra coupling specific parameters
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* GetScaTraEleParameterBoundary() const
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* get_sca_tra_ele_parameter_boundary() const
     {
       return scatraparamsboundary_;
     }
@@ -268,7 +268,7 @@ namespace CONTACT
      * @param[in] wgt                 Gauss point weight
      */
     template <int dim>
-    void IntegrateSSIInterfaceCondition(MORTAR::Element& slave_ele,
+    void integrate_ssi_interface_condition(MORTAR::Element& slave_ele,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
@@ -293,7 +293,7 @@ namespace CONTACT
      * @param[out] d_conc_dd  directional derivative of concentration
      */
     template <int dim>
-    void SetupGpConcentrations(MORTAR::Element& ele,
+    void setup_gp_concentrations(MORTAR::Element& ele,
         const CORE::LINALG::SerialDenseVector& shape_func,
         const CORE::LINALG::SerialDenseMatrix& shape_deriv,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double& gp_conc,

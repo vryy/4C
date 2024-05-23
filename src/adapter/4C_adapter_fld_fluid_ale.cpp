@@ -48,7 +48,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -98,7 +98,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
     // initialize coupling adapter
     coupfa_volmortar->Init(ndim, FluidField()->Discretization(),
-        AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
+        AleField()->write_access_discretization(), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 
     // setup coupling adapter
@@ -115,7 +115,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   {
     FluidField()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
     Teuchos::RCP<Epetra_Vector> initfluiddisp = AleToFluidField(AleField()->Dispn());
-    FluidField()->ApplyInitialMeshDisplacement(initfluiddisp);
+    FluidField()->apply_initial_mesh_displacement(initfluiddisp);
   }
 
   // initializing the fluid is done later as for xfluids the first cut is done
@@ -129,7 +129,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
           GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_STRUCTALE"))
   {
     Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-    icoupfa->SetupConditionCoupling(*FluidField()->Discretization(),
+    icoupfa->setup_condition_coupling(*FluidField()->Discretization(),
         FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
         AleField()->Interface()->FSICondMap(), condname, ndim, true, nds_master, nds_slave);
     icoupfa_ = icoupfa;
@@ -163,12 +163,12 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
 
   fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+  fscoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim, true, nds_master, nds_slave);
 
   aucoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  aucoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+  aucoupfa_->setup_condition_coupling(*FluidField()->Discretization(),
       FluidField()->Interface()->AUCondMap(), *AleField()->Discretization(),
       AleField()->Interface()->AUCondMap(), "ALEUPDATECoupling", ndim, true, nds_master, nds_slave);
 
@@ -224,7 +224,7 @@ void ADAPTER::FluidAle::Output()
     if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) ||
         FluidField()->Step() % upres == 0)
     {
-      Teuchos::RCP<Epetra_Vector> lambda = FluidField()->ExtractInterfaceForces();
+      Teuchos::RCP<Epetra_Vector> lambda = FluidField()->extract_interface_forces();
       Teuchos::RCP<Epetra_Vector> lambdafull =
           FluidField()->Interface()->InsertFSICondVector(lambda);
       FluidField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
@@ -253,8 +253,8 @@ void ADAPTER::FluidAle::NonlinearSolve(
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them
-    AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    FluidField()->ApplyInterfaceVelocities(ivel);
+    AleField()->apply_interface_displacements(FluidToAle(idisp));
+    FluidField()->apply_interface_velocities(ivel);
   }
 
   // Update the ale update part
@@ -262,7 +262,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> audispnp = FluidField()->Interface()->ExtractAUCondVector(dispnp);
-    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+    AleField()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
@@ -270,7 +270,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
-    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -280,20 +280,20 @@ void ADAPTER::FluidAle::NonlinearSolve(
 
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  FluidField()->apply_mesh_displacement(fluiddisp);
   FluidField()->Solve();
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp,
+void ADAPTER::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> idisp,
     Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
 {
   if (idisp != Teuchos::null)
   {
-    AleField()->ApplyInterfaceDisplacements(AleField()->Interface()->ExtractFSICondVector(idisp));
-    FluidField()->ApplyInterfaceVelocities(ivel);
+    AleField()->apply_interface_displacements(AleField()->Interface()->ExtractFSICondVector(idisp));
+    FluidField()->apply_interface_velocities(ivel);
   }
 
   // Update the ale update part
@@ -301,7 +301,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> audispnp = FluidField()->Interface()->ExtractAUCondVector(dispnp);
-    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+    AleField()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
@@ -309,7 +309,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
-    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -320,33 +320,33 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
 
-  icorrector->CorrectInterfaceDisplacements(fluiddisp, FluidField()->Interface());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  icorrector->correct_interface_displacements(fluiddisp, FluidField()->Interface());
+  FluidField()->apply_mesh_displacement(fluiddisp);
   FluidField()->Solve();
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::FluidAle::ApplyInterfaceValues(
+void ADAPTER::FluidAle::apply_interface_values(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them
-    AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    FluidField()->ApplyInterfaceVelocities(ivel);
+    AleField()->apply_interface_displacements(FluidToAle(idisp));
+    FluidField()->apply_interface_velocities(ivel);
   }
 
   if (FluidField()->Interface()->FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
-    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
-  FluidField()->ApplyMeshDisplacement(fluiddisp);
+  FluidField()->apply_mesh_displacement(fluiddisp);
 }
 
 
@@ -360,7 +360,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(
   // trial vector only.
 
   // grid velocity
-  AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
+  AleField()->apply_interface_displacements(FluidToAle(idisp));
 
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
@@ -379,33 +379,33 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::extract_interface_forces()
 {
-  return FluidField()->ExtractInterfaceForces();
+  return FluidField()->extract_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::extract_interface_velnp()
 {
-  return FluidField()->ExtractInterfaceVelnp();
+  return FluidField()->extract_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::extract_interface_veln()
 {
-  return FluidField()->ExtractInterfaceVeln();
+  return FluidField()->extract_interface_veln();
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::integrate_interface_shape()
 {
-  return FluidField()->IntegrateInterfaceShape();
+  return FluidField()->integrate_interface_shape();
 }
 
 

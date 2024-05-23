@@ -47,16 +47,16 @@ void FSI::DirichletNeumannSlideale::Setup()
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  SetKinematicCoupling(
+  set_kinematic_coupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
   INPAR::FSI::SlideALEProj aletype = CORE::UTILS::IntegralValue<INPAR::FSI::SlideALEProj>(
       GLOBAL::Problem::Instance()->FSIDynamicParams(), "SLIDEALEPROJ");
 
   slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
-      MBFluidField()->Discretization(), StructureFluidCouplingMortar(), true, aletype));
+      MBFluidField()->Discretization(), structure_fluid_coupling_mortar(), true, aletype));
 
-  islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofMap(), true));
+  islave_ = Teuchos::rcp(new Epetra_Vector(*structure_fluid_coupling_mortar().SlaveDofMap(), true));
 }
 
 
@@ -66,20 +66,20 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 {
   // dispn and dispnp of structure, used for surface integral and velocity of the fluid in the
   // interface
-  Teuchos::RCP<Epetra_Vector> idisptotal = StructureField()->ExtractInterfaceDispnp();
+  Teuchos::RCP<Epetra_Vector> idisptotal = StructureField()->extract_interface_dispnp();
 
   slideale_->Remeshing(*StructureField(), MBFluidField()->Discretization(), idisptotal, islave_,
-      StructureFluidCouplingMortar(), Comm());
+      structure_fluid_coupling_mortar(), Comm());
 
   // Evaluate solid/fluid Mortar coupling
   slideale_->EvaluateMortar(
-      StructureField()->ExtractInterfaceDispnp(), islave_, StructureFluidCouplingMortar());
+      StructureField()->extract_interface_dispnp(), islave_, structure_fluid_coupling_mortar());
   // Evaluate solid/ale Mortar coupling
   slideale_->EvaluateFluidMortar(idisptotal, islave_);
 
   Teuchos::RCP<Epetra_Vector> unew =
-      slideale_->InterpolateFluid(MBFluidField()->ExtractInterfaceVelnp());
-  MBFluidField()->ApplyInterfaceValues(islave_, unew);
+      slideale_->InterpolateFluid(MBFluidField()->extract_interface_velnp());
+  MBFluidField()->apply_interface_values(islave_, unew);
 }
 
 
@@ -109,9 +109,9 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::FluidOp(
 
     // new Epetra_Vector for aledisp in interface
     Teuchos::RCP<Epetra_Vector> iale =
-        Teuchos::rcp(new Epetra_Vector(*(StructureFluidCouplingMortar().MasterDofMap()), true));
+        Teuchos::rcp(new Epetra_Vector(*(structure_fluid_coupling_mortar().MasterDofMap()), true));
 
-    Teuchos::RCP<Epetra_Vector> idispn = StructureField()->ExtractInterfaceDispn();
+    Teuchos::RCP<Epetra_Vector> idispn = StructureField()->extract_interface_dispn();
 
     iale->Update(1.0, *idispcurr, 0.0);
 
@@ -122,7 +122,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::FluidOp(
 
     MBFluidField()->SetItemax(itemax);
 
-    return FluidToStruct(MBFluidField()->ExtractInterfaceForces());
+    return FluidToStruct(MBFluidField()->extract_interface_forces());
   }
 }
 /*----------------------------------------------------------------------*/
@@ -140,22 +140,22 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::StructOp(
   else
   {
     // normal structure solve
-    StructureField()->ApplyInterfaceForces(iforce);
+    StructureField()->apply_interface_forces(iforce);
     StructureField()->Solve();
-    return StructureField()->ExtractInterfaceDispnp();
+    return StructureField()->extract_interface_dispnp();
   }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 {
-  if (GetKinematicCoupling())
+  if (get_kinematic_coupling())
   {
     // real displacement of slave side at time step begin on master side --> for calcualtion of
     // FluidOp
     ft_stemp_ = FluidToStruct(islave_);
     // predict displacement
-    return StructureField()->PredictInterfaceDispnp();
+    return StructureField()->predict_interface_dispnp();
   }
   else
   {

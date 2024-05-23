@@ -94,13 +94,14 @@ namespace BEAMINTERACTION
      * \brief Create the indirect assembly manager for this condition.
      * @param discret (in) Discretization.
      */
-    Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> CreateIndirectAssemblyManager(
+    Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager> create_indirect_assembly_manager(
         const Teuchos::RCP<const DRT::Discretization>& discret) override;
 
     /**
      * \brief Return a pointer to the geometry evaluation data in this condition.
      */
-    Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> GetGeometryEvaluationData() const
+    Teuchos::RCP<const GEOMETRYPAIR::GeometryEvaluationDataBase> get_geometry_evaluation_data()
+        const
     {
       return geometry_evaluation_data_;
     }
@@ -120,7 +121,7 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<DRT::Element const*>& ele_ptrs) = 0;
 
    protected:
@@ -164,7 +165,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**
@@ -223,7 +224,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair_internal(
         const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**

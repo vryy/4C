@@ -31,7 +31,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
   if (myrank_ == 0)
   {
     std::cout << "<                                                  >" << std::endl;
-    PrintOutCouplingMethod();
+    print_out_coupling_method();
     std::cout << "<                                                  >" << std::endl;
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     std::cout << "\n";
@@ -79,17 +79,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   // create map extractors needed for artery condition coupling --> continuous field part
   contfieldex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   SetupMapExtractor(contfieldex_, contdis_, coupleddofs_cont_);
-  CheckDbcOnCoupledDofs(contdis_, contfieldex_->Map(1));
+  check_dbc_on_coupled_dofs(contdis_, contfieldex_->Map(1));
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> artery part
   artex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   SetupMapExtractor(artex_, arterydis_, coupleddofs_art_);
-  CheckDbcOnCoupledDofs(arterydis_, artex_->Map(1));
+  check_dbc_on_coupled_dofs(arterydis_, artex_->Map(1));
 
   // setup coupling adapter
   artcontfieldcoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  artcontfieldcoup_->SetupConditionCoupling(*contdis_, contfieldex_->Map(1), *arterydis_,
+  artcontfieldcoup_->setup_condition_coupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
   // full map of continous field and uncoupled dofs of artery
@@ -103,7 +103,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   globalex_->Setup(*fullmap_, maps);
 
   // check global map extractor
-  globalex_->CheckForValidMapExtractor();
+  globalex_->check_for_valid_map_extractor();
 
   // needed for matrix transformations
   sbbtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform());
@@ -243,7 +243,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ExtractSingleFieldVectors(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::extract_single_field_vectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
     Teuchos::RCP<const Epetra_Vector>& vec_art)
 {
@@ -268,7 +268,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ExtractSingleF
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoupledDofs(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_coupled_dofs(
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
 {
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
@@ -358,7 +358,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovem
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFraction()
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for node-based coupling");
 
@@ -367,7 +367,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCouplingMethod() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::print_out_coupling_method() const
 {
   std::cout << "<   Coupling-Method : Nodebased                    >" << std::endl;
 }

@@ -31,7 +31,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
     Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
@@ -59,7 +59,7 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& err
     double& errother, double& errinf, double& errinfcond, double& errinfother)
 {
   // call functionality of adaptive structural time integrator
-  StrAda()->EvaluateLocalErrorDis();
+  StrAda()->evaluate_local_error_dis();
 
   // Indicate has to be done by the FSI algorithm since it depends on the interface
   IndicateErrors(err, errcond, errother, errinf, errinfcond, errinfother);
@@ -100,7 +100,7 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err, double& errcond
 
 /*----------------------------------------------------------------------------*/
 /* Do a single step with auxiliary time integration scheme */
-void ADAPTER::StructureFSITimIntAda::TimeStepAuxiliar() { StrAda()->IntegrateStepAuxiliar(); }
+void ADAPTER::StructureFSITimIntAda::TimeStepAuxiliar() { StrAda()->integrate_step_auxiliar(); }
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */

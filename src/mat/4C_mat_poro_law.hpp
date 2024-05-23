@@ -30,7 +30,7 @@ namespace MAT
       explicit PoroLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      virtual void ConstitutiveDerivatives(
+      virtual void constitutive_derivatives(
           const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,                   //!< (i) fluid pressure at gauss point
           const double& J,                       //!< (i) Jacobian determinant at gauss point
@@ -78,7 +78,7 @@ namespace MAT
 
       //! evaluate constitutive relation for porosity and compute derivatives using reference
       //! porosity
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point
@@ -134,7 +134,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point
@@ -188,7 +188,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point
@@ -233,7 +233,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point
@@ -278,7 +278,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point
@@ -333,7 +333,7 @@ namespace MAT
       Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConstitutiveDerivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
+      void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
           const double& press,        //!< (i) fluid pressure at gauss point
           const double& J,            //!< (i) Jacobian determinant at gauss point
           const double& porosity,     //!< (i) porosity at gauss point

@@ -137,7 +137,7 @@ namespace CORE::VOLMORTAR
      \brief Evaluate consistent interpolation (NO CORE::VOLMORTAR)
 
      */
-    virtual void EvaluateConsistentInterpolation();
+    virtual void evaluate_consistent_interpolation();
 
     /*!
      \brief get projection matrix 2 --> 1
@@ -162,13 +162,15 @@ namespace CORE::VOLMORTAR
      \brief Assemble p matrix for cons. interpolation approach
 
      */
-    virtual void AssembleConsistentInterpolation_P12(DRT::Node* node, std::vector<int>& foundeles);
+    virtual void assemble_consistent_interpolation_p12(
+        DRT::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief Assemble p matrix for cons. interpolation approach
 
      */
-    virtual void AssembleConsistentInterpolation_P21(DRT::Node* node, std::vector<int>& foundeles);
+    virtual void assemble_consistent_interpolation_p21(
+        DRT::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief get auxiliary plane normal (2D)
@@ -220,7 +222,7 @@ namespace CORE::VOLMORTAR
      \brief check initial coupling constraint
 
      */
-    virtual void CheckInitialResiduum();
+    virtual void check_initial_residuum();
 
     /*!
      \brief complete created matrices
@@ -232,7 +234,7 @@ namespace CORE::VOLMORTAR
      \brief compute projection matrices D^-1 * M
 
      */
-    virtual void CreateProjectionOperator();
+    virtual void create_projection_operator();
 
     /*!
      \brief compute trafo operator
@@ -245,7 +247,7 @@ namespace CORE::VOLMORTAR
      \brief define vertices for 2D polygon clipping (master)
 
      */
-    virtual void DefineVerticesMaster(
+    virtual void define_vertices_master(
         DRT::Element& ele, std::vector<MORTAR::Vertex>& SlaveVertices);
 
     /*!
@@ -258,7 +260,7 @@ namespace CORE::VOLMORTAR
      \brief create integration cells for 2D volmortar
 
      */
-    virtual bool DelaunayTriangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
+    virtual bool delaunay_triangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
         std::vector<MORTAR::Vertex>& clip, double tol);
 
     /*!
@@ -339,26 +341,26 @@ namespace CORE::VOLMORTAR
      \brief perform 3D element-wise integration for P12
 
      */
-    virtual void Integrate3DEleBased_P12(DRT::Element& Aele, std::vector<int>& foundeles);
+    virtual void integrate3_d_ele_based_p12(DRT::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
-    virtual void Integrate3DEleBased_P21(DRT::Element& Bele, std::vector<int>& foundeles);
+    virtual void integrate3_d_ele_based_p21(DRT::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
 
      */
-    virtual void Integrate3DEleBased_ADis_MeshInit(
+    virtual void integrate3_d_ele_based_a_dis_mesh_init(
         DRT::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
 
     /*!
      \brief perform 3D element-wise integration for BDis for meshinit
 
      */
-    virtual void Integrate3DEleBased_BDis_MeshInit(
+    virtual void integrate3_d_ele_based_b_dis_mesh_init(
         DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
@@ -371,7 +373,7 @@ namespace CORE::VOLMORTAR
      \brief perform 3D integration of created cells
 
      */
-    virtual void Integrate3DCell_DirectDivergence(
+    virtual void integrate3_d_cell_direct_divergence(
         DRT::Element& sele, DRT::Element& mele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure
@@ -395,7 +397,7 @@ namespace CORE::VOLMORTAR
      \brief perform 2D polygon clipping
 
      */
-    virtual bool PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
+    virtual bool polygon_clipping_convex_hull(std::vector<MORTAR::Vertex>& poly1,
         std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly,
         DRT::Element& sele, DRT::Element& mele, double& tol);
 

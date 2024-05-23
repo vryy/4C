@@ -68,12 +68,13 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
 
     binningstrategy->Init(vector_of_discretizations);
 
-    binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
-        vector_of_discretizations, stdelecolmap, stdnodecolmap);
+    binningstrategy
+        ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+            vector_of_discretizations, stdelecolmap, stdnodecolmap);
 
     // revert extended ghosting if requested
     if (revertextendedghosting)
-      binningstrategy->RevertExtendedGhosting(
+      binningstrategy->revert_extended_ghosting(
           vector_of_discretizations, stdelecolmap, stdnodecolmap);
   }  // if more than 1 proc
   else
@@ -145,7 +146,7 @@ void CORE::REBALANCE::GhostDiscretizationOnAllProcs(
   // rebalance the nodes and elements of the discr. according to the
   // new node / element column layout (i.e. master = full overlap)
   distobeghosted->ExportColumnNodes(*newnodecolmap);
-  distobeghosted->ExportColumnElements(*newelecolmap);
+  distobeghosted->export_column_elements(*newelecolmap);
 
   // Safety checks in DEBUG
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -218,7 +219,7 @@ void CORE::REBALANCE::MatchNodalDistributionOfMatchingDiscretizations(
     );
 
     // print to screen
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_rebalance);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(dis_to_rebalance);
   }  // if more than one proc
 }  // MatchDistributionOfMatchingDiscretizations
 
@@ -293,7 +294,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     dis_to_rebalance.ExportColumnNodes(*rebalanced_nodecolmap, false, false);
     // export the elements
     dis_to_rebalance.ExportRowElements(*rebalanced_elerowmap, false, false);
-    dis_to_rebalance.ExportColumnElements(*rebalanced_elecolmap, false, false);
+    dis_to_rebalance.export_column_elements(*rebalanced_elecolmap, false, false);
 
     ////////////////////////////////////////
     // FINISH
@@ -303,7 +304,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 
     // print to screen
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_rebalance);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(dis_to_rebalance);
   }  // if more than one proc
 }  // CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations
 
@@ -356,7 +357,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
     std::vector<std::string> conditions_to_copy(0);
-    dis_from_template_condition = discreator->CreateMatchingDiscretizationFromCondition(
+    dis_from_template_condition = discreator->create_matching_discretization_from_condition(
         dis_template,        ///< discretization with condition
         condname_template,   ///< name of the condition, by which the derived discretization is
                              ///< identified
@@ -390,11 +391,11 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
 
     // map that will be filled with matched elements.
     // mapping: redistr. ele gid to (template ele gid, dist.).
-    // note: 'FillSlaveToMasterGIDMapping' loops over all
+    // note: 'fill_slave_to_master_gid_mapping' loops over all
     //        template eles and finds corresponding redistr. eles.
     std::map<int, std::vector<double>> matched_ele_map;
     // match target (slave) elements to source (master) elements using octtree
-    elementmatchingtree.FillSlaveToMasterGIDMapping(
+    elementmatchingtree.fill_slave_to_master_gid_mapping(
         dis_to_rebalance, rebalance_rowelegid_vec, matched_ele_map);
 
     // now we have a map matching the geometry ids of slave elements
@@ -504,7 +505,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     //       and finds corresponding redistr. nodes.
     std::map<int, std::vector<double>> matched_node_map;
     // match target nodes to source nodes using octtree
-    nodematchingtree.FillSlaveToMasterGIDMapping(
+    nodematchingtree.fill_slave_to_master_gid_mapping(
         dis_to_rebalance, rebalance_rownodegid_vec, matched_node_map);
 
     // fill vectors with row gids for new distribution
@@ -572,7 +573,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     dis_to_rebalance.ExportColumnNodes(*rebalanced_nodecolmap, false, false);
     // export the elements
     dis_to_rebalance.ExportRowElements(*rebalanced_elerowmap, false, false);
-    dis_to_rebalance.ExportColumnElements(*rebalanced_elecolmap, false, false);
+    dis_to_rebalance.export_column_elements(*rebalanced_elecolmap, false, false);
 
 
     ////////////////////////////////////////
@@ -583,7 +584,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 
     // print to screen
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_rebalance);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(dis_to_rebalance);
 
   }  // if more than one proc
 }  // MatchElementDistributionOfMatchingConditionedElements
@@ -676,11 +677,11 @@ void CORE::REBALANCE::MatchElementRowColDistribution(const DRT::Discretization& 
 
   // map that will be filled with matched elements.
   // mapping: redistr. ele gid to (template ele gid, dist.).
-  // note: 'FillSlaveToMasterGIDMapping' loops over all
+  // note: 'fill_slave_to_master_gid_mapping' loops over all
   //        template eles and finds corresponding redistr. eles.
   std::map<int, std::vector<double>> matched_ele_map;
   // match target (slave) nodes to source (master) nodes using octtree
-  elementmatchingtree.FillSlaveToMasterGIDMapping(
+  elementmatchingtree.fill_slave_to_master_gid_mapping(
       dis_to_rebalance, my_rebalance_elegid_vec, matched_ele_map);
 
   // declare iterator
@@ -737,7 +738,7 @@ void CORE::REBALANCE::MatchNodalRowColDistribution(const DRT::Discretization& di
   //       and finds corresponding redistr. nodes.
   std::map<int, std::vector<double>> matched_node_map;
   // match target nodes to source nodes using octtree
-  nodematchingtree.FillSlaveToMasterGIDMapping(
+  nodematchingtree.fill_slave_to_master_gid_mapping(
       dis_to_rebalance, my_rebalance_nodegid_vec, matched_node_map);
 
   // declare iterator

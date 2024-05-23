@@ -93,7 +93,7 @@ namespace DRT
        * @param stiffness_matrix (out) : Pointer to stiffness matrix or nullptr
        * @param mass_matrix (out) : Pointer to mass matrix or nullptr
        */
-      virtual void EvaluateNonlinearForceStiffnessMass(DRT::Element& ele,
+      virtual void evaluate_nonlinear_force_stiffness_mass(DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
@@ -127,7 +127,7 @@ namespace DRT
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual void CalculateStressesStrains(DRT::Element& ele, MAT::So3Material& solid_material,
+      virtual void calculate_stresses_strains(DRT::Element& ele, MAT::So3Material& solid_material,
           const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
           const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
@@ -144,7 +144,7 @@ namespace DRT
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual double CalculateInternalEnergy(DRT::Element& ele, MAT::So3Material& solid_material,
+      virtual double calculate_internal_energy(DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
@@ -171,7 +171,7 @@ namespace DRT
        * @param ele  (in) : Reference to the element
        * @param solid_material (in) : Solid material of the element
        */
-      virtual void ResetToLastConverged(DRT::Element& ele, MAT::So3Material& solid_material) = 0;
+      virtual void reset_to_last_converged(DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
       /*!
        * \brief Query data to be visualized using BINIO of a given name

@@ -276,7 +276,7 @@ namespace DRT
       // get parameter list from ssn_plast_manager
       virtual void ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams);
 
-      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -309,7 +309,7 @@ namespace DRT
       }
 
 
-      virtual void SetIsNitscheContactEle(bool val)
+      virtual void set_is_nitsche_contact_ele(bool val)
       {
         is_nitsche_contact_ = val;
         if (is_nitsche_contact_)
@@ -362,7 +362,7 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       // Add plastic increment of converged state to plastic history for nonlinear kinematics
-      virtual void UpdatePlasticDeformation_nln(PlSpinType spintype);
+      virtual void update_plastic_deformation_nln(PlSpinType spintype);
 
       //@}
 
@@ -405,7 +405,7 @@ namespace DRT
        * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
        * \param defgrd_mod   (out) : consistent modified deformation gradient
        */
-      virtual void CalcConsistentDefgrd();
+      virtual void calc_consistent_defgrd();
 
 
       /*! \brief Evaluate the NCP function and the linearization
@@ -432,7 +432,7 @@ namespace DRT
           const double* f_bar_factor = nullptr,
           const CORE::LINALG::Matrix<numdofperelement_, 1>* htensor = nullptr);
 
-      void RecoverPlasticityAndEAS(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
+      void recover_plasticity_and_eas(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
           const CORE::LINALG::Matrix<nen_, 1>* res_t = nullptr);
 
       void RecoverEAS(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
@@ -443,7 +443,7 @@ namespace DRT
           const double* res_t = nullptr);
 
       void ReduceEasStep(const double new_step_length, const double old_step_length);
-      void ReducePlasticityStep(
+      void reduce_plasticity_step(
           const double new_step_length, const double old_step_length, const int gp);
 
       virtual void BuildDeltaLp(const int gp);
@@ -508,10 +508,10 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyNDirAndDerivativesAtXiPlast(const CORE::LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
-          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi_plast(
+          const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+          const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+          double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
@@ -571,10 +571,10 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyNDirAndDerivativesAtXiElast(const CORE::LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
-          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi_elast(
+          const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+          const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+          double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
@@ -600,7 +600,7 @@ namespace DRT
       virtual void IntegrateMassMatrix(
           const int gp, CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& mass);
 
-      virtual void IntegrateStiffMatrix(const int gp,
+      virtual void integrate_stiff_matrix(const int gp,
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
           CORE::LINALG::SerialDenseMatrix& Kda);
 
@@ -840,18 +840,18 @@ namespace DRT
         FOUR_C_ASSERT(deriv_.first, "deriv shape function not valid");
         return deriv_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunction()
+      inline CORE::LINALG::Matrix<nsd_, nen_>& set_deriv_shape_function()
       {
         deriv_.first = true;
         return deriv_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunctionXYZ() const
+      inline const CORE::LINALG::Matrix<nsd_, nen_>& deriv_shape_function_xyz() const
       {
         FOUR_C_ASSERT(N_XYZ_.first, "deriv shape function not valid");
         return N_XYZ_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunctionXYZ()
+      inline CORE::LINALG::Matrix<nsd_, nen_>& set_deriv_shape_function_xyz()
       {
         N_XYZ_.first = true;
         return N_XYZ_.second;
@@ -956,12 +956,12 @@ namespace DRT
         return cmat_.second;
       }
 
-      inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunctionXYZ_0() const
+      inline const CORE::LINALG::Matrix<nsd_, nen_>& deriv_shape_function_xyz_0() const
       {
         FOUR_C_ASSERT(N_XYZ_0_.first, "deriv shape function not valid");
         return N_XYZ_0_.second;
       }
-      inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunctionXYZ_0()
+      inline CORE::LINALG::Matrix<nsd_, nen_>& set_deriv_shape_function_xyz_0()
       {
         N_XYZ_0_.first = true;
         return N_XYZ_0_.second;
@@ -1077,11 +1077,11 @@ namespace DRT
         static CORE::LINALG::Matrix<nsd_, nsd_> invJ_0;
         SetDetJac_0() = invJ_0.Invert(Jac_0());
         // material derivatives at centroid
-        SetDerivShapeFunctionXYZ_0().Multiply(invJ_0, N_rst_0);
+        set_deriv_shape_function_xyz_0().Multiply(invJ_0, N_rst_0);
 
         // deformation gradient and its determinant at centroid
         static CORE::LINALG::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(Xcurr(), DerivShapeFunctionXYZ_0());
+        defgrd_0.MultiplyTT(Xcurr(), deriv_shape_function_xyz_0());
         SetDetF_0() = SetInvDefgrd_0().Invert(defgrd_0);
       }
 
@@ -1094,8 +1094,8 @@ namespace DRT
 
         for (int n = 0; n < numdofperelement_; n++)
           for (int i = 0; i < 3; i++)
-            SetHtensor()(n) += InvDefgrd_0()(i, n % 3) * DerivShapeFunctionXYZ_0()(i, n / 3) -
-                               InvDefgrd()(i, n % 3) * DerivShapeFunctionXYZ()(i, n / 3);
+            SetHtensor()(n) += InvDefgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3) -
+                               InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
       }
 
       inline const CORE::LINALG::Matrix<numstr_, numstr_>& T0invT() const
@@ -1124,7 +1124,7 @@ namespace DRT
       {
         if (distype == CORE::FE::CellType::nurbs27)
           CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-              SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
+              SetShapeFunction(), set_deriv_shape_function(), xi, Knots(), Weights(), distype);
         else
           CORE::FE::shape_function<distype>(xi, SetShapeFunction());
       }
@@ -1133,9 +1133,9 @@ namespace DRT
       {
         if (distype == CORE::FE::CellType::nurbs27)
           CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-              SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
+              SetShapeFunction(), set_deriv_shape_function(), xi, Knots(), Weights(), distype);
         else
-          CORE::FE::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
+          CORE::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
       }
 
       void GetNurbsEleInfo(DRT::Discretization* dis = nullptr);

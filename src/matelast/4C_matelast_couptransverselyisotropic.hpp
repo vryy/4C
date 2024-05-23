@@ -179,7 +179,7 @@ namespace MAT
        * \param[in]  go       Gauss point
        * \param[in]  eleGID element GID
        */
-      void AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
+      void add_stress_aniso_principal(const CORE::LINALG::Matrix<6, 1>& rcg,
           CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
           Teuchos::ParameterList& params, const int gp, const int eleGID) override;
 
@@ -251,7 +251,7 @@ namespace MAT
        * \param[out] rcg_inv_s  Inverse of the right Cauchy green strain tensor
        *                        in perturbed Voigt stress notation
        */
-      void UpdateSecondPiolaKirchhoffStress(CORE::LINALG::Matrix<6, 1>& stress,
+      void update_second_piola_kirchhoff_stress(CORE::LINALG::Matrix<6, 1>& stress,
           const CORE::LINALG::Matrix<6, 1>& rcg_s, CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
 
       /*!
@@ -288,7 +288,7 @@ namespace MAT
        * \param[in]  rcg_inv_s  right cauchy green tensor in perturbed Voigt
        *                        stress notation
        */
-      void UpdateElasticityTensor(
+      void update_elasticity_tensor(
           CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
 
       /// error handling in case of a negative deformation gradient determinant

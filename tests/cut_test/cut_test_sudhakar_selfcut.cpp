@@ -221,7 +221,7 @@ void test_sud_sc1()
        i != other_cells.end(); ++i)
   {
     GEO::CUT::VolumeCell* vc = &**i;
-    vc->MomentFitGaussWeights(vc->ParentElement(), mesh, true, "Tessellation");
+    vc->moment_fit_gauss_weights(vc->ParentElement(), mesh, true, "Tessellation");
     momFitVol.push_back(vc->Volume());
   }
 
@@ -229,7 +229,7 @@ void test_sud_sc1()
        i != other_cells.end(); ++i)
   {
     GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(vc->ParentElement(), mesh, true, "DirectDivergence");
+    vc->direct_divergence_gauss_rule(vc->ParentElement(), mesh, true, "DirectDivergence");
     dirDivVol.push_back(vc->Volume());
   }
 

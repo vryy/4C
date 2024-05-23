@@ -148,7 +148,7 @@ namespace BEAMINTERACTION
      * matrices.
      * @param displacement_vector (in) global displacement vector.
      */
-    void EvaluateGlobalCouplingContributions(
+    void evaluate_global_coupling_contributions(
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
 
     /**
@@ -157,7 +157,7 @@ namespace BEAMINTERACTION
      * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
-    void AddGlobalForceStiffnessPenaltyContributions(
+    void add_global_force_stiffness_penalty_contributions(
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 

@@ -69,7 +69,7 @@ void IO::ElementReader::ReadAndDistribute()
   const int numproc = comm_->NumProc();
 
   // read global ids of elements of this discretization
-  const auto& [numele, eids] = GetElementSizeAndIDs();
+  const auto& [numele, eids] = get_element_size_and_i_ds();
 
   // determine a preliminary element distribution
   int nblock, mysize, bsize;
@@ -113,13 +113,13 @@ void IO::ElementReader::ReadAndDistribute()
     }
   }
 
-  GetAndDistributeElements(nblock, bsize);
+  get_and_distribute_elements(nblock, bsize);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> IO::ElementReader::GetElementSizeAndIDs() const
+std::pair<int, std::vector<int>> IO::ElementReader::get_element_size_and_i_ds() const
 {
   // vector of all global element ids
   std::vector<int> eids;
@@ -131,7 +131,7 @@ std::pair<int, std::vector<int>> IO::ElementReader::GetElementSizeAndIDs() const
   {
     // open input file at the right position
     std::ifstream file(inputfile_name.c_str());
-    std::ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
+    std::ifstream::pos_type pos = reader_.excluded_section_position(sectionname_);
     if (pos != std::ifstream::pos_type(-1))
     {
       file.seekg(pos);
@@ -172,7 +172,7 @@ std::pair<int, std::vector<int>> IO::ElementReader::GetElementSizeAndIDs() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsize)
+void IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
 {
   std::ifstream file;
   std::string inputfile_name = reader_.MyInputfileName();
@@ -180,13 +180,13 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
   if (comm_->MyPID() == 0)
   {
     file.open(inputfile_name.c_str());
-    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
+    file.seekg(reader_.excluded_section_position(sectionname_));
   }
   std::string line;
   bool endofsection = false;
 
   INPUT::ElementDefinition ed;
-  ed.SetupValidElementLines();
+  ed.setup_valid_element_lines();
 
   for (int block = 0; block < nblock; ++block)
   {
@@ -275,7 +275,7 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
         }
       }
     }
-    dis_->ProcZeroDistributeElementsToAll(*roweles_, gidlist);
+    dis_->proc_zero_distribute_elements_to_all(*roweles_, gidlist);
   }
 }
 

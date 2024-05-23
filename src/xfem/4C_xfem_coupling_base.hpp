@@ -70,14 +70,14 @@ namespace XFEM
 
     //! destructor
     virtual ~CouplingBase() = default;
-    virtual void SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map)
+    virtual void set_dof_set_coupling_map(const std::map<std::string, int>& dofset_coupling_map)
     {
       dofset_coupling_map_ = dofset_coupling_map;
     }
 
     virtual void SetCouplingDofsets(){};
 
-    int GetCouplingDofsetNds(const std::string& name)
+    int get_coupling_dofset_nds(const std::string& name)
     {
       if (not(dofset_coupling_map_.count(name) == 1))
         FOUR_C_THROW("%s -dofset not set in dofset_coupling_map for fluid dis!", name.c_str());
@@ -119,14 +119,14 @@ namespace XFEM
       step_ = step;
     }
 
-    void IncrementTimeAndStep(const double dt)
+    void increment_time_and_step(const double dt)
     {
       dt_ = dt;
       time_ += dt;
       step_ += 1;
     }
 
-    void GetConditionByCouplingId(const std::vector<CORE::Conditions::Condition*>& mycond,
+    void get_condition_by_coupling_id(const std::vector<CORE::Conditions::Condition*>& mycond,
         const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
 
     void Status(const int coupling_idx, const int side_start_gid);
@@ -139,7 +139,7 @@ namespace XFEM
       return dis->Name();
     }
 
-    std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
+    std::string type_to_string_for_print(const INPAR::XFEM::EleCouplingCondType& type)
     {
       if (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)
         return "XFSI Partitioned";
@@ -173,7 +173,7 @@ namespace XFEM
       return "UNKNOWN";
     }
 
-    std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
+    std::string averaging_to_string_for_print(const INPAR::XFEM::AveragingStrategy& strategy)
     {
       if (strategy == INPAR::XFEM::Xfluid_Sided)
         return "XFLUID-sided averaging";
@@ -192,7 +192,7 @@ namespace XFEM
     }
 
 
-    const EleCoupCond& GetCouplingCondition(
+    const EleCoupCond& get_coupling_condition(
         const int gid  ///< global element element id w.r.t cutter discretization (bgele->Id for
                        ///< LevelsetCoupling cut and side-Id for MeshCoupling)
     )
@@ -216,35 +216,35 @@ namespace XFEM
     Teuchos::RCP<DRT::Discretization> GetCouplingDis() { return coupl_dis_; }
     Teuchos::RCP<DRT::Discretization> GetCondDis() { return cond_dis_; }
 
-    INPAR::XFEM::AveragingStrategy GetAveragingStrategy() { return averaging_strategy_; }
+    INPAR::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
 
     virtual void PrepareSolve(){};
 
     virtual bool HasMovingInterface() = 0;
 
-    virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    virtual void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond)
     {
-      FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
+      FOUR_C_THROW("evaluate_coupling_conditions should be implemented by derived class");
     };
 
-    virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    virtual void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond)
     {
-      FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
+      FOUR_C_THROW("evaluate_coupling_conditions should be implemented by derived class");
     };
 
-    virtual void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+    virtual void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond)
     {
-      FOUR_C_THROW("EvaluateCouplingConditionsOldState should be implemented by derived class");
+      FOUR_C_THROW("evaluate_coupling_conditions_old_state should be implemented by derived class");
     };
 
     /// set material pointer for coupling slave side
-    virtual void GetInterfaceSlaveMaterial(
+    virtual void get_interface_slave_material(
         DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
     {
       mat = Teuchos::null;
@@ -276,7 +276,7 @@ namespace XFEM
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
-      UpdateConfigurationMap_GP(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
+      update_configuration_map_gp(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
           cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Do some safety checks, every combination which is not handled correct by the element level
@@ -397,10 +397,10 @@ namespace XFEM
         double& visc_m);                          ///< viscosity mastersided
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
-    virtual void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
-        double& penscaling_s)                                    ///< penalty scaling slavesided
+    virtual void get_penalty_scaling_slave(DRT::Element* coup_ele,  ///< xfluid ele
+        double& penscaling_s)                                       ///< penalty scaling slavesided
     {
-      FOUR_C_THROW("GetPenaltyScalingSlave not implemented for this coupling object!");
+      FOUR_C_THROW("get_penalty_scaling_slave not implemented for this coupling object!");
     }
 
     /// get weighting paramters
@@ -411,18 +411,19 @@ namespace XFEM
         bool& non_xfluid_coupling);
 
     /// get coupling specific weighting paramters (should be overload, whenever required)
-    virtual void GetCouplingSpecificAverageWeights(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                                          ///< coup_ele ele
+    virtual void get_coupling_specific_average_weights(DRT::Element* xfele,  ///< xfluid ele
+        DRT::Element* coup_ele,                                              ///< coup_ele ele
         double& kappa_m)  ///< Weight parameter (parameter +/master side)
     {
       FOUR_C_THROW(
-          "XFEM::CouplingBase: GetCouplingSpecificAverageWeights not implemented for this coupling "
+          "XFEM::CouplingBase: get_coupling_specific_average_weights not implemented for this "
+          "coupling "
           "object!");
     }
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                        ///< coup_ele ele
+    void get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
+        DRT::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,      ///< Weight parameter (parameter +/master side)
         const double& kappa_s,      ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,      ///< the inverse characteristic element length h_k
@@ -438,8 +439,8 @@ namespace XFEM
     );
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
-        DRT::Element* coup_ele,                        ///< coup_ele ele
+    void get_visc_penalty_stabfac(DRT::Element* xfele,  ///< xfluid ele
+        DRT::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
@@ -460,28 +461,28 @@ namespace XFEM
 
     virtual void SetConditionsToCopy(){};
 
-    virtual void SetCutterDiscretization(){};
+    virtual void set_cutter_discretization(){};
 
-    virtual void SetConditionSpecificParameters(){};
+    virtual void set_condition_specific_parameters(){};
 
-    virtual void SetElementConditions();
+    virtual void set_element_conditions();
 
-    void SetAveragingStrategy();
+    void set_averaging_strategy();
 
-    void SetCouplingDiscretization();
+    void set_coupling_discretization();
 
     virtual void PrepareCutterOutput(){};
 
-    virtual void DoConditionSpecificSetup(){};
+    virtual void do_condition_specific_setup(){};
 
     //! set the configuration map up for the specific coupling object
-    virtual void SetupConfigurationMap(){};
+    virtual void setup_configuration_map(){};
 
     //! Updates configurationmap for specific Gausspoint
-    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< master sided dynamic viscosity
-        double& visc_s,                                      //< slave sided dynamic viscosity
-        double& density_m,                                   //< master sided density
+    virtual void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                        //< master sided dynamic viscosity
+        double& visc_s,                                        //< slave sided dynamic viscosity
+        double& density_m,                                     //< master sided density
         double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
         double& full_stab,                        //< full NIT Penalty scaling
         const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
@@ -500,19 +501,19 @@ namespace XFEM
 
     virtual void PerpareCutterOutput(){};
 
-    void EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_dirichlet_function(CORE::LINALG::Matrix<3, 1>& ivel,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
-    void EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
+    void evaluate_neumann_function(CORE::LINALG::Matrix<3, 1>& itraction,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
-    void EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
+    void evaluate_neumann_function(CORE::LINALG::Matrix<6, 1>& itraction,
         const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
 
     void EvaluateFunction(std::vector<double>& final_values, const double* x,
         const CORE::Conditions::Condition* cond, const double time);
 
-    void EvaluateScalarFunction(double& final_value, const double* x, const double& val,
+    void evaluate_scalar_function(double& final_value, const double* x, const double& val,
         const CORE::Conditions::Condition* cond, const double time);
 
     //! @name Sets up a projection matrix
@@ -520,7 +521,7 @@ namespace XFEM
     \brief Is utilized for seperating Dirichlet and Neumann conditions
      */
     template <class M1, class M2>
-    inline void SetupProjectionMatrix(M1& proj_matrix, const M2& normal)
+    inline void setup_projection_matrix(M1& proj_matrix, const M2& normal)
     {
       double n_j = 0.0;
       for (unsigned int j = 0; j < nsd_; ++j)
@@ -605,7 +606,7 @@ namespace XFEM
 
    private:
     //! Initializes configurationmap to zero (non-virtual)
-    void InitConfigurationMap();
+    void init_configuration_map();
   };
 
 }  // namespace XFEM

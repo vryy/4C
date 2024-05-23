@@ -78,7 +78,7 @@ namespace NOX
         /** This list is a sub-list of the merit function enumerator list.
          *
          *  \author hiermeier \date 12/17 */
-        std::map<std::string, MeritFctName> GetSupportedTypeList() const;
+        std::map<std::string, MeritFctName> get_supported_type_list() const;
 
         /// Set the infeasibility merit function type
         void SetType(const std::string& type_name);

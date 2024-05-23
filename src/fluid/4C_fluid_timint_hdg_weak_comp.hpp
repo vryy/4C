@@ -56,7 +56,7 @@ namespace FLD
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set states in the time integration schemes: additional vectors for HDG
@@ -68,7 +68,7 @@ namespace FLD
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
 
     */
-    void ClearStateAssembleMatAndRHS() override;
+    void clear_state_assemble_mat_and_rhs() override;
 
     /*!
     \brief Set the part of the right hand side belonging to the last
@@ -94,7 +94,7 @@ namespace FLD
 
 
     */
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /*!
     \brief update within iteration
@@ -126,7 +126,7 @@ namespace FLD
            numerical solution of a test problems
 
     */
-    Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol() override;
+    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
 
     /*!
     \brief Reset state vectors
@@ -156,13 +156,13 @@ namespace FLD
     \brief update acceleration for generalized-alpha time integration
 
     */
-    void GenAlphaUpdateAcceleration() override;
+    void gen_alpha_update_acceleration() override;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    void GenAlphaIntermediateValues() override;
+    void gen_alpha_intermediate_values() override;
 
     //! @name mixed variable, density and momentum at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
@@ -189,7 +189,7 @@ namespace FLD
 
    private:
     ///< Print stabilization details to screen. Do nothing here because we do not use stabilization
-    void PrintStabilizationDetails() const override {}
+    void print_stabilization_details() const override {}
 
     ///< time algorithm flag actually set (we internally reset it)
     INPAR::FLUID::TimeIntegrationScheme timealgoset_;

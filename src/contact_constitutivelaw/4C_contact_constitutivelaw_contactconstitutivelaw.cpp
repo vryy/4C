@@ -31,18 +31,19 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(const int id)
 {
-  const int probinst = GLOBAL::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
+  const int probinst =
+      GLOBAL::Problem::Instance()->contact_constitutive_laws()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->contact_constitutive_laws() == Teuchos::null)
     FOUR_C_THROW("Cannot work out problem instance!");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->contact_constitutive_laws()->Num() == 0)
     FOUR_C_THROW("Cannot find any contact constitutive law!");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
-      GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(id);
+      GLOBAL::Problem::Instance(probinst)->contact_constitutive_laws()->ById(id);
   return CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(coconstlawdata);
 }
 
@@ -58,34 +59,34 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
     {
       CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams(contactconstitutivelawdata);
-      return params->CreateConstitutiveLaw();
+      return params->create_constitutive_law();
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational:
     {
       CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams(
               contactconstitutivelawdata);
-      return params->CreateConstitutiveLaw();
+      return params->create_constitutive_law();
     }
 
     case INPAR::CONTACT::ConstitutiveLawType::colaw_linear:
     {
       CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams(contactconstitutivelawdata);
-      return params->CreateConstitutiveLaw();
+      return params->create_constitutive_law();
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_power:
     {
       CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(contactconstitutivelawdata);
-      return params->CreateConstitutiveLaw();
+      return params->create_constitutive_law();
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_mirco:
     {
 #ifdef FOUR_C_WITH_MIRCO
       CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
-      return params->CreateConstitutiveLaw();
+      return params->create_constitutive_law();
 #else
       FOUR_C_THROW(
           "You are trying to use MIRCO contact consitutive law with FOUR_C_WITH_MIRCO flag turned "

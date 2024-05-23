@@ -76,7 +76,8 @@ namespace PARTICLEALGORITHM
      *
      * \return set of particle types subjected to temperature boundary conditions
      */
-    const std::set<PARTICLEENGINE::TypeEnum>& GetParticleTypesSubjectedToTemperatureBCSet() const
+    const std::set<PARTICLEENGINE::TypeEnum>& get_particle_types_subjected_to_temperature_bc_set()
+        const
     {
       return typessubjectedtotemperaturebc_;
     };
@@ -88,7 +89,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[out] particlestatestotypes map of particle types and corresponding states
      */
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
@@ -97,7 +98,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 09/2018
      */
-    void SetParticleReferencePosition() const;
+    void set_particle_reference_position() const;
 
     /*!
      * \brief evaluate temperature boundary condition
@@ -106,7 +107,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[in] evaltime evaluation time
      */
-    void EvaluateTemperatureBoundaryCondition(const double& evaltime) const;
+    void evaluate_temperature_boundary_condition(const double& evaltime) const;
 
    protected:
     //! particle simulation parameter list

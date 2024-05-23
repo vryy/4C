@@ -44,7 +44,7 @@ namespace CORE::GEO
       TriangulateFacet(std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists)
           : ptlist_(ptlist)
       {
-        if (Hasequal_ptlist_inlist(ptlist, inlists)) return;
+        if (hasequal_ptlist_inlist(ptlist, inlists)) return;
         for (std::vector<std::vector<Point *>>::iterator i = inlists.begin(); i != inlists.end();
              ++i)
         {
@@ -73,7 +73,7 @@ namespace CORE::GEO
       polygon (ptlist_) and the inner polygons (inlists_) are required. Triangles will be generated
       as output, which are all combined in one vector (split_).
       */
-      void EarClippingWithHoles(Side *parentside);
+      void ear_clipping_with_holes(Side *parentside);
 
       /*!
       \brief Returns Tri and Quad cells that are created by facet splitting
@@ -84,7 +84,7 @@ namespace CORE::GEO
       /*!
       \brief The cyles ptlist and inlists are equal
       */
-      bool Hasequal_ptlist_inlist(
+      bool hasequal_ptlist_inlist(
           std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists);
 
       /*!
@@ -96,7 +96,7 @@ namespace CORE::GEO
       \brief Split a convex facet or a facet with only one concave point into 1 Tri and few Quad
       cells
        */
-      void SplitConvex_1ptConcave_Facet(std::vector<int> ptConcavity);
+      void split_convex_1pt_concave_facet(std::vector<int> ptConcavity);
 
       /*!
       \brief A concave facet which has more than 2 concavity points are split into appropriate cells
@@ -106,14 +106,14 @@ namespace CORE::GEO
       /*!
       \brief check whether any two adjacent polygonal points are concave
        */
-      bool HasTwoContinuousConcavePts(std::vector<int> ptConcavity);
+      bool has_two_continuous_concave_pts(std::vector<int> ptConcavity);
 
       //! Restores last ear that was deleted during triangulation
       void RestoreLastEar(int ear_head_index, std::vector<int> &ptConcavity);
 
       //! Goes clockwise from the the only no on-line point on the triangle and generates thin
       //! triangles
-      void SplitTriangleWithPointsOnLine(unsigned int start_id);
+      void split_triangle_with_points_on_line(unsigned int start_id);
 
       //! Find second best ear, from the ones we discarded during the first check on the first round
       //! of earclipping

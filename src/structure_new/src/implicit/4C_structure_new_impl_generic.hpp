@@ -47,12 +47,12 @@ namespace STR
       void Setup() override;
 
       //! derived
-      bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+      bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
           const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
           Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! derived
-      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const override;
+      void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
 
       //! derived
       bool AssembleJac(CORE::LINALG::SparseOperator& jac,
@@ -72,7 +72,7 @@ namespace STR
           const enum ::NOX::Abstract::Vector::NormType& type) const override = 0;
 
       //! return the default step length of the used ::NOX::LineSearch method
-      double GetDefaultStepLength() const;
+      double get_default_step_length() const;
 
       //! @name Monolithic update routines
       //! @{
@@ -83,7 +83,7 @@ namespace STR
       void PostUpdate() override{/* do nothing for now */};
 
       //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
-      void UpdateConstantStateContributions() override{/* do nothing for some integrators */};
+      void update_constant_state_contributions() override{/* do nothing for some integrators */};
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
@@ -99,7 +99,7 @@ namespace STR
        * integrator since the calculation of consistent velocities and accelerations
        * depends on the actual time integration scheme.
        */
-      virtual void PredictConstDisConsistVelAcc(
+      virtual void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
       /*! \brief Predict displacements based on the assumption of constant velocities.
@@ -115,7 +115,7 @@ namespace STR
        * \param[in/out] velnp Velocity vector
        * \param[in/out] accnp Acceleration vector
        */
-      virtual bool PredictConstVelConsistAcc(
+      virtual bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
       /*! \brief Predict displacements based on the assumption of constant accelerations.
@@ -144,7 +144,7 @@ namespace STR
       const bool& IsPredictorState() const;
 
       //! compute the scaling operator for element based scaling using PTC
-      void ComputeJacobianContributionsFromElementLevelForPTC(
+      void compute_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
 
       /*! \brief Print jacbian into text file for later use in MATLAB
@@ -152,7 +152,7 @@ namespace STR
        *  \param[in] NOX group containing the linear system with the Jacobian
        *
        *  \author hiermeier \date 06/17 */
-      void PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const;
+      void print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const;
 
       //! Get the NOX parameter list
       Teuchos::ParameterList& GetNoxParams();
@@ -171,16 +171,16 @@ namespace STR
       virtual int MethodSteps() const = 0;
 
       //! Give local order of accuracy of displacement part
-      virtual int MethodOrderOfAccuracyDis() const = 0;
+      virtual int method_order_of_accuracy_dis() const = 0;
 
       //! Give local order of accuracy of velocity part
-      virtual int MethodOrderOfAccuracyVel() const = 0;
+      virtual int method_order_of_accuracy_vel() const = 0;
 
       //! Return linear error coefficient of displacements
-      virtual double MethodLinErrCoeffDis() const = 0;
+      virtual double method_lin_err_coeff_dis() const = 0;
 
       //! Return linear error coefficient of velocities
-      virtual double MethodLinErrCoeffVel() const = 0;
+      virtual double method_lin_err_coeff_vel() const = 0;
 
       //! @}
 
@@ -223,7 +223,7 @@ namespace NOX
          public:
           //! constructor
           Generic(const STR::IMPLICIT::Generic& implicit)
-              : impl_(implicit), default_step_(implicit.GetDefaultStepLength()){/* empty */};
+              : impl_(implicit), default_step_(implicit.get_default_step_length()){/* empty */};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
            *  NOX::NLN::Group::computeX()
@@ -279,7 +279,7 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author hiermeier \date 12/17 */
-          void runPostApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+          void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
               ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
               const NOX::NLN::Group& grp) override;
 
@@ -297,7 +297,7 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author seitz \date 04/18 */
-          void runPreApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+          void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
               ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
               const NOX::NLN::Group& grp) override;
 
@@ -306,14 +306,14 @@ namespace NOX
            *
            *  \param[in] vec Vector to be converted
            */
-          Epetra_Vector& convert2EpetraVector(::NOX::Abstract::Vector& vec) const;
-          const Epetra_Vector& convert2EpetraVector(const ::NOX::Abstract::Vector& vec) const;
+          Epetra_Vector& convert2_epetra_vector(::NOX::Abstract::Vector& vec) const;
+          const Epetra_Vector& convert2_epetra_vector(const ::NOX::Abstract::Vector& vec) const;
 
           /// get the step length
           bool getStep(double& step, const ::NOX::Solver::Generic& solver) const;
 
           /// get the number of necessary system corrections in case of a mod newton direction
-          int getNumberOfModifiedNewtonCorrections(const ::NOX::Solver::Generic& solver) const;
+          int get_number_of_modified_newton_corrections(const ::NOX::Solver::Generic& solver) const;
 
          private:
           //! reference to the STR::IMPLICIT::Generic object (read-only)

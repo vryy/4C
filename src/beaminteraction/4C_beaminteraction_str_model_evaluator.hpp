@@ -141,28 +141,28 @@ namespace STR
       void UpdateStepElement() override;
 
       //! derived
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       //! derived
       void DetermineEnergy() override;
 
       //! derived
-      void DetermineOptionalQuantity() override;
+      void determine_optional_quantity() override;
 
       //! derived
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void RuntimeOutputStepState() const override;
+      void runtime_output_step_state() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! derived
       void PostOutput() override;
@@ -185,14 +185,14 @@ namespace STR
      private:
       void PartitionProblem();
 
-      bool PostPartitionProblem();
+      bool post_partition_problem();
 
       //! set beaminteraction sub models
       void SetSubModelTypes();
 
 
       //! build, init and setup submodel evaluator
-      void InitAndSetupSubModelEvaluators();
+      void init_and_setup_sub_model_evaluators();
 
       //! give submodels a certain order in which they are evaluated
       virtual Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> TransformToVector(
@@ -205,10 +205,10 @@ namespace STR
       //! @{
 
       /// check if interaction discretization needs to be redistributed completely
-      bool CheckIfBeamDiscretRedistributionNeedsToBeDone();
+      bool check_if_beam_discret_redistribution_needs_to_be_done();
 
       /// update coupling adapter and matrix transformation object with new maps
-      void UpdateCouplingAdapterAndMatrixTransformation();
+      void update_coupling_adapter_and_matrix_transformation();
 
       /// transform force vector from ia_discret_ to Discret()
       virtual void TransformForce();
@@ -234,7 +234,7 @@ namespace STR
       virtual void BuildRowEleToBinMap();
 
       /// print some information about binning
-      virtual void PrintBinningInfoToScreen() const;
+      virtual void print_binning_info_to_screen() const;
 
       //! @}
 

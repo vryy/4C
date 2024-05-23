@@ -88,7 +88,7 @@ namespace WEAR
     void CheckInput();
 
     //! create mortar interfaces for material conf.
-    void CreateMaterialInterface();
+    void create_material_interface();
 
     //! @name Underlying fields
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure

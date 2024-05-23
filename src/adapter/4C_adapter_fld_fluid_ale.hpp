@@ -80,23 +80,23 @@ namespace ADAPTER
     void NonlinearSolve(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
-    virtual void NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp,
+    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> idisp,
         Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
 
-    void ApplyInterfaceValues(
+    void apply_interface_values(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
 
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
 
     int Itemax() const override { return fluid_->Itemax(); }
     void SetItemax(int itemax) override { fluid_->SetItemax(itemax); }
 
-    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
+    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 

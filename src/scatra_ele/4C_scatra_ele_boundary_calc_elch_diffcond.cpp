@@ -104,7 +104,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
         FOUR_C_THROW("Invalid material!");
 
       // process electrode kinetics boundary condition
-      myelch::CalcElchBoundaryKinetics(
+      myelch::calc_elch_boundary_kinetics(
           ele, params, discretization, la, elemat1_epetra, elevec1_epetra, dmedc_->GetPhasePoro(0));
 
       break;
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
   my::EvaluateNeumann(ele, params, discretization, condition, la, elevec1, dmedc_->GetPhasePoro(0));
 
   // add boundary flux contributions to potential equation
-  if (myelch::elchparams_->BoundaryFluxCoupling())
+  if (myelch::elchparams_->boundary_flux_coupling())
   {
     switch (myelch::elchparams_->EquPot())
     {
@@ -197,8 +197,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
-    probdim>::EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,                           ///< element matrix
+    probdim>::evaluate_elch_boundary_kinetics(const DRT::Element* ele,  ///< current element
+    CORE::LINALG::SerialDenseMatrix& emat,                              ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 )
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKinetics(ele, emat, erhs, ephinp, ehist, timefac, material, cond,
+  myelch::evaluate_elch_boundary_kinetics(ele, emat, erhs, ephinp, ehist, timefac, material, cond,
       nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::EvaluateS2ICouplingOD(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling_od(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
@@ -302,7 +302,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
       break;
     case INPAR::S2I::kinetics_constantinterfaceresistance:
     {
-      myelectrode::EvaluateS2ICouplingOD(ele, params, discretization, la, eslavematrix);
+      myelectrode::evaluate_s2_i_coupling_od(ele, params, discretization, la, eslavematrix);
       break;
     }
     default:

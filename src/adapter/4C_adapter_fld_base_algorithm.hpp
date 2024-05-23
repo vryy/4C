@@ -70,7 +70,7 @@ namespace ADAPTER
         const std::string& disname, bool isale, bool init);
 
     /// set the initial turbulent inflow field in the fluid
-    void SetInitialInflowField(const Teuchos::ParameterList& fdyn);
+    void set_initial_inflow_field(const Teuchos::ParameterList& fdyn);
 
     /// setup second fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)
@@ -79,7 +79,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
 
     //! set parameters in list required for all schemes
-    void SetGeneralParameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
+    void set_general_parameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
         const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn);
 
     //! create a second solver

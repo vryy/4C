@@ -84,7 +84,7 @@ namespace FLD
 
 
     */
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
@@ -103,7 +103,7 @@ namespace FLD
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
+    void calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
@@ -116,7 +116,7 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    void GenAlphaIntermediateValues(
+    void gen_alpha_intermediate_values(
         Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn) override;
 
     /*!
@@ -151,7 +151,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTimeParameter() override;
+    void set_element_time_parameter() override;
 
     /*!
     \brief return scheme-specific time integration parameter
@@ -172,7 +172,7 @@ namespace FLD
     \brief treat turbulence models in AssembleMatAndRHS
 
     */
-    void TreatTurbulenceModels(Teuchos::ParameterList& eleparams) override;
+    void treat_turbulence_models(Teuchos::ParameterList& eleparams) override;
 
     //! @name Time Step Size Adaptivity
     //@{
@@ -185,7 +185,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    int MethodOrderOfAccuracyVel() const override;
+    int method_order_of_accuracy_vel() const override;
 
     /*! \brief Give local order of accuracy of pressure part
      *
@@ -195,7 +195,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    int MethodOrderOfAccuracyPres() const override;
+    int method_order_of_accuracy_pres() const override;
 
     /*! \brief Return linear error coefficient of velocity
      *
@@ -208,7 +208,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    double MethodLinErrCoeffVel() const override;
+    double method_lin_err_coeff_vel() const override;
 
     //@}
 
@@ -220,13 +220,13 @@ namespace FLD
     \brief update acceleration for generalized-alpha time integration
 
     */
-    void GenAlphaUpdateAcceleration() override;
+    void gen_alpha_update_acceleration() override;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    void GenAlphaIntermediateValues() override;
+    void gen_alpha_intermediate_values() override;
 
     /*!
     \brief return scaling of the residual

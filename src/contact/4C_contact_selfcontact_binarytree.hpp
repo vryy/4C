@@ -85,13 +85,13 @@ namespace CONTACT
     \brief Calculate the logical array of qualified sample vectors for leaf nodes
 
     */
-    void CalculateQualifiedVectors();
+    void calculate_qualified_vectors();
 
     /*!
     \brief Update the logical array of qualified sample vectors for non-leaf nodes
 
     */
-    void UpdateQualifiedVectorsBottomUp();
+    void update_qualified_vectors_bottom_up();
 
     /*!
     \brief Return logical array of qualified sample vectors
@@ -624,19 +624,19 @@ namespace CONTACT
     \param [in]  treenode2:       second tree node
 
     */
-    virtual void AddTreeNodesToContactPairs(
+    virtual void add_tree_nodes_to_contact_pairs(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
     /*!
     \brief Set the vector of adjacent tree nodes for leaf-nodes in the lowest layer
 
     */
-    void CalculateAdjacentLeaves();
+    void calculate_adjacent_leaves();
 
     /*!
     \brief Calculate the vector of adjacent tree nodes of inner tree nodes
 
     */
-    void CalculateAdjacentTnodes();
+    void calculate_adjacent_tnodes();
 
     /*!
     \brief Calculate the adjacent tree nodes and adjacent dual edges of current element
@@ -649,7 +649,7 @@ namespace CONTACT
     \param [out] adjdualedges: vector of adjacent dual edges containing current element
 
      */
-    void CalculateAdjacentTreeNodesAndDualEdges(std::vector<int>& possadjids, const int gid,
+    void calculate_adjacent_tree_nodes_and_dual_edges(std::vector<int>& possadjids, const int gid,
         DRT::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
         std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges);
@@ -660,7 +660,7 @@ namespace CONTACT
     \param [in] element:  element of which number of first order nodes shall be determined
 
     */
-    int GetEleSpecificNumNodes(DRT::Element* element);
+    int get_ele_specific_num_nodes(DRT::Element* element);
 
     /*!
     \brief Get the (contracted) node that combines the nodes of the contracted edge
@@ -676,7 +676,7 @@ namespace CONTACT
     \brief Initialize internal variables
 
      */
-    void InitInternalVariables() final;
+    void init_internal_variables() final;
 
     /*!
     \brief Master/Slave sorting for self contact
@@ -743,7 +743,7 @@ namespace CONTACT
     \param [in] treenode2:  self binary tree node
 
      */
-    int CalculateSlabsIntercepts(
+    int calculate_slabs_intercepts(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
 
     /*!
@@ -752,7 +752,7 @@ namespace CONTACT
     \param [in] dualgraph:  construction of binary tree is based on this data
 
     */
-    void InitializeTreeBottomUp(
+    void initialize_tree_bottom_up(
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph);
 
     /*!
@@ -769,7 +769,7 @@ namespace CONTACT
     \brief Find contact of adjacent surfaces
 
     */
-    void EvaluateContactAndAdjacency(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
+    void evaluate_contact_and_adjacency(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
         Teuchos::RCP<SelfBinaryTreeNode> treenode2, bool isadjacent);
 
     /*!

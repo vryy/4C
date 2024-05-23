@@ -44,9 +44,9 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   InvalidEleData();
   if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo(&discretization);
@@ -97,7 +97,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -219,7 +219,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -306,7 +306,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -384,7 +384,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // update plastic deformation
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      UpdatePlasticDeformation_nln(plspintype_);
+      update_plastic_deformation_nln(plspintype_);
       break;
     }  // calc_struct_update_istep
 
@@ -427,7 +427,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -468,7 +468,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           res_t_ptr = &res_t;
         }
 
-      RecoverPlasticityAndEAS(&res_d, res_t_ptr);
+      recover_plasticity_and_eas(&res_d, res_t_ptr);
     }
     break;
 
@@ -499,14 +499,15 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
-          numgpt_post);
+      StrParamsInterface()
+          .gauss_point_data_output_manager_ptr()
+          ->add_element_number_of_gauss_points(numgpt_post);
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterOutputDataNames(quantities_map);
+      SolidMaterial()->register_output_data_names(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
 
@@ -517,7 +518,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& [quantity_name, quantity_size] :
-          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
@@ -527,14 +528,16 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->get_element_center_data()
+                      .at(quantity_name);
               CORE::FE::AssembleAveragedElementValues<CORE::LINALG::SerialDenseMatrix>(
                   *global_data, gp_data, *this);
               break;
@@ -542,12 +545,14 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
-                      quantity_name);
+                  *StrParamsInterface()
+                       .gauss_point_data_output_manager_ptr()
+                       ->GetNodalDataCount()
+                       .at(quantity_name);
 
               if (distype == CORE::FE::CellType::hex8)
               {
@@ -573,8 +578,10 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->GetGaussPointData()
+                      .at(quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
@@ -875,7 +882,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     {
       plmat->EvaluateElast(&DefgrdMod(), &DeltaLp(), &SetPK2(), &SetCmat(), gp, Id());
       if (eval_tsi)
-        plmat->EvaluateThermalStress(&DefgrdMod(), gp_temp, &SetPK2(), &SetCmat(), gp, Id());
+        plmat->evaluate_thermal_stress(&DefgrdMod(), gp_temp, &SetPK2(), &SetCmat(), gp, Id());
     }
     else
     {
@@ -901,7 +908,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     if (force != nullptr) IntegrateForce(gp, *force);
 
     // update stiffness matrix
-    if (stiffmatrix != nullptr) IntegrateStiffMatrix(gp, *stiffmatrix, Kda);
+    if (stiffmatrix != nullptr) integrate_stiff_matrix(gp, *stiffmatrix, Kda);
 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
       IntegrateMassMatrix(gp, *massmatrix);
@@ -917,28 +924,30 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
           if (HavePlasticSpin())
           {
             if (fbar_)
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
                   &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, nullptr, nullptr,
                   nullptr, &FbarFac(), &Htensor());
             else if (eastype_ != soh8p_easnone)
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
                   nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
             else
-              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+              CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &deriv_shape_function_xyz(),
                   nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix);
           }
           else
           {
             if (fbar_)
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, nullptr, nullptr,
-                  nullptr, &FbarFac(), &Htensor());
+              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
+                  &deriv_shape_function_xyz(), &RCGvec(), detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix, nullptr, nullptr, nullptr, &FbarFac(), &Htensor());
             else if (eastype_ != soh8p_easnone)
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
+              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
+                  &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix, &M_eas(), &Kda, &dHda);
             else
-              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+              CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(),
+                  &deriv_shape_function_xyz(), nullptr, detJ_w, gp, gp_temp, params, force,
+                  stiffmatrix);
           }
         }  // plastic modifications
   }        // gp loop
@@ -1740,7 +1749,7 @@ void DRT::ELEMENTS::So3Plast<distype>::BuildDeltaLp(const int gp)
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticityAndEAS(
+void DRT::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
     const CORE::LINALG::Matrix<nen_, 1>* res_T)
 {
@@ -1782,7 +1791,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticityAndEAS(
     //
     //    if (Material()->MaterialType()==CORE::Materials::m_plelasthyper)
     //      for (int gp=0;gp<numgpt_;++gp)
-    //        ReducePlasticityStep(new_step_length,old_step_length_,gp);
+    //        reduce_plasticity_step(new_step_length,old_step_length_,gp);
     //
     //    old_step_length_=new_step_length;
   }
@@ -1801,7 +1810,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverEAS(
   const double step_length = StrParamsInterface().GetStepLength();
 
   // first, store the eas state of the previous accepted Newton step
-  StrParamsInterface().SumIntoMyPreviousSolNorm(
+  StrParamsInterface().sum_into_my_previous_sol_norm(
       NOX::NLN::StatusTest::quantity_eas, neas_, alpha_eas_->values(), Owner());
 
   if (StrParamsInterface().IsDefaultStep()) switch (eastype_)
@@ -1898,7 +1907,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticity(
   if (StrParamsInterface().IsDefaultStep() == false) FOUR_C_THROW("no line search implemented yet");
 
   // first, store the state of the previous accepted Newton step
-  StrParamsInterface().SumIntoMyPreviousSolNorm(
+  StrParamsInterface().sum_into_my_previous_sol_norm(
       NOX::NLN::StatusTest::quantity_plasticity, spintype, dDp_last_iter_[gp].values(), Owner());
 
   // temporary Epetra matrix
@@ -1991,7 +2000,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReduceEasStep(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::ReducePlasticityStep(
+void DRT::ELEMENTS::So3Plast<distype>::reduce_plasticity_step(
     const double new_step_length, const double old_step_length, const int gp)
 {
   CORE::LINALG::Update(-1., dDp_inc_[gp], 1., dDp_last_iter_[gp]);
@@ -2006,7 +2015,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReducePlasticityStep(
  |  update plastic deformation for nonlinear kinematics     seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType spintype)
+void DRT::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpinType spintype)
 {
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
   {
@@ -2109,7 +2118,7 @@ double DRT::ELEMENTS::So3Plast<distype>::CalcIntEnergy(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
+void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_elast(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -2205,16 +2214,16 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
 
   if (plmat && temp)
   {
-    plmat->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
+    plmat->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
         d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
         &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, &gp_temp, &d_cauchyndir_dT_gp,
         &d2_cauchyndir_dF_dT);
   }
   else
   {
-    SolidMaterial()->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
-        d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
-        &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, nullptr, nullptr, nullptr);
+    SolidMaterial()->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir,
+        d_cauchyndir_dn, d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2,
+        &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, nullptr, nullptr, nullptr);
   }
 
   if (d_cauchyndir_dd)
@@ -2277,7 +2286,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     if (distype == CORE::FE::CellType::nurbs27)
     {
       CORE::FE::NURBS::nurbs_get_3D_funct_deriv_deriv2(
-          SetShapeFunction(), SetDerivShapeFunction(), deriv2, xi, Knots(), Weights(), distype);
+          SetShapeFunction(), set_deriv_shape_function(), deriv2, xi, Knots(), Weights(), distype);
     }
     else
       CORE::FE::shape_function_deriv2<distype>(xi, deriv2);
@@ -2373,7 +2382,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
+void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi_plast(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -2483,7 +2492,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
+void DRT::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_xi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -2508,14 +2517,14 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
 
   if (!elastic)
   {
-    GetCauchyNDirAndDerivativesAtXiPlast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
+    get_cauchy_n_dir_and_derivatives_at_xi_plast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
         d2_cauchyndir_dd2, d2_cauchyndir_dd_dn, d2_cauchyndir_dd_ddir, d2_cauchyndir_dd_dxi,
         d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, temp, d_cauchyndir_dT,
         d2_cauchyndir_dd_dT);
   }
   else
   {
-    GetCauchyNDirAndDerivativesAtXiElast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
+    get_cauchy_n_dir_and_derivatives_at_xi_elast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
         d2_cauchyndir_dd2, d2_cauchyndir_dd_dn, d2_cauchyndir_dd_ddir, d2_cauchyndir_dd_dxi,
         d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, temp, d_cauchyndir_dT,
         d2_cauchyndir_dd_dT);
@@ -2674,11 +2683,11 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
    */
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  SetDerivShapeFunctionXYZ().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
+  set_deriv_shape_function_xyz().Multiply(InvJ(), DerivShapeFunction());  // (6.21)
 
   // (material) deformation gradient
   // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-  SetDefgrd().MultiplyTT(Xcurr(), DerivShapeFunctionXYZ());
+  SetDefgrd().MultiplyTT(Xcurr(), deriv_shape_function_xyz());
 
   // inverse deformation gradient and determinant
   SetDetF() = SetInvDefgrd().Invert(Defgrd());
@@ -2693,7 +2702,7 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
   SetRCGvec()(5) = RCG()(0, 2) * 2.;
 
   // calculate nonlinear B-operator
-  CalculateBop(&SetBop(), &Defgrd(), &DerivShapeFunctionXYZ(), gp);
+  CalculateBop(&SetBop(), &Defgrd(), &deriv_shape_function_xyz(), gp);
 
   // build plastic velocity gradient from condensed variables
   if (Material()->MaterialType() == CORE::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
@@ -2722,7 +2731,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateMassMatrix(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::IntegrateStiffMatrix(const int gp,
+void DRT::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
     CORE::LINALG::SerialDenseMatrix& Kda)
 {
@@ -2747,20 +2756,20 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateStiffMatrix(const int gp,
   // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
   for (int inod = 0; inod < nen_; ++inod)
   {
-    SmB_L[0] = sfac(0) * DerivShapeFunctionXYZ()(0, inod) +
-               sfac(3) * DerivShapeFunctionXYZ()(1, inod) +
-               sfac(5) * DerivShapeFunctionXYZ()(2, inod);
-    SmB_L[1] = sfac(3) * DerivShapeFunctionXYZ()(0, inod) +
-               sfac(1) * DerivShapeFunctionXYZ()(1, inod) +
-               sfac(4) * DerivShapeFunctionXYZ()(2, inod);
-    SmB_L[2] = sfac(5) * DerivShapeFunctionXYZ()(0, inod) +
-               sfac(4) * DerivShapeFunctionXYZ()(1, inod) +
-               sfac(2) * DerivShapeFunctionXYZ()(2, inod);
+    SmB_L[0] = sfac(0) * deriv_shape_function_xyz()(0, inod) +
+               sfac(3) * deriv_shape_function_xyz()(1, inod) +
+               sfac(5) * deriv_shape_function_xyz()(2, inod);
+    SmB_L[1] = sfac(3) * deriv_shape_function_xyz()(0, inod) +
+               sfac(1) * deriv_shape_function_xyz()(1, inod) +
+               sfac(4) * deriv_shape_function_xyz()(2, inod);
+    SmB_L[2] = sfac(5) * deriv_shape_function_xyz()(0, inod) +
+               sfac(4) * deriv_shape_function_xyz()(1, inod) +
+               sfac(2) * deriv_shape_function_xyz()(2, inod);
     for (int jnod = 0; jnod < nen_; ++jnod)
     {
       double bopstrbop = 0.0;  // intermediate value
       for (int idim = 0; idim < 3; ++idim)
-        bopstrbop += DerivShapeFunctionXYZ()(idim, jnod) * SmB_L[idim];
+        bopstrbop += deriv_shape_function_xyz()(idim, jnod) * SmB_L[idim];
       stiff(3 * inod + 0, 3 * jnod + 0) += bopstrbop;
       stiff(3 * inod + 1, 3 * jnod + 1) += bopstrbop;
       stiff(3 * inod + 2, 3 * jnod + 2) += bopstrbop;
@@ -2911,7 +2920,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     if (fbar_)
     {
       CORE::LINALG::Matrix<3, 3> defgrd_rate_0;
-      defgrd_rate_0.MultiplyTT(XcurrRate(), DerivShapeFunctionXYZ_0());
+      defgrd_rate_0.MultiplyTT(XcurrRate(), deriv_shape_function_xyz_0());
 
       double he_fac;
       double he_fac_deriv;
@@ -2937,7 +2946,8 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
-          deriv_j_d(n) += DetF_0() * InvDefgrd_0()(i, n % 3) * DerivShapeFunctionXYZ_0()(i, n / 3);
+          deriv_j_d(n) +=
+              DetF_0() * InvDefgrd_0()(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
 
       CORE::LINALG::Matrix<3, 3> tmp;
       tmp.Multiply(InvDefgrd_0(), defgrd_rate_0);
@@ -2947,9 +2957,9 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
       deriv_jdot_d.Update(fiddfdot, deriv_j_d, 1.);
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
-          deriv_jdot_d(n) +=
-              DetF_0() * InvDefgrd_0()(i, n % 3) * DerivShapeFunctionXYZ_0()(i, n / 3) * timefac_d -
-              DetF_0() * tmp2(i, n % 3) * DerivShapeFunctionXYZ_0()(i, n / 3);
+          deriv_jdot_d(n) += DetF_0() * InvDefgrd_0()(i, n % 3) *
+                                 deriv_shape_function_xyz_0()(i, n / 3) * timefac_d -
+                             DetF_0() * tmp2(i, n % 3) * deriv_shape_function_xyz_0()(i, n / 3);
 
       CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
       dHedd.Update(gp_temp * he_fac, deriv_jdot_d, 1.);
@@ -2961,7 +2971,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     else
     {
       CORE::LINALG::Matrix<3, 3> defgrd_rate;
-      defgrd_rate.MultiplyTT(XcurrRate(), DerivShapeFunctionXYZ());
+      defgrd_rate.MultiplyTT(XcurrRate(), deriv_shape_function_xyz());
 
       double he_fac;
       double he_fac_deriv;
@@ -2987,7 +2997,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
-          deriv_j_d(n) += DetF() * InvDefgrd()(i, n % 3) * DerivShapeFunctionXYZ()(i, n / 3);
+          deriv_j_d(n) += DetF() * InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
 
       CORE::LINALG::Matrix<3, 3> tmp;
       tmp.Multiply(InvDefgrd(), defgrd_rate);
@@ -2998,8 +3008,8 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
       for (int i = 0; i < 3; ++i)
         for (int n = 0; n < numdofperelement_; ++n)
           deriv_jdot_d(n) +=
-              DetF() * InvDefgrd()(i, n % 3) * DerivShapeFunctionXYZ()(i, n / 3) * timefac_d -
-              DetF() * tmp2(i, n % 3) * DerivShapeFunctionXYZ()(i, n / 3);
+              DetF() * InvDefgrd()(i, n % 3) * deriv_shape_function_xyz()(i, n / 3) * timefac_d -
+              DetF() * tmp2(i, n % 3) * deriv_shape_function_xyz()(i, n / 3);
 
       CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
       dHedd.Update(gp_temp * he_fac, deriv_jdot_d, 1.);
@@ -3012,7 +3022,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
   else
   {
     CORE::LINALG::Matrix<3, 3> defgrd_rate;
-    defgrd_rate.MultiplyTT(XcurrRate(), DerivShapeFunctionXYZ());
+    defgrd_rate.MultiplyTT(XcurrRate(), deriv_shape_function_xyz());
 
     // Gough-Joule effect
     plmat->HepDiss(gp) = 0.;
@@ -3083,7 +3093,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
     // derivative of elastic heating w.r.t. displacement ******************
     CORE::LINALG::Matrix<numdofperelement_, 1> dHedd(true);
     CORE::LINALG::Matrix<6, nen_ * nsd_> boprate(false);  // (6x24)
-    CalculateBop(&boprate, &defgrd_rate, &DerivShapeFunctionXYZ(), gp);
+    CalculateBop(&boprate, &defgrd_rate, &deriv_shape_function_xyz(), gp);
 
     CORE::LINALG::Matrix<6, 1> tmp61;
     tmp61.MultiplyTN(dcTvoldE, RCGrateVec);
@@ -3151,12 +3161,12 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
 
   // shape functions (shapefunct) and their first derivatives (deriv)
   CORE::FE::shape_function<distype>(xi, SetShapeFunction());
-  CORE::FE::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
+  CORE::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
 
   Kinematics();
 
   CORE::LINALG::Matrix<3, 1> GradT;
-  GradT.Multiply(DerivShapeFunctionXYZ(), Temp());
+  GradT.Multiply(deriv_shape_function_xyz(), Temp());
 
   CORE::LINALG::Matrix<3, 1> iFn;
   iFn.Multiply(InvDefgrd(), n);
@@ -3164,14 +3174,14 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
   CORE::LINALG::Matrix<9, numdofperelement_> dFdd;
   for (int k = 0; k < nen_; ++k)
   {
-    for (int d = 0; d < 3; ++d) dFdd(d, k * nsd_ + d) = DerivShapeFunctionXYZ()(d, k);
-    dFdd(3, k * nsd_ + 0) = DerivShapeFunctionXYZ()(1, k);
-    dFdd(4, k * nsd_ + 1) = DerivShapeFunctionXYZ()(2, k);
-    dFdd(5, k * nsd_ + 0) = DerivShapeFunctionXYZ()(2, k);
+    for (int d = 0; d < 3; ++d) dFdd(d, k * nsd_ + d) = deriv_shape_function_xyz()(d, k);
+    dFdd(3, k * nsd_ + 0) = deriv_shape_function_xyz()(1, k);
+    dFdd(4, k * nsd_ + 1) = deriv_shape_function_xyz()(2, k);
+    dFdd(5, k * nsd_ + 0) = deriv_shape_function_xyz()(2, k);
 
-    dFdd(6, k * nsd_ + 1) = DerivShapeFunctionXYZ()(0, k);
-    dFdd(7, k * nsd_ + 2) = DerivShapeFunctionXYZ()(1, k);
-    dFdd(8, k * nsd_ + 2) = DerivShapeFunctionXYZ()(0, k);
+    dFdd(6, k * nsd_ + 1) = deriv_shape_function_xyz()(0, k);
+    dFdd(7, k * nsd_ + 2) = deriv_shape_function_xyz()(1, k);
+    dFdd(8, k * nsd_ + 2) = deriv_shape_function_xyz()(0, k);
   }
 
   q = -k0 / DetF() * GradT.Dot(iFn);
@@ -3183,7 +3193,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     dq_dT->shape(nen_, 1);
     for (int n = 0; n < nen_; ++n)
       for (int d = 0; d < nsd_; ++d)
-        (*dq_dT)(n, 0) += -k0 / DetF() * DerivShapeFunctionXYZ()(d, n) * iFn(d);
+        (*dq_dT)(n, 0) += -k0 / DetF() * deriv_shape_function_xyz()(d, n) * iFn(d);
   }
 
   if (d2q_dT_dd || dq_dd)
@@ -3192,9 +3202,9 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     CORE::LINALG::Matrix<nen_, nen_ * nsd_> d2q_dT_dd_m(d2q_dT_dd->values(), true);
 
     CORE::LINALG::Matrix<3, nen_> tmp;
-    tmp.MultiplyTN(InvDefgrd(), DerivShapeFunctionXYZ());
+    tmp.MultiplyTN(InvDefgrd(), deriv_shape_function_xyz());
     CORE::LINALG::Matrix<nen_, 1> tmp2;
-    tmp2.MultiplyTN(DerivShapeFunctionXYZ(), iFn);
+    tmp2.MultiplyTN(deriv_shape_function_xyz(), iFn);
 
     CORE::LINALG::Matrix<9, nen_> dq_dF_v;
     for (int a = 0; a < nsd_; ++a)
@@ -3214,7 +3224,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
   {
     d2q_dT_dn->shape(nen_, nsd_);
     CORE::LINALG::Matrix<nen_, nsd_> d2q_dT_dn_m(d2q_dT_dn->values(), true);
-    d2q_dT_dn_m.MultiplyTN(-k0 / DetF(), DerivShapeFunctionXYZ(), InvDefgrd());
+    d2q_dT_dn_m.MultiplyTN(-k0 / DetF(), deriv_shape_function_xyz(), InvDefgrd());
 
     dq_dn->MultiplyTN(d2q_dT_dn_m, Temp());
   }
@@ -3239,7 +3249,7 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
           (*d2q_dT_dpxi)(c, a) += -k0 / DetF() * tmp3(d2v[a][b], c) * tmp(b);
 
     CORE::LINALG::Matrix<nen_, nen_> tmp2;
-    tmp2.Multiply(Xrefe(), DerivShapeFunctionXYZ());
+    tmp2.Multiply(Xrefe(), deriv_shape_function_xyz());
     tmp3.Multiply(deriv2, tmp2);
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
@@ -3259,14 +3269,14 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     tmp5.Multiply(tmp4, xXFsec);
 
     CORE::LINALG::Matrix<nen_, 1> tmp6;
-    tmp6.MultiplyTN(DerivShapeFunctionXYZ(), iFn);
+    tmp6.MultiplyTN(deriv_shape_function_xyz(), iFn);
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
         for (int c = 0; c < nen_; ++c)
           (*d2q_dT_dpxi)(c, a) += +k0 / DetF() * tmp6(c) * tmp5(b, d2v[a][b]);
 
     CORE::LINALG::Matrix<nsd_, nen_> tmp7;
-    tmp7.MultiplyTN(InvDefgrd(), DerivShapeFunctionXYZ());
+    tmp7.MultiplyTN(InvDefgrd(), deriv_shape_function_xyz());
     tmp3.MultiplyTN(xXFsec, tmp7);
     tmp.MultiplyTN(InvJ(), iFn);
     for (int a = 0; a < nsd_; ++a)

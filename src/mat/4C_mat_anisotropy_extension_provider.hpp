@@ -41,7 +41,7 @@ namespace MAT
      *
      * \return FiberAnisotropyExtension& Reference to a fiber anisotropy extension
      */
-    virtual FiberAnisotropyExtension<numfib>& GetFiberAnisotropyExtension() = 0;
+    virtual FiberAnisotropyExtension<numfib>& get_fiber_anisotropy_extension() = 0;
   };
 }  // namespace MAT
 

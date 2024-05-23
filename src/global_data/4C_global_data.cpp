@@ -193,8 +193,8 @@ void GLOBAL::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
     }
   }
 
-  outputcontrol_ =
-      Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximationType(), inputfile,
+  outputcontrol_ = Teuchos::rcp(
+      new IO::OutputControl(comm, ProblemName(), spatial_approximation_type(), inputfile,
           restartkenner, std::move(prefix), NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
           CORE::UTILS::IntegralValue<bool>(IOParams(), "OUTPUT_BIN"), true));
 
@@ -210,7 +210,7 @@ void GLOBAL::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::Problem::WriteInputParameters()
+void GLOBAL::Problem::write_input_parameters()
 {
   std::string s = OutputControlFile()->FileName();
   s.append(".parameter");
@@ -332,7 +332,8 @@ void GLOBAL::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function
   functionmanager_ = std::move(function_manager_in);
 }
 
-void GLOBAL::Problem::SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type)
+void GLOBAL::Problem::set_spatial_approximation_type(
+    CORE::FE::ShapeFunctionType shape_function_type)
 {
   shapefuntype_ = shape_function_type;
 }

@@ -31,7 +31,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::
   if (myrank_ == 0)
   {
     std::cout << "<                                                  >" << std::endl;
-    PrintOutCouplingMethod();
+    print_out_coupling_method();
     std::cout << "<                                                  >" << std::endl;
     std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     std::cout << "\n";
@@ -48,7 +48,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
 
 
   // preevaluate coupling pairs
-  PreEvaluateCouplingPairs();
+  pre_evaluate_coupling_pairs();
 
   // print out summary of pairs
   if (contdis_->Name() == "porofluid" &&
@@ -66,7 +66,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::PreEvaluateCouplingPairs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate_coupling_pairs()
 {
   // pre-evaluate
   for (auto& coupl_elepair : coupl_elepairs_) coupl_elepair->PreEvaluate(Teuchos::null);
@@ -128,7 +128,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::ApplyMeshMov
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::BloodVesselVolumeFraction()
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for node-to-point coupling");
 
@@ -137,7 +137,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::BloodVesselVolume
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::PrintOutCouplingMethod() const
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::print_out_coupling_method()
+    const
 {
   std::cout << "<Coupling-Method: 1D node to coincident point in 3D>" << std::endl;
 }

@@ -103,7 +103,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 12/16 */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
+    void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods
@@ -129,19 +129,19 @@ namespace BEAMINTERACTION
     /*!
     \brief Get number of active contact point pairs on this element pair
     */
-    unsigned int GetNumAllActiveContactPointPairs() const override { return 1; }
+    unsigned int get_num_all_active_contact_point_pairs() const override { return 1; }
 
 
     /*!
     \brief Get coordinates of all active contact points on element1 and element2
     */
-    inline void GetAllActiveContactPointCoordsElement1(
+    inline void get_all_active_contact_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("not implemented yet!");
     }
 
-    inline void GetAllActiveContactPointCoordsElement2(
+    inline void get_all_active_contact_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("not implemented yet!");
@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    inline void GetAllActiveContactForces(std::vector<double>& forces) const override
+    inline void get_all_active_contact_forces(std::vector<double>& forces) const override
     {
       FOUR_C_THROW("not implemented yet!");
     }
@@ -158,7 +158,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get all (scalar) gap values of this contact pair
     */
-    void GetAllActiveContactGaps(std::vector<double>& gaps) const override
+    void get_all_active_contact_gaps(std::vector<double>& gaps) const override
     {
       FOUR_C_THROW("not implemented yet!");
     }
@@ -180,18 +180,18 @@ namespace BEAMINTERACTION
     /*!
     \brief Find contact point via closest point projection
     */
-    void ClosestPointProjection();
+    void closest_point_projection();
 
     /*!
     \brief Utility method for CPP (evaluate nonlinear function f)
     */
-    void EvaluateOrthogonalityCondition(TYPE& f, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_x,
+    void evaluate_orthogonality_condition(TYPE& f, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_x,
         const double norm_delta_x, const CORE::LINALG::Matrix<3, 1, TYPE>& dx1);
 
     /*!
     \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
     */
-    void EvaluateLinOrthogonalityCondition(TYPE& df, CORE::LINALG::Matrix<3, 1, TYPE>& delta_x,
+    void evaluate_lin_orthogonality_condition(TYPE& df, CORE::LINALG::Matrix<3, 1, TYPE>& delta_x,
         const double norm_delta_x, const CORE::LINALG::Matrix<3, 1, TYPE>& dx1,
         const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1);
 
@@ -207,7 +207,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate and assemble contact stiffness
     */
-    void EvaluateStiffcContact(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+    void evaluate_stiffc_contact(CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22, const double& pp, const TYPE& gap,
         const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm,
@@ -237,7 +237,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Compute coordinates and their derivatives from the discretization
     */
-    void ComputeCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& x1,
+    void compute_coords_and_derivs(CORE::LINALG::Matrix<3, 1, TYPE>& x1,
         CORE::LINALG::Matrix<3, 1, TYPE>& x2, CORE::LINALG::Matrix<3, 1, TYPE>& dx1,
         CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
@@ -291,7 +291,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Check if contact is active and set flag accordingly
     */
-    void CheckAndSetContactStatus();
+    void check_and_set_contact_status();
 
     //@}
 

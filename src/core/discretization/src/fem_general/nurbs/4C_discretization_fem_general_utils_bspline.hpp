@@ -539,7 +539,7 @@ namespace CORE::FE::NURBS
 
     */
     template <typename scalar_type>
-    void EvaluateBsplineAndDeriv(
+    void evaluate_bspline_and_deriv(
         scalar_type& bsplineval, scalar_type& bsplineder, const scalar_type x, const int ldofid)
     {
       //                        ^
@@ -970,7 +970,7 @@ namespace CORE::FE::NURBS
 
     */
     template <typename scalar_type>
-    void EvaluateBsplineFirstAndSecondDeriv(scalar_type& bsplineval, scalar_type& bsplineder,
+    void evaluate_bspline_first_and_second_deriv(scalar_type& bsplineval, scalar_type& bsplineder,
         scalar_type& bsplineder2, const scalar_type x, const int ldofid)
     {
       /*

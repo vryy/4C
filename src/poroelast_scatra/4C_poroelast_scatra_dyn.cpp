@@ -28,7 +28,7 @@ void poro_scatra_drt()
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // 2.- Parameter reading
-  const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();
+  const Teuchos::ParameterList& poroscatradynparams = problem->poro_scatra_control_params();
 
   POROELASTSCATRA::UTILS::SetupPoroScatraDiscretizations<
       POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements,

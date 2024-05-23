@@ -242,7 +242,7 @@ void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       spring->OutputPrestrOffset(springoffsetprestr);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      spring->OutputPrestrOffsetOld(springoffsetprestr_old);
+      spring->output_prestr_offset_old(springoffsetprestr_old);
   }
 
   // write vector to output for restart
@@ -351,7 +351,7 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::get_block_dof_row_map_ptr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();
@@ -359,7 +359,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::GetBlockDofRo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::get_current_solution_ptr()
+    const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -367,8 +368,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetCurrent
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::GetLastTimeStepSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::SpringDashpot::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;

@@ -73,13 +73,13 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the regularization parameter of the penalty law.
      */
-    inline double GetPenaltyParameterG0() const { return penalty_parameter_g0_; }
+    inline double get_penalty_parameter_g0() const { return penalty_parameter_g0_; }
 
     /**
      * \brief Returns a pointer to the visualization output parameters.
      * @return Pointer to visualization output parameters.
      */
-    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> GetVisualizationOutputParamsPtr()
+    Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> get_visualization_output_params_ptr()
     {
       return output_params_ptr_;
     }

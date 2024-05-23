@@ -48,7 +48,7 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
   {
     // For the option condensed smat this can be changed by creating a FEMatrix instead of a
     // CRSMatrix!
-    if (beam_interaction_params_->GetContactDiscretization() ==
+    if (beam_interaction_params_->get_contact_discretization() ==
         INPAR::FBI::BeamToFluidDiscretization::mortar)
       FOUR_C_THROW("Fluid Meshtying is not supported when using a mortar discretization!");
 

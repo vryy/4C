@@ -34,10 +34,10 @@ namespace POROFLUIDMULTIPHASE
     void PrintTimeStepInfo() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() override { return; };
+    void compute_intermediate_values() override { return; };
 
     ///  compute scalar time derivative
-    void ComputeTimeDerivative() override;
+    void compute_time_derivative() override;
 
     /// update the solution after convergence of the nonlinear iteration.
     /// current solution becomes old solution of next timestep.
@@ -54,25 +54,25 @@ namespace POROFLUIDMULTIPHASE
     TimIntOneStepTheta(const TimIntOneStepTheta& old);
 
     /// set time parameter for element evaluation (called before every time step)
-    void SetElementTimeStepParameter() const override;
+    void set_element_time_step_parameter() const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
+    void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) override;
 
     //! initialization procedure prior to evaluation of first time step
-    void CalcInitialTimeDerivative() override;
+    void calc_initial_time_derivative() override;
 
     /// set part of residual vector belonging to previous time step
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
     virtual void ExplicitPredictor();
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual() override;
+    void add_neumann_to_residual() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors() override;
+    void add_time_integration_specific_vectors() override;
 
     /// write additional data required for restart
     void OutputRestart() override;

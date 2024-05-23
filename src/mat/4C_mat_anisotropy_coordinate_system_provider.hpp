@@ -36,20 +36,20 @@ namespace MAT
      *
      * \return const Teuchos::RCP<CylinderCoordinateSystemProvider>
      */
-    virtual Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    virtual Teuchos::RCP<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
         const = 0;
   };
 
   class CoordinateSystemHolder : public CoordinateSystemProvider
   {
    public:
-    Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
+    Teuchos::RCP<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
         const override
     {
       return cylinder_coordinate_system_;
     }
 
-    void SetCylinderCoordinateSystemProvider(
+    void set_cylinder_coordinate_system_provider(
         Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinderCoordinateSystem)
     {
       cylinder_coordinate_system_ = cylinderCoordinateSystem;

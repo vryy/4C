@@ -82,7 +82,7 @@ namespace CORE::GEO
     \param label        (in)        : label
     \param physcoord    (in)        : physical coordinates of point on object
     */
-    void setSurfaceObjectType(
+    void set_surface_object_type(
         const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord);
 
     /*!

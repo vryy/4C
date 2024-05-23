@@ -53,7 +53,7 @@ void FLD::TimIntOneStepTheta::Init()
       FOUR_C_THROW("more steps for starting algorithm than steps overall");
   }
 
-  SetElementTimeParameter();
+  set_element_time_parameter();
 
   CompleteGeneralInit();
 }
@@ -74,7 +74,7 @@ void FLD::TimIntOneStepTheta::PrintTimeStepInfo()
 /*----------------------------------------------------------------------*
 | set old part of right hand side                              bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::SetOldPartOfRighthandside()
+void FLD::TimIntOneStepTheta::set_old_part_of_righthandside()
 {
   /*
      for low-Mach-number flow: distinguish momentum and continuity part
@@ -104,7 +104,7 @@ void FLD::TimIntOneStepTheta::SetStateTimInt()
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+void FLD::TimIntOneStepTheta::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
     const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
     const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
@@ -165,7 +165,7 @@ void FLD::TimIntOneStepTheta::OutputofFilteredVel(
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
-void FLD::TimIntOneStepTheta::SetElementTimeParameter()
+void FLD::TimIntOneStepTheta::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
@@ -249,10 +249,10 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
 /*----------------------------------------------------------------------*
  | output of external forces for restart                     ghamm 12/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::OutputExternalForces()
+void FLD::TimIntOneStepTheta::output_external_forces()
 {
   // call base class
-  FLD::FluidImplicitTimeInt::OutputExternalForces();
+  FLD::FluidImplicitTimeInt::output_external_forces();
 
   if (external_loadsn_ != Teuchos::null)
   {
@@ -289,7 +289,7 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
 /*----------------------------------------------------------------------*
  | update of external forces                                 ghamm 12/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::TimeUpdateExternalForces()
+void FLD::TimIntOneStepTheta::time_update_external_forces()
 {
   if (external_loadsn_ != Teuchos::null) external_loadsn_->Update(1.0, *external_loadsnp_, 0.0);
 }
@@ -297,9 +297,9 @@ void FLD::TimIntOneStepTheta::TimeUpdateExternalForces()
 /*----------------------------------------------------------------------*|
  | Set Eleparams for turbulence models                          bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
+void FLD::TimIntOneStepTheta::treat_turbulence_models(Teuchos::ParameterList& eleparams)
 {
-  FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
+  FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
   {
     FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velnp_, "velafgrad", alefluid_);
@@ -313,7 +313,7 @@ void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& elep
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of velocity part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
+int FLD::TimIntOneStepTheta::method_order_of_accuracy_vel() const
 {
   if (theta_ != 0.5)
     return 1;
@@ -324,7 +324,7 @@ int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of pressure part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
+int FLD::TimIntOneStepTheta::method_order_of_accuracy_pres() const
 {
   if (theta_ != 0.5)
     return 1;
@@ -335,13 +335,13 @@ int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
 /*----------------------------------------------------------------------*
 | Return linear error coefficient of velocity           mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
+double FLD::TimIntOneStepTheta::method_lin_err_coeff_vel() const
 {
   double fac = 0.0;
 
-  if (MethodOrderOfAccuracy() == 1)
+  if (method_order_of_accuracy() == 1)
     fac = 0.5 - theta_;
-  else if (MethodOrderOfAccuracy() == 2)
+  else if (method_order_of_accuracy() == 2)
     fac = -1.0 / 12.0;  // = 1.0/6.0 - 0.5*theta_ with theta_ = 0.5
   else
     FOUR_C_THROW("Unknown Order of Accuracy for One Step Theta time integration.");

@@ -54,7 +54,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
+        this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -137,7 +137,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
+        this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -434,7 +434,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const CORE::LINALG::Matrix<3, 
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 template <typename scalar_type_rot_vec>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetSurfaceRotationVector(const CORE::LINALG::Matrix<3, 1, double>& xi,
+    mortar>::get_surface_rotation_vector(const CORE::LINALG::Matrix<3, 1, double>& xi,
     const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
     const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
     const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
@@ -504,7 +504,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Get the type of surface triad construction.
   const auto surface_triad_type =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetSurfaceTriadConstruction();
+      this->Params()->beam_to_solid_surface_meshtying_params()->get_surface_triad_construction();
 
   // Initialize local matrices.
   CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
@@ -583,7 +583,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
         // Calculate the rotation vector of this cross section.
-        triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+        triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
             quaternion_beam_double, projected_gauss_point.GetEta());
         CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -593,10 +593,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
         // Get the surface rotation vector.
-        ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+        ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
             quaternion_beam_ref, projected_gauss_point.GetEta());
-        GetSurfaceRotationVector(projected_gauss_point.GetXi(),
-            this->face_element_->GetFaceReferenceElementData(), q_surface, quaternion_beam_ref,
+        get_surface_rotation_vector(projected_gauss_point.GetXi(),
+            this->face_element_->get_face_reference_element_data(), q_surface, quaternion_beam_ref,
             surface_triad_type, psi_surface);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_surface_val(i_dim) = psi_surface(i_dim).val();
@@ -629,7 +629,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
-        triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+        triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
             I_beam_tilde, projected_gauss_point.GetEta());
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
@@ -693,7 +693,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   CORE::LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
-  GetPairRotationalGIDs(discret, gid_surface, gid_rot);
+  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
 
   // Assemble into global matrix.
   for (unsigned int i_dof_beam = 0; i_dof_beam < n_dof_rot_; i_dof_beam++)
@@ -721,15 +721,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
     CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
     CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
-  base_class::EvaluateAndAssembleMortarContributions(discret, mortar_manager, global_GB, global_GS,
-      global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
+  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager, global_GB,
+      global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
       displacement_vector);
 
   // If there are no intersection segments, return as no contact can occur.
@@ -762,7 +762,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Get the type of surface triad construction.
   const auto surface_triad_type =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetSurfaceTriadConstruction();
+      this->Params()->beam_to_solid_surface_meshtying_params()->get_surface_triad_construction();
 
   // Evaluate the mortar terms for this pair.
   {
@@ -827,7 +827,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
         // Calculate the rotation vector of this cross section.
-        triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+        triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
             quaternion_beam_double, projected_gauss_point.GetEta());
         CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -837,10 +837,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
         // Get the surface rotation vector.
-        ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+        ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
             quaternion_beam_ref, projected_gauss_point.GetEta());
-        GetSurfaceRotationVector(projected_gauss_point.GetXi(),
-            this->face_element_->GetFaceReferenceElementData(), q_surface, quaternion_beam_ref,
+        get_surface_rotation_vector(projected_gauss_point.GetXi(),
+            this->face_element_->get_face_reference_element_data(), q_surface, quaternion_beam_ref,
             surface_triad_type, psi_surface);
         CORE::LARGEROTATIONS::angletoquaternion(psi_surface, quaternion_surface);
 
@@ -871,7 +871,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
-        triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+        triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
             I_beam_tilde, projected_gauss_point.GetEta());
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
@@ -934,7 +934,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   // Get the rotational GIDs of the surface and beam.
   std::vector<int> gid_surface;
   CORE::LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
-  GetPairRotationalGIDs(discret, gid_surface, gid_rot);
+  get_pair_rotational_gi_ds(discret, gid_surface, gid_rot);
 
   // Get the Lagrange multiplier GIDs.
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
@@ -971,7 +971,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetPairRotationalGIDs(const DRT::Discretization& discret,
+    mortar>::get_pair_rotational_gi_ds(const DRT::Discretization& discret,
     std::vector<int>& gid_surface, CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.

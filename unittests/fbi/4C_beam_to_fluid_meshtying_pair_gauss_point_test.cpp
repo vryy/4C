@@ -52,7 +52,8 @@ namespace
      * \brief Set up the pair so it can be evaluated and compare the results.
      */
     template <typename beam_type, typename fluid_type>
-    void PerformGPTSPairUnitTest(const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+    void perform_gpts_pair_unit_test(
+        const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
         const std::vector<double>& beam_dofvec,
         const CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
         const std::vector<double>& fluid_dofvec, CORE::LINALG::SerialDenseVector results_fs,
@@ -87,7 +88,7 @@ namespace
       // Cast beam element and set the geometry.
       Teuchos::RCP<DRT::ELEMENTS::Beam3eb> beam_element_cast =
           Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3eb>(beam_element, true);
-      beam_element_cast->SetUpReferenceGeometry(xrefe);
+      beam_element_cast->set_up_reference_geometry(xrefe);
 
       Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> intersection_params =
           Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
@@ -323,7 +324,7 @@ namespace
     results_kfs(0, 11) = 0.0039062500000000;
 
     // Perform the unit tests.
-    PerformGPTSPairUnitTest<beam_type, fluid_type>(q_beam, beam_centerline_dofvec, q_fluid,
+    perform_gpts_pair_unit_test<beam_type, fluid_type>(q_beam, beam_centerline_dofvec, q_fluid,
         fluid_dofvec, results_fs, results_ff, results_ksf, results_kfs, results_kff);
   }
 }  // namespace

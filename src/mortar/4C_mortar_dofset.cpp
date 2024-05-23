@@ -22,11 +22,11 @@ MORTAR::DofSet::DofSet() : CORE::Dofsets::DofSet() {}
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int MORTAR::DofSet::AssignDegreesOfFreedom(
+int MORTAR::DofSet::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
-  // first, we call the standard AssignDegreesOfFreedom from the base class
-  const int count = CORE::Dofsets::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
+  // first, we call the standard assign_degrees_of_freedom from the base class
+  const int count = CORE::Dofsets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
   if (pccdofhandling_)
     FOUR_C_THROW("Point coupling conditions not yet implemented for MORTAR::DofSet");
 

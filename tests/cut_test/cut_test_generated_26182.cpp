@@ -190,7 +190,7 @@ void test_generated_26182()
   cutside = sides[0];
 
   CORE::GEO::CUT::TriangulateFacet triangulatefacet(maincylcepoints, mainholecyclepoints);
-  triangulatefacet.EarClippingWithHoles(cutside);
+  triangulatefacet.ear_clipping_with_holes(cutside);
   // std::vector<int> ptConcavity;
   // triangulatefacet.EarClipping(ptConcavity, true, false);
 

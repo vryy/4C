@@ -35,7 +35,7 @@ void MAT::ELASTIC::VolPenalty::AddStrainEnergy(double& psi, const CORE::LINALG::
   psi += eps * (pow(modinv(2), gam) + pow(modinv(2), -gam) - 2.);
 }
 
-void MAT::ELASTIC::VolPenalty::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+void MAT::ELASTIC::VolPenalty::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
     CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {

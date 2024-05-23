@@ -85,51 +85,51 @@ namespace ADAPTER
     double TimeScaling() const override;
 
     /// Return interface forces
-    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> extract_struct_interface_forces();
 
     /// Return interface velocity at old time level n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> extract_struct_interface_veln();
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVelnp()
+    virtual Teuchos::RCP<Epetra_Vector> extract_struct_interface_velnp()
     {
       FOUR_C_THROW("Not implemented, yet!");
       return Teuchos::null;
     }
 
     /// apply the interface velocities to the fluid
-    virtual void ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void apply_struct_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// apply the interface displacements to the fluid
-    virtual void ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> interface_disp);
+    virtual void apply_struct_mesh_displacement(Teuchos::RCP<const Epetra_Vector> interface_disp);
 
     /// convert increment of displacement to increment in velocity
-    void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override;
+    void displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) override;
 
     /// Apply initial mesh displacement
-    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
+    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     /// apply the interface displacements to the fluid
-    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
+    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Fluid_Struct_Matrix();
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Struct_Struct_Matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_struct_fluid_matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_fluid_struct_matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_struct_struct_matrix();
 
     Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
     Teuchos::RCP<FLD::XFluid> MyFluid() { return xfluid_; }
 
     /// return boundary discretization
-    Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
+    Teuchos::RCP<DRT::Discretization> boundary_discretization();
 
-    bool NewtonRestartMonolithic() { return xfluid_->NewtonRestartMonolithic(); }
+    bool newton_restart_monolithic() { return xfluid_->newton_restart_monolithic(); }
 
     Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return xfluid_->GetPermutationMap(); }
 

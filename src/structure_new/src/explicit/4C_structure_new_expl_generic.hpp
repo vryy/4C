@@ -50,7 +50,7 @@ namespace STR
       /*! \brief (derived)
        *
        */
-      bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+      bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
           const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
           Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override
       {
@@ -63,10 +63,10 @@ namespace STR
           const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! return the default step length
-      [[nodiscard]] double GetDefaultStepLength() const;
+      [[nodiscard]] double get_default_step_length() const;
 
       //! compute the scaling operator for element based scaling using PTC (derived)
-      void ComputeJacobianContributionsFromElementLevelForPTC(
+      void compute_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
@@ -79,7 +79,7 @@ namespace STR
       void PreUpdate() override{/* do nothing for now */};
 
       //! (derived)
-      void UpdateConstantStateContributions() override;
+      void update_constant_state_contributions() override;
 
       virtual void OutputStepstate() { ; };
 
@@ -92,7 +92,7 @@ namespace STR
       /*! \brief Remove contributions from the structural right-hand side stemming
        *  from any condensation operations (typical example is contact) (derived)
        */
-      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const override;
+      void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
       //! @}
 
       //! @name Attribute access functions
@@ -106,16 +106,16 @@ namespace STR
       [[nodiscard]] virtual int MethodSteps() const = 0;
 
       //! Give local order of accuracy of displacement part
-      [[nodiscard]] virtual int MethodOrderOfAccuracyDis() const = 0;
+      [[nodiscard]] virtual int method_order_of_accuracy_dis() const = 0;
 
       //! Give local order of accuracy of velocity part
-      [[nodiscard]] virtual int MethodOrderOfAccuracyVel() const = 0;
+      [[nodiscard]] virtual int method_order_of_accuracy_vel() const = 0;
 
       //! Return linear error coefficient of displacements
-      [[nodiscard]] virtual double MethodLinErrCoeffDis() const = 0;
+      [[nodiscard]] virtual double method_lin_err_coeff_dis() const = 0;
 
       //! Return linear error coefficient of velocities
-      [[nodiscard]] virtual double MethodLinErrCoeffVel() const = 0;
+      [[nodiscard]] virtual double method_lin_err_coeff_vel() const = 0;
 
       //! @}
 
@@ -140,7 +140,8 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const STR::EXPLICIT::Generic& expl) : default_step_(expl.GetDefaultStepLength())
+          Generic(const STR::EXPLICIT::Generic& expl)
+              : default_step_(expl.get_default_step_length())
           {
           }
 

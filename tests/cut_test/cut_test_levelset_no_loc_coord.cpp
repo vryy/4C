@@ -93,7 +93,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
   // Gmsh-output Tesselation
   ci.NormalMesh().DumpGmsh(testname + "_tes.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells(testname + "_tes.CUT_volumecells.pos", true);
-  ci.DumpGmshIntegrationCells(testname + "_tes.CUT_integrationcells.pos");
+  ci.dump_gmsh_integration_cells(testname + "_tes.CUT_integrationcells.pos");
 #endif
 
   return ci;
@@ -122,7 +122,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids
   // Gmsh-output DD
   ci.NormalMesh().DumpGmsh(testname + "_dd.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells(testname + "_dd.CUT_volumecells.pos", true);
-  // ci.DumpGmshIntegrationCells(testname+"_dd.CUT_integrationcells.pos");
+  // ci.dump_gmsh_integration_cells(testname+"_dd.CUT_integrationcells.pos");
 #endif
 
   return ci;
@@ -162,11 +162,11 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   // Gmsh-output Tesselation
   ci.NormalMesh().DumpGmsh(testname + "_tes.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells(testname + "_tes.CUT_volumecells.pos", true);
-  ci.DumpGmshIntegrationCells(testname + "_tes.CUT_integrationcells.pos");
+  ci.dump_gmsh_integration_cells(testname + "_tes.CUT_integrationcells.pos");
   // Gmsh-output DD
   cidd.NormalMesh().DumpGmsh(testname + "_dd.CUT.pos");
   cidd.NormalMesh().DumpGmshVolumeCells(testname + "_dd.CUT_volumecells.pos", true);
-  // ci.DumpGmshIntegrationCells(testname+"_dd.CUT_integrationcells.pos");
+  // ci.dump_gmsh_integration_cells(testname+"_dd.CUT_integrationcells.pos");
 #endif
 
 
@@ -278,7 +278,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
     CORE::GEO::CUT::VolumeCell* vc = &**i;
     //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
     //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
-    vc->DirectDivergenceGaussRule(
+    vc->direct_divergence_gauss_rule(
         vc->ParentElement(), ci.NormalMesh(), true, INPAR::CUT::BCellGaussPts_Tessellation);
     //    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" <<
     //    std::endl << std::endl;
@@ -1291,7 +1291,7 @@ void test_ls_mesh_hex8_simple()
     std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter << ".....!"
               << std::endl;
     std::cout << "Volumecell Position: " << vc->Position() << std::endl;
-    vc->DirectDivergenceGaussRule(
+    vc->direct_divergence_gauss_rule(
         vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
     std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL USING MESH #" << counter << " WITHOUT ERROR!"
               << std::endl
@@ -1424,7 +1424,7 @@ void test_ls_hex8_experiment_magnus()
   //  Gmsh-output
   ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos", true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
+  ci.dump_gmsh_integration_cells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
   // #endif
 
   const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells =
@@ -1626,7 +1626,7 @@ void test_ls_hex8_magnus7()
 //
 //  //Gmsh-output
 //  mesh.DumpGmsh("xxx_cut_test_ls_hex8_magnus3.CUT.pos");
-//  lsi.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus3.CUT_integrationcells.pos");
+//  lsi.dump_gmsh_integration_cells("xxx_cut_test_ls_hex8_magnus3.CUT_integrationcells.pos");
 //  mesh.DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus3.CUT_volcells(mesh).pos",true);
 //
 //  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();

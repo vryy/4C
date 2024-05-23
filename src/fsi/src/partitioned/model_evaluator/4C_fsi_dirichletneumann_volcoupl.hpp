@@ -50,10 +50,10 @@ namespace FSI
 
    protected:
     /// setup
-    void SetupCouplingStructAle(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    void setup_coupling_struct_ale(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
     /// setup
-    void SetupInterfaceCorrector(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    void setup_interface_corrector(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
     /** \brief interface fluid operator
      *
@@ -69,7 +69,7 @@ namespace FSI
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
 
-    void ExtractPreviousInterfaceSolution() override;
+    void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
     Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;
@@ -103,10 +103,10 @@ namespace FSI
 
     virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
-    void SetInterfaceDisplacements(
+    void set_interface_displacements(
         Teuchos::RCP<Epetra_Vector>& idisp_struct, CORE::ADAPTER::Coupling& icoupfs);
 
-    virtual void CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
+    virtual void correct_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
@@ -131,16 +131,16 @@ namespace FSI
 
     virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
-    virtual void CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
-    virtual void CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements_para_space(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
-    virtual void CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements_phys_space(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 

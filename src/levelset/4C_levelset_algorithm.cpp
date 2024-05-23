@@ -91,7 +91,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   // -------------------------------------------------------------------
   //                         setup domains
   // -------------------------------------------------------------------
-  GetInitialVolumeOfMinusDomain(phinp_, discret_, initvolminus_);
+  get_initial_volume_of_minus_domain(phinp_, discret_, initvolminus_);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -236,7 +236,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::GetInitialVolumeOfMinusDomain(
+void SCATRA::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
     const Teuchos::RCP<const Epetra_Vector>& phinp,
     const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const
 {
@@ -262,10 +262,10 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
   if (Step() == 0)
   {
     // write out initial state
-    CheckAndWriteOutputAndRestart();
+    check_and_write_output_and_restart();
 
     // compute error for problems with analytical solution (initial field!)
-    EvaluateErrorComparedToAnalyticalSol();
+    evaluate_error_compared_to_analytical_sol();
   }
 
   while ((step_ < stepmax_) and ((time_ + 1e-12) < maxtime_))
@@ -295,12 +295,12 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     // -------------------------------------------------------------------
     //       evaluate error for problems with analytical solution
     // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
+    evaluate_error_compared_to_analytical_sol();
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    CheckAndWriteOutputAndRestart();
+    check_and_write_output_and_restart();
 
   }  // while
 
@@ -404,7 +404,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::CheckAndWriteOutputAndRestart()
+void SCATRA::LevelSetAlgorithm::check_and_write_output_and_restart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
@@ -435,12 +435,12 @@ void SCATRA::LevelSetAlgorithm::CheckAndWriteOutputAndRestart()
   // -----------------------------------------------------------------
   //             further level-set specific values
   // -----------------------------------------------------------------
-  OutputOfLevelSetSpecificValues();
+  output_of_level_set_specific_values();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::OutputOfLevelSetSpecificValues()
+void SCATRA::LevelSetAlgorithm::output_of_level_set_specific_values()
 {
   // capture interface, evalute mass conservation, write to file
   std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;

@@ -53,16 +53,16 @@ namespace ADAPTER
     std::string MethodTitle() const override { return "ZienkiewiczXie"; }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyDis() const override { return 3; }
+    int method_order_of_accuracy_dis() const override { return 3; }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyVel() const override { return 2; }
+    int method_order_of_accuracy_vel() const override { return 2; }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override { return -1.0 / 24.0; }
+    double method_lin_err_coeff_dis() const override { return -1.0 / 24.0; }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override { return -1.0 / 12.0; }
+    double method_lin_err_coeff_vel() const override { return -1.0 / 12.0; }
 
     //! Provide type of algorithm
     enum AdaEnum MethodAdaptDis() const override { return ada_upward; }
@@ -79,7 +79,7 @@ namespace ADAPTER
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void IntegrateStepAuxiliar() override;
+    void integrate_step_auxiliar() override;
 
     /*! \brief Update the auxiliar integrator
      */

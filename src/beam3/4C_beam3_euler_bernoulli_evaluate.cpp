@@ -36,9 +36,9 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
-  if (IsParamsInterface()) SetBrownianDynParamsInterfacePtr();
+  if (IsParamsInterface()) set_brownian_dyn_params_interface_ptr();
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size(), 0.0);
       myvel.clear();
-      const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+      const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
       if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
           INPAR::STR::dyna_statics)
@@ -140,20 +140,24 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
+        calc_internal_and_inertia_forces_and_stiff(
+            params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
       }
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
+        calc_internal_and_inertia_forces_and_stiff(
+            params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
         lumpmass(&elemat2);
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, &elemat1, nullptr, &elevec1);
+        calc_internal_and_inertia_forces_and_stiff(
+            params, myvel, mydisp, &elemat1, nullptr, &elevec1);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, nullptr, nullptr, &elevec1);
+        calc_internal_and_inertia_forces_and_stiff(
+            params, myvel, mydisp, nullptr, nullptr, &elevec1);
       }
     }
     break;
@@ -174,9 +178,9 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
-        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
+        calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_brownianstiff)
-        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
+        calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
         FOUR_C_THROW("You shouldn't be here.");
 
@@ -209,7 +213,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().AddContributionToEnergyType(eint_, STR::internal_energy);
+        ParamsInterface().add_contribution_to_energy_type(eint_, STR::internal_energy);
       }
 
       break;
@@ -239,7 +243,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
@@ -257,7 +261,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
       INPAR::STR::dyna_statics)
   {
@@ -590,8 +594,8 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
 /*------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
-    std::vector<double>& vel, std::vector<double>& disp,
+void DRT::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
+    Teuchos::ParameterList& params, std::vector<double>& vel, std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector* force)
 {
@@ -609,7 +613,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   // material constitutive matrices for forces and moments
   // occurring in material law based on a general hyper-elastic stored energy function
   CORE::LINALG::Matrix<3, 3> C_forceresultant, C_momentresultant;
-  GetConstitutiveMatrices(C_forceresultant, C_momentresultant);
+  get_constitutive_matrices(C_forceresultant, C_momentresultant);
 
   // in this reduced formulation, we only need two of the constitutive factors
   // axial rigidity
@@ -1126,8 +1130,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
     // unshift node positions, i.e. manipulate element displacement vector
     // as if there where no periodic boundary conditions
-    if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-      UnShiftNodePosition(disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox());
+    if (brownian_dyn_params_interface_ptr() != Teuchos::null)
+      UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
     UpdateDispTotlag<nnode, dofpn>(disp, disp_totlag);
 
@@ -1737,7 +1741,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
     // tensor of mass moments of inertia for translational and rotational motion
     double mass_inertia_translational = 0.0;
-    GetTranslationalMassInertiaFactor(mass_inertia_translational);
+    get_translational_mass_inertia_factor(mass_inertia_translational);
 
     std::vector<double> myvel(12, 0.0);
 
@@ -1956,7 +1960,7 @@ void DRT::ELEMENTS::Beam3eb::lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed() const
+int DRT::ELEMENTS::Beam3eb::how_many_random_numbers_i_need() const
 {
   // get Gauss points and weights for evaluation of damping matrix
   CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
@@ -1972,7 +1976,7 @@ int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed() const
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, int ndim>
-void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
+void DRT::ELEMENTS::Beam3eb::evaluate_translational_damping(
     Teuchos::ParameterList& params,  //!< parameter list
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
@@ -1989,7 +1993,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
   // get damping coefficients for translational and rotational degrees of freedom (the latter is
   // unused in this element)
   CORE::LINALG::Matrix<ndim, 1> gamma(true);
-  GetDampingCoefficients(gamma);
+  get_damping_coefficients(gamma);
 
   // velocity and gradient of background velocity field
   CORE::LINALG::Matrix<ndim, 1> velbackground(true);
@@ -2028,7 +2032,8 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
     Calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
 
     // compute velocity and gradient of background flow field at point r
-    GetBackgroundVelocity<ndim, double>(params, evaluationpoint, velbackground, velbackgroundgrad);
+    get_background_velocity<ndim, double>(
+        params, evaluationpoint, velbackground, velbackgroundgrad);
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position
     // vector
@@ -2088,7 +2093,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
-void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
+void DRT::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
     Teuchos::ParameterList& params,  //!< parameter list
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2096,13 +2101,13 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   CORE::LINALG::Matrix<3, 1> gamma(true);
-  GetDampingCoefficients(gamma);
+  get_damping_coefficients(gamma);
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5; note carefully: a space between
    * the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with
    * ">>" for streams*/
-  Teuchos::RCP<Epetra_MultiVector> randomforces = BrownianDynParamsInterface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces = brownian_dyn_params_interface().GetRandomForces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
   CORE::LINALG::Matrix<ndim, 1> r_s(true);
@@ -2186,7 +2191,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
-void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
     std::vector<double>& vel,                      //!< element velocity vector
     std::vector<double>& disp,                     //!< element displacement vector
     CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2194,8 +2199,8 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
 {
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox());
+  if (brownian_dyn_params_interface_ptr() != Teuchos::null)
+    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   // update current total position state of element
   CORE::LINALG::Matrix<nnode * vpernode * ndim, 1> disp_totlag(true);
@@ -2207,11 +2212,11 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
   // Evaluation of force vectors and stiffness matrices
 
   // add stiffness and forces due to translational damping effects
-  EvaluateTranslationalDamping<nnode, vpernode, ndim>(
+  evaluate_translational_damping<nnode, vpernode, ndim>(
       params, vel_fixedsize, disp_totlag, stiffmatrix, force);
 
   // add stochastic forces and (if required) resulting stiffness
-  EvaluateStochasticForces<nnode, vpernode, ndim, 3>(params, disp_totlag, stiffmatrix, force);
+  evaluate_stochastic_forces<nnode, vpernode, ndim, 3>(params, disp_totlag, stiffmatrix, force);
 }
 
 /*----------------------------------------------------------------------------------------------------------*
@@ -2260,17 +2265,17 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
 template void DRT::ELEMENTS::Beam3eb::EvaluatePTC<2>(
     Teuchos::ParameterList&, CORE::LINALG::SerialDenseMatrix&);
 
-template void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping<2, 2, 3>(Teuchos::ParameterList&,
-    const CORE::LINALG::Matrix<12, 1>&, const CORE::LINALG::Matrix<12, 1>&,
+template void DRT::ELEMENTS::Beam3eb::evaluate_translational_damping<2, 2, 3>(
+    Teuchos::ParameterList&, const CORE::LINALG::Matrix<12, 1>&, const CORE::LINALG::Matrix<12, 1>&,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseVector*);
 
-template void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces<2, 2, 3, 3>(Teuchos::ParameterList&,
-    const CORE::LINALG::Matrix<12, 1>&, CORE::LINALG::SerialDenseMatrix*,
+template void DRT::ELEMENTS::Beam3eb::evaluate_stochastic_forces<2, 2, 3, 3>(
+    Teuchos::ParameterList&, const CORE::LINALG::Matrix<12, 1>&, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseVector*);
 
-template void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff<2, 2, 3>(Teuchos::ParameterList&,
-    std::vector<double>&, std::vector<double>&, CORE::LINALG::SerialDenseMatrix*,
-    CORE::LINALG::SerialDenseVector*);
+template void DRT::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff<2, 2, 3>(
+    Teuchos::ParameterList&, std::vector<double>&, std::vector<double>&,
+    CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag<2, 6>(
     const std::vector<double>&, CORE::LINALG::Matrix<12, 1>&) const;

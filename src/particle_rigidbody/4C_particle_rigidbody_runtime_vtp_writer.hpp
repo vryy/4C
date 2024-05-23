@@ -88,7 +88,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] ownedrigidbodies owned rigid bodies by this processor
      */
-    void SetRigidBodyPositionsAndStates(const std::vector<int>& ownedrigidbodies);
+    void set_rigid_body_positions_and_states(const std::vector<int>& ownedrigidbodies);
 
     /*!
      * \brief Write the visualization files to disk

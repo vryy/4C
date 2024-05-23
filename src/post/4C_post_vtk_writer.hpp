@@ -82,12 +82,12 @@ class PostVtkWriter : public PostWriterBase
       const bool fillzeros) = 0;
 
   //! Write a single result step
-  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override = 0;
 
   //! Write a single result step
-  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override = 0;
@@ -114,14 +114,14 @@ class PostVtkWriter : public PostWriterBase
       ) override;
 
 
-  void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
-      const std::string groupname,                 ///< name of the result group in the control file
-      const std::string name,                      ///< name of the result to be written
-      const ResultType restype,  ///< type of the result to be written (nodal-/element-based)
-      const int numdf,           ///< number of dofs per node to this result
-      bool firststep,            ///< bool whether this is the first time step
-      bool laststep,             ///< bool whether this is the last time step
-      const int from = 0         ///< start position of values in nodes
+  void write_result_one_time_step(PostResult& result,  ///< result group in the control file
+      const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,       ///< name of the result to be written
+      const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
+      const int numdf,              ///< number of dofs per node to this result
+      bool firststep,               ///< bool whether this is the first time step
+      bool laststep,                ///< bool whether this is the last time step
+      const int from = 0            ///< start position of values in nodes
       ) override
   {
     FOUR_C_THROW("Not yet implemented");
@@ -160,7 +160,7 @@ class PostVtkWriter : public PostWriterBase
 
   //! writes debug output as long as this filter is incomplete (TODO MK: should go away at some
   //! point)
-  virtual void CurrentlyNotImplemented() const
+  virtual void currently_not_implemented() const
   {
     FOUR_C_THROW("Functionality currently not implemented");
   }

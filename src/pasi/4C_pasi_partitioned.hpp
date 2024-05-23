@@ -150,7 +150,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void PostEvaluateTimeStep();
+    void post_evaluate_time_step();
 
     /*!
      * \brief extract interface states
@@ -160,7 +160,7 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void ExtractInterfaceStates();
+    void extract_interface_states();
 
     /*!
      * \brief set interface states
@@ -236,14 +236,14 @@ namespace PASI
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void InitParticleAlgorithm();
+    void init_particle_algorithm();
 
     /*!
      * \brief build and register structure model evaluator
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void BuildStructureModelEvaluator();
+    void build_structure_model_evaluator();
 
     //! ptr to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;

@@ -106,7 +106,7 @@ namespace NOX
       Teuchos::ParameterList& GetNlnParameterList();
 
       //! return the pointer to the parameter list
-      const Teuchos::RCP<Teuchos::ParameterList>& GetNlnParameterListPtr();
+      const Teuchos::RCP<Teuchos::ParameterList>& get_nln_parameter_list_ptr();
 
       //! return underlying discretization Epetra_Comm
       const Epetra_Comm& GetComm() const;
@@ -121,19 +121,19 @@ namespace NOX
       GetLinSolvers();
 
       //! return the user-defined preconditioner interface
-      Teuchos::RCP<::NOX::Epetra::Interface::Required> GetRequiredInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> get_required_interface();
 
       //! return the user-defined preconditioner interface
-      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> GetJacobianInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> get_jacobian_interface();
 
       //! return the user-defined preconditioner interface
-      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
+      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> get_preconditioner_interface();
 
       //! return the user-defined constraint interface map
-      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& GetConstraintInterfaces();
+      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& get_constraint_interfaces();
 
       //! return the user-defined constraint preconditioner interface map
-      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& GetConstraintPrecInterfaces();
+      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& get_constraint_prec_interfaces();
 
       //! return linear system scaling object
       const Teuchos::RCP<::NOX::Epetra::Scaling>& GetScalingObject();
@@ -148,13 +148,13 @@ namespace NOX
       /*! \brief set printing parameters
        *
        * translate dat file input into NOX input */
-      void SetPrintingParameters();
+      void set_printing_parameters();
 
       //! set solver option parameters
-      void SetSolverOptionParameters();
+      void set_solver_option_parameters();
 
       //! set status test parameters
-      void SetStatusTestParameters();
+      void set_status_test_parameters();
 
      private:
       /// communicator

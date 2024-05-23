@@ -58,7 +58,7 @@ namespace DRT
       //! Empty destructor
       virtual ~ScaTraHDGIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      virtual void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           std::vector<int>& nds_master,              //!< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               //!< nodal dofset w.r.t. slave element
@@ -69,7 +69,7 @@ namespace DRT
           ) = 0;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
+      virtual int evaluate_internal_faces(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           Teuchos::ParameterList& params,            //!< parameter list
           DRT::Discretization& discretization,       //!< discretization
@@ -127,7 +127,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      void AssembleInternalFacesUsingNeighborData(
+      void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           std::vector<int>& nds_master,              //!< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               //!< nodal dofset w.r.t. slave element
@@ -138,7 +138,7 @@ namespace DRT
           ) override;
 
       //! Evaluate internal faces
-      int EvaluateInternalFaces(
+      int evaluate_internal_faces(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           Teuchos::ParameterList& params,            //!< parameter list
           DRT::Discretization& discretization,       //!< discretization

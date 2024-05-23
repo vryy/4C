@@ -186,8 +186,8 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
         // calculate element normal at current node
         double xi[2] = {0.0, 0.0};
         double normal[3] = {0.0, 0.0, 0.0};
-        mrtrelement->LocalCoordinatesOfNode(k, xi);
-        mrtrelement->ComputeUnitNormalAtXi(xi, normal);
+        mrtrelement->local_coordinates_of_node(k, xi);
+        mrtrelement->compute_unit_normal_at_xi(xi, normal);
 
         // now the auxiliary position
         std::array<double, 3> auxpos = {0.0, 0.0, 0.0};

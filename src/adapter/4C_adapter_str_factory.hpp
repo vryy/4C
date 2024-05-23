@@ -37,12 +37,12 @@ namespace ADAPTER
     virtual ~StructureFactory() = default;
 
     //! Build the structural adapter object
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> build_structure_algorithm(
         const Teuchos::ParameterList& sdyn) const;
   };  // class Factory
 
   // non-member function
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> build_structure_algorithm(
       const Teuchos::ParameterList& sdyn);
 }  // namespace ADAPTER
 

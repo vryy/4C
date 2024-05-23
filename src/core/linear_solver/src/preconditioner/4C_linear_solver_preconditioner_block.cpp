@@ -130,10 +130,11 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       Teuchos::ParameterList& inv1 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1");
       if (inv1.isSublist("ML Parameters"))
       {
-        ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("number of dofs per node", 0);
-        nv = inv1.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
-        np = inv1.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
-        if (ndofpernode == 0) FOUR_C_THROW("cannot read numdf from NodalBlockInformation");
+        ndofpernode =
+            inv1.sublist("nodal_block_information").get<int>("number of dofs per node", 0);
+        nv = inv1.sublist("nodal_block_information").get<int>("number of momentum dofs", 0);
+        np = inv1.sublist("nodal_block_information").get<int>("number of constraint dofs", 0);
+        if (ndofpernode == 0) FOUR_C_THROW("cannot read numdf from nodal_block_information");
         if (nv == 0 || np == 0) FOUR_C_THROW("nv or np == 0?");
         nlnode = length / ndofpernode;
 

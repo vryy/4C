@@ -86,7 +86,7 @@ namespace MIXTURE
      * \param gp (in)     : Gauss point
      * \param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembraneStress(
+    virtual void evaluate_membrane_stress(
         CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE

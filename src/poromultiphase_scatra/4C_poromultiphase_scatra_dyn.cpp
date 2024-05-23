@@ -43,15 +43,16 @@ void poromultiphasescatra_dyn(int restart)
 
   // Parameter reading
   // access poro multiphase scatra params list
-  const Teuchos::ParameterList& poroscatraparams = problem->PoroMultiPhaseScatraDynamicParams();
+  const Teuchos::ParameterList& poroscatraparams =
+      problem->poro_multi_phase_scatra_dynamic_params();
   // access poro multiphase params list
-  const Teuchos::ParameterList& poroparams = problem->PoroMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& poroparams = problem->poro_multi_phase_dynamic_params();
   // access scatra params list
-  const Teuchos::ParameterList& structparams = problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& structparams = problem->structural_dynamic_params();
   // access poro fluid dynamic params list
-  const Teuchos::ParameterList& fluidparams = problem->PoroFluidMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& fluidparams = problem->poro_fluid_multi_phase_dynamic_params();
   // access scatra dynamic params list
-  const Teuchos::ParameterList& scatraparams = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatraparams = problem->scalar_transport_dynamic_params();
 
   // do we perform coupling with 1D artery
   const bool artery_coupl = CORE::UTILS::IntegralValue<int>(poroscatraparams, "ARTERY_COUPLING");
@@ -90,7 +91,7 @@ void poromultiphasescatra_dyn(int restart)
   // assign materials
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
-  POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
+  POROMULTIPHASESCATRA::UTILS::assign_material_pointers(
       struct_disname, fluid_disname, scatra_disname, artery_coupl);
 
   // Setup Solver (necessary if poro-structure coupling solved monolithically)

@@ -53,23 +53,24 @@ namespace MAT
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
      *
      */
-    virtual double GetInteractionRadius() const = 0;
+    virtual double get_interaction_radius() const = 0;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
      *
      */
-    virtual double GetTranslationalMassInertiaFactor() const = 0;
+    virtual double get_translational_mass_inertia_factor() const = 0;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
-    virtual void GetMassMomentOfInertiaTensorMaterialFrame(CORE::LINALG::Matrix<3, 3>& J) const = 0;
+    virtual void get_mass_moment_of_inertia_tensor_material_frame(
+        CORE::LINALG::Matrix<3, 3>& J) const = 0;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
-    virtual void GetMassMomentOfInertiaTensorMaterialFrame(
+    virtual void get_mass_moment_of_inertia_tensor_material_frame(
         CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
 
     /** \brief Update all material related variables at the end of a time step

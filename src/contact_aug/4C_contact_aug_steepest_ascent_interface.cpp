@@ -38,9 +38,9 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
-CONTACT::AUG::STEEPESTASCENT::Interface::CreateNodeBasedAssembleStrategy()
+CONTACT::AUG::STEEPESTASCENT::Interface::create_node_based_assemble_strategy()
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = GetVariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type = get_variational_approach_type();
 
   switch (var_type)
   {

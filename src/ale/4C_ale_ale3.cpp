@@ -59,7 +59,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(const int id, const i
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Type::NodalBlockInformation(
+void DRT::ELEMENTS::Ale3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -77,7 +77,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Ale3Type::ComputeNullSpace(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Type::SetupElementDefinition(
+void DRT::ELEMENTS::Ale3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["ALE3"];

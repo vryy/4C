@@ -45,7 +45,7 @@ bool SSI::SSIMono::ConvCheckStrategyBase::ExitNewtonRaphson(const SSI::SSIMono& 
   const bool converged = CheckConvergence(ssi_mono, norms);
   const bool exit = ComputeExit(ssi_mono, converged);
 
-  PrintNewtonIterationInformation(ssi_mono, converged, exit, norms);
+  print_newton_iteration_information(ssi_mono, converged, exit, norms);
 
   if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
 
@@ -75,7 +75,7 @@ void SSI::SSIMono::ConvCheckStrategyBase::CheckL2Norm(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyBase::GetAndCheckL2NormStructure(
+void SSI::SSIMono::ConvCheckStrategyBase::get_and_check_l2_norm_structure(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.MapsSubProblems()
@@ -95,7 +95,7 @@ void SSI::SSIMono::ConvCheckStrategyBase::GetAndCheckL2NormStructure(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyBase::PrintNonConvergedSteps(const int pid) const
+void SSI::SSIMono::ConvCheckStrategyBase::print_non_converged_steps(const int pid) const
 {
   if (pid == 0 and not non_converged_steps_.empty())
   {
@@ -111,7 +111,7 @@ void SSI::SSIMono::ConvCheckStrategyBase::PrintNonConvergedSteps(const int pid) 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyStd::GetAndCheckL2NormScaTra(
+void SSI::SSIMono::ConvCheckStrategyStd::get_and_check_l2_norm_sca_tra(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.MapsSubProblems()
@@ -137,8 +137,8 @@ std::map<SSI::L2norm, double> SSI::SSIMono::ConvCheckStrategyStd::ComputeNorms(
   double scatraincnorm = 0.0, scatraresnorm = 0.0, scatradofnorm = 0.0, structureincnorm = 0.0,
          structureresnorm = 0.0, structuredofnorm = 0.0;
 
-  GetAndCheckL2NormScaTra(ssi_mono, scatraincnorm, scatraresnorm, scatradofnorm);
-  GetAndCheckL2NormStructure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
+  get_and_check_l2_norm_sca_tra(ssi_mono, scatraincnorm, scatraresnorm, scatradofnorm);
+  get_and_check_l2_norm_structure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
 
   return {{SSI::L2norm::scatraincnorm, scatraincnorm}, {SSI::L2norm::scatraresnorm, scatraresnorm},
       {SSI::L2norm::scatradofnorm, scatradofnorm},
@@ -166,7 +166,7 @@ bool SSI::SSIMono::ConvCheckStrategyStd::CheckConvergence(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyStd::PrintNewtonIterationInformation(
+void SSI::SSIMono::ConvCheckStrategyStd::print_newton_iteration_information(
     const SSI::SSIMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
@@ -232,7 +232,7 @@ void SSI::SSIMono::ConvCheckStrategyStd::PrintNewtonIterationInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormConc(
+void SSI::SSIMono::ConvCheckStrategyElch::get_and_check_l2_norm_conc(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.ScaTraField()
@@ -259,7 +259,7 @@ void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormConc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormPot(
+void SSI::SSIMono::ConvCheckStrategyElch::get_and_check_l2_norm_pot(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.ScaTraField()
@@ -293,9 +293,9 @@ std::map<SSI::L2norm, double> SSI::SSIMono::ConvCheckStrategyElch::ComputeNorms(
          potincnorm = 0.0, potresnorm = 0.0, structuredofnorm = 0.0, structureresnorm = 0.0,
          structureincnorm = 0.0;
 
-  GetAndCheckL2NormConc(ssi_mono, concincnorm, concresnorm, concdofnorm);
-  GetAndCheckL2NormPot(ssi_mono, potincnorm, potresnorm, potdofnorm);
-  GetAndCheckL2NormStructure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
+  get_and_check_l2_norm_conc(ssi_mono, concincnorm, concresnorm, concdofnorm);
+  get_and_check_l2_norm_pot(ssi_mono, potincnorm, potresnorm, potdofnorm);
+  get_and_check_l2_norm_structure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
 
   return {
       {SSI::L2norm::concincnorm, concincnorm},
@@ -333,7 +333,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::CheckConvergence(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElch::PrintNewtonIterationInformation(
+void SSI::SSIMono::ConvCheckStrategyElch::print_newton_iteration_information(
     const SSI::SSIMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
@@ -406,7 +406,8 @@ void SSI::SSIMono::ConvCheckStrategyElch::PrintNewtonIterationInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(const SSI::SSIMono& ssi_mono)
+bool SSI::SSIMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
+    const SSI::SSIMono& ssi_mono)
 {
   const auto norms = ComputeNorms(ssi_mono);
   const bool converged =
@@ -466,7 +467,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(const SSI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraManifoldConc(
+void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sca_tra_manifold_conc(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.ScaTraManifold()
@@ -493,7 +494,7 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraM
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraManifoldPot(
+void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sca_tra_manifold_pot(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.ScaTraManifold()
@@ -528,15 +529,15 @@ std::map<SSI::L2norm, double> SSI::SSIMono::ConvCheckStrategyElchScaTraManifold:
          manifoldconcincnorm = 0.0, manifoldconcresnorm = 0.0, potdofnorm = 0.0, potincnorm = 0.0,
          potresnorm = 0.0, structuredofnorm = 0.0, structureresnorm = 0.0, structureincnorm = 0.0;
 
-  GetAndCheckL2NormConc(ssi_mono, concincnorm, concresnorm, concdofnorm);
-  GetAndCheckL2NormPot(ssi_mono, potincnorm, potresnorm, potdofnorm);
+  get_and_check_l2_norm_conc(ssi_mono, concincnorm, concresnorm, concdofnorm);
+  get_and_check_l2_norm_pot(ssi_mono, potincnorm, potresnorm, potdofnorm);
 
-  GetAndCheckL2NormScaTraManifoldPot(
+  get_and_check_l2_norm_sca_tra_manifold_pot(
       ssi_mono, manifoldpotincnorm, manifoldpotresnorm, manifoldpotdofnorm);
-  GetAndCheckL2NormScaTraManifoldConc(
+  get_and_check_l2_norm_sca_tra_manifold_conc(
       ssi_mono, manifoldconcincnorm, manifoldconcresnorm, manifoldconcdofnorm);
 
-  GetAndCheckL2NormStructure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
+  get_and_check_l2_norm_structure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
 
   return {
       {SSI::L2norm::concincnorm, concincnorm},
@@ -589,7 +590,7 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::CheckConvergence(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::PrintNewtonIterationInformation(
+void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::print_newton_iteration_information(
     const SSI::SSIMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
@@ -689,7 +690,7 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::PrintNewtonIterationInfo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPotCalc(
+bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init_pot_calc(
     const SSI::SSIMono& ssi_mono)
 {
   const auto norms = ComputeNorms(ssi_mono);

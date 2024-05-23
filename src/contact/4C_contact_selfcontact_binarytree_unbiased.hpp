@@ -55,7 +55,7 @@ namespace CONTACT
     \param [in]  treenode2:  second tree node
 
     */
-    void AddTreeNodesToContactPairs(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
+    void add_tree_nodes_to_contact_pairs(Teuchos::RCP<SelfBinaryTreeNode> treenode1,
         Teuchos::RCP<SelfBinaryTreeNode> treenode2) final;
 
     /*!
@@ -66,7 +66,7 @@ namespace CONTACT
     \param [in]  p:          number of current (not necessarily calling) processor
 
     */
-    void CalculateProcSpecificDualGraph(
+    void calculate_proc_specific_dual_graph(
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
         const std::vector<int>& elelist, const int p);
 
@@ -74,7 +74,7 @@ namespace CONTACT
     \brief Use list of possible contact pairs to define the search elements
 
     */
-    void DefineSearchElements();
+    void define_search_elements();
 
     /*!
     \brief Get the mortar element specific number of first order nodes
@@ -93,7 +93,7 @@ namespace CONTACT
     on this data
 
     */
-    void InitializeTreeBottomUp(std::map<int,
+    void initialize_tree_bottom_up(std::map<int,
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>*
             procdualGraph);
 
@@ -118,7 +118,7 @@ namespace CONTACT
     \brief Communicate the Search Elements to all processors
 
     */
-    void CommunicateSearchElementsAllProcs();
+    void communicate_search_elements_all_procs();
     //@}
 
     // don't want = operator and cctor

@@ -69,13 +69,13 @@ namespace FLD
 
 
     */
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /*!
     \brief Solve stationary problem
 
     */
-    void SolveStationaryProblem();
+    void solve_stationary_problem();
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
@@ -88,7 +88,7 @@ namespace FLD
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
+    void calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
@@ -121,7 +121,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTimeParameter() override;
+    void set_element_time_parameter() override;
 
     /*!
     \brief return scheme-specific time integration parameter
@@ -144,19 +144,19 @@ namespace FLD
     /*!
     \brief treat turbulence models in AssembleMatAndRHS
     */
-    void TreatTurbulenceModels(Teuchos::ParameterList& eleparams) override;
+    void treat_turbulence_models(Teuchos::ParameterList& eleparams) override;
 
     //! @name Time Step Size Adaptivity
     //@{
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() const override { return 1; }
+    int method_order_of_accuracy_vel() const override { return 1; }
 
     //! Give local order of accuracy of pressure part
-    int MethodOrderOfAccuracyPres() const override { return 1; }
+    int method_order_of_accuracy_pres() const override { return 1; }
 
     //! Return linear error coefficient of velocity
-    double MethodLinErrCoeffVel() const override { return 1.0; }
+    double method_lin_err_coeff_vel() const override { return 1.0; }
 
     //@}
 

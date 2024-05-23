@@ -85,7 +85,7 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
   DataContainer& data = strategy_.Data();
 
   // check the convergence of the active set
-  data.IsActiveSetConverged() = data.GActiveNodeRowMap().SameAs(data.GOldActiveSlaveNodes());
+  data.is_active_set_converged() = data.GActiveNodeRowMap().SameAs(data.g_old_active_slave_nodes());
 
   SanityCheck(cparams, gstatus);
 
@@ -99,16 +99,16 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
   }
 
   // set the new active/inactive state
-  data.Potential().SetActiveInactiveState();
+  data.Potential().set_active_inactive_state();
 
   // update the history information only if it's no correction step of the active set
   if (cparams.IsDefaultStep())
   {
     // update flag for the contact status of the last iterate (history information)
     if (strategy_.IsInContact())
-      data.WasInContactLastIter() = true;
+      data.was_in_contact_last_iter() = true;
     else
-      data.WasInContactLastIter() = false;
+      data.was_in_contact_last_iter() = false;
   }
   // update flag for global contact status
   if (data.GActiveNodeRowMap().NumGlobalElements())
@@ -124,7 +124,7 @@ void CONTACT::AUG::ActiveSet::PostUpdate(
   //        cit != interface_.end(); ++cit, ++icount )
   //  {
   //    Interface& interface = **cit;
-  //    interface.WriteNodalCoordinatesToFile( icount, *Data().GActiveNodeRowMapPtr(),
+  //    interface.write_nodal_coordinates_to_file( icount, *Data().g_active_node_row_map_ptr(),
   //        "../o/half_sphere/aug_nurbs_complete_active_slave_node_coordinates.data");
   //  }
 }
@@ -138,7 +138,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
   CONTACT::AUG::DataContainer& data = strategy_.Data();
 
   // assume that active set has converged and check for opposite
-  strategy_.Data().IsActiveSetConverged() = true;
+  strategy_.Data().is_active_set_converged() = true;
 
   std::vector<Status> istatus(interfaces.size(), Status::unchanged);
 
@@ -300,7 +300,8 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
        * indicates that the active set did not change, the initial condition
        * will lead to exactly the same active set as in the previous execution
        * and, thus, the interface status does not change. */
-      if (interface.SetNodeInitiallyActive(cparams, cnode) and initstatus == InitStatus::undefined)
+      if (interface.set_node_initially_active(cparams, cnode) and
+          initstatus == InitStatus::undefined)
       {
         new_istatus[ilid] = Status::changed;
         ++set_init_active;
@@ -398,19 +399,19 @@ void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams
   if (cparams.IsDefaultStep())
   {
     // store the previous augmented active set
-    if (data.GActiveNodeRowMapPtr() != Teuchos::null)
-      data.GOldActiveSlaveNodesPtr() = Teuchos::rcp(new Epetra_Map(data.GActiveNodeRowMap()));
+    if (data.g_active_node_row_map_ptr() != Teuchos::null)
+      data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(data.GActiveNodeRowMap()));
     else
-      data.GOldActiveSlaveNodesPtr() = Teuchos::rcp(new Epetra_Map(0, 0, strategy_.Comm()));
+      data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(0, 0, strategy_.Comm()));
   }
   else
     IO::cout << "This is no default step! History information stays untouched." << IO::endl;
 
   // (re)setup of the global Epetra_maps
-  data.GActiveNodeRowMapPtr() = Teuchos::null;
+  data.g_active_node_row_map_ptr() = Teuchos::null;
   data.GActiveDofRowMapPtr() = Teuchos::null;
-  data.GActiveNDofRowMapPtr() = Teuchos::null;
-  data.GActiveTDofRowMapPtr() = Teuchos::null;
+  data.g_active_n_dof_row_map_ptr() = Teuchos::null;
+  data.g_active_t_dof_row_map_ptr() = Teuchos::null;
 
   // loop over all interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
@@ -421,14 +422,14 @@ void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams
     interface.BuildActiveSet();
 
     // Update Active set
-    data.GActiveNodeRowMapPtr() =
-        CORE::LINALG::MergeMap(data.GActiveNodeRowMapPtr(), interface.ActiveNodes(), false);
+    data.g_active_node_row_map_ptr() =
+        CORE::LINALG::MergeMap(data.g_active_node_row_map_ptr(), interface.ActiveNodes(), false);
     data.GActiveDofRowMapPtr() =
         CORE::LINALG::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
-    data.GActiveNDofRowMapPtr() =
-        CORE::LINALG::MergeMap(data.GActiveNDofRowMapPtr(), interface.ActiveNDofs(), false);
-    data.GActiveTDofRowMapPtr() =
-        CORE::LINALG::MergeMap(data.GActiveTDofRowMapPtr(), interface.ActiveTDofs(), false);
+    data.g_active_n_dof_row_map_ptr() =
+        CORE::LINALG::MergeMap(data.g_active_n_dof_row_map_ptr(), interface.ActiveNDofs(), false);
+    data.g_active_t_dof_row_map_ptr() =
+        CORE::LINALG::MergeMap(data.g_active_t_dof_row_map_ptr(), interface.ActiveTDofs(), false);
   }
 }
 
@@ -439,16 +440,16 @@ void CONTACT::AUG::ActiveSet::SanityCheck(
 {
   const DataContainer& data = strategy_.Data();
 
-  if (cparams.IsDefaultStep() and (gstatus == Status::changed) == data.IsActiveSetConverged())
+  if (cparams.IsDefaultStep() and (gstatus == Status::changed) == data.is_active_set_converged())
     FOUR_C_THROW(
         "The convergence state of the active set has not been correctly "
         "detected: %s",
         Status2String(gstatus).c_str());
 
   IO::cout << "old number of active nodes:     "
-           << data.GOldActiveSlaveNodesPtr()->NumGlobalElements() << IO::endl;
-  IO::cout << "current number of active nodes: " << data.GActiveNodeRowMapPtr()->NumGlobalElements()
-           << IO::endl;
+           << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << IO::endl;
+  IO::cout << "current number of active nodes: "
+           << data.g_active_node_row_map_ptr()->NumGlobalElements() << IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

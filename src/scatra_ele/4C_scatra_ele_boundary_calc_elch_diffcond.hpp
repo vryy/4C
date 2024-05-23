@@ -61,7 +61,7 @@ namespace DRT
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;
 
-      void EvaluateElchBoundaryKinetics(const DRT::Element* ele,
+      void evaluate_elch_boundary_kinetics(const DRT::Element* ele,
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
@@ -76,7 +76,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
-      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 

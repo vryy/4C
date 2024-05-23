@@ -71,12 +71,12 @@ namespace BEAMINTERACTION
      * to fluid pairs
      * @param visualization_params Parameter list
      */
-    void GetPairVisualization(
+    void get_pair_visualization(
         Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:
-    virtual void EvaluatePenaltyForce(CORE::LINALG::Matrix<3, 1, scalar_type>& force,
+    virtual void evaluate_penalty_force(CORE::LINALG::Matrix<3, 1, scalar_type>& force,
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
         CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const;
   };

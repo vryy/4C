@@ -36,7 +36,7 @@ namespace FBI
     void Setup();
 
     // returns flag enabling/disabling output of the constraint violation
-    bool GetConstraintViolationOutputFlag() const { return constraint_violation_; };
+    bool get_constraint_violation_output_flag() const { return constraint_violation_; };
 
    private:
     // bool enabling/disabling output of the constraint_enforcer violation

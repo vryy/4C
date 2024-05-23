@@ -44,7 +44,7 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
   const int numproc = comm_->NumProc();
   std::string inputfile_name = reader_.MyInputfileName();
 
-  const int numparticles = reader_.ExcludedSectionLength(sectionname_);
+  const int numparticles = reader_.excluded_section_length(sectionname_);
 
   // proceed only if particles are given in .dat-file
   if (numparticles > 0)
@@ -78,7 +78,7 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
     if (!myrank)
     {
       file.open(inputfile_name.c_str());
-      file.seekg(reader_.ExcludedSectionPosition(sectionname_));
+      file.seekg(reader_.excluded_section_position(sectionname_));
     }
 
     std::string line;

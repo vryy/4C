@@ -34,7 +34,7 @@ namespace CONTACT
         /// destructor
         virtual ~DataContainer() = default;
 
-        void SetPenaltyCorrectionParameter(const double correction_param)
+        void set_penalty_correction_parameter(const double correction_param)
         {
           if (correction_param < 0.0)
             FOUR_C_THROW(
@@ -45,36 +45,36 @@ namespace CONTACT
           penalty_correction_parameter_ = correction_param;
         }
 
-        double GetPenaltyCorrectionParameter() const { return penalty_correction_parameter_; }
+        double get_penalty_correction_parameter() const { return penalty_correction_parameter_; }
 
-        void SetPenaltyDecreaseCorrectionParameter(const double correction_param)
+        void set_penalty_decrease_correction_parameter(const double correction_param)
         {
-          if (correction_param < GetPenaltyCorrectionParameter())
+          if (correction_param < get_penalty_correction_parameter())
             FOUR_C_THROW(
                 "The DECREASE CORRECTION PARAMETER must be larger than the"
                 "penalty correction parameter [currently set to %.4e]! A value of "
                 "%.4e is not allowed!",
-                GetPenaltyCorrectionParameter(), correction_param);
+                get_penalty_correction_parameter(), correction_param);
 
           penalty_decrease_correction_parameter_ = correction_param;
         }
 
-        double GetPenaltyDecreaseCorrectionParameter() const
+        double get_penalty_decrease_correction_parameter() const
         {
           return penalty_decrease_correction_parameter_;
         }
 
-        Teuchos::RCP<const LagrangeMultiplierFunction> LagrangeMultiplierFuncPtr() const
+        Teuchos::RCP<const LagrangeMultiplierFunction> lagrange_multiplier_func_ptr() const
         {
           return lm_func_ptr_.getConst();
         }
 
-        Teuchos::RCP<LagrangeMultiplierFunction>& LagrangeMultiplierFuncPtr()
+        Teuchos::RCP<LagrangeMultiplierFunction>& lagrange_multiplier_func_ptr()
         {
           return lm_func_ptr_;
         }
 
-        LagrangeMultiplierFunction& LagrangeMultiplierFunc()
+        LagrangeMultiplierFunction& lagrange_multiplier_func()
         {
           if (lm_func_ptr_.is_null())
             FOUR_C_THROW("The lm_func_ptr_ is not initialized correctly!");
@@ -166,7 +166,7 @@ namespace CONTACT
         void PostSetup(bool redistributed, bool init) override;
 
         /// derived
-        void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+        void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
             const NOX::NLN::Group& grp) override;
 
@@ -180,14 +180,15 @@ namespace CONTACT
         void DecreaseCn(const CONTACT::ParamsInterface& cparams);
 
         /// set current (default-step) solution state in the penalty update method
-        void SetPenaltyUpdateState(const CONTACT::ParamsInterface& cparams,
+        void set_penalty_update_state(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& xold, const Epetra_Vector& dir);
 
         /// used to add the modified diagonal entries
-        void AddContributionsToMatrixBlockLmLm(CORE::LINALG::SparseMatrix& kzz) const override;
+        void add_contributions_to_matrix_block_lm_lm(
+            CORE::LINALG::SparseMatrix& kzz) const override;
 
         /// Returns the diagonal modification vector for the active dofs
-        Teuchos::RCP<Epetra_Vector> GetKzzDiagModification() const;
+        Teuchos::RCP<Epetra_Vector> get_kzz_diag_modification() const;
       };
     }  // namespace STEEPESTASCENT_SP
   }    // namespace AUG

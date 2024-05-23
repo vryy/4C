@@ -33,10 +33,10 @@ namespace MAT
       virtual double GetViscosity(const double abspressgrad) const = 0;
 
       // get derivative of viscosity wrt |grad(p)|
-      virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const = 0;
+      virtual double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const = 0;
 
       // check for constant viscosity
-      bool HasConstantViscosity() const { return constviscosity_; }
+      bool has_constant_viscosity() const { return constviscosity_; }
 
       /// factory method
       static MAT::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
@@ -59,7 +59,7 @@ namespace MAT
       double GetViscosity(const double abspressgrad) const override { return viscosity_; };
 
       // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
-      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override
+      double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const override
       {
         return 0.0;
       };
@@ -90,7 +90,7 @@ namespace MAT
       double GetViscosity(const double abspressgrad) const override;
 
       // get derivative of viscosity wrt |grad(p)|
-      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override;
+      double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const override;
 
      private:
       /// @name material parameters

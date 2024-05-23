@@ -57,7 +57,7 @@ namespace STR
 
        protected:
         //! Insert PTC configuration into NOX parameter list
-        void SetPseudoTransientParams();
+        void set_pseudo_transient_params();
 
       };  // class PTC
     }     // namespace SOLVER

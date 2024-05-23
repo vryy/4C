@@ -237,13 +237,13 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
   localdofs.push_back(0);
   localdofs.push_back(1);
   localdofs.push_back(2);
-  DRT::UTILS::EvaluateInitialField(*discret_, field, velnp_, localdofs);
+  DRT::UTILS::evaluate_initial_field(*discret_, field, velnp_, localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
-  DRT::UTILS::EvaluateInitialField(*discret_, porosityfield, (*dis_)(0), porositylocaldofs);
+  DRT::UTILS::evaluate_initial_field(*discret_, porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -255,12 +255,12 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
+int STR::TIMINT::BaseDataGlobalState::setup_block_information(
     const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt)
 {
   CheckInit();
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  Teuchos::RCP<const Epetra_Map> me_map_ptr = me.GetBlockDofRowMapPtr();
+  Teuchos::RCP<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
 
   model_maps_[mt] = me_map_ptr;
 
@@ -278,11 +278,11 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     {
       enum INPAR::CONTACT::SystemType systype =
           CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-              problem->ContactDynamicParams(), "SYSTEM");
+              problem->contact_dynamic_params(), "SYSTEM");
 
       enum INPAR::CONTACT::SolvingStrategy soltype =
           CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-              problem->ContactDynamicParams(), "STRATEGY");
+              problem->contact_dynamic_params(), "STRATEGY");
 
       // systems without additional dofs
       if (soltype == INPAR::CONTACT::solution_nitsche ||
@@ -419,7 +419,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupMultiMapExtractor()
+void STR::TIMINT::BaseDataGlobalState::setup_multi_map_extractor()
 {
   CheckInit();
   /* copy the std::map into a std::vector and keep the numbering of the model-id
@@ -438,12 +438,12 @@ void STR::TIMINT::BaseDataGlobalState::SetupMultiMapExtractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
+void STR::TIMINT::BaseDataGlobalState::setup_element_technology_map_extractors()
 {
   CheckInit();
 
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->GetElementTechnologies();
+  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
   for (const enum INPAR::STR::EleTech et : ele_techs)
   {
     // mapextractor for element technology
@@ -453,7 +453,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
     {
       case (INPAR::STR::EleTech::rotvec):
       {
-        SetupRotVecMapExtractor(mapext);
+        setup_rot_vec_map_extractor(mapext);
         break;
       }
       case (INPAR::STR::EleTech::pressure):
@@ -467,7 +467,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
     }
 
     // sanity check
-    mapext.CheckForValidMapExtractor();
+    mapext.check_for_valid_map_extractor();
 
     // insert into map
     const auto check = mapextractors_.insert(
@@ -480,7 +480,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const CORE::LINALG::MultiMapExtractor&
-STR::TIMINT::BaseDataGlobalState::GetElementTechnologyMapExtractor(
+STR::TIMINT::BaseDataGlobalState::get_element_technology_map_extractor(
     const enum INPAR::STR::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
@@ -493,7 +493,7 @@ STR::TIMINT::BaseDataGlobalState::GetElementTechnologyMapExtractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
+void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
     CORE::LINALG::MultiMapExtractor& multimapext)
 {
   CheckInit();
@@ -582,7 +582,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(
 const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockExtractor() const
 {
   // sanity check
-  blockextractor_.CheckForValidMapExtractor();
+  blockextractor_.check_for_valid_map_extractor();
   return blockextractor_;
 }
 
@@ -608,7 +608,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
       {
         // get the partial solution vector of the last time step
         Teuchos::RCP<const Epetra_Vector> model_sol_ptr =
-            modeleval_ptr->Evaluator(ci->first).GetLastTimeStepSolutionPtr();
+            modeleval_ptr->Evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
           BlockExtractor().InsertVector(model_sol_ptr, ci->second, xvec_ptr);
@@ -626,7 +626,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
       {
         // get the partial solution vector of the current state
         Teuchos::RCP<const Epetra_Vector> model_sol_ptr =
-            modeleval_ptr->Evaluator(ci->first).GetCurrentSolutionPtr();
+            modeleval_ptr->Evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
           BlockExtractor().InsertVector(model_sol_ptr, ci->second, xvec_ptr);
@@ -649,7 +649,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::LINALG::SparseOperator*
-STR::TIMINT::BaseDataGlobalState::CreateStructuralStiffnessMatrixBlock()
+STR::TIMINT::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 {
   stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
 
@@ -733,10 +733,10 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() const
+const Epetra_Map* STR::TIMINT::BaseDataGlobalState::additive_dof_row_map_view() const
 {
   CheckInit();
-  return GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).Map(0).get();
+  return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -744,7 +744,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() cons
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
 {
   CheckInit();
-  return GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).Map(1).get();
+  return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -784,11 +784,11 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
+void STR::TIMINT::BaseDataGlobalState::remove_element_technologies(
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech> ele_techs = datasdyn_->GetElementTechnologies();
+  const std::set<enum INPAR::STR::EleTech> ele_techs = datasdyn_->get_element_technologies();
 
   for (const INPAR::STR::EleTech et : ele_techs)
   {
@@ -796,7 +796,7 @@ void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
     {
       case (INPAR::STR::EleTech::pressure):
       {
-        rhs_ptr = GetElementTechnologyMapExtractor(et).ExtractVector(rhs_ptr, 0);
+        rhs_ptr = get_element_technology_map_extractor(et).ExtractVector(rhs_ptr, 0);
         break;
       }
       // element technology doesn't use extra DOFs: skip
@@ -808,7 +808,7 @@ void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
+void STR::TIMINT::BaseDataGlobalState::extract_element_technologies(
     const NOX::NLN::StatusTest::QuantityType checkquantity,
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
@@ -818,7 +818,7 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
   {
     case INPAR::STR::EleTech::pressure:
     {
-      rhs_ptr = GetElementTechnologyMapExtractor(eletech).ExtractVector(rhs_ptr, 1);
+      rhs_ptr = get_element_technology_map_extractor(eletech).ExtractVector(rhs_ptr, 1);
       break;
     }
     default:
@@ -831,11 +831,11 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSystem(
+void STR::TIMINT::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
     CORE::LINALG::SparseOperator& mass, Epetra_Vector& rhs) const
 {
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->GetElementTechnologies();
+  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
 
   for (const enum INPAR::STR::EleTech et : ele_techs)
   {
@@ -844,7 +844,7 @@ void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSyste
       case INPAR::STR::EleTech::pressure:
       {
         // get map extractor
-        const CORE::LINALG::MultiMapExtractor& mapext = GetElementTechnologyMapExtractor(et);
+        const CORE::LINALG::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
 
         // set 1 on pressure DOFs in mass matrix
         mass.ApplyDirichlet(*mapext.Map(1));
@@ -864,22 +864,22 @@ void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSyste
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractAdditiveEntries(
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::extract_additive_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 0);
+      get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 0);
 
   return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntries(
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::extract_rot_vec_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 1);
+      get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 1);
 
   return addit_ptr;
 }
@@ -1020,7 +1020,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>>
-STR::TIMINT::BaseDataGlobalState::ExtractDisplRowOfBlocks(CORE::LINALG::SparseOperator& jac) const
+STR::TIMINT::BaseDataGlobalState::extract_displ_row_of_blocks(
+    CORE::LINALG::SparseOperator& jac) const
 {
   return ExtractRowOfBlocks(jac, INPAR::STR::model_structure);
 }
@@ -1083,7 +1084,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix>
-STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
+STR::TIMINT::BaseDataGlobalState::get_jacobian_displ_block() const
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
@@ -1109,7 +1110,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned step) const
+int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
 {
   CheckInitSetup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1146,7 +1147,7 @@ int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::GetNlnIterationNumber(const unsigned step) const
+int STR::TIMINT::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
 {
   CheckInitSetup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1164,7 +1165,7 @@ int STR::TIMINT::BaseDataGlobalState::GetNlnIterationNumber(const unsigned step)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetNlnIterationNumber(const int nln_iter)
+void STR::TIMINT::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
 {
   CheckInitSetup();
 
@@ -1212,8 +1213,8 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
 
   /* we do the multiplicative update only for those entries which belong to
    * rotation (pseudo-)vectors */
-  Epetra_Vector x_rotvec = *gstate_ptr_->ExtractRotVecEntries(xold);
-  Epetra_Vector dir_rotvec = *gstate_ptr_->ExtractRotVecEntries(dir);
+  Epetra_Vector x_rotvec = *gstate_ptr_->extract_rot_vec_entries(xold);
+  Epetra_Vector dir_rotvec = *gstate_ptr_->extract_rot_vec_entries(dir);
 
   CORE::LINALG::Matrix<4, 1> Qold;
   CORE::LINALG::Matrix<4, 1> deltaQ;

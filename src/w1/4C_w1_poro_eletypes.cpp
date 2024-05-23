@@ -50,21 +50,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroType::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad4PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ4PORO"];
 
   defs["QUAD4"] = INPUT::LineDefinition::Builder(defs_wall["QUAD4"])
-                      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-                      .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
-                      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
-                      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 4)
+                      .add_optional_named_double_vector("POROANISODIR1", 2)
+                      .add_optional_named_double_vector("POROANISODIR2", 2)
+                      .add_optional_named_double_vector("POROANISONODALCOEFFS1", 4)
+                      .add_optional_named_double_vector("POROANISONODALCOEFFS2", 4)
                       .Build();
 }
 
@@ -115,19 +115,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroType::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::WallQuad9PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ9PORO"];
 
   defs["QUAD9"] = INPUT::LineDefinition::Builder(defs_wall["QUAD9"])
-                      .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-                      .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
+                      .add_optional_named_double_vector("POROANISODIR1", 2)
+                      .add_optional_named_double_vector("POROANISODIR2", 2)
                       .Build();
 }
 
@@ -182,19 +182,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs4PoroType::Create(const int i
   return ele;
 }
 
-void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN4PORO"];
 
   defs["NURBS4"] = INPUT::LineDefinition::Builder(defs_wall["NURBS4"])
-                       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-                       .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
+                       .add_optional_named_double_vector("POROANISODIR1", 2)
+                       .add_optional_named_double_vector("POROANISODIR2", 2)
                        .Build();
 }
 
@@ -249,19 +249,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallNurbs9PoroType::Create(const int i
   return ele;
 }
 
-void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN9PORO"];
 
   defs["NURBS9"] = INPUT::LineDefinition::Builder(defs_wall["NURBS9"])
-                       .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-                       .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
+                       .add_optional_named_double_vector("POROANISODIR1", 2)
+                       .add_optional_named_double_vector("POROANISODIR2", 2)
                        .Build();
 }
 
@@ -313,21 +313,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::WallTri3PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
-  Wall1Type::SetupElementDefinition(definitions_wall);
+  Wall1Type::setup_element_definition(definitions_wall);
 
   std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALL"];
 
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLT3PORO"];
 
   defs["TRI3"] = INPUT::LineDefinition::Builder(defs_wall["TRI3"])
-                     .AddOptionalNamedDoubleVector("POROANISODIR1", 2)
-                     .AddOptionalNamedDoubleVector("POROANISODIR2", 2)
-                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 3)
-                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 3)
+                     .add_optional_named_double_vector("POROANISODIR1", 2)
+                     .add_optional_named_double_vector("POROANISODIR2", 2)
+                     .add_optional_named_double_vector("POROANISONODALCOEFFS1", 3)
+                     .add_optional_named_double_vector("POROANISONODALCOEFFS2", 3)
                      .Build();
 }
 

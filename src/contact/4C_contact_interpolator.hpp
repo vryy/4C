@@ -74,7 +74,7 @@ namespace NTS
      for 3D problems
 
      */
-    void InterpolateMasterTemp3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles);
+    void interpolate_master_temp3_d(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles);
 
     /*!
      \brief lin 3D projection

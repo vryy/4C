@@ -44,7 +44,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar_rot>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call the base method.
-  base_class::EvaluateAndAssembleMortarContributions(discret, mortar_manager, global_G_B,
+  base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager, global_G_B,
       global_G_S, global_FB_L, global_FS_L, global_constraint, global_kappa, global_lambda_active,
       displacement_vector);
 
@@ -83,22 +83,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_kappa(true);
 
   const auto rot_coupling_type =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingType();
+      this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
   if (rot_coupling_type == INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::fix_triad_2d)
   {
     // In the case of "fix_triad_2d" we couple both, the ey and ez direction to the beam. Therefore,
     // we have to evaluate the coupling terms w.r.t both of those coupling types.
-    EvaluateRotationalCouplingTerms(
+    evaluate_rotational_coupling_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S,
         local_FB_L, local_FS_L, local_kappa);
-    EvaluateRotationalCouplingTerms(
+    evaluate_rotational_coupling_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S,
         local_FB_L, local_FS_L, local_kappa);
   }
   else
-    EvaluateRotationalCouplingTerms(rot_coupling_type, q_solid, triad_interpolation_scheme,
+    evaluate_rotational_coupling_terms(rot_coupling_type, q_solid, triad_interpolation_scheme,
         ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S, local_FB_L, local_FS_L,
         local_kappa);
 
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
  */
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateRotationalCouplingTerms(  //
+    mortar_rot>::evaluate_rotational_coupling_terms(  //
     const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
     const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_1st>& q_solid,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -222,7 +222,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
-      triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -232,7 +232,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
-      ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
@@ -262,7 +262,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
-      triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+      triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
           I_beam_tilde, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
@@ -374,22 +374,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   CORE::LINALG::Matrix<solid::n_dof_, solid::n_dof_, double> local_stiff_SS(true);
 
   const auto rot_coupling_type =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingType();
+      this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
   if (rot_coupling_type == INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::fix_triad_2d)
   {
     // In the case of "fix_triad_2d" we couple both, the ey and ez direction to the beam. Therefore,
     // we have to evaluate the coupling terms w.r.t both of those coupling types.
-    EvaluateRotationalCouplingStiffTerms(
+    evaluate_rotational_coupling_stiff_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
         lambda_rot, triad_interpolation_scheme, ref_triad_interpolation_scheme, local_stiff_BB,
         local_stiff_BS, local_stiff_SB, local_stiff_SS);
-    EvaluateRotationalCouplingStiffTerms(
+    evaluate_rotational_coupling_stiff_terms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
         lambda_rot, triad_interpolation_scheme, ref_triad_interpolation_scheme, local_stiff_BB,
         local_stiff_BS, local_stiff_SB, local_stiff_SS);
   }
   else
-    EvaluateRotationalCouplingStiffTerms(rot_coupling_type, q_solid, lambda_rot,
+    evaluate_rotational_coupling_stiff_terms(rot_coupling_type, q_solid, lambda_rot,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_stiff_BB, local_stiff_BS,
         local_stiff_SB, local_stiff_SS);
 
@@ -428,7 +428,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::
-    EvaluateRotationalCouplingStiffTerms(
+    evaluate_rotational_coupling_stiff_terms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
@@ -511,7 +511,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
-      triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_double, projected_gauss_point.GetEta());
       CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -521,7 +521,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
-      ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
+      ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
@@ -553,7 +553,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
-      triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
+      triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
           I_beam_tilde, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)

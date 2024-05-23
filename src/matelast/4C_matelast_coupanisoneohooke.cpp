@@ -77,7 +77,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, INPUT::LineDefinition* li
     {
       // Read in of fiber data and setting fiber data
       ReadFiber(linedef, "FIBER1", a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
+      params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 
     // error path
@@ -90,9 +90,10 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, INPUT::LineDefinition* li
     FOUR_C_THROW("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
-    CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupAnisoNeoHooke::add_stress_aniso_principal(
+    const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   double c = params_->c_;
 
@@ -141,6 +142,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
   a_0.Multiply(idefgrd, ca);
   a_.Update(1. / a_0.Norm2(), a_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
+  params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
 }
 FOUR_C_NAMESPACE_CLOSE

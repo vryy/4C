@@ -69,7 +69,7 @@ namespace DRT
 
 
       */
-      virtual int EvaluateEdgeBasedStabilization(
+      virtual int evaluate_edge_based_stabilization(
           DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
@@ -168,7 +168,7 @@ namespace DRT
         Burman Fernandez and Hansbo (2006-2009)
 
       */
-      int EvaluateEdgeBasedStabilization(
+      int evaluate_edge_based_stabilization(
           DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
           Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
@@ -239,7 +239,7 @@ namespace DRT
       );
 
       //! evaluate shape functions and derivatives at integr. point
-      double EvalShapeFuncAndDerivsAtIntPoint(const double wquad,  ///< Gaussian weight
+      double eval_shape_func_and_derivs_at_int_point(const double wquad,  ///< Gaussian weight
           const CORE::LINALG::Matrix<facensd_, 1>&
               xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
           const CORE::LINALG::Matrix<nsd_, 1>&
@@ -252,7 +252,7 @@ namespace DRT
       );
 
       //! evaluate shape functions and derivatives at integr. point
-      double EvalShapeFuncAndDerivsAtIntPoint(
+      double eval_shape_func_and_derivs_at_int_point(
           CORE::FE::GaussIntegration::iterator& iquad,  ///< actual integration point
           int master_eid,                               ///< master parent element
           int slave_eid,                                ///< slave parent element
@@ -260,8 +260,9 @@ namespace DRT
       );
 
       //! evaluate velocity and pressure and derivatives at integr. point
-      void EvalVelPresAndDerivsAtIntPoint(bool use2ndderiv,  ///< flag to use 2nd order derivatives
-          bool isAle  ///< flag, whether we are on an ALE-fluid
+      void eval_vel_pres_and_derivs_at_int_point(
+          bool use2ndderiv,  ///< flag to use 2nd order derivatives
+          bool isAle         ///< flag, whether we are on an ALE-fluid
       );
 
       //! set the convective velocity
@@ -275,7 +276,7 @@ namespace DRT
 
       //! Provide pressure and viscous u (EOS) ghost penalty stabilization for 2nd order normal
       //! derivatives
-      void GhostPenalty2ndNormal(
+      void ghost_penalty2nd_normal(
           const double& tau_timefacfac_u_2nd, const double& tau_timefacfac_p_2nd);
 
       //! Provide pressure (EOS) stabilization assembly for fluid
@@ -832,7 +833,7 @@ namespace DRT
 
 
       //! find the lines which connect this surface to the surface at the other side
-      void FindHEXConnectingLines2D(const int numnode,
+      void find_hex_connecting_lines2_d(const int numnode,
           std::vector<std::vector<int>> connectivity_line_surf, const int side_id_master,
           const int side_id_slave,
           std::set<int>& p_lines_m,  //< to be filled
@@ -874,7 +875,7 @@ namespace DRT
       }
 
       //! find the lines which connect this line to the other opposite line
-      void FindQUADConnectingLines1D(const int numnode, const int masterlocalid,
+      void find_quad_connecting_lines1_d(const int numnode, const int masterlocalid,
           const int slavelocalid, std::set<int>& p_lines_m, std::set<int>& p_lines_s,
           const int opposite_side_id_master, const int opposite_side_id_slave)
       {
@@ -915,7 +916,7 @@ namespace DRT
       /*!
        \brief computation of the EOS-stabilization parameter and ghost penalty parameter
       */
-      void ComputeStabilizationParams(const bool is_ghost_penalty_reconstruct,
+      void compute_stabilization_params(const bool is_ghost_penalty_reconstruct,
           const bool use2ndderiv, const INPAR::FLUID::EosTauType tautype,
           const bool EOS_conv_stream, const bool EOS_conv_cross, const bool EOS_div_vel_jump,
           const double max_vel_L2_norm, const double timefac, const double gamma_ghost_penalty_visc,

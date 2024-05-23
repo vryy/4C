@@ -251,7 +251,7 @@ namespace MAT
 
     /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
     /// formulation)
-    double EvaluateMembraneThicknessStretch(
+    double evaluate_membrane_thickness_stretch(
         CORE::LINALG::Matrix<3, 3> const&
             defgrd_glob,                 ///< Deformation gradient in global coordinates
         Teuchos::ParameterList& params,  ///< Container for additional information
@@ -266,7 +266,7 @@ namespace MAT
 
    private:
     /// Setup circumferential, radial and axial structural tensor
-    void SetupAxiCirRadStructuralTensor(INPUT::LineDefinition* linedef);
+    void setup_axi_cir_rad_structural_tensor(INPUT::LineDefinition* linedef);
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
     void SetupGR3D(CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
@@ -283,11 +283,11 @@ namespace MAT
 
     /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of
     /// a cylinder
-    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<3, 1> elecenter, double const dt);
+    void setup_axi_cir_rad_cylinder(CORE::LINALG::Matrix<3, 1> elecenter, double const dt);
 
     /// Setup anisotropic growth tensors. Here we assume that the growth direction corresponds with
     /// the radial/ thickness direction
-    void SetupAnisoGrowthTensors();
+    void setup_aniso_growth_tensors();
 
     /// Read AXI CIR RAD direction
     void ReadDir(INPUT::LineDefinition* linedef, const std::string& specifier,
@@ -314,7 +314,7 @@ namespace MAT
 
     /// Internal Newton to implicitly solve for current mass density and inelastic remodeling
     /// stretch of each fiber family
-    void SolveFordrhodCdlambrdC(
+    void solve_fordrhod_cdlambrd_c(
         std::vector<CORE::LINALG::Matrix<1, 6>>&
             drhodC,  ///< Derivative of collagen mass density w.r.t. right Cauchy Green tensor
         std::vector<CORE::LINALG::Matrix<1, 6>>&
@@ -330,7 +330,7 @@ namespace MAT
 
     /// Evaluates some kinematic quantities which are used in stress and elasticity tensor
     /// calculation
-    static void EvaluateKinQuantElast(
+    static void evaluate_kin_quant_elast(
         CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
         CORE::LINALG::Matrix<3, 3> const& iFinM,         ///< Inverse inelastic deformation gradient
         CORE::LINALG::Matrix<6, 1>& iCinv,        ///< Inverse inelastic right Cauchy-Green tensor
@@ -351,7 +351,7 @@ namespace MAT
 
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
     /// invariants
-    void EvaluateInvariantDerivatives(
+    void evaluate_invariant_derivatives(
         CORE::LINALG::Matrix<3, 1> const&
             prinv,                         ///< Principal invariants of right Cauchy-Green tensor
         CORE::LINALG::Matrix<3, 1>& dPIw,  ///< First derivative with respect to invariants weighted
@@ -382,7 +382,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>& ddPII) const;  ///< second derivative with respect to invariants
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    void EvaluateIsotropicPrincElast(
+    void evaluate_isotropic_princ_elast(
         CORE::LINALG::Matrix<6, 1>& stressisoprinc,  ///< 2nd Piola Kirchhoff stress
         CORE::LINALG::Matrix<6, 6>& cmatisoprinc,    ///< Elasticity tensor
         CORE::LINALG::Matrix<6, 1> const& iCinv,  ///< Inverse inelastic right Cauchy-Green tensor
@@ -409,7 +409,7 @@ namespace MAT
 
     /// Evaluate additional terms for the elasticity tensor
     /// Additional terms are caused by implicit implementation of the evolution equation
-    void EvaluateAdditionalCmat(
+    void evaluate_additional_cmat(
         CORE::LINALG::Matrix<6, 6>& cmatadd,          ///< Additional elasticity tensor
         CORE::LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse growth deformation
                                                       ///< gradient w.r.t. the mass density
@@ -422,12 +422,12 @@ namespace MAT
         int const gp) const;  ///< Current Gauss-Point
 
     /// Evaluate current individual volume of elastin
-    void EvaluateElastinDamage(
+    void evaluate_elastin_damage(
         double const& dt_pre);  ///< time step size of first time step in simulation (initialization
                                 ///< and prestretching)
 
     /// build growth deformation gradient
-    void EvaluateGrowthDefGrad(CORE::LINALG::Matrix<3, 3>& FgM,  ///< Growth deformation gradient
+    void evaluate_growth_def_grad(CORE::LINALG::Matrix<3, 3>& FgM,  ///< Growth deformation gradient
         CORE::LINALG::Matrix<3, 3>& iFgM,  ///< Inverse growth deformation gradient
         CORE::LINALG::Matrix<3, 3>&
             dFgdrhoM,  ///< Derivative of growth deformation gradient w.r.t. the mass density
@@ -436,7 +436,7 @@ namespace MAT
         const int gp);                          ///< Current Gauss-Point
 
     /// Evaluates stress and cmat during prestressing
-    void EvaluateStressCmatIso(
+    void evaluate_stress_cmat_iso(
         CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
         CORE::LINALG::Matrix<3, 3> const& iFinM,         ///< Inverse inelastic deformation gradient
         CORE::LINALG::Matrix<6, 1>& stressiso,           ///< Isotropic stress tensor
@@ -447,7 +447,7 @@ namespace MAT
         int const eleGID) const;             ///< Element ID
 
     /// Contribution of membrane material to 2nd Piola-Kirchhoff stress and elasticity tensor
-    void EvaluateStressCmatMembrane(
+    void evaluate_stress_cmat_membrane(
         CORE::LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy Green tensor
         CORE::LINALG::Matrix<3, 3> const& iFgM,  ///< Inelastic growth deformation gradient
         CORE::LINALG::Matrix<6, 1>& stress,      ///< 2nd Piola-Kirchhoff stress

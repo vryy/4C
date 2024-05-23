@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
-    probdim>::CalculateElectrodeSOCAndCRate(const DRT::Element* const& ele,
+    probdim>::calculate_electrode_soc_and_c_rate(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& scalars)
 {
@@ -53,14 +53,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate integral of concentration
-    intconcentration += newmanmultiscale->EvaluateMeanConcentration(iquad) * fac;
+    intconcentration += newmanmultiscale->evaluate_mean_concentration(iquad) * fac;
 
     // calculate integral of time derivative of concentration
     intconcentrationtimederiv +=
-        newmanmultiscale->EvaluateMeanConcentrationTimeDerivative(iquad) * fac;
+        newmanmultiscale->evaluate_mean_concentration_time_derivative(iquad) * fac;
 
     // calculate integral of domain
     intdomain += fac;
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
-    probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {
@@ -116,10 +116,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate mean concentration at Gauss point and store in vector
-    const double concentration_gp = newmanmultiscale->EvaluateMeanConcentration(iquad);
+    const double concentration_gp = newmanmultiscale->evaluate_mean_concentration(iquad);
     conc_gp(iquad, 0) = concentration_gp;
 
     // build matrix of shape functions
@@ -161,10 +161,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Calcu
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate integral of concentration
-    intconcentration += newmanmultiscale->EvaluateMeanConcentration(iquad) * fac;
+    intconcentration += newmanmultiscale->evaluate_mean_concentration(iquad) * fac;
   }
 
   scalars(scalars.length() - 1) = intconcentration;
@@ -219,10 +219,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
       {
         // evaluate shape functions at Gauss point
-        this->EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        this->eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // evaluate state variables at Gauss point
-        this->SetInternalVariablesForMatAndRHS();
+        this->set_internal_variables_for_mat_and_rhs();
 
         // initialize vector with macro-scale state variables
         std::vector<double> phinp(3, 0.);

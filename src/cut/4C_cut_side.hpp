@@ -94,7 +94,7 @@ namespace CORE::GEO
       void SetId(int sid) { sid_ = sid; }
 
       /// \brief Set the side ID to the input value
-      void SetMarkedSideProperties(int markedid, enum MarkedActions markedaction)
+      void set_marked_side_properties(int markedid, enum MarkedActions markedaction)
       {
         // No combination of cut-sides and marked sides!!
         if (sid_ > -1) FOUR_C_THROW("Currently a marked side and a cut side can not co-exist");
@@ -112,10 +112,10 @@ namespace CORE::GEO
       bool IsCutSide() { return (sid_ > -1); }
 
       /// \brief Returns true if this is a cut side
-      bool IsBoundaryCellSide() { return (IsCutSide() or IsMarkedBackgroundSide()); }
+      bool IsBoundaryCellSide() { return (IsCutSide() or is_marked_background_side()); }
 
       /// \brief Returns true if this is a marked side
-      bool IsMarkedBackgroundSide() { return (!IsCutSide() and (markedsidemap_.size() > 0)); }
+      bool is_marked_background_side() { return (!IsCutSide() and (markedsidemap_.size() > 0)); }
 
       /// \brief Register this element in which the side is a part of
       void Register(Element* element) { elements_.insert(element); }
@@ -201,7 +201,7 @@ namespace CORE::GEO
 
       /*! \brief get local coordinates (rst) with respect to the element shape
        * for all the corner points */
-      virtual void LocalCornerCoordinates(double* rst_corners) = 0;
+      virtual void local_corner_coordinates(double* rst_corners) = 0;
 
       /*! \brief lies point with given coordinates within this side? */
       template <class T1, class T2>
@@ -278,7 +278,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 01/17 */
       template <class T>
-      void FixShapeAndGetCoordinates(T& xyze) const
+      void fix_shape_and_get_coordinates(T& xyze) const
       {
         CORE::LINALG::SerialDenseMatrix xyze_corrected(ProbDim(), NumNodes());
 
@@ -312,7 +312,7 @@ namespace CORE::GEO
         if (static_cast<unsigned>(xyze.numRows()) > ProbDim() or
             static_cast<unsigned>(xyze.numCols()) > NumNodes())
         {
-          FixShapeAndGetCoordinates(xyze);
+          fix_shape_and_get_coordinates(xyze);
         }
         else
         {
@@ -376,23 +376,23 @@ namespace CORE::GEO
 
       /*! \brief Find Cut Lines for two Cut Sides, which have more than two common cut points!
        *  (This happens if the cutsides are in the same plane !) */
-      bool FindTouchingCutLines(Mesh& mesh, Element* element, Side& side, const PointSet& cut);
+      bool find_touching_cut_lines(Mesh& mesh, Element* element, Side& side, const PointSet& cut);
 
       /*! \brief Find Cut Lines for two Cut Sides specially based on a discretization,
        *  which have more than two common cut points!
        *
        *  (This happens if the cutsides are in the same plane or due to numerical tolerances! */
-      virtual bool FindAmbiguousCutLines(
+      virtual bool find_ambiguous_cut_lines(
           Mesh& mesh, Element* element, Side& side, const PointSet& cut);
 
       // Find part of this side (cut points on the cut_edges), that lies on the other side
       // (parallel)
-      virtual bool FindParallelIntersection(
+      virtual bool find_parallel_intersection(
           Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines);
 
 
       // create paralle cut surface between two sides
-      virtual bool CreateParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+      virtual bool create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
           const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out = nullptr);
 
       void GetBoundaryCells(plain_boundarycell_set& bcells);
@@ -428,7 +428,7 @@ namespace CORE::GEO
 
       const std::vector<Node*>& Nodes() const { return nodes_; }
 
-      virtual bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e);
+      virtual bool find_cut_points_dispatch(Mesh& mesh, Element* element, Side& side, Edge& e);
 
       /*!
        \brief Calculate the points at which the other side intersects with this considered side
@@ -488,7 +488,7 @@ namespace CORE::GEO
       void GetSelfCutPosition(Point::PointPosition p);
 
       /// Changes the selfcutposition of this cutside and spreads the positional information
-      void ChangeSelfCutPosition(Point::PointPosition p);
+      void change_self_cut_position(Point::PointPosition p);
 
       /// Erase a cuttingside from this cutside because the bounding box found too much
       void EraseCuttingSide(Side* nocuttingside) { cutting_sides_.erase(nocuttingside); }
@@ -524,7 +524,7 @@ namespace CORE::GEO
       void RemovePoint(Point* p) { cut_points_.erase(p); };
 
       /// Parallel Cut Surfaces on this side (represented by the points)
-      std::set<std::set<Point*>>& GetParallelCutSurfaces() { return parallel_cut_surfaces_; }
+      std::set<std::set<Point*>>& get_parallel_cut_surfaces() { return parallel_cut_surfaces_; }
 
 
      protected:
@@ -589,15 +589,15 @@ namespace CORE::GEO
        *  The number is dependent on the dimension of the parent element.
        *
        *  \author hiermeier \date 01/17 */
-      unsigned UncutFacetNumberPerSide() const;
+      unsigned uncut_facet_number_per_side() const;
 
       /// Simplifies topological connection in the case, when side contains two parallel cut
       /// surfaces, which are self-intersecting.
-      void SimplifyMixedParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+      void simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
           std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines);
 
       /// Does this Side have another parallel cut surface than this?
-      bool HasMixedParallelCutSurface(const std::set<Point*>& surface)
+      bool has_mixed_parallel_cut_surface(const std::set<Point*>& surface)
       {
         return (parallel_cut_surfaces_.size() > 0 &&
                 parallel_cut_surfaces_.find(surface) == parallel_cut_surfaces_.end());
@@ -794,7 +794,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probdim, 1>& rsd, bool allow_dist = false, double tol = POSITIONTOL);
 
       /// get local coordinates (rst) with respect to the element shape for all the corner points
-      void LocalCornerCoordinates(double* rst_corners) override
+      void local_corner_coordinates(double* rst_corners) override
       {
         switch (sidetype)
         {

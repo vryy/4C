@@ -120,11 +120,11 @@ namespace DRT
           DRT::Discretization& disctretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material);
 
-      virtual void CalcPostprocessingValues(Artery* ele, Teuchos::ParameterList& params,
+      virtual void calc_postprocessing_values(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> mat);
 
-      virtual void CalcScatraFromScatraFW(Artery* ele, Teuchos::ParameterList& params,
+      virtual void calc_scatra_from_scatra_fw(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material);
 
@@ -132,7 +132,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material);
 
-      virtual void SolveScatraAnalytically(Artery* ele, Teuchos::ParameterList& params,
+      virtual void solve_scatra_analytically(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material> material);
 

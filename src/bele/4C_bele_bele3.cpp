@@ -72,7 +72,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(const int id, const 
 }
 
 
-void DRT::ELEMENTS::Bele3Type::NodalBlockInformation(
+void DRT::ELEMENTS::Bele3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -86,7 +86,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Bele3Type::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(
+void DRT::ELEMENTS::Bele3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs3 = definitions["BELE3_3"];

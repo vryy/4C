@@ -146,7 +146,7 @@ namespace DRT
       );
 
       //! material thermo St. Venant Kirchhoff
-      void MatThermoStVenantKirchhoff(
+      void mat_thermo_st_venant_kirchhoff(
           const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
@@ -188,7 +188,7 @@ namespace DRT
       );
 
       //! adaption of convective term for rhs
-      void RecomputeConvPhiForRhs(double& conv_phi,       //!< convective contribution
+      void recompute_conv_phi_for_rhs(double& conv_phi,   //!< convective contribution
           const int k,                                    //!< index of current scalar
           const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
@@ -204,11 +204,11 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate domain integral
-      void CalculateDomainAndBodyforce(
+      void calculate_domain_and_bodyforce(
           CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele);
 
       //! extract element based or nodal values and return extracted values of phinp
-      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! get density at integration point
@@ -216,7 +216,7 @@ namespace DRT
           Teuchos::ParameterList& params, const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity
-      void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;
+      void calc_subgr_velocity_visc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related

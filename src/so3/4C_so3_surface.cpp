@@ -49,7 +49,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
 
   numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
   // Safety check if all nodes have the same number of dofs!

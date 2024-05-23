@@ -170,30 +170,30 @@ namespace NOX
         void reset(const ::NOX::Abstract::Vector& initialGuess,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) override;
 
-        void createScalingOperator();
+        void create_scaling_operator();
 
-        void createLinSystemPrePostOperator();
+        void create_lin_system_pre_post_operator();
 
-        void createGroupPrePostOperator();
+        void create_group_pre_post_operator();
 
         ::NOX::StatusTest::StatusType step() override;
 
         ::NOX::StatusTest::StatusType solve() override;
 
         //! Returns the inverse pseudo time step
-        const double& getInversePseudoTimeStep() const;
+        const double& get_inverse_pseudo_time_step() const;
 
         //! Returns the scaling factor
         const double& getScalingFactor() const;
 
         //! Returns the scaling operator type
-        const enum ScaleOpType& getScalingOperatorType() const;
+        const enum ScaleOpType& get_scaling_operator_type() const;
 
         //! Returns the scaling diagonal operator
-        const Epetra_Vector& getScalingDiagOperator() const;
+        const Epetra_Vector& get_scaling_diag_operator() const;
 
-        //! Returns the usePseudoTransientResidual status
-        bool usePseudoTransientResidual() const;
+        //! Returns the use_pseudo_transient_residual status
+        bool use_pseudo_transient_residual() const;
 
         //! Returns the pseudo transient continuation status
         bool isPtcSolve() const;
@@ -206,7 +206,7 @@ namespace NOX
         void printUpdate() override;
 
         //! Compute the nodal pseudo velocity for the CFL update
-        void computePseudoVelocity();
+        void compute_pseudo_velocity();
 
         /*! \brief Evaluate the model reduction ratio
          *
@@ -226,8 +226,8 @@ namespace NOX
          *
          *  Please note, that the transient or modified Jacobian is necessary for the evaluation.
          * Therefore, the order of the function calls has to be considered. We have to call the
-         * evalModelReductionRatio() before we call the adjustPseudoTimeStep() function! */
-        void evalModelReductionRatio();
+         * eval_model_reduction_ratio() before we call the adjust_pseudo_time_step() function! */
+        void eval_model_reduction_ratio();
 
         /*! \brief Adjust the pseudo time step if line search was active and the step length has
          * been changed
@@ -263,7 +263,7 @@ namespace NOX
          *
          *  Please note, that we undo the changes to the jacobian, if the step length is not
          * equal 1.0! */
-        void adjustPseudoTimeStep();
+        void adjust_pseudo_time_step();
 
         /*! \brief Update the pseudo time step
          *
@@ -278,13 +278,13 @@ namespace NOX
          *       MISSING AT THE MOMENT
          *
          *  - The model reduction ratio.\n
-         *    See the evalModelReductionRatio() routine for more detail on how to evaluate the
+         *    See the eval_model_reduction_ratio() routine for more detail on how to evaluate the
          * ratio.
          *
          *    If \f$\rho\f$ is smaller than 0.2, the pseudo time step is decreased,
          *    else if \f$\rho\f$ is larger than 0.9, the pseudo time step is increased,
          *    otherwise we keep the current pseudo time step unchanged. */
-        void updatePseudoTimeStep();
+        void update_pseudo_time_step();
 
         //! Returns true if the scaling operator has been evaluated.
         bool IsScalingOperator() const { return isScalingOperator_; };
@@ -396,10 +396,10 @@ namespace NOX
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
 
-          void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
+          void run_post_compute_jacobian(CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
               const NOX::NLN::LinearSystem& linsys) override;
 
-          void runPostComputeFandJacobian(Epetra_Vector& rhs, CORE::LINALG::SparseOperator& jac,
+          void run_post_compute_fand_jacobian(Epetra_Vector& rhs, CORE::LINALG::SparseOperator& jac,
               const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys) override;
 
          protected:
@@ -442,7 +442,7 @@ namespace NOX
           void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 
          protected:
-          Teuchos::RCP<::NOX::Epetra::Vector> evalPseudoTransientFUpdate(
+          Teuchos::RCP<::NOX::Epetra::Vector> eval_pseudo_transient_f_update(
               const NOX::NLN::Group& grp);
 
          private:

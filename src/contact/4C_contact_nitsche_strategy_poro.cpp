@@ -35,9 +35,9 @@ void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector
 
   // Evaluation for all interfaces
   fp_ = CreateRhsBlockPtr(CONTACT::VecBlockType::porofluid);
-  kpp_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::porofluid_porofluid);
-  kpd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::porofluid_displ);
-  kdp_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_porofluid);
+  kpp_ = create_matrix_block_ptr(CONTACT::MatBlockType::porofluid_porofluid);
+  kpd_ = create_matrix_block_ptr(CONTACT::MatBlockType::porofluid_displ);
+  kdp_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_porofluid);
   //    for (int i = 0; i < (int) interface_.size(); ++i)
   //    {
   //      for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
@@ -168,7 +168,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatr
   }
 }
 
-void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategyPoro::complete_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -194,7 +194,7 @@ void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::complete_matrix_block_ptr(bt, kc);
       break;
   }
 }

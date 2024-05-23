@@ -49,14 +49,14 @@ void MORTAR::STRATEGY::FactoryMT::Setup()
 void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& params) const
 {
   // read parameter lists from GLOBAL::Problem
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from GLOBAL::Problem
   const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
   int dim = GLOBAL::Problem::Instance()->NDim();
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
 
   // get mortar information
   std::vector<CORE::Conditions::Condition*> mtcond(0);
@@ -290,7 +290,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
           problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       (dim != 3) && (dim != 2))
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }

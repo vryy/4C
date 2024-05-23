@@ -147,35 +147,35 @@ namespace MAT
     MAT::PAR::MatListReactions* Parameter() const override { return paramsreac_; }
 
     /// advanced reaction terms
-    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+    double calc_rea_body_force_term(const int k, const std::vector<double>& phinp,
         const double* gpcoord,  //!< current Gauss-point coordinates
         const double scale = 1.0) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+    void calc_rea_body_force_deriv_matrix(const int k, std::vector<double>& derivs,
         const std::vector<double>& phinp,
         const double* gpcoord,  //!< current Gauss-point coordinates
         const double scale = 1.0) const;
 
     /// advanced reaction terms
-    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+    double calc_rea_body_force_term(const int k, const std::vector<double>& phinp,
         const std::vector<std::pair<std::string, double>>& constants,
         const double* gpcoord,  //!< current Gauss-point coordinates
         const double scale = 1.0) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+    void calc_rea_body_force_deriv_matrix(const int k, std::vector<double>& derivs,
         const std::vector<double>& phinp,
         const std::vector<std::pair<std::string, double>>& constants,
         const double* gpcoord,  //!< current Gauss-point coordinates
         const double scale = 1.0) const;
 
     // add additional variables to the reaction (only for by-function coupling)
-    void AddAdditionalVariables(
+    void add_additional_variables(
         const int k, const std::vector<std::pair<std::string, double>>& variables) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrixAddVariables(const int k, std::vector<double>& derivs,
+    void calc_rea_body_force_deriv_matrix_add_variables(const int k, std::vector<double>& derivs,
         const std::vector<double>& phinp,
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,

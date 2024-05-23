@@ -81,17 +81,17 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! compute interface viscosity contribution
-    void ComputeInterfaceViscosityContribution() const;
+    void compute_interface_viscosity_contribution() const;
 
    private:
     //! init artificial viscosity handler
-    void InitArtificialViscosityHandler();
+    void init_artificial_viscosity_handler();
 
     //! compute interface viscosity contribution (particle contribution)
-    void ComputeInterfaceViscosityParticleContribution() const;
+    void compute_interface_viscosity_particle_contribution() const;
 
     //! compute interface viscosity contribution (particle-boundary contribution)
-    void ComputeInterfaceViscosityParticleBoundaryContribution() const;
+    void compute_interface_viscosity_particle_boundary_contribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

@@ -198,7 +198,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Unpack(
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
 void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
-    SolidFormulation>::EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+    SolidFormulation>::evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector* force_vector,
@@ -246,8 +246,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
 
               if (force.has_value())
               {
-                AddInternalForceVector(linearization, stress, integration_factor, preparation_data,
-                    history_data_, gp, *force);
+                add_internal_force_vector(linearization, stress, integration_factor,
+                    preparation_data, history_data_, gp, *force);
               }
 
               if (stiff.has_value())
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateDStressDScalar(
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate_d_stress_d_scalar(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar)
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(const
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateInternalEnergy(
+double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculate_internal_energy(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
     Teuchos::ParameterList& params)
@@ -510,8 +510,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::MaterialPost
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::InitializeGaussPointDataOutput(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
+    SolidFormulation>::initialize_gauss_point_data_output(const DRT::Element& ele,
+    const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -522,8 +523,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::InitializeGa
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateGaussPointDataOutput(
-    const DRT::Element& ele, const MAT::So3Material& solid_material,
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
+    SolidFormulation>::evaluate_gauss_point_data_output(const DRT::Element& ele,
+    const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -534,7 +536,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateGaus
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::ResetToLastConverged(
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::reset_to_last_converged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();

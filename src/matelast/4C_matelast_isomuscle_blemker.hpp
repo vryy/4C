@@ -97,14 +97,14 @@ namespace MAT
         return CORE::Materials::mes_isomuscleblemker;
       }
 
-      void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /*!
        * \brief Add isochoric anisotropic stress and elasticity tensor
        *
        * Computation of the 2nd PK-stress and elasticity tensor with respect to the modified strains
        */
-      void AddStressAnisoModified(
+      void add_stress_aniso_modified(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
                                                   ///< in strain-like-voigt-Notation
           const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
@@ -149,7 +149,7 @@ namespace MAT
        * \param[in, out] deriv_sigma_fiber_total derivative of total fiber cauchy stress w.r.t.
        * fibre stretch
        */
-      void EvaluateTotalFiberCauchyStressAndDerivative(double lambdaM, double sigma_max_ft,
+      void evaluate_total_fiber_cauchy_stress_and_derivative(double lambdaM, double sigma_max_ft,
           double& sigma_fiber_total, double& deriv_sigma_fiber_total);
     };
   }  // namespace ELASTIC

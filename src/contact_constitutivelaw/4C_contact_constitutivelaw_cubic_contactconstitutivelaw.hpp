@@ -38,7 +38,7 @@ namespace CONTACT
 
 
       /// create ConstitutiveLaw instance of matching type with my parameters
-      Teuchos::RCP<ConstitutiveLaw> CreateConstitutiveLaw() override;
+      Teuchos::RCP<ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the parameters of a cubic polynomial
       double GetA() { return a_; }
@@ -71,7 +71,7 @@ namespace CONTACT
       //! @name Access methods
 
       /// contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType GetConstitutiveLawType() const override
+      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
         return INPAR::CONTACT::ConstitutiveLawType::colaw_cubic;
       }

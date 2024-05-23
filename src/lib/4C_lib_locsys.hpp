@@ -101,7 +101,8 @@ namespace DRT
 
       /*!
        * Set current @p time and @p nodenormals to the locsys manager. The vector of @p
-       * nodenormals my remain empty. It is only required for CalcRotationVectorForNormalSystem().
+       * nodenormals my remain empty. It is only required for
+       * calc_rotation_vector_for_normal_system().
        */
       void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals);
 
@@ -240,7 +241,7 @@ namespace DRT
        * \brief Calculate rotation vector for (mass-consistent) normal system
        *
        */
-      void CalcRotationVectorForNormalSystem(int numLocsysCond, double time);
+      void calc_rotation_vector_for_normal_system(int numLocsysCond, double time);
 
       //@}
 

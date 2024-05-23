@@ -99,7 +99,7 @@ double ADAPTER::XFluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidFSI::BoundaryDiscretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidFSI::boundary_discretization()
 {
   return mesh_coupling_fsi_->GetCutterDis();
 }
@@ -107,7 +107,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidFSI::BoundaryDiscretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::extract_struct_interface_forces()
 {
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
@@ -117,7 +117,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::extract_struct_interface_veln()
 {
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
@@ -131,7 +131,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceVeln()
 /*----------------------------------------------------------------------*/
 // apply the interface velocities to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+void ADAPTER::XFluidFSI::apply_struct_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   structinterface_->InsertFSICondVector(ivel, mesh_coupling_fsi_->IVelnp());
 }
@@ -140,11 +140,11 @@ void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*/
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(
+void ADAPTER::XFluidFSI::apply_struct_mesh_displacement(
     Teuchos::RCP<const Epetra_Vector> interface_disp)
 {
   // update last increment, before we set new idispnp
-  mesh_coupling_fsi_->UpdateDisplacementIterationVectors();
+  mesh_coupling_fsi_->update_displacement_iteration_vectors();
 
   // set new idispnp
   structinterface_->InsertFSICondVector(interface_disp, mesh_coupling_fsi_->IDispnp());
@@ -164,7 +164,7 @@ void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int
 /*----------------------------------------------------------------------*/
 //  apply the ale displacements to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+void ADAPTER::XFluidFSI::apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   meshmap_->InsertCondVector(fluiddisp, xfluid_->WriteAccessDispnp());
 
@@ -179,7 +179,7 @@ void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector>
  * Delta u = u^(n+1,i+1)-u^n
  * via first order or second order OST-discretization of d/dt d(t) = u(t)
  *----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::DisplacementToVelocity(
+void ADAPTER::XFluidFSI::displacement_to_velocity(
     Teuchos::RCP<Epetra_Vector> fcx  /// Delta d = d^(n+1,i+1)-d^n
 )
 {
@@ -208,19 +208,19 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
 
 
 /// return xfluid coupling matrix between structure and fluid as sparse matrices
-Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Fluid_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::c_struct_fluid_matrix()
 {
   return xfluid_->C_sx_Matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between fluid and structure as sparse matrices
-Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Fluid_Struct_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::c_fluid_struct_matrix()
 {
   return xfluid_->C_xs_Matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::c_struct_struct_matrix()
 {
   return xfluid_->C_ss_Matrix(coupling_name_);
 }

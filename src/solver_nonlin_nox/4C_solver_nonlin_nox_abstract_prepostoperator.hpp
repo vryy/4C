@@ -119,7 +119,7 @@ namespace NOX
          * \param jac    : full access to the jacobian
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreApplyJacobianInverse(::NOX::Abstract::Vector& rhs,
+        virtual void run_pre_apply_jacobian_inverse(::NOX::Abstract::Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -133,7 +133,7 @@ namespace NOX
          * \param jac    : full access to the jacobian
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostApplyJacobianInverse(::NOX::Abstract::Vector& result,
+        virtual void run_post_apply_jacobian_inverse(::NOX::Abstract::Vector& result,
             ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
             const NOX::NLN::LinearSystem& linsys)
         {
@@ -147,7 +147,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeJacobian(CORE::LINALG::SparseOperator& jac,
+        virtual void run_pre_compute_jacobian(CORE::LINALG::SparseOperator& jac,
             const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -160,7 +160,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac,
+        virtual void run_post_compute_jacobian(CORE::LINALG::SparseOperator& jac,
             const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -174,7 +174,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeFandJacobian(Epetra_Vector& rhs,
+        virtual void run_pre_compute_fand_jacobian(Epetra_Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
             const NOX::NLN::LinearSystem& linsys)
         {
@@ -189,7 +189,7 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeFandJacobian(Epetra_Vector& rhs,
+        virtual void run_post_compute_fand_jacobian(Epetra_Vector& rhs,
             CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
             const NOX::NLN::LinearSystem& linsys)
         {
@@ -254,7 +254,7 @@ namespace NOX
          *  \param xold   : read-only access to the jacobian
          *  \param grp    : read only access to the group object
          */
-        virtual void runPreApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+        virtual void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp)
         {
@@ -269,7 +269,7 @@ namespace NOX
          *  \param xold   : read-only access to the jacobian
          *  \param grp    : read only access to the group object
          */
-        virtual void runPostApplyJacobianInverse(const ::NOX::Abstract::Vector& rhs,
+        virtual void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
             const NOX::NLN::Group& grp)
         {
@@ -287,7 +287,7 @@ namespace NOX
          *
          * \param solver     : Access to the underlying solver object.
          * \param linesearch : Access to the line search object. */
-        virtual void runPreModifyStepLength(
+        virtual void run_pre_modify_step_length(
             const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
         {
           return;

@@ -67,7 +67,7 @@ namespace MAT
     };
 
     /// Evaluate derivative of growth evolution equation w.r.t. the remodel stretch
-    void EvaluatedFuncidlambr(double& drdlamb,  ///< Output
+    void evaluated_funcidlambr(double& drdlamb,  ///< Output
         double const& dsigdlamb,    ///< Derivative of Cauchy stress w.r.t. the mass density
         double const& cur_rho_col,  ///< Current collagen mass density
         double const& dt,           ///< Time step size
@@ -123,8 +123,8 @@ namespace MAT
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
-    void EvaluatedFuncidlambri(double& drdlambr,  ///< Output
-        double const& sig,                        ///< Current Cauchy stress
+    void evaluated_funcidlambri(double& drdlambr,  ///< Output
+        double const& sig,                         ///< Current Cauchy stress
         double const& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. the remodel stretch
         CORE::LINALG::Matrix<3, 3> const& YM,         ///< Factor in remodel evolution equation
         CORE::LINALG::Matrix<3, 3> const& dYdlambrM,  ///< Derivative of factor in remodel evolution
@@ -383,7 +383,7 @@ namespace MAT
       //@}
 
       /// Update current mass density and inelastic stretch of k-th specific fiber
-      inline void UpdateGrowthRemodelParameter(
+      inline void update_growth_remodel_parameter(
           double const& drho, double const& dlambr, unsigned const k, int const gp)
       {
         potsumfiber_[k]->cur_rho[gp] += drho;
@@ -398,7 +398,7 @@ namespace MAT
        *
        * \param anisotropy Reference to the anisotropy
        */
-      void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /// Setup of summand
       virtual void Setup(int numgp, double rho_tot, INPUT::LineDefinition* linedef);
@@ -412,7 +412,7 @@ namespace MAT
 
       /// Returns the necessary derivations of the growth and remodel evolution equations and
       /// their residuals
-      void EvaluateDerivativesInternalNewton(
+      void evaluate_derivatives_internal_newton(
           CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
           int const nr_grf_tot,   ///< Total number of remodel fibers
@@ -442,7 +442,7 @@ namespace MAT
 
       /// Returns the derivations of the growth and remodel evolution equations w.r.t. the right
       /// Cauchy Green tensor
-      void EvaluateDerivativesCauchyGreen(
+      void evaluate_derivatives_cauchy_green(
           CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
           int const gp,           ///< Current gp
@@ -456,7 +456,7 @@ namespace MAT
           int const eleGID);  ///< Element ID
 
       /// Retrieve stress and cmat
-      void EvaluateAdditionalGrowthRemodelCmat(
+      void evaluate_additional_growth_remodel_cmat(
           CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
           CORE::LINALG::Matrix<3, 3> const&
@@ -475,7 +475,7 @@ namespace MAT
           int const eleGID) const;           ///< Element ID
 
       /// prestressing step: evaluate fibers in a "normal" way (no growth and/or remodeling)
-      void EvaluateAnisotropicStressCmat(
+      void evaluate_anisotropic_stress_cmat(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                            ///< Inverse inelastic growth deformation gradient
@@ -487,7 +487,7 @@ namespace MAT
 
       /// Explicit local time integration: updates current collagen density and inelastic fiber
       /// stretch
-      void EvaluateGrowthAndRemodelingExpl(
+      void evaluate_growth_and_remodeling_expl(
           CORE::LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
           double const& dt,                          ///< Time step size
           CORE::LINALG::Matrix<3, 3> const&
@@ -580,7 +580,7 @@ namespace MAT
 
       /// Evaluate local Cauchy stress in current fiber direction (analytical differentiation)
       template <typename T>
-      void EvaluateLocalCauchyStress(
+      void evaluate_local_cauchy_stress(
           CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
@@ -673,7 +673,7 @@ namespace MAT
       /// the elastic right Cauchy Green tensor w.r.t. the mass density (automatic
       /// differentiation)
       template <typename ForceAnalytical>
-      void EvaluateDerivativesCauchyGrowth(
+      void evaluate_derivatives_cauchy_growth(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
@@ -694,7 +694,7 @@ namespace MAT
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
       /// the elastic right Cauchy Green tensor w.r.t. the mass density (analytical
       /// differentiation)
-      void EvaluateDerivativesCauchyGrowth(
+      void evaluate_derivatives_cauchy_growth(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
@@ -716,7 +716,7 @@ namespace MAT
       /// the elastic right Cauchy Green tensor w.r.t. inverse remodeling stretch (automatic
       /// differentiation)
       template <typename ForceAnalytical>
-      void EvaluateDerivativesCauchyRemodel(
+      void evaluate_derivatives_cauchy_remodel(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                      ///< Inverse growth deformation gradient (used in G&R)
@@ -732,7 +732,7 @@ namespace MAT
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
       /// the elastic right Cauchy Green tensor w.r.t. inverse remodeling stretch (analytical
       /// differentiation)
-      void EvaluateDerivativesCauchyRemodel(
+      void evaluate_derivatives_cauchy_remodel(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
@@ -746,9 +746,9 @@ namespace MAT
                   ///< the inelastic remodeling stretch
 
       /// Evaluates growth and remodeling evolution equation
-      void EvaluateEvolutionEquation(double& rg,  ///< Residual of growth evolution equation
-          double& rr,                             ///< Residual of remodeling evolution equation
-          CORE::LINALG::Matrix<3, 3> const& CM,   ///< Right Cauchy-Green tensor
+      void evaluate_evolution_equation(double& rg,  ///< Residual of growth evolution equation
+          double& rr,                               ///< Residual of remodeling evolution equation
+          CORE::LINALG::Matrix<3, 3> const& CM,     ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
           double const& dt,           ///< Time step size
@@ -757,7 +757,7 @@ namespace MAT
           int const eleGID) const;    ///< Element Id
 
       /// Evaluates growth and remodeling evolution equation
-      void EvaluateDerivativeEvolutionEquation(
+      void evaluate_derivative_evolution_equation(
           double& dWidrhoi,  ///< Derivative of growth evolution equation of the i-th fiber family
                              ///< w.r.t. the mass density of the i-th fiber family
           double& dWidrhoj,  ///< Derivative of growth evolution equation of the i-th fiber family
@@ -781,7 +781,7 @@ namespace MAT
           int const eleGID) const;    ///< Element Id
 
       /// Derivative of growth and remodel evolution equation w.r.t. the right Cauchy-Green tensor
-      void EvaluatedEvolutionEquationdC(
+      void evaluated_evolution_equationd_c(
           CORE::LINALG::Matrix<1, 6>& dWdC,      ///< Derivative of growth evolution equation
           CORE::LINALG::Matrix<1, 6>& dEdC,      ///< Derivative of remodel evolution equation
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
@@ -794,9 +794,9 @@ namespace MAT
           int const eleGID);          ///< Element Id
 
       /// Time derivative of mass density and remodel stretch
-      void EvaluatedEvolutionEquationdt(double& drhodt,  ///< Output
-          double& dlambrdt,                              ///< Output
-          CORE::LINALG::Matrix<3, 3> const& CM,          ///< Right Cauchy-Green tensor
+      void evaluated_evolution_equationdt(double& drhodt,  ///< Output
+          double& dlambrdt,                                ///< Output
+          CORE::LINALG::Matrix<3, 3> const& CM,            ///< Right Cauchy-Green tensor
           CORE::LINALG::Matrix<3, 3> const&
               iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
           FiberData const& fiberdat,  ///< Container with all fiber specific data
@@ -807,7 +807,7 @@ namespace MAT
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
       /// inelastic remodel stretch (automatic differentiation)
       template <typename ForceAnalytical>
-      void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
+      void evaluate_derivatives2nd_piola_kirchhoff_growth_remodel(
           CORE::LINALG::Matrix<6, 1>& dSidrhoi,  ///< Output
           CORE::LINALG::Matrix<6, 1>& dSidrhoj,  ///< Output
           CORE::LINALG::Matrix<6, 1>& dSdlambr,  ///< Output
@@ -823,7 +823,7 @@ namespace MAT
 
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
       /// inelastic remodel stretch (analytical differentiation)
-      void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
+      void evaluate_derivatives2nd_piola_kirchhoff_growth_remodel(
           CORE::LINALG::Matrix<6, 1>& dSidrhoi,  ///< Output
           CORE::LINALG::Matrix<6, 1>& dSidrhoj,  ///< Output
           CORE::LINALG::Matrix<6, 1>& dSdlambr,  ///< Output
@@ -839,7 +839,7 @@ namespace MAT
 
 
       /// Initialize all structural tensors necessary in subsequent calculations
-      virtual void SetupStructuralTensorsGR();
+      virtual void setup_structural_tensors_gr();
       //@}
 
       /// My material parameters

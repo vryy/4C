@@ -55,14 +55,14 @@ namespace
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
-  TEST_F(DEMContactRollingViscousTest, EffectiveRadiusParticle)
+  TEST_F(DEMContactRollingViscousTest, effective_radius_particle)
   {
     const double rad_i = 1.2;
     const double rad_j = 0.8;
     const double gap = -0.3;
 
     double r_eff = 0.0;
-    contactrolling_->EffectiveRadiusParticle(&rad_i, &rad_j, gap, r_eff);
+    contactrolling_->effective_radius_particle(&rad_i, &rad_j, gap, r_eff);
 
     const double r_eff_ref = rad_i * rad_j / (rad_i + rad_j);
 
@@ -75,14 +75,14 @@ namespace
     const double gap = -0.3;
 
     double r_eff = 0.0;
-    contactrolling_->EffectiveRadiusParticle(&rad_i, nullptr, gap, r_eff);
+    contactrolling_->effective_radius_particle(&rad_i, nullptr, gap, r_eff);
 
     const double r_eff_ref = rad_i;
 
     EXPECT_NEAR(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  TEST_F(DEMContactRollingViscousTest, RelativeRollingVelocity)
+  TEST_F(DEMContactRollingViscousTest, relative_rolling_velocity)
   {
     const double r_eff = 0.5;
 
@@ -102,7 +102,7 @@ namespace
     angvel_j[2] = 0.0;
 
     double v_rel_rolling[3] = {0.0};
-    contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
+    contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
@@ -126,7 +126,7 @@ namespace
     angvel_i[2] = 0.12;
 
     double v_rel_rolling[3] = {0.0};
-    contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
+    contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
@@ -134,7 +134,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
-  TEST_F(DEMContactRollingViscousTest, RollingContactMoment)
+  TEST_F(DEMContactRollingViscousTest, rolling_contact_moment)
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;
@@ -158,7 +158,7 @@ namespace
     const double normalcontactforce = 1.5;
 
     double rollingcontactmoment[3] = {0.0};
-    contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
+    contactrolling_->rolling_contact_moment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
         r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double rollingcontactmoment_ref[3] = {0.0};
@@ -179,14 +179,14 @@ namespace
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
   }
 
-  TEST_F(DEMContactRollingViscousTest, RollingPotentialEnergy)
+  TEST_F(DEMContactRollingViscousTest, rolling_potential_energy)
   {
     double gap_rolling[3] = {0.0};
 
     const double rollingpotentialenergy_ref = 0.0;
 
     double rollingpotentialenergy = 0.0;
-    contactrolling_->RollingPotentialEnergy(gap_rolling, rollingpotentialenergy);
+    contactrolling_->rolling_potential_energy(gap_rolling, rollingpotentialenergy);
 
     EXPECT_NEAR(rollingpotentialenergy, rollingpotentialenergy_ref, 1.0e-12);
   }
@@ -223,14 +223,14 @@ namespace
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
-  TEST_F(DEMContactRollingCoulombTest, EffectiveRadiusParticle)
+  TEST_F(DEMContactRollingCoulombTest, effective_radius_particle)
   {
     const double rad_i = 1.2;
     const double rad_j = 0.8;
     const double gap = -0.3;
 
     double r_eff = 0.0;
-    contactrolling_->EffectiveRadiusParticle(&rad_i, &rad_j, gap, r_eff);
+    contactrolling_->effective_radius_particle(&rad_i, &rad_j, gap, r_eff);
 
     const double r_eff_ref = (rad_i + 0.5 * gap) * (rad_j + 0.5 * gap) / (rad_i + rad_j + gap);
 
@@ -243,14 +243,14 @@ namespace
     const double gap = -0.3;
 
     double r_eff = 0.0;
-    contactrolling_->EffectiveRadiusParticle(&rad_i, nullptr, gap, r_eff);
+    contactrolling_->effective_radius_particle(&rad_i, nullptr, gap, r_eff);
 
     const double r_eff_ref = rad_i + gap;
 
     EXPECT_NEAR(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  TEST_F(DEMContactRollingCoulombTest, RelativeRollingVelocity)
+  TEST_F(DEMContactRollingCoulombTest, relative_rolling_velocity)
   {
     const double r_eff = 0.5;
 
@@ -270,7 +270,7 @@ namespace
     angvel_j[2] = 0.0;
 
     double v_rel_rolling[3] = {0.0};
-    contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
+    contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
@@ -295,7 +295,7 @@ namespace
     angvel_i[2] = 0.12;
 
     double v_rel_rolling[3] = {0.0};
-    contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
+    contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
@@ -328,7 +328,7 @@ namespace
     const double normalcontactforce = 1.5;
 
     double rollingcontactmoment[3] = {0.0};
-    contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
+    contactrolling_->rolling_contact_moment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
         r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double gap_rolling_ref[3] = {0.06858666958093279, 0.05062425428544091, -0.05782673704478762};
@@ -367,7 +367,7 @@ namespace
     const double normalcontactforce = 1.5;
 
     double rollingcontactmoment[3] = {0.0};
-    contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
+    contactrolling_->rolling_contact_moment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
         r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double gap_rolling_ref[3] = {0.06858666958093279, 0.05062425428544091, -0.05782673704478762};
@@ -382,7 +382,7 @@ namespace
     EXPECT_FALSE(stick_rolling);
   }
 
-  TEST_F(DEMContactRollingCoulombTest, RollingPotentialEnergy)
+  TEST_F(DEMContactRollingCoulombTest, rolling_potential_energy)
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;
@@ -394,7 +394,7 @@ namespace
         0.5 * k_rolling * PARTICLEINTERACTION::UTILS::VecDot(gap_rolling, gap_rolling);
 
     double rollingpotentialenergy = 0.0;
-    contactrolling_->RollingPotentialEnergy(gap_rolling, rollingpotentialenergy);
+    contactrolling_->rolling_potential_energy(gap_rolling, rollingpotentialenergy);
 
     EXPECT_NEAR(rollingpotentialenergy, rollingpotentialenergy_ref, 1.0e-12);
   }

@@ -108,16 +108,16 @@ namespace DRT
       //   );
 
       //! read element coordinates
-      void ReadElementCoordinates(const DRT::Element* ele) override;
+      void read_element_coordinates(const DRT::Element* ele) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+      void extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValuesPoro(DRT::Element* ele,
+      virtual void extract_element_and_node_values_poro(DRT::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la);
 

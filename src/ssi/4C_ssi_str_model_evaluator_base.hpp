@@ -30,9 +30,9 @@ namespace STR::MODELEVALUATOR
 
     void DetermineEnergy() override {}
 
-    void DetermineOptionalQuantity() override {}
+    void determine_optional_quantity() override {}
 
-    void DetermineStressStrain() override;
+    void determine_stress_strain() override;
 
     bool EvaluateForce() override { return true; }
 
@@ -40,21 +40,21 @@ namespace STR::MODELEVALUATOR
 
     bool EvaluateStiff() override { return true; }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override
     {
       FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override
     {
       FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetMechanicalStressState() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_mechanical_stress_state() const override
     {
       return mechanical_stress_state_;
     }

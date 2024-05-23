@@ -48,10 +48,10 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndStates(
+void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_states(
     const std::vector<int>& ownedrigidbodies)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  auto& visualization_data = visualization_manager_->get_visualization_data();
 
   // rigid body position
   {
@@ -125,7 +125,8 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
     angveldata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid body angular velocity
-    const std::vector<std::vector<double>>& angvel = rigidbodydatastate_->GetRefAngularVelocity();
+    const std::vector<std::vector<double>>& angvel =
+        rigidbodydatastate_->get_ref_angular_velocity();
 
     // copy rigid body angular velocity data
     for (int rigidbody_k : ownedrigidbodies)
@@ -143,7 +144,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
 
     // get reference to rigid body angular acceleration
     const std::vector<std::vector<double>>& angacc =
-        rigidbodydatastate_->GetRefAngularAcceleration();
+        rigidbodydatastate_->get_ref_angular_acceleration();
 
     // copy rigid body angular acceleration data
     for (int rigidbody_k : ownedrigidbodies)

@@ -131,15 +131,15 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return EvaluateFunctionInternal<1>(reacval, reacderivspressure, reacderivssaturation,
+      return evaluate_function_internal<1>(reacval, reacderivspressure, reacderivssaturation,
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     case 2:
-      return EvaluateFunctionInternal<2>(reacval, reacderivspressure, reacderivssaturation,
+      return evaluate_function_internal<2>(reacval, reacderivspressure, reacderivssaturation,
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     case 3:
-      return EvaluateFunctionInternal<3>(reacval, reacderivspressure, reacderivssaturation,
+      return evaluate_function_internal<3>(reacval, reacderivspressure, reacderivssaturation,
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     default:
@@ -151,7 +151,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<double>& reacval,
+void MAT::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,

@@ -38,26 +38,26 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
       condmanager->GetMeshCoupling(cond_name_ps_ps_));
   if (mcfpi_ps_ps_ == Teuchos::null)
     FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porostructure!");
-  mcfpi_ps_ps_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
-      poro_->FluidStructureCoupling().PermMasterDofMap());
+  mcfpi_ps_ps_->initialize_struc_pres_map(poro_->fluid_structure_coupling().SlaveDofMap(),
+      poro_->fluid_structure_coupling().PermMasterDofMap());
 
   mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_ps_pf_));
   if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_ps_pf_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
-      poro_->FluidStructureCoupling().PermMasterDofMap());
+  mcfpi_ps_pf_->initialize_struc_pres_map(poro_->fluid_structure_coupling().SlaveDofMap(),
+      poro_->fluid_structure_coupling().PermMasterDofMap());
 
   mcfpi_pf_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_pf_ps_));
   if (mcfpi_pf_ps_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_pf_ps_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
-      poro_->FluidStructureCoupling().PermMasterDofMap());
+  mcfpi_pf_ps_->initialize_struc_pres_map(poro_->fluid_structure_coupling().SlaveDofMap(),
+      poro_->fluid_structure_coupling().PermMasterDofMap());
 
   mcfpi_pf_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_pf_pf_));
   if (mcfpi_pf_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_pf_pf_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
-      poro_->FluidStructureCoupling().PermMasterDofMap());
+  mcfpi_pf_pf_->initialize_struc_pres_map(poro_->fluid_structure_coupling().SlaveDofMap(),
+      poro_->fluid_structure_coupling().PermMasterDofMap());
 
   // safety check
   if (!mcfpi_ps_ps_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
@@ -77,10 +77,10 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
 
 void XFEM::XfpCouplingManager::InitCouplingStates()
 {
-  mcfpi_ps_ps_->ReconnectParentPointers();
-  mcfpi_pf_ps_->ReconnectParentPointers();
-  mcfpi_ps_pf_->ReconnectParentPointers();
-  mcfpi_pf_pf_->ReconnectParentPointers();
+  mcfpi_ps_ps_->reconnect_parent_pointers();
+  mcfpi_pf_ps_->reconnect_parent_pointers();
+  mcfpi_ps_pf_->reconnect_parent_pointers();
+  mcfpi_pf_pf_->reconnect_parent_pointers();
 }
 
 void XFEM::XfpCouplingManager::SetCouplingStates()

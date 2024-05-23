@@ -174,7 +174,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
                                          // case CORE::Materials::m_stvenant:  //
                                          // st.venant-kirchhoff-material
     {
-      MaterialResponse3dPlane(stress, C, strain, params, gp);
+      material_response3d_plane(stress, C, strain, params, gp);
       break;
     }
 
@@ -190,13 +190,13 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatrix& stress,
+void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMatrix& stress,
     CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
   CORE::LINALG::Matrix<6, 1> gl(false);
-  GreenLagrangePlane3d(strain, gl);
+  green_lagrange_plane3d(strain, gl);
 
   // call 3d stress response
   CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
@@ -376,7 +376,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const CORE::MAT::Materi
     {
       // transform the 2d Green-Lagrange strains into 3d notation
       CORE::LINALG::Matrix<6, 1> glstrain(true);
-      GreenLagrangePlane3d(Ev, glstrain);
+      green_lagrange_plane3d(Ev, glstrain);
 
       // strain energy
       double psi = 0.0;
@@ -393,7 +393,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const CORE::MAT::Materi
     {
       // transform the 2d Green-Lagrange strains into 3d notation
       CORE::LINALG::Matrix<6, 1> glstrain(true);
-      GreenLagrangePlane3d(Ev, glstrain);
+      green_lagrange_plane3d(Ev, glstrain);
 
       // strain energy
       double psi = 0.0;

@@ -48,10 +48,10 @@ namespace STR
       const Epetra_Vector& GetDbcIncr() const;
 
       //! return the switch for the pre/post operator
-      const bool& IsApplyLinearReactionForces() const;
+      const bool& is_apply_linear_reaction_forces() const;
 
       //! derived
-      bool PreApplyForceExternal(Epetra_Vector& fextnp) const override;
+      bool pre_apply_force_external(Epetra_Vector& fextnp) const override;
 
      private:
       Teuchos::RCP<Epetra_Vector> dbc_incr_ptr_;

@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
     virtual double GetKineticEnergy() const = 0;
 
     //! scale linker element reference length
-    virtual void ScaleLinkerReferenceLength(double scalefac) = 0;
+    virtual void scale_linker_reference_length(double scalefac) = 0;
 
     //@}
 

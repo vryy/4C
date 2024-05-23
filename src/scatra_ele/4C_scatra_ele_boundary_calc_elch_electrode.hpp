@@ -88,7 +88,7 @@ namespace DRT
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void EvaluateS2ICouplingAtIntegrationPoint(
+      static void evaluate_s2_i_coupling_at_integration_point(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
@@ -136,7 +136,7 @@ namespace DRT
        * @tparam distype_master This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
+      static void evaluate_s2_i_coupling_capacitance_at_integration_point(
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephidtnp,
           const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
               emasterphidtnp,
@@ -156,7 +156,7 @@ namespace DRT
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
        *
        * \remark This is a static method as it is called from
-       * static method EvaluateS2ICouplingAtIntegrationPoint.
+       * static method evaluate_s2_i_coupling_at_integration_point.
        *
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
@@ -190,7 +190,7 @@ namespace DRT
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void CalculateRHSandGlobalSystem(const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+      static void calculate_rh_sand_global_system(const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
@@ -228,7 +228,7 @@ namespace DRT
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <CORE::FE::CellType distype_master>
-      static void CalculateRHSandGlobalSystemCapacitiveFlux(
+      static void calculate_rh_sand_global_system_capacitive_flux(
           const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
           const CORE::LINALG::Matrix<nen_, 1>& test_slave,
           const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& test_master,
@@ -248,17 +248,17 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
-      void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
+      void evaluate_s2_i_coupling_capacitance(const DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix,
           CORE::LINALG::SerialDenseVector& eslaveresidual,
           CORE::LINALG::SerialDenseVector& emasterresidual) override;
 
-      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling_od(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
-      void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
+      void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix) override;

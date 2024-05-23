@@ -174,7 +174,7 @@ void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedEle(
 /*--------------------------------------------------------------------------*
  | Delete all wall elements from current bin           (public) ghamm 09/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::RemoveSpecificAssociatedEles(
+void DRT::MESHFREE::MeshfreeMultiBin::remove_specific_associated_eles(
     BINSTRATEGY::UTILS::BinContentType bin_content)
 {
   associatedeleid_[bin_content].clear();
@@ -186,7 +186,7 @@ void DRT::MESHFREE::MeshfreeMultiBin::RemoveSpecificAssociatedEles(
 /*--------------------------------------------------------------------------*
  | Delete all wall elements from current bin           (public) ghamm 09/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::RemoveAllAssociatedEles()
+void DRT::MESHFREE::MeshfreeMultiBin::remove_all_associated_eles()
 {
   for (int i = 0; i < static_cast<int>(BINSTRATEGY::UTILS::enumsize); ++i)
   {

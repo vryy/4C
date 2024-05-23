@@ -571,7 +571,7 @@ void CONTACT::FriNode::StoreTracOld()
 /*-----------------------------------------------------------------------*
  |  Set the value of deltawear                             gitterle 12/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddDeltaWeightedWearValue(double& val)
+void CONTACT::FriNode::add_delta_weighted_wear_value(double& val)
 {
   // add given value to deltawear_
   WearData().DeltaWeightedWear() += val;
@@ -580,7 +580,7 @@ void CONTACT::FriNode::AddDeltaWeightedWearValue(double& val)
 /*----------------------------------------------------------------------*
  |  Initialize data container                             gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::InitializeDataContainer()
+void CONTACT::FriNode::initialize_data_container()
 {
   // get maximum size of lin vectors
   linsize_ = 0;

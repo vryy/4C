@@ -96,10 +96,10 @@ namespace XFEM
     );
 
     //! check if newton iteration has finished
-    bool globalNewtonFinished(int counter = 0) const;
+    bool global_newton_finished(int counter = 0) const;
 
     //! Decide how or if to continue when the startpoint approximation changed the side
-    bool continueForChangingSide(TimeIntData* data,  ///< current data to be updated
+    bool continue_for_changing_side(TimeIntData* data,  ///< current data to be updated
         DRT::Element* ele,          ///< pointer to element the current point lies in
         std::vector<int>& nds_curr  ///< nds-vector of current volumecell the current startpoint
                                     ///< approximation lies in
@@ -107,13 +107,13 @@ namespace XFEM
 
     //! determine velocity and pressure for nodes where the "normal" semi-lagrange startfinder
     //! failed
-    void getDataForNotConvergedNodes();
+    void get_data_for_not_converged_nodes();
 
     //! prepare new iteration
-    void newIteration_prepare(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
+    void new_iteration_prepare(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! gradients at a node
-    void newIteration_nodalData(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
+    void new_iteration_nodal_data(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors);
 
     //! reinitialize some data for new computations, e.g. at a new FGI
     void reinitializeData();
@@ -151,7 +151,7 @@ namespace XFEM
     );
 
     //! compute the nodal gradient
-    void computeNodalGradient(
+    void compute_nodal_gradient(
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             colVectors,   ///< all vectors for that we reconstruct the their gradients
         DRT::Node* node,  ///< node at which we reconstruct the gradients
@@ -179,7 +179,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! export data to startpoint processor when Semi-Lagrange algorithm failed
-    void exportAlternativAlgoData();
+    void export_alternativ_algo_data();
 
     //! export data to neighbour proc in Newton loop
     void exportIterData(bool& procDone);

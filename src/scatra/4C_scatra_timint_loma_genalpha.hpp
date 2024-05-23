@@ -41,16 +41,16 @@ namespace SCATRA
     void Setup() override;
 
     /// predict thermodynamic pressure and time derivative for low-Mach-number flow
-    void PredictThermPressure() override;
+    void predict_therm_pressure() override;
 
     /// compute values of thermodynamic pressure at intermediate time steps
-    void ComputeThermPressureIntermediateValues() override;
+    void compute_therm_pressure_intermediate_values() override;
 
     /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-    void ComputeThermPressure() override;
+    void compute_therm_pressure() override;
 
     ///  compute time derivative of thermodynamic pressure
-    void ComputeThermPressureTimeDerivative() override;
+    void compute_therm_pressure_time_derivative() override;
 
     /// update thermodynamic pressure and time derivative for low-Mach-number flow
     void UpdateThermPressure() override;
@@ -76,13 +76,13 @@ namespace SCATRA
     void WriteRestart() const override;
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs() override;
+    void dynamic_computation_of_cs() override;
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv() override;
+    void dynamic_computation_of_cv() override;
 
     /// add thermodynamic pressure to parameter list for element evaluation
-    void AddThermPressToParameterList(Teuchos::ParameterList& params  //!< parameter list
+    void add_therm_press_to_parameter_list(Teuchos::ParameterList& params  //!< parameter list
         ) override;
 
    private:

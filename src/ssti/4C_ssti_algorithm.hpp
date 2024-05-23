@@ -94,7 +94,7 @@ namespace SSTI
     {
       return meshtying_strategy_thermo_;
     }
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSTIStructureMeshTying() const
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_mesh_tying() const
     {
       return ssti_structure_meshtying_;
     }
@@ -123,17 +123,17 @@ namespace SSTI
 
    protected:
     //! clone scatra from structure and then thermo from scatra
-    virtual void CloneDiscretizations(const Epetra_Comm& comm);
+    virtual void clone_discretizations(const Epetra_Comm& comm);
 
     //! copies modified time step from scatra to structure and to this SSI algorithm
-    void DistributeDtFromScaTra();
+    void distribute_dt_from_sca_tra();
 
     //! distribute states between subproblems
     //@{
-    void DistributeSolutionAllFields();
-    void DistributeScatraSolution();
-    void DistributeStructureSolution();
-    void DistributeThermoSolution();
+    void distribute_solution_all_fields();
+    void distribute_scatra_solution();
+    void distribute_structure_solution();
+    void distribute_thermo_solution();
     //@}
 
    private:
@@ -141,7 +141,7 @@ namespace SSTI
     unsigned int iter_;
 
     //! exchange materials between discretizations
-    void AssignMaterialPointers();
+    void assign_material_pointers();
 
     void CheckIsInit();
 

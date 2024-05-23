@@ -93,8 +93,8 @@ void CONTACT::IntegratorNitscheSsiElch::GPTSForces(MORTAR::Element& slave_ele,
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> d_slave_normal_dd(0, 0);
   std::vector<CORE::GEN::Pairedvector<int, double>> d_master_normal_dd(0, 0);
-  slave_ele.ComputeUnitNormalAtXi(slave_xi, slave_normal.A());
-  master_ele.ComputeUnitNormalAtXi(master_xi, master_normal.A());
+  slave_ele.compute_unit_normal_at_xi(slave_xi, slave_normal.A());
+  master_ele.compute_unit_normal_at_xi(master_xi, master_normal.A());
   slave_ele.DerivUnitNormalAtXi(slave_xi, d_slave_normal_dd);
   master_ele.DerivUnitNormalAtXi(master_xi, d_master_normal_dd);
 
@@ -142,13 +142,13 @@ void CONTACT::IntegratorNitscheSsiElch::GPTSForces(MORTAR::Element& slave_ele,
 
     ElementDataBundle<dim> electrode_quantities, electrolyte_quantities;
     bool slave_is_electrode(true);
-    AssignElectrodeAndElectrolyteQuantities<dim>(slave_ele, slave_xi, slave_shape,
+    assign_electrode_and_electrolyte_quantities<dim>(slave_ele, slave_xi, slave_shape,
         slave_shape_deriv, slave_normal, d_slave_xi_dd, master_ele, master_xi, master_shape,
         master_shape_deriv, master_normal, d_master_xi_dd, slave_is_electrode, electrode_quantities,
         electrolyte_quantities);
 
     // integrate the scatra-scatra interface condition
-    IntegrateSSIInterfaceCondition<dim>(
+    integrate_ssi_interface_condition<dim>(
         slave_is_electrode, jac, d_jac_dd, gp_wgt, electrode_quantities, electrolyte_quantities);
   }
 }
@@ -190,7 +190,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateTest(const double fac, MORTAR::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double CONTACT::IntegratorNitscheSsiElch::CalculateDetFOfParentElement(
+double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
     const ElementDataBundle<dim>& electrode_quantities)
 {
   auto electrode_ele = electrode_quantities.element;
@@ -203,14 +203,14 @@ double CONTACT::IntegratorNitscheSsiElch::CalculateDetFOfParentElement(
   {
     case CORE::FE::CellType::hex8:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8, dim>(defgrd,
+      DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::hex8, dim>(defgrd,
           electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
     }
     case CORE::FE::CellType::tet4:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<CORE::FE::CellType::tet4, dim>(defgrd,
+      DRT::ELEMENTS::UTILS::compute_deformation_gradient<CORE::FE::CellType::tet4, dim>(defgrd,
           electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
 
       break;
@@ -228,7 +228,7 @@ double CONTACT::IntegratorNitscheSsiElch::CalculateDetFOfParentElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::Pairedvector<int, double>& d_detF_dd)
 {
@@ -237,13 +237,13 @@ void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const d
   {
     case CORE::FE::CellType::quad4:
     {
-      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::quad4, dim>(
+      calculate_spatial_derivative_of_det_f<CORE::FE::CellType::quad4, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
     case CORE::FE::CellType::tri3:
     {
-      CalculateSpatialDerivativeOfDetF<CORE::FE::CellType::tri3, dim>(
+      calculate_spatial_derivative_of_det_f<CORE::FE::CellType::tri3, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
@@ -258,7 +258,7 @@ void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int dim>
-void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(const double detF,
     const ElementDataBundle<dim>& electrode_quantities,
     CORE::GEN::Pairedvector<int, double>& d_detF_dd)
 {
@@ -304,7 +304,7 @@ void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
+void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
     const bool slave_is_electrode, const double jac,
     const CORE::GEN::Pairedvector<int, double>& d_jac_dd, const double wgt,
     const ElementDataBundle<dim>& electrode_quantities,
@@ -324,7 +324,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
   }
 
   // get the scatra-scatra interface kinetic model
-  const int kinetic_model = GetScaTraEleParameterBoundary()->KineticModel();
+  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->KineticModel();
 
   // perform integration dependent on scatra-scatra interface kinetic model
   switch (kinetic_model)
@@ -340,16 +340,16 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       // get the relevant parameter
       const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
       const double frt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
-      const double kr = GetScaTraEleParameterBoundary()->ChargeTransferConstant();
-      const double alphaa = GetScaTraEleParameterBoundary()->AlphaA();
-      const double alphac = GetScaTraEleParameterBoundary()->AlphaC();
+      const double kr = get_sca_tra_ele_parameter_boundary()->charge_transfer_constant();
+      const double alphaa = get_sca_tra_ele_parameter_boundary()->AlphaA();
+      const double alphac = get_sca_tra_ele_parameter_boundary()->AlphaC();
 
       // calculate the electrode side concentration, potential and their derivatives at the current
       // gauss point
       double electrode_conc(0.0), electrode_pot(0.0);
       CORE::GEN::Pairedvector<int, double> d_electrode_conc_dc(0), d_electrode_pot_dpot(0),
           d_electrode_conc_dd(0), d_electrode_pot_dd(0), d_detF_dd(0);
-      SetupGpElchProperties<dim>(electrode_quantities, electrode_conc, electrode_pot,
+      setup_gp_elch_properties<dim>(electrode_quantities, electrode_conc, electrode_pot,
           d_electrode_conc_dc, d_electrode_conc_dd, d_electrode_pot_dpot, d_electrode_pot_dd);
 
       // calculate the electrolyte side concentration, potential and their derivatives at the
@@ -357,7 +357,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       double electrolyte_conc(0.0), electrolyte_pot(0.0);
       CORE::GEN::Pairedvector<int, double> d_electrolyte_conc_dc(0), d_electrolyte_pot_dpot(0),
           d_electrolyte_conc_dd(0), d_electrolyte_pot_dd(0);
-      SetupGpElchProperties<dim>(electrolyte_quantities, electrolyte_conc, electrolyte_pot,
+      setup_gp_elch_properties<dim>(electrolyte_quantities, electrolyte_conc, electrolyte_pot,
           d_electrolyte_conc_dc, d_electrolyte_conc_dd, d_electrolyte_pot_dpot,
           d_electrolyte_pot_dd);
 
@@ -366,19 +366,20 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       if (cmax < 1.0e-12)
         FOUR_C_THROW("Saturation value c_max of intercalated lithium concentration is too small!");
 
-      const double detF = CalculateDetFOfParentElement(electrode_quantities);
+      const double detF = calculate_det_f_of_parent_element(electrode_quantities);
 
-      CalculateSpatialDerivativeOfDetF(detF, electrode_quantities, d_detF_dd);
+      calculate_spatial_derivative_of_det_f(detF, electrode_quantities, d_detF_dd);
 
       const double epd =
-          electrode_material->ComputeOpenCircuitPotential(electrode_conc, faraday, frt, detF);
+          electrode_material->compute_open_circuit_potential(electrode_conc, faraday, frt, detF);
 
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
       if (not std::isinf(epd))
       {
-        const double d_epd_dc = electrode_material->ComputeDOpenCircuitPotentialDConcentration(
-            electrode_conc, faraday, frt, detF);
+        const double d_epd_dc =
+            electrode_material->compute_d_open_circuit_potential_d_concentration(
+                electrode_conc, faraday, frt, detF);
 
         // Butler-Volmer exchange mass flux density
         const double j0(kinetic_model == INPAR::S2I::kinetics_butlervolmerreduced
@@ -413,7 +414,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
         const double dj_depd = dj_dpot_electrolyte;
 
-        const double depd_ddetF = electrode_material->ComputeDOpenCircuitPotentialDDetF(
+        const double depd_ddetF = electrode_material->compute_d_open_circuit_potential_d_det_f(
             electrode_conc, faraday, frt, detF);
         const double dj_ddetF = dj_depd * depd_ddetF;
 
@@ -484,11 +485,11 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
   const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // get time integration factors
-  const double time_fac = GetScaTraEleParameterTimInt()->TimeFac();
-  const double time_fac_rhs = GetScaTraEleParameterTimInt()->TimeFacRhs();
+  const double time_fac = get_sca_tra_ele_parameter_tim_int()->TimeFac();
+  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->TimeFacRhs();
 
   // get number of electrons per charge transfer reaction
-  const int num_electrons = GetScaTraEleParameterBoundary()->NumElectrons();
+  const int num_electrons = get_sca_tra_ele_parameter_boundary()->NumElectrons();
 
   // prepare the RHS integration value
   const double val = fac * jac * wgt * test_val;
@@ -545,7 +546,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsiElch::SetupGpElchProperties(
+void CONTACT::IntegratorNitscheSsiElch::setup_gp_elch_properties(
     const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc, double& gp_pot,
     CORE::GEN::Pairedvector<int, double>& d_conc_dc,
     CORE::GEN::Pairedvector<int, double>& d_conc_dd,
@@ -635,7 +636,7 @@ void CONTACT::IntegratorNitscheSsiElch::SoEleCauchy(MORTAR::Element& mortar_ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
+void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantities(
     MORTAR::Element& slave_ele, double* slave_xi,
     const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,

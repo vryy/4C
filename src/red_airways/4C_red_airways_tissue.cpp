@@ -111,7 +111,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   coupvol_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupvol_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
 
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
@@ -120,7 +120,8 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   structure_->Setup();
 
   SetupRedAirways();
-  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn =
+      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Check Time integration parameters
   if (sdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
@@ -136,7 +137,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 
   // Get coupling parameters
   const Teuchos::ParameterList& rawtisdyn =
-      GLOBAL::Problem::Instance()->RedAirwayTissueDynamicParams();
+      GLOBAL::Problem::Instance()->red_airway_tissue_dynamic_params();
   // Get max iterations
   itermax_ = rawtisdyn.get<int>("MAXITER");
 
@@ -189,7 +190,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
   while (NotFinished())
   {
     int iter = 0;
-    IncrementTimeAndStep();
+    increment_time_and_step();
     redairways_->PrepareTimeStep();
 
     do
@@ -218,7 +219,7 @@ void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
   // Scale with -1 (redairway convention: outflow is negative)
   coupflux_ip_->Scale(-1.0);
 
-  redairways_->SetAirwayFluxFromTissue(coupflux_ip_);
+  redairways_->set_airway_flux_from_tissue(coupflux_ip_);
   redairways_->IntegrateStep();
   redairways_->ExtractPressure(couppres_ip_tilde_);
   couppres_ip_tilde_->Update(0.0, *couppres_ip_tilde_, normal_);
@@ -473,7 +474,8 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   output->WriteMesh(0, 0.0);
 
   // Set some pointers and variables
-  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn =
+      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Create a solver
   // Get the solver number
@@ -485,7 +487,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
         "to a valid number!");
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->Params());
 
   // Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;

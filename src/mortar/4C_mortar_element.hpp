@@ -49,7 +49,7 @@ namespace MORTAR
 
     Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    void NodalBlockInformation(
+    void nodal_block_information(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
@@ -668,7 +668,7 @@ namespace MORTAR
     /*!
     \brief Get local coordinates for local node id
     */
-    bool LocalCoordinatesOfNode(int lid, double* xi) const;
+    bool local_coordinates_of_node(int lid, double* xi) const;
 
     /*!
     \brief Get local numbering for global node id
@@ -691,7 +691,7 @@ namespace MORTAR
     /*!
     \brief Compute averaged nodal normal at local coordinate xi
     */
-    virtual double ComputeAveragedUnitNormalAtXi(const double* xi, double* n);
+    virtual double compute_averaged_unit_normal_at_xi(const double* xi, double* n);
 
     /*!
     \brief Compute unit element normal at local coordinate xi
@@ -699,7 +699,7 @@ namespace MORTAR
            for a CElement in order to compute a unit normal at any point.
            Returns the length of the non-unit interpolated normal at xi.
     */
-    virtual double ComputeUnitNormalAtXi(const double* xi, double* n);
+    virtual double compute_unit_normal_at_xi(const double* xi, double* n);
 
     /*!
     \brief Compute element unit normal derivative at local coordinate xi
@@ -799,7 +799,7 @@ namespace MORTAR
     \param derivdual (in): derivative maps to be filled
                            (= derivatives of the dual coefficient matrix Ae)
     */
-    void ShapeFunctionLinearizations(Element::ShapeType shape,
+    void shape_function_linearizations(Element::ShapeType shape,
         CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
@@ -825,7 +825,7 @@ namespace MORTAR
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     */
-    virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
+    virtual bool evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
         CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
         const int valdim, bool boundtrafo = true);
 
@@ -833,60 +833,60 @@ namespace MORTAR
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool EvaluateShapeLagMult(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
+    inline bool evaluate_shape_lag_mult(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
         CORE::LINALG::Matrix<elenumnode, 1>& val, CORE::LINALG::Matrix<elenumnode, eledim>& deriv,
         unsigned valdim, bool boundtrafo)
     {
       CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
       CORE::LINALG::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
-      return EvaluateShapeLagMult(lmtype, xi, sdv_val, sdm_deriv, valdim, boundtrafo);
+      return evaluate_shape_lag_mult(lmtype, xi, sdv_val, sdm_deriv, valdim, boundtrafo);
     }
 
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     (special version for 3D quadratic mortar with linear Lagrange multipliers)
     */
-    virtual bool EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
-        CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
-        const int valdim);
+    virtual bool evaluate_shape_lag_mult_lin(const INPAR::MORTAR::ShapeFcn& lmtype,
+        const double* xi, CORE::LINALG::SerialDenseVector& val,
+        CORE::LINALG::SerialDenseMatrix& deriv, const int valdim);
 
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     (special version for quadratic mortar with element-wise constant Lagrange multipliers)
     */
-    virtual bool EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
-        CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
-        const int valdim);
+    virtual bool evaluate_shape_lag_mult_const(const INPAR::MORTAR::ShapeFcn& lmtype,
+        const double* xi, CORE::LINALG::SerialDenseVector& val,
+        CORE::LINALG::SerialDenseMatrix& deriv, const int valdim);
 
     /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
      *  (special version for 3D quadratic mortar with linear Lagrange multipliers)
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool EvaluateShapeLagMultLin(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
+    inline bool evaluate_shape_lag_mult_lin(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
         CORE::LINALG::Matrix<elenumnode, 1>& val, CORE::LINALG::Matrix<elenumnode, eledim>& deriv,
         int valdim)
     {
       CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
       CORE::LINALG::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
-      return EvaluateShapeLagMultLin(lmtype, xi, sdv_val, sdm_deriv, valdim);
+      return evaluate_shape_lag_mult_lin(lmtype, xi, sdv_val, sdm_deriv, valdim);
     }
 
     /*!
     \brief Evaluate 2nd derivative of shape functions
     */
-    virtual bool Evaluate2ndDerivShape(
+    virtual bool evaluate2nd_deriv_shape(
         const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim);
 
     template <unsigned elenumnode>
-    inline bool Evaluate2ndDerivShape(
+    inline bool evaluate2nd_deriv_shape(
         const double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv, const int& valdim)
     {
       CORE::LINALG::SerialDenseMatrix sdm_secderiv(
           Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
-      return Evaluate2ndDerivShape(xi, sdm_secderiv, valdim);
+      return evaluate2nd_deriv_shape(xi, sdm_secderiv, valdim);
     }
 
     /*!
@@ -949,13 +949,13 @@ namespace MORTAR
     is initialized.
 
     */
-    virtual void InitializeDataContainer();
+    virtual void initialize_data_container();
 
     /*!
     \brief delete all found meles for this element
 
     */
-    virtual void DeleteSearchElements();
+    virtual void delete_search_elements();
 
     /*!
     \brief Resets the data container of the element
@@ -1011,7 +1011,7 @@ namespace MORTAR
     dimensions. Hence, we check for the number of spatial dimensions and throw an error if the
     problem at hand is not 3D.
       */
-    void EstimateNitscheTraceMaxEigenvalueCombined();
+    void estimate_nitsche_trace_max_eigenvalue_combined();
 
     /*!
     \brief Estimated mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.

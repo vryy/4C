@@ -38,7 +38,7 @@ NOX::NLN::INNER::StatusTest::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterList& p,
+NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
@@ -63,18 +63,18 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterLi
   else if (test_type == "UpperBound")
     status_test = this->BuildUpperBoundTest(p, u);
   else if (test_type == "VolumeChange")
-    status_test = this->BuildVolumeChangeTest(p, u);
+    status_test = this->build_volume_change_test(p, u);
   // supported StatusTests of the NOX::StatusTest classes for the inner check
   else if (test_type == "Stagnation" or test_type == "Divergence" or test_type == "MaxIters" or
            test_type == "FiniteValue")
   {
-    throwError("BuildInnerStatusTests()", "Not yet supported");
+    throwError("build_inner_status_tests()", "Not yet supported");
   }
   else
   {
     std::ostringstream msg;
     msg << "The test type \"" << test_type << "\" is invalid!";
-    throwError("BuildInnerStatusTests()", msg.str());
+    throwError("build_inner_status_tests()", msg.str());
   }
 
   this->CheckAndTagTest(p, status_test, tagged_tests);
@@ -281,7 +281,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p,
     Teuchos::ParameterList& subtest_list = p.sublist(subtest_name.str(), true);
 
     Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> subtest =
-        this->BuildInnerStatusTests(subtest_list, u, tagged_tests);
+        this->build_inner_status_tests(subtest_list, u, tagged_tests);
 
     combo_test->addStatusTest(subtest);
 
@@ -323,17 +323,18 @@ void NOX::NLN::INNER::StatusTest::Factory::throwError(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(Teuchos::ParameterList& p, const ::NOX::Utils& u,
+NOX::NLN::INNER::StatusTest::build_inner_status_tests(Teuchos::ParameterList& p,
+    const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
-  return factory.BuildInnerStatusTests(p, u, tagged_tests);
+  return factory.build_inner_status_tests(p, u, tagged_tests);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildVolumeChangeTest(
+NOX::NLN::INNER::StatusTest::Factory::build_volume_change_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   VolumeChangeParams vcparams;

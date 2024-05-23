@@ -58,7 +58,7 @@ namespace NOX
           std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
-          double GetSearchDirectionLength(const NOX::NLN::LineSearch::Generic& linesearch,
+          double get_search_direction_length(const NOX::NLN::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp) const;
 
          private:

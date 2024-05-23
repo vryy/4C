@@ -57,7 +57,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         const int numdim = 3;
         CORE::LINALG::Matrix<4, numdim> xscurr;  // material coord. of element
-        SpatialConfiguration(xscurr, mydisp);
+        spatial_configuration(xscurr, mydisp);
         CORE::LINALG::Matrix<numdim, 1> elementnormal;
 
         ComputeNormal(xscurr, elementnormal);
@@ -75,12 +75,12 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         const auto& direct = condition->parameters().Get<std::vector<double>>("direction");
         const auto& value = condition->parameters().Get<std::string>("value");
         if (value == "disp")
-          elevec3[0] = ComputeWeightedDistance(mydisp, direct);
+          elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")
         {
           CORE::LINALG::Matrix<2, 3> xscurr;  // material coord. of element
-          SpatialConfiguration(xscurr, mydisp);
-          elevec3[0] = ComputeWeightedDistance(xscurr, direct);
+          spatial_configuration(xscurr, mydisp);
+          elevec3[0] = compute_weighted_distance(xscurr, direct);
         }
         else
           FOUR_C_THROW("MPC cannot compute state!");
@@ -101,7 +101,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         const int numnode = 4;
 
         CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
-        SpatialConfiguration(xscurr, mydisp);
+        spatial_configuration(xscurr, mydisp);
 
         CORE::LINALG::Matrix<numdim, 1> elementnormal;
         ComputeNormal(xscurr, elementnormal);
@@ -126,17 +126,17 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
             condition->parameters().Get<std::vector<double>>("direction");
 
         // Compute weighted difference between masternode and other node and it's derivative
-        ComputeFirstDerivWeightedDistance(elevec1, direct);
+        compute_first_deriv_weighted_distance(elevec1, direct);
         elevec2 = elevec1;
 
         const std::string& value = condition->parameters().Get<std::string>("value");
         if (value == "disp")
-          elevec3[0] = ComputeWeightedDistance(mydisp, direct);
+          elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")
         {
           CORE::LINALG::Matrix<2, 3> xscurr;  // spatial coord. of element
-          SpatialConfiguration(xscurr, mydisp);
-          elevec3[0] = ComputeWeightedDistance(xscurr, direct);
+          spatial_configuration(xscurr, mydisp);
+          elevec3[0] = compute_weighted_distance(xscurr, direct);
         }
         else
           FOUR_C_THROW("MPC cannot compute state!");
@@ -2847,7 +2847,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const CORE::LINALG::M
   return;
 }
 
-double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
+double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
     const std::vector<double> disp, const std::vector<double> direct)
 {
   // norm of direct
@@ -2862,7 +2862,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
   return result;
 }
 
-double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
+double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
     const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct)
 {
   // norm of direct
@@ -2877,7 +2877,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
   return result;
 }
 
-void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance(
+void DRT::ELEMENTS::ConstraintElement3::compute_first_deriv_weighted_distance(
     CORE::LINALG::SerialDenseVector& elevector, const std::vector<double> direct)
 {
   // norm of direct

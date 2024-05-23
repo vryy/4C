@@ -31,7 +31,7 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const in
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   return;
 }
 

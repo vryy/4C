@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
   if (actmat->GetNumberOfGP() != 1 and not my::scatrapara_->MatGP())
   {
     actmat->SetGP(1);
-    actmat->ResizeInternalStateVariables();
+    actmat->resize_internal_state_variables();
   }
   MatMyocard(material, k, densn, densnp, densam, visc, iquad);
 
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard
     if (my::scatraparatimint_->IsGenAlpha())
       react *= my::scatraparatimint_->Dt() / my::scatraparatimint_->TimeFac();
     advreamanager->AddToReaBodyForce(react, k);
-    advreamanager->AddToReaBodyForceDerivMatrix(0.0, k, k);
+    advreamanager->add_to_rea_body_force_deriv_matrix(0.0, k, k);
     actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(), iquad);
   }
   else
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard
     // get reaction coefficient
     advreamanager->AddToReaBodyForce(
         -actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(), iquad), k);
-    advreamanager->AddToReaBodyForceDerivMatrix(
+    advreamanager->add_to_rea_body_force_deriv_matrix(
         -actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt(), iquad), k, k);
   }
 
@@ -176,9 +176,9 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
   // calculation of material parameter at element center
   if (not my::scatrapara_->MatGP())
   {
-    advreac::EvalShapeFuncAndDerivsAtEleCenter();
+    advreac::eval_shape_func_and_derivs_at_ele_center();
     // set Gauss point variables needed for evaluation of mat and rhs
-    my::SetInternalVariablesForMatAndRHS();
+    my::set_internal_variables_for_mat_and_rhs();
     advreac::GetMaterialParams(ele, densn, densnp, densam, visc);
   }
   // calculation of material at integration points (different number of integration points possible)
@@ -195,10 +195,10 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
     // loop over integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+      const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
       // set gauss point variables needed for evaluation of mat and rhs
-      my::SetInternalVariablesForMatAndRHS();
+      my::set_internal_variables_for_mat_and_rhs();
 
       // get material parameters (evaluation at integration point)
       advreac::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
         my::ComputeRhsInt(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
 
         // standard Galerkin transient, old part of rhs and bodyforce term
-        my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+        my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
         // element matrix: reactive term
         advreac::CalcMatReact(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
@@ -233,10 +233,10 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // set gauss point variables needed for evaluation of mat and rhs
-    my::SetInternalVariablesForMatAndRHS();
+    my::set_internal_variables_for_mat_and_rhs();
 
     // loop all scalars
     for (int k = 0; k < my::numscal_; ++k)  // deal with a system of transported scalars
@@ -288,7 +288,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       {
         my::ComputeRhsInt(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
         // standard Galerkin transient, old part of rhs and bodyforce term
-        my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+        my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
       }
 
       //----------------------------------------------------------------
@@ -309,11 +309,11 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
  | extract element based or nodal values                 hoermann 06/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ExtractElementAndNodeValues(
-    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la)
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
+    probdim>::extract_element_and_node_values(DRT::Element* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
-  my::ExtractElementAndNodeValues(ele, params, discretization, la);
+  my::extract_element_and_node_values(ele, params, discretization, la);
 
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");

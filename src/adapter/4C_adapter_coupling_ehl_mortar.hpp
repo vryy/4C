@@ -88,7 +88,7 @@ namespace ADAPTER
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc, Teuchos::RCP<Epetra_Vector> tinc);
 
     void EvaluateRelMov();
-    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps);
+    void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps);
 
     /// check whether this displacement state has already been evaluated
     virtual bool AlreadyEvaluated(Teuchos::RCP<const Epetra_Vector> disp);
@@ -102,12 +102,12 @@ namespace ADAPTER
         const Teuchos::RCP<Epetra_Vector> x);
 
     /// Assemble linearization G_{ij,k}*x_i
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> AssembleSurfGradDeriv(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> assemble_surf_grad_deriv(
         const Teuchos::RCP<const Epetra_Vector> x);
 
     virtual void WriteRestart(IO::DiscretizationWriter& output);
     virtual void ReadRestart(IO::DiscretizationReader& reader);
-    void CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vector>* active,
+    void create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
         Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
     void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);
     bool HasContact() { return contact_regularization_; }
@@ -157,7 +157,7 @@ namespace ADAPTER
     }
     void Evaluate() override { FOUR_C_THROW("stop"); }
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { FOUR_C_THROW("stop"); }
-    void EvaluateWithMeshRelocation(
+    void evaluate_with_mesh_relocation(
         Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
         Teuchos::RCP<Epetra_Vector>& idisp,          ///< ALE displacements
@@ -183,15 +183,15 @@ namespace ADAPTER
     /// real (not weighted) gap
     void AssembleRealGap();
     /// real (not weighted) gap derivative wrt displacements
-    void AssembleRealGapDeriv();
+    void assemble_real_gap_deriv();
     /// slave sided nodal normals
     void AssembleNormals();
     /// slave sided nodal normals, derivative wrt displacements
-    void AssembleNormalsDeriv();
+    void assemble_normals_deriv();
     /// slave sided tangential gradient operator
     void AssembleSurfGrad();
     /// relative and average tangential velocities and their derivatives
-    void AssembleInterfaceVelocities(const double dt);
+    void assemble_interface_velocities(const double dt);
     //@}
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix>

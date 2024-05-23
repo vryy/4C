@@ -129,7 +129,7 @@ namespace DRT
       //@}
 
       inline const std::map<CoordinateSystemDirection, std::array<double, 3>>&
-      CoordinateSystemDirections() const
+      coordinate_system_directions() const
       {
         return coordinateSystemDirections_;
       }

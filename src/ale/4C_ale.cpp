@@ -85,7 +85,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  SetInitialDisplacement(initialdisp_, startfuncno_);
+  set_initial_displacement(initialdisp_, startfuncno_);
 
   SetupDBCMapEx();
 
@@ -124,7 +124,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const int startfuncno)
+void ALE::Ale::set_initial_displacement(const INPAR::ALE::InitialDisp init, const int startfuncno)
 {
   switch (init)
   {
@@ -229,12 +229,12 @@ void ALE::Ale::Evaluate(
   }
 
   EvaluateElements();
-  EvaluateElementQuality();
+  evaluate_element_quality();
 
   // prepare meshtying system
   if (msht_ != INPAR::ALE::no_meshtying)
   {
-    meshtying_->PrepareMeshtyingSystem(sysmat_, residual_, dispnp_);
+    meshtying_->prepare_meshtying_system(sysmat_, residual_, dispnp_);
     meshtying_->MultifieldSplit(sysmat_);
   }
 
@@ -246,25 +246,25 @@ void ALE::Ale::Evaluate(
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_), residual_);
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
-    // ApplyDirichletToSystem
+    // apply_dirichlet_to_system
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
           *GetLocSysTrafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
     }
   }
   else
   {
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sysmat_, *disi_, *residual_, *zeros_, *(dbcmaps_[dbc_type]->CondMap()));
   }
 
@@ -348,7 +348,7 @@ void ALE::Ale::EvaluateElements()
 
   // action for elements
   eleparams.set<std::string>("action", ElementActionString(aletype_));
-  eleparams.set<bool>("use spatial configuration", UpdateSysMatEveryStep());
+  eleparams.set<bool>("use spatial configuration", update_sys_mat_every_step());
 
   discret_->SetState("dispnp", dispnp_);
 
@@ -612,7 +612,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
   if (xff_interface == Teuchos::null && dbc_type == ALE::UTILS::MapExtractor::dbc_set_x_ff)
     FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a "
-        "XFluidFluidMapExtractor.");
+        "x_fluid_fluid_map_extractor.");
   // REMARK: for all applications, setup of the standard Dirichlet sets is done in the ctor of this
   // class
 
@@ -777,7 +777,7 @@ void ALE::Ale::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool ALE::Ale::EvaluateElementQuality()
+bool ALE::Ale::evaluate_element_quality()
 {
   if (elequalityyesno_)
   {

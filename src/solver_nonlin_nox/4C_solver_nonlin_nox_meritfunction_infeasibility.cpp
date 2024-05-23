@@ -37,7 +37,7 @@ NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::map<std::string, NOX::NLN::MeritFunction::MeritFctName>
-NOX::NLN::MeritFunction::Infeasibility::GetSupportedTypeList() const
+NOX::NLN::MeritFunction::Infeasibility::get_supported_type_list() const
 {
   std::map<std::string, MeritFctName> type_names;
 
@@ -51,7 +51,7 @@ NOX::NLN::MeritFunction::Infeasibility::GetSupportedTypeList() const
  *----------------------------------------------------------------------------*/
 void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_name)
 {
-  static const std::map<std::string, MeritFctName> supported_type_names = GetSupportedTypeList();
+  static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
 
   auto cit = supported_type_names.cbegin();
   while (cit != supported_type_names.cend())
@@ -121,7 +121,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
   if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
-  return constr_grp_ptr->GetLinearizedModelTerms(dir, Type(), linorder_first, lin_wrt_all_dofs);
+  return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
 }
 
 /*----------------------------------------------------------------------------*

@@ -66,7 +66,8 @@ namespace NOX
         virtual double GetTrueTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
         //! Returns the specified tolerance set in the constructor for the corresponding quantity.
-        virtual double GetSpecifiedTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        virtual double get_specified_tolerance(
+            const NOX::NLN::StatusTest::QuantityType& qType) const;
 
         //! Returns the initial tolerance of the corresponding quantity.
         virtual double GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;

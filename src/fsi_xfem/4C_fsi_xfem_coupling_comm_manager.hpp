@@ -112,7 +112,7 @@ namespace XFEM
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetMapExtractor(int idx);
 
    protected:
-    Teuchos::RCP<CORE::ADAPTER::CouplingConverter> GetCouplingConverter(int idxA, int idxB);
+    Teuchos::RCP<CORE::ADAPTER::CouplingConverter> get_coupling_converter(int idxA, int idxB);
 
     Teuchos::RCP<CORE::ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
 
@@ -126,9 +126,9 @@ namespace XFEM
    private:
     void Setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
-    void SetupMultiMapExtractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_multi_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
-    void SetupFullMapExtractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 
     void SetupCouplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
 

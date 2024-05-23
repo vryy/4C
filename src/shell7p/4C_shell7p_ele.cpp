@@ -41,7 +41,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char
   return object;
 }
 
-void DRT::ELEMENTS::Shell7pType::NodalBlockInformation(
+void DRT::ELEMENTS::Shell7pType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::SHELL::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
@@ -68,7 +68,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
 }
 
 
-void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
+void DRT::ELEMENTS::Shell7pType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SHELL7P"];
@@ -84,12 +84,12 @@ void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
                              .AddString("EAS5")
                              .AddNamedDouble("SDC")
                              .AddOptionalTag("ANS")
-                             .AddOptionalNamedDoubleVector("RAD", 3)
-                             .AddOptionalNamedDoubleVector("AXI", 3)
-                             .AddOptionalNamedDoubleVector("CIR", 3)
-                             .AddOptionalNamedDoubleVector("FIBER1", 3)
-                             .AddOptionalNamedDoubleVector("FIBER2", 3)
-                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .add_optional_named_double_vector("RAD", 3)
+                             .add_optional_named_double_vector("AXI", 3)
+                             .add_optional_named_double_vector("CIR", 3)
+                             .add_optional_named_double_vector("FIBER1", 3)
+                             .add_optional_named_double_vector("FIBER2", 3)
+                             .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
   defsgeneral["QUAD8"] = INPUT::LineDefinition::Builder()
@@ -103,12 +103,12 @@ void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
                              .AddString("EAS5")
                              .AddNamedDouble("SDC")
                              .AddOptionalTag("ANS")
-                             .AddOptionalNamedDoubleVector("RAD", 3)
-                             .AddOptionalNamedDoubleVector("AXI", 3)
-                             .AddOptionalNamedDoubleVector("CIR", 3)
-                             .AddOptionalNamedDoubleVector("FIBER1", 3)
-                             .AddOptionalNamedDoubleVector("FIBER2", 3)
-                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .add_optional_named_double_vector("RAD", 3)
+                             .add_optional_named_double_vector("AXI", 3)
+                             .add_optional_named_double_vector("CIR", 3)
+                             .add_optional_named_double_vector("FIBER1", 3)
+                             .add_optional_named_double_vector("FIBER2", 3)
+                             .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
   defsgeneral["QUAD9"] = INPUT::LineDefinition::Builder()
@@ -122,12 +122,12 @@ void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
                              .AddString("EAS5")
                              .AddNamedDouble("SDC")
                              .AddOptionalTag("ANS")
-                             .AddOptionalNamedDoubleVector("RAD", 3)
-                             .AddOptionalNamedDoubleVector("AXI", 3)
-                             .AddOptionalNamedDoubleVector("CIR", 3)
-                             .AddOptionalNamedDoubleVector("FIBER1", 3)
-                             .AddOptionalNamedDoubleVector("FIBER2", 3)
-                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .add_optional_named_double_vector("RAD", 3)
+                             .add_optional_named_double_vector("AXI", 3)
+                             .add_optional_named_double_vector("CIR", 3)
+                             .add_optional_named_double_vector("FIBER1", 3)
+                             .add_optional_named_double_vector("FIBER2", 3)
+                             .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
   defsgeneral["TRI3"] = INPUT::LineDefinition::Builder()
@@ -135,12 +135,12 @@ void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
                             .AddNamedInt("MAT")
                             .AddNamedDouble("THICK")
                             .AddNamedDouble("SDC")
-                            .AddOptionalNamedDoubleVector("RAD", 3)
-                            .AddOptionalNamedDoubleVector("AXI", 3)
-                            .AddOptionalNamedDoubleVector("CIR", 3)
-                            .AddOptionalNamedDoubleVector("FIBER1", 3)
-                            .AddOptionalNamedDoubleVector("FIBER2", 3)
-                            .AddOptionalNamedDoubleVector("FIBER3", 3)
+                            .add_optional_named_double_vector("RAD", 3)
+                            .add_optional_named_double_vector("AXI", 3)
+                            .add_optional_named_double_vector("CIR", 3)
+                            .add_optional_named_double_vector("FIBER1", 3)
+                            .add_optional_named_double_vector("FIBER2", 3)
+                            .add_optional_named_double_vector("FIBER3", 3)
                             .Build();
 
   defsgeneral["TRI6"] = INPUT::LineDefinition::Builder()
@@ -148,12 +148,12 @@ void DRT::ELEMENTS::Shell7pType::SetupElementDefinition(
                             .AddNamedInt("MAT")
                             .AddNamedDouble("THICK")
                             .AddNamedDouble("SDC")
-                            .AddOptionalNamedDoubleVector("RAD", 3)
-                            .AddOptionalNamedDoubleVector("AXI", 3)
-                            .AddOptionalNamedDoubleVector("CIR", 3)
-                            .AddOptionalNamedDoubleVector("FIBER1", 3)
-                            .AddOptionalNamedDoubleVector("FIBER2", 3)
-                            .AddOptionalNamedDoubleVector("FIBER3", 3)
+                            .add_optional_named_double_vector("RAD", 3)
+                            .add_optional_named_double_vector("AXI", 3)
+                            .add_optional_named_double_vector("CIR", 3)
+                            .add_optional_named_double_vector("FIBER1", 3)
+                            .add_optional_named_double_vector("FIBER2", 3)
+                            .add_optional_named_double_vector("FIBER3", 3)
                             .Build();
 }
 
@@ -176,7 +176,7 @@ DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
       material_post_setup_(other.material_post_setup_)
 {
   // reset shell calculation interface
-  shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(other, other.eletech_);
+  shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(other, other.eletech_);
 }
 
 DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
@@ -190,7 +190,7 @@ DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::S
   nodal_directors_ = other.nodal_directors_;
   material_post_setup_ = other.material_post_setup_;
 
-  shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(other, other.eletech_);
+  shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(other, other.eletech_);
   return *this;
 }
 
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   // Setup flag for material post setup
   CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // reset shell calculation interface
-  shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
+  shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
   std::shared_ptr<SHELL::Serializable> serializable_interface =
       std::dynamic_pointer_cast<SHELL::Serializable>(shell_interface_);
   if (serializable_interface != nullptr) serializable_interface->Unpack(position, data);
@@ -268,7 +268,7 @@ Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Shell7p::SolidMaterial(int nummat)
 }
 
 
-void DRT::ELEMENTS::Shell7p::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
@@ -343,7 +343,7 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   }
 
   // set calculation interface pointer
-  shell_interface_ = Shell7pFactory::ProvideShell7pCalculationInterface(*this, eletech_);
+  shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
   // read and set ANS technology for element
   if (linedef->HaveNamed("ANS"))

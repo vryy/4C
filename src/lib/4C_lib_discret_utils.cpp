@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ComputeNullSpaceIfNecessary(
+void DRT::Discretization::compute_null_space_if_necessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
   // see whether we have a list for an iterative solver
@@ -39,7 +39,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   {
     // We assume that all elements are of equal type
     DRT::Element* dwele = lRowElement(0);
-    dwele->ElementType().NodalBlockInformation(dwele, numdf, dimns, nv, np);
+    dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
   }
 
   // communicate data to procs without row element
@@ -54,10 +54,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!(nv + np)) FOUR_C_THROW("Cannot determine nodal block size");
 
   // store nv and np at unique location in solver parameter list
-  solveparams.sublist("NodalBlockInformation").set("number of momentum dofs", nv);
-  solveparams.sublist("NodalBlockInformation").set("number of constraint dofs", np);
-  solveparams.sublist("NodalBlockInformation").set("number of dofs per node", numdf);
-  solveparams.sublist("NodalBlockInformation").set("nullspace dimension", dimns);
+  solveparams.sublist("nodal_block_information").set("number of momentum dofs", nv);
+  solveparams.sublist("nodal_block_information").set("number of constraint dofs", np);
+  solveparams.sublist("nodal_block_information").set("number of dofs per node", numdf);
+  solveparams.sublist("nodal_block_information").set("nullspace dimension", dimns);
 
   // adapt multigrid settings (if a multigrid preconditioner is used)
   // see whether we have a sublist indicating usage of Trilinos::ML or Trilinos::MueLu
@@ -101,14 +101,14 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!HaveDofs()) FOUR_C_THROW("Discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
-  CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(*this, mllist);
+  CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(*this, mllist);
 }
 
 /*----------------------------------------------------------------------*
  |  SetState surrogate for node based vectors                  (public) |
  |                                                            gjb 06/09 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AddMultiVectorToParameterList(
+void DRT::Discretization::add_multi_vector_to_parameter_list(
     Teuchos::ParameterList& p, const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec)
 {
   // provide data in node-based multi-vector for usage on element level

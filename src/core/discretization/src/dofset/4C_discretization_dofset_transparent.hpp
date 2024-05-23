@@ -47,11 +47,11 @@ namespace CORE::Dofsets
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
-    void TransferDegreesOfFreedom(const DRT::Discretization& sourcedis,  ///< source discret
+    void transfer_degrees_of_freedom(const DRT::Discretization& sourcedis,  ///< source discret
         const DRT::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
@@ -61,38 +61,40 @@ namespace CORE::Dofsets
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
     /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
-    void ParallelTransferDegreesOfFreedom(const DRT::Discretization& sourcedis,  ///< source discret
+    void parallel_transfer_degrees_of_freedom(
+        const DRT::Discretization& sourcedis,  ///< source discret
         const DRT::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
     );
 
-    /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
+    /// helper for parallel_transfer_degrees_of_freedom; unpack the received block to
     /// generate the current map node gid -> its dofs
-    void UnpackLocalSourceDofs(
+    void unpack_local_source_dofs(
         std::map<int, std::vector<int>>& gid_to_dofs, std::vector<char>& rblock);
 
-    /// helper for ParallelTransferDegreesOfFreedom; pack the current map
+    /// helper for parallel_transfer_degrees_of_freedom; pack the current map
     /// node gid -> its dofs into a send block
     void PackLocalSourceDofs(
         std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock);
 
-    /// helper for ParallelTransferDegreesOfFreedom; add processor local information
+    /// helper for parallel_transfer_degrees_of_freedom; add processor local information
     /// to the map unpack the received block to the current map node gid -> its dofs
-    void SetSourceDofsAvailableOnThisProc(std::map<int, std::vector<int>>& gid_to_dofs);
+    void set_source_dofs_available_on_this_proc(std::map<int, std::vector<int>>& gid_to_dofs);
 
-    /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
+    /// helper for parallel_transfer_degrees_of_freedom, an MPI send call
     void SendBlock(int numproc, int myrank, std::vector<char>& sblock,
         CORE::COMM::Exporter& exporter, MPI_Request& request);
 
-    /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
+    /// helper for parallel_transfer_degrees_of_freedom, an MPI receive call
     void ReceiveBlock(int numproc, int myrank, std::vector<char>& rblock,
         CORE::COMM::Exporter& exporter, MPI_Request& request);
 
    protected:
     Teuchos::RCP<DRT::Discretization> sourcedis_;  ///< source discretization
 
-    bool parallel_;  ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
+    bool parallel_;  ///< call parallel_transfer_degrees_of_freedom instead of
+                     ///< transfer_degrees_of_freedom
 
   };  // class TransparentDofSet
 }  // namespace CORE::Dofsets

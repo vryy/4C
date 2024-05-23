@@ -49,7 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create(const int id, const
 }
 
 
-void DRT::ELEMENTS::Truss3Type::NodalBlockInformation(
+void DRT::ELEMENTS::Truss3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -63,7 +63,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
+void DRT::ELEMENTS::Truss3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRUSS3"];
@@ -302,7 +302,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xrefe)
+void DRT::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<double>& xrefe)
 {
   if (!isinit_)
   {
@@ -327,7 +327,7 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::ScaleReferenceLength(double scalefac)
+void DRT::ELEMENTS::Truss3::scale_reference_length(double scalefac)
 {
   // scale length in reference configuration
   x_(3) = x_(0) + (scalefac * (x_(3) - x_(0)));
@@ -473,7 +473,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
         for (int l = 0; l < 3; l++) xrefe[k * 3 + l] = currele->Nodes()[k]->X()[l];
     }
 
-    currele->SetUpReferenceGeometry(xrefe);
+    currele->set_up_reference_geometry(xrefe);
   }
 
   return 0;
@@ -482,7 +482,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {

@@ -73,8 +73,9 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     }
     case FLD::estimate_Nitsche_trace_maxeigenvalue_:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EstimateNitscheTraceMaxEigenvalue(
-          this, params, discretization, lm, elemat1, elemat2);
+      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)
+          ->estimate_nitsche_trace_max_eigenvalue(
+              this, params, discretization, lm, elemat1, elemat2);
       break;
     }
     case FLD::mixed_hybrid_dbc:

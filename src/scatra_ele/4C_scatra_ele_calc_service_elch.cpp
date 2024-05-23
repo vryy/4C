@@ -45,7 +45,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
   {
     case SCATRA::Action::check_scatra_element_parameter:
     {
-      CheckElchElementParameter(ele);
+      check_elch_element_parameter(ele);
       break;
     }
 
@@ -81,8 +81,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, my::evelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
-      my::rotsymmpbc_->RotateMyValuesIfNecessary(my::econvelnp_);
-      my::rotsymmpbc_->RotateMyValuesIfNecessary(my::evelnp_);
+      my::rotsymmpbc_->rotate_my_values_if_necessary(my::econvelnp_);
+      my::rotsymmpbc_->rotate_my_values_if_necessary(my::evelnp_);
 
       // need current values of transported scalar
       // -> extract local values from global vectors
@@ -93,7 +93,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       //----------------------------------------------------------------------
       // calculation of element volume both for tau at ele. cent. and int. pt.
       //----------------------------------------------------------------------
-      my::EvalShapeFuncAndDerivsAtEleCenter();
+      my::eval_shape_func_and_derivs_at_ele_center();
 
       //----------------------------------------------------------------------
       // get material and stabilization parameters (evaluation at element center)
@@ -111,7 +111,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // material parameter at the element center
       if (not my::scatrapara_->MatGP())
       {
-        SetInternalVariablesForMatAndRHS();
+        set_internal_variables_for_mat_and_rhs();
 
         GetMaterialParams(ele, densn, densnp, densam, visc);
       }
@@ -125,10 +125,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
 
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
       {
-        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+        const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // set internal variables
-        SetInternalVariablesForMatAndRHS();
+        set_internal_variables_for_mat_and_rhs();
 
         //----------------------------------------------------------------------
         // get material parameters (evaluation at integration point)
@@ -190,7 +190,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
-      CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
+      cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
       break;
     }
@@ -203,20 +203,20 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       bool specresist = params.get<bool>("specresist");
 
       // extract quantities for element evaluation
-      this->ExtractElementAndNodeValues(ele, params, discretization, la);
+      this->extract_element_and_node_values(ele, params, discretization, la);
 
       // elevec1_epetra(0):          conductivity of ionic species 0
       // elevec1_epetra(numscal_-1): conductivity of ionic species (numscal_-1)
       // elevec1_epetra(numscal_):   conductivity of the electrolyte solution (sum_k sigma(k))
       // elevec1_epetra(numscal_+1): domain integral
-      CalculateConductivity(ele, elchparams_->EquPot(), elevec1_epetra, effCond, specresist);
+      calculate_conductivity(ele, elchparams_->EquPot(), elevec1_epetra, effCond, specresist);
       break;
     }
 
     case SCATRA::Action::calc_elch_boundary_kinetics_point:
     {
       // process electrode boundary kinetics point condition
-      CalcElchBoundaryKineticsPoint(
+      calc_elch_boundary_kinetics_point(
           ele, params, discretization, la[0].lm_, elemat1_epetra, elevec1_epetra, 1.);
 
       break;
@@ -238,22 +238,22 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnalytSolution(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::cal_error_compared_to_analyt_solution(
     const DRT::Element* ele,                 //!< element
     Teuchos::ParameterList& params,          //!< parameter list
     CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
   // call base class routine
-  my::CalErrorComparedToAnalytSolution(ele, params, errors);
-}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
+  my::cal_error_compared_to_analyt_solution(ele, params, errors);
+}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::cal_error_compared_to_analyt_solution
 
 
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
   *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductivity(
     const DRT::Element* ele, const enum INPAR::ELCH::EquPot equpot,
     CORE::LINALG::SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     //----------------------------------------------------------------------
     // get material and stabilization parameters (evaluation at element center)
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
     double visc(0.0);
 
     // set internal variables at integration point
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // material parameter at integration point
     GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
@@ -321,7 +321,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
  | process an electrode boundary kinetics point condition    fang 08/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKineticsPoint(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_kinetics_point(
     DRT::Element* ele,                                ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
     DRT::Discretization& discretization,              ///< discretization
@@ -434,8 +434,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 
     if (zerocur == 0)
     {
-      EvaluateElchBoundaryKineticsPoint(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist, timefac,
-          cond, nume, *stoich, kinetics, pot0, frt, scalar);
+      evaluate_elch_boundary_kinetics_point(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist,
+          timefac, cond, nume, *stoich, kinetics, pot0, frt, scalar);
     }
 
     // realize correct scaling of rhs contribution for gen.alpha case
@@ -463,17 +463,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    EvaluateElectrodeStatusPoint(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
+    evaluate_electrode_status_point(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
         *stoich, nume, pot0, frt, timefac, scalar);
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint
+}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::calc_elch_boundary_kinetics_point
 
 
 /*----------------------------------------------------------------------*
  | evaluate an electrode boundary kinetics point condition   fang 08/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics_point(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
@@ -552,17 +552,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
     const double valence_k = DiffManager()->GetValence(k);
 
     // call utility class for evaluation of electrode boundary kinetics point condition
-    utils_->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, 1.,
+    utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac, 1.,
         my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
   }  // loop over all scalars
-}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElchBoundaryKineticsPoint
+}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::evaluate_elch_boundary_kinetics_point
 
 
 /*----------------------------------------------------------------------*
  | evaluate status information on point electrode            fang 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatusPoint(
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_status_point(
     const DRT::Element* ele,                                   ///< current element
     CORE::LINALG::SerialDenseVector& scalars,                  ///< scalars to be integrated
     Teuchos::ParameterList& params,                            ///< parameter list
@@ -648,8 +648,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
     statistics = true;
 
     // call utility class for element evaluation
-    utils_->EvaluateElectrodeStatusAtIntegrationPoint(ele, scalars, params, cond, ephinp, ephidtnp,
-        my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, 1., epsilon, k);
+    utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
+        ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, 1., epsilon, k);
 
     // stop loop over ionic species after one evaluation (see also comment above)
     break;
@@ -662,7 +662,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElectrodeStatusPoint
+}  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::evaluate_electrode_status_point
 
 
 /*----------------------------------------------------------------------------------------*

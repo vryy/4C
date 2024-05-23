@@ -43,17 +43,17 @@ namespace DRT
       /*========================================================================*/
 
       //! general fluid parameter are set
-      void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,  //> parameter list
-          int myrank);                                                      //> proc id
+      void set_element_general_fluid_parameter(Teuchos::ParameterList& params,  //> parameter list
+          int myrank);                                                          //> proc id
 
       //! turbulence parameters are set
-      void SetElementTurbulenceParameters(Teuchos::ParameterList& params);  //> parameter list
+      void set_element_turbulence_parameters(Teuchos::ParameterList& params);  //> parameter list
 
       /// set loma parameters
-      void SetElementLomaParameter(Teuchos::ParameterList& params);  //> parameter list
+      void set_element_loma_parameter(Teuchos::ParameterList& params);  //> parameter list
 
       //! set two-phase parameters
-      void SetElementTwoPhaseParameter(Teuchos::ParameterList& params);  //> parameter list
+      void set_element_two_phase_parameter(Teuchos::ParameterList& params);  //> parameter list
 
       /*========================================================================*/
       //! @name access-routines
@@ -124,9 +124,9 @@ namespace DRT
       /*----------------------------------------------------*/
       //! @name two phase parameters
       /*----------------------------------------------------*/
-      double GetInterfaceThickness() const { return interface_thickness_; };
-      bool GetEnhancedGaussRuleInInterface() const { return enhanced_gaussrule_; }
-      bool GetIncludeSurfaceTension() const { return include_surface_tension_; };
+      double get_interface_thickness() const { return interface_thickness_; };
+      bool get_enhanced_gauss_rule_in_interface() const { return enhanced_gaussrule_; }
+      bool get_include_surface_tension() const { return include_surface_tension_; };
 
 
       /*----------------------------------------------------*/
@@ -181,7 +181,7 @@ namespace DRT
         meanCai_ = meanCai;
         return;
       };
-      bool ConsistentMFSResidual() const { return consistent_mfs_residual_; };
+      bool consistent_mfs_residual() const { return consistent_mfs_residual_; };
 
       /*----------------------------------------------------*/
       //! @name loma parameters

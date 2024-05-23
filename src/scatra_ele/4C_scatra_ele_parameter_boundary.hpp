@@ -38,10 +38,10 @@ namespace DRT
       ///@{
       void SetAlpha(Teuchos::ParameterList& parameters);
       void SetCapacitance(Teuchos::ParameterList& parameters);
-      void SetChargeTransferConstant(Teuchos::ParameterList& parameters);
+      void set_charge_transfer_constant(Teuchos::ParameterList& parameters);
       void SetConvTolIterNum(Teuchos::ParameterList& parameters);
       void SetDensityMolarMass(Teuchos::ParameterList& parameters);
-      void SetEnergySubstanceRatio(Teuchos::ParameterList& parameters);
+      void set_energy_substance_ratio(Teuchos::ParameterList& parameters);
       void SetIsPseudoContact(Teuchos::ParameterList& parameters);
       void SetNumElectrons(Teuchos::ParameterList& parameters);
       void SetNumScal(Teuchos::ParameterList& parameters);
@@ -60,7 +60,7 @@ namespace DRT
       double AlphaA() const { return alphaa_; }
       double AlphaC() const { return alphac_; }
       double Capacitance() const { return capacitance_; }
-      double ChargeTransferConstant() const { return kr_; }
+      double charge_transfer_constant() const { return kr_; }
       CORE::Conditions::ConditionType ConditionType() const { return conditiontype_; }
       double ConvtolimplicitBV() const { return convtolimplicit_bv_; }
       double Density() const { return density_; }
@@ -74,7 +74,7 @@ namespace DRT
       const std::vector<int>* OnOff() const { return onoff_; }
       double Peltier() const { return peltier_; }
       const std::vector<double>* Permeabilities() const { return permeabilities_; }
-      double RegularizationParameter() const { return regularizationparameter_; }
+      double regularization_parameter() const { return regularizationparameter_; }
       INPAR::S2I::RegularizationType RegularizationType() const { return regularizationtype_; }
       double Resistance() const { return resistance_; }
       double Resistivity() const { return resistivity_; }

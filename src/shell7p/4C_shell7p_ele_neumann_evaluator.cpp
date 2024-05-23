@@ -189,7 +189,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         std::vector<double> displacements(dof_index_array.size());
         CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
-        SpatialConfiguration<distype>(x_curr, x_refe, displacements, 0);
+        spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
         g_metrics_kovariant.MultiplyNN(1.0, shapefunctions.derivatives_, x_curr, 0.0);
       }
@@ -200,7 +200,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         std::vector<double> displacements(dof_index_array.size());
         CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
-        SpatialConfiguration<distype>(x_curr, x_refe, displacements, 0);
+        spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
         g_metrics_kovariant.MultiplyNN(1.0, shapefunctions.derivatives_, x_curr, 0.0);
       }

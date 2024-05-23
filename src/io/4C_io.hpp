@@ -132,7 +132,7 @@ namespace IO
     void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
     /// read into given std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> >
-    void ReadSerialDenseMatrix(
+    void read_serial_dense_matrix(
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
         std::string name);
 
@@ -163,7 +163,7 @@ namespace IO
       It is assumed that this is a 'small' vector which has to be present on all procs.
       It is read from proc0 again and then communicated to all present procs.
      */
-    void ReadRedundantDoubleVector(
+    void read_redundant_double_vector(
         Teuchos::RCP<std::vector<double>>& doublevec, const std::string name);
 
     //! read a non discretisation based vector of integers
@@ -172,7 +172,7 @@ namespace IO
       It is assumed that this is a 'small' vector which has to be present on all procs.
       It is read from proc0 again and then communicated to all present procs.
      */
-    void ReadRedundantIntVector(Teuchos::RCP<std::vector<int>>& intvec, const std::string name);
+    void read_redundant_int_vector(Teuchos::RCP<std::vector<int>>& intvec, const std::string name);
 
     /// return number of procs which were used for restart output (read from control file)
     int GetNumOutputProc(int step);
@@ -327,13 +327,13 @@ namespace IO
         const Epetra_Map& elemap, VectorType vt = dofvector);
 
     //! write new mesh and result file next time it is possible
-    virtual void CreateNewResultAndMeshFile()
+    virtual void create_new_result_and_mesh_file()
     {
       resultfile_changed_ = -1;
       meshfile_changed_ = -1;
     };
 
-    virtual bool HaveResultOrMeshFileChanged()
+    virtual bool have_result_or_mesh_file_changed()
     {
       if (resultfile_changed_ == -1 or meshfile_changed_ == -1) return true;
 
@@ -345,7 +345,7 @@ namespace IO
     // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
     virtual void WriteMesh(const int step, const double time, std::string name_base_file);
     // for particle simulations: write only nodes in new "field" group to control file
-    virtual void WriteOnlyNodesInNewFieldGroupToControlFile(
+    virtual void write_only_nodes_in_new_field_group_to_control_file(
         const int step, const double time, const bool writerestart);
 
     //! write element data to file
@@ -363,7 +363,7 @@ namespace IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    virtual void WriteRedundantDoubleVector(
+    virtual void write_redundant_double_vector(
         const std::string name, Teuchos::RCP<std::vector<double>> doublevec);
 
     //! write a non discretisation based vector of integers
@@ -372,7 +372,7 @@ namespace IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    virtual void WriteRedundantIntVector(
+    virtual void write_redundant_int_vector(
         const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
 
 

@@ -146,19 +146,19 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
  *
  */
 template <typename beam, typename fluid, typename mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPairVisualization(
+void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
-  BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualization(
+  BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visualization(
       visualization_writer, visualization_params);
 
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("mortar");
+      visualization_writer->get_visualization_writer("mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("mortar-continuous");
+      visualization_writer->get_visualization_writer("mortar-continuous");
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     if (visualization_discret != Teuchos::null)
     {
       // Get the visualization vectors.
-      auto& visualization_data = visualization_discret->GetVisualizationData();
+      auto& visualization_data = visualization_discret->get_visualization_data();
       std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
       std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
       std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
@@ -229,9 +229,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "output_params_ptr")
-              ->GetMortarLambdaContinuousSegments();
+              ->get_mortar_lambda_continuous_segments();
       double xi;
-      auto& visualization_data = visualization_continuous->GetVisualizationData();
+      auto& visualization_data = visualization_continuous->get_visualization_data();
       std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<double>& displacement = visualization_data.GetPointData<double>(
@@ -273,7 +273,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
 }
 
 template <typename beam, typename fluid, typename mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluatePenaltyForce(
+void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::evaluate_penalty_force(
     CORE::LINALG::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
     CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const

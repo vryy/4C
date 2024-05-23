@@ -94,10 +94,10 @@ namespace DRT
           ) = 0;
 
       //! extract quantities for element evaluation
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                          //!< parameter list
-          DRT::Discretization& discretization,                     //!< discretization
-          DRT::Element::LocationArray& la                          //!< location array
+      virtual void extract_element_and_node_values(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,                              //!< parameter list
+          DRT::Discretization& discretization,                         //!< discretization
+          DRT::Element::LocationArray& la                              //!< location array
       );
 
       //! local nodal values of concentration
@@ -131,7 +131,7 @@ namespace DRT
       };
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesSTIElch(
+      void set_internal_variables_sti_elch(
           const CORE::LINALG::Matrix<NEN, 1>& funct,    //!< shape functions
           const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
@@ -149,7 +149,7 @@ namespace DRT
       {
         // call base class routine to set thermo variables
         const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
-        vm::SetInternalVariables(funct, derxy, etempnp, etempn, econvelnp, ehist, eforcevelocity);
+        vm::set_internal_variables(funct, derxy, etempnp, etempn, econvelnp, ehist, eforcevelocity);
 
         // set local values of scatra variables at time t_(n+1) or t_(n+alpha_F)
         conc_ = funct.Dot(econcnp);          // concentration

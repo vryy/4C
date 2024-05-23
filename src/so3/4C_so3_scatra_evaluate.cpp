@@ -170,7 +170,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
 
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific
   // stuff. But for now we let it be...
-  const CORE::LINALG::Matrix<3, 1> center(CORE::FE::ElementCenterRefeCoords(*this).data());
+  const CORE::LINALG::Matrix<3, 1> center(CORE::FE::element_center_refe_coords(*this).data());
   params.set("elecenter_coords_ref", center);
 }
 
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_derivatives_at_xi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
     const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi
       DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar_nodal_values);
   double d_cauchyndir_ds_gp(0.0);
   // call base class
-  so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
+  so3_ele::get_cauchy_n_dir_and_derivatives_at_xi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
       d_cauchyndir_dd, nullptr, nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir,
       d_cauchyndir_dxi, nullptr, nullptr, nullptr, scalar_values_at_xi.data(), &d_cauchyndir_ds_gp);
 

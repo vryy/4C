@@ -44,9 +44,9 @@ namespace STR
 
       void PrepareTimeStep() override;
 
-      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+      void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
-      void DetermineStressStrain() override;
+      void determine_stress_strain() override;
 
       void Evaluate() override;
 
@@ -58,7 +58,7 @@ namespace STR
 
       INPAR::STR::ConvergenceStatus Solve() override;
 
-      void PreparePartitionStep() override;
+      void prepare_partition_step() override;
 
       void Update(double endtime) override;
 
@@ -94,13 +94,13 @@ namespace STR
 
       int MethodSteps() const override;
 
-      int MethodOrderOfAccuracyDis() const override;
+      int method_order_of_accuracy_dis() const override;
 
-      int MethodOrderOfAccuracyVel() const override;
+      int method_order_of_accuracy_vel() const override;
 
-      double MethodLinErrCoeffDis() const override;
+      double method_lin_err_coeff_dis() const override;
 
-      double MethodLinErrCoeffVel() const override;
+      double method_lin_err_coeff_vel() const override;
 
       //@}
 

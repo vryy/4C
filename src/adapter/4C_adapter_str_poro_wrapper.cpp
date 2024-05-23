@@ -134,11 +134,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructurePoroWrapper::InsertFSICondVector(
 }
 
 //! Recover Lagrange Multiplier during iteration (does nothing for structure)
-void ADAPTER::StructurePoroWrapper::RecoverLagrangeMultiplierAfterNewtonStep(
+void ADAPTER::StructurePoroWrapper::recover_lagrange_multiplier_after_newton_step(
     Teuchos::RCP<Epetra_Vector> iterinc)
 {
   if (type_ == FieldWrapper::type_PoroField)
-    poro_->RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
+    poro_->recover_lagrange_multiplier_after_newton_step(iterinc);
 }
 
 FOUR_C_NAMESPACE_CLOSE

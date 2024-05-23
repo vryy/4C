@@ -68,20 +68,20 @@ namespace DRT
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static NStet5Type instance_;
 
-      std::string GetElementTypeString() const { return "NSTET5"; }
+      std::string get_element_type_string() const { return "NSTET5"; }
 
       //! map of row nodes adjacent to NStet5 elements
       std::map<int, DRT::Node*> noderids_;
@@ -125,7 +125,7 @@ namespace DRT
           DRT::Discretization& dis);
 
 
-      void ElementDeformationGradient(DRT::Discretization& dis);
+      void element_deformation_gradient(DRT::Discretization& dis);
 
       void NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
           CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
@@ -423,7 +423,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
@@ -484,7 +484,7 @@ namespace DRT
       }
 
       //! Shape function derivatives
-      inline void ShapeFunctionDerivatives(CORE::LINALG::Matrix<4, 4>& deriv)
+      inline void shape_function_derivatives(CORE::LINALG::Matrix<4, 4>& deriv)
       {
         // Ni,j = 1.0 for i==j, otherwise 0.0
         deriv.Clear();
@@ -529,7 +529,7 @@ namespace DRT
       //@}
 
      private:
-      std::string GetElementTypeString() const { return "NSTET5"; }
+      std::string get_element_type_string() const { return "NSTET5"; }
     };  // class NStet5
 
 

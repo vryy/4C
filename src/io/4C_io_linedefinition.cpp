@@ -79,7 +79,7 @@ namespace INPUT::INTERNAL
     {
       in >> value;
 
-      CheckStreamForUnparsedCharacters(StringFromDataType<T>());
+      check_stream_for_unparsed_characters(StringFromDataType<T>());
       return !in.fail();
     }
 
@@ -91,7 +91,7 @@ namespace INPUT::INTERNAL
         in >> v;
       }
 
-      CheckStreamForUnparsedCharacters(StringFromDataType<T>());
+      check_stream_for_unparsed_characters(StringFromDataType<T>());
       return !in.fail();
     }
 
@@ -101,10 +101,10 @@ namespace INPUT::INTERNAL
       for (auto& [a, b] : values)
       {
         in >> a;
-        CheckStreamForUnparsedCharacters(StringFromDataType<T1>());
+        check_stream_for_unparsed_characters(StringFromDataType<T1>());
 
         in >> b;
-        CheckStreamForUnparsedCharacters(StringFromDataType<T2>());
+        check_stream_for_unparsed_characters(StringFromDataType<T2>());
       }
 
       return !in.fail();
@@ -116,7 +116,7 @@ namespace INPUT::INTERNAL
     const std::string& name;
 
    private:
-    void CheckStreamForUnparsedCharacters(const std::string& correctDataType)
+    void check_stream_for_unparsed_characters(const std::string& correctDataType)
     {
       if (!(in.eof()))  // otherwise peek writes a failbit
       {
@@ -578,7 +578,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedDoubleVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_named_double_vector(
       std::string name, int length)
   {
     pimpl_->components_.emplace_back(
@@ -588,7 +588,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddNamedDoubleVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_named_double_vector(
       std::string name, LengthDefinition length_definition)
   {
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::vector<double>>(name,
@@ -616,7 +616,8 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedString(const std::string& name)
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_string(
+      const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
@@ -636,7 +637,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedIntVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_int_vector(
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -647,7 +648,8 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedDouble(const std::string& name)
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_double(
+      const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
@@ -657,7 +659,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedDoubleVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_double_vector(
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -669,7 +671,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedDoubleVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_double_vector(
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -690,7 +692,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedStringVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_string_vector(
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -702,7 +704,7 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedStringVector(
+  LineDefinition::Builder& LineDefinition::Builder::add_optional_named_string_vector(
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -722,7 +724,8 @@ namespace INPUT
 
 
 
-  LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedPairOfStringAndDoubleVector(
+  LineDefinition::Builder&
+  LineDefinition::Builder::add_optional_named_pair_of_string_and_double_vector(
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
@@ -874,7 +877,7 @@ namespace INPUT
 
 
 
-  void LineDefinition::ExtractPairOfStringAndDoubleVector(
+  void LineDefinition::extract_pair_of_string_and_double_vector(
       const std::string& name, std::vector<std::pair<std::string, double>>& v) const
   {
     pimpl_->TryExtract(name, v);

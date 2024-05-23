@@ -36,13 +36,13 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
   {
     case SCATRA::Action::calc_elch_electrode_soc_and_c_rate:
     {
-      CalculateElectrodeSOCAndCRate(ele, discretization, la, elevec1_epetra);
+      calculate_electrode_soc_and_c_rate(ele, discretization, la, elevec1_epetra);
 
       break;
     }
     case SCATRA::Action::calc_elch_elctrode_mean_concentration:
     {
-      CalculateMeanElectrodeConcentration(ele, discretization, la, elevec1_epetra);
+      calculate_mean_electrode_concentration(ele, discretization, la, elevec1_epetra);
 
       break;
     }
@@ -65,7 +65,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchElementParameter(
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch_element_parameter(
     DRT::Element* ele  //!< current element
 )
 {
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchEleme
     FOUR_C_THROW("Invalid material type!");
 
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CheckElchElementParameter
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::check_elch_element_parameter
 
 
 /*----------------------------------------------------------------------*
@@ -138,10 +138,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurre
  | calculate electrode state of charge and C rate            fang 01/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElectrodeSOCAndCRate(
-    const DRT::Element* const& ele,             //!< the element we are dealing with
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la,            //!< location array
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::calculate_electrode_soc_and_c_rate(const DRT::Element* const&
+                                                     ele,  //!< the element we are dealing with
+    const DRT::Discretization& discretization,             //!< discretization
+    DRT::Element::LocationArray& la,                       //!< location array
     CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
@@ -173,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // calculate integrals of concentration and its time derivative
     for (unsigned vi = 0; vi < nen_; ++vi)
@@ -221,10 +222,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     {
       // evaluate values of shape functions and domain integration factor at current integration
       // point
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+      const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
       // compute internal variables at current integration point
-      VarManager()->SetInternalVariablesElchElectrodeSOCAndCRate(
+      VarManager()->set_internal_variables_elch_electrode_soc_and_c_rate(
           my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
       // compute velocity and its divergence
@@ -254,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     scalars(4) = intcdivv;
     scalars(5) = intvgradc;
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAndCRate
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_electrode_soc_and_c_rate
 
 
 /*---------------------------------------------------------------------*
@@ -298,33 +299,34 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele,                 //!< element
-    Teuchos::ParameterList& params,          //!< parameter list
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::cal_error_compared_to_analyt_solution(const DRT::Element* ele,  //!< element
+    Teuchos::ParameterList& params,                                           //!< parameter list
     CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
   // call base class routine
-  myelch::CalErrorComparedToAnalytSolution(ele, params, errors);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalErrorComparedToAnalytSolution
+  myelch::cal_error_compared_to_analyt_solution(ele, params, errors);
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::cal_error_compared_to_analyt_solution
 
 
 /*------------------------------------------------------------------------------*
  | set internal variables for electrodes                             fang 02/15 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchElectrode(
+  VarManager()->set_internal_variables_elch_electrode(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
+}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::set_internal_variables_for_mat_and_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+    probdim>::calculate_mean_electrode_concentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseVector& conc)
 {

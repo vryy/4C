@@ -89,10 +89,10 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
       uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
       tolcon_(sdynparams.get<double>("TOLCONSTR")),
-      tolcardvasc0d_(GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+      tolcardvasc0d_(GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
           "TOL_CARDVASC0D_RES")),
       tolcardvasc0ddofincr_(
-          GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+          GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
               "TOL_CARDVASC0D_DOFINCR")),
       iter_(-1),
       normcharforce_(0.0),
@@ -212,7 +212,7 @@ void STR::TimIntImpl::Setup()
       FOUR_C_THROW("Chosen solution technique %s does not work constrained.",
           INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
-  else if (cardvasc0dman_->HaveCardiovascular0D())
+  else if (cardvasc0dman_->have_cardiovascular0_d())
   {
     if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
       if (myrank_ == 0)
@@ -238,7 +238,7 @@ void STR::TimIntImpl::Setup()
   normtypeplagrincr_ = INPAR::STR::
       convnorm_abs;  // CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP"));
 
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
@@ -283,7 +283,7 @@ void STR::TimIntImpl::Setup()
 
   if (numsolid == 1)
   {
-    SetupKrylovSpaceProjection(kspcond);
+    setup_krylov_space_projection(kspcond);
     if (myrank_ == 0) std::cout << "\nSetup of KrylovSpaceProjection in solid field\n" << std::endl;
   }
   else if (numsolid == 0)
@@ -328,7 +328,7 @@ void STR::TimIntImpl::Output(const bool forced_writerestart)
   OutputStep(forced_writerestart);
 
   // write Gmsh output
-  WriteGmshStrucOutputStep();
+  write_gmsh_struc_output_step();
 }
 
 /*----------------------------------------------------------------------*/
@@ -368,13 +368,13 @@ void STR::TimIntImpl::Predict()
   // choose predictor
   if ((pred_ == INPAR::STR::pred_constdis) or (pred_ == INPAR::STR::pred_constdispres))
   {
-    PredictConstDisConsistVelAcc();
+    predict_const_dis_consist_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_constvel)
   {
-    PredictConstVelConsistAcc();
+    predict_const_vel_consist_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
@@ -387,13 +387,13 @@ void STR::TimIntImpl::Predict()
   else if ((pred_ == INPAR::STR::pred_constdisvelacc) or
            (pred_ == INPAR::STR::pred_constdisvelaccpres))
   {
-    PredictConstDisVelAcc();
+    predict_const_dis_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_tangdis)
   {
-    PredictTangDisConsistVelAcc();
+    predict_tang_dis_consist_vel_acc();
     // normdisi_ has been set
   }
   else
@@ -432,7 +432,7 @@ void STR::TimIntImpl::Predict()
   if (pred_ == INPAR::STR::pred_tangdis) params.set<bool>("predict", false);
 
   // compute residual forces fres_ and stiffness stiff_
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // get residual of condensed variables (e.g. EAS) for NewtonLS
   if (fresn_str_ != Teuchos::null)
@@ -475,7 +475,7 @@ void STR::TimIntImpl::Predict()
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
-  normchardis_ = CalcRefNormDisplacement();
+  normchardis_ = calc_ref_norm_displacement();
   if (normchardis_ == 0.0) normchardis_ = toldisi_;
 
 
@@ -488,7 +488,7 @@ void STR::TimIntImpl::Predict()
 
 /*----------------------------------------------------------------------*/
 /* prepare partition step */
-void STR::TimIntImpl::PreparePartitionStep()
+void STR::TimIntImpl::prepare_partition_step()
 {
   // set iteration step to 0
   iter_ = 0;
@@ -501,7 +501,7 @@ void STR::TimIntImpl::PreparePartitionStep()
   params.set<bool>("predict", true);
 
   // compute residual forces fres_ and stiffness stiff_
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
@@ -537,7 +537,7 @@ void STR::TimIntImpl::PreparePartitionStep()
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
-  normchardis_ = CalcRefNormDisplacement();
+  normchardis_ = calc_ref_norm_displacement();
   if (normchardis_ == 0.0) normchardis_ = toldisi_;
 
 
@@ -582,7 +582,7 @@ void STR::TimIntImpl::PrepareLineSearch()
 /*----------------------------------------------------------------------*/
 /* predict solution as constant displacements, velocities
  * and accelerations */
-void STR::TimIntImpl::PredictConstDisVelAcc()
+void STR::TimIntImpl::predict_const_dis_vel_acc()
 {
   // constant predictor
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -595,7 +595,7 @@ void STR::TimIntImpl::PredictConstDisVelAcc()
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::PredictTangDisConsistVelAcc()
+void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
 {
   // initialise
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -623,7 +623,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // add linear reaction forces to residual
   {
@@ -660,17 +660,19 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   stiff_->Complete();
   if (GetLocSysTrafo() != Teuchos::null)
   {
-    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
-        *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_, *GetLocSysTrafo(),
+        *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
     CmtLinearSolve();  // use contact/meshtying solver
   else
   {
@@ -681,12 +683,12 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   }
 
   // recover contact / meshtying Lagrange multipliers
-  if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
+  if (have_contact_meshtying()) cmtbridge_->Recover(disi_);
 
   // decide which norms have to be evaluated
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP =
-      (HaveContactMeshtying() &&
+      (have_contact_meshtying() &&
           CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
               cmtbridge_->GetStrategy().Params(), "STRATEGY") == INPAR::CONTACT::solution_lagmult &&
           (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
@@ -729,7 +731,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   disi_->Update(1.0, *dbcinc, 1.0);
 
   // update end-point displacements etc
-  UpdateIterIncrementally();
+  update_iter_incrementally();
   // disn_->Update(1.0, *disi_, 1.0);
 
   // MARK:
@@ -756,7 +758,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 /*--------------------------------------------------------------------------*
  | setup Krylov projector including first fill                    nis Feb13 |
  *--------------------------------------------------------------------------*/
-void STR::TimIntImpl::SetupKrylovSpaceProjection(CORE::Conditions::Condition* kspcond)
+void STR::TimIntImpl::setup_krylov_space_projection(CORE::Conditions::Condition* kspcond)
 {
   // get number of mode flags in dat-file
   const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
@@ -787,13 +789,13 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(CORE::Conditions::Condition* ks
       new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
 
   // update the projector
-  UpdateKrylovSpaceProjection();
+  update_krylov_space_projection();
 }
 
 /*--------------------------------------------------------------------------*
  | update projection vectors w_ and c_ for Krylov projection      nis Feb13 |
  *--------------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateKrylovSpaceProjection()
+void STR::TimIntImpl::update_krylov_space_projection()
 {
   const std::string* weighttype = projector_->WeightType();
 
@@ -830,11 +832,11 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 
 /*----------------------------------------------------------------------*/
 /* evaluate external forces and its linearization at t_{n+1} */
-void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,                        //!< old displacement state
-    const Teuchos::RCP<Epetra_Vector> disn,                       //!< new displacement state
-    const Teuchos::RCP<Epetra_Vector> vel,                        //!< velocity state
-    Teuchos::RCP<Epetra_Vector>& fext,                            //!< external force
+void STR::TimIntImpl::apply_force_stiff_external(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> dis,                           //!< old displacement state
+    const Teuchos::RCP<Epetra_Vector> disn,                          //!< new displacement state
+    const Teuchos::RCP<Epetra_Vector> vel,                           //!< velocity state
+    Teuchos::RCP<Epetra_Vector>& fext,                               //!< external force
     Teuchos::RCP<CORE::LINALG::SparseOperator>& fextlin  //!< linearization of external force
 )
 {
@@ -848,7 +850,7 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
 
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
   // get load vector
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   bool loadlin = (CORE::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
@@ -865,7 +867,7 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force, its stiffness at state */
-void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt,
+void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disi,
     const Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::ParameterList& params,
@@ -913,7 +915,7 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
 
 /*----------------------------------------------------------------------*/
 /* evaluate inertia force and its linearization */
-void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, const double dt,
+void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time, const double dt,
     const double timintfac_dis, const double timintfac_vel, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disi, const Teuchos::RCP<Epetra_Vector> vel,
     const Teuchos::RCP<Epetra_Vector> acc, Teuchos::RCP<Epetra_Vector> fint,
@@ -965,7 +967,7 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
-void STR::TimIntImpl::ApplyForceStiffConstraint(const double time,
+void STR::TimIntImpl::apply_force_stiff_constraint(const double time,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,
     Teuchos::ParameterList pcon)
@@ -980,11 +982,11 @@ void STR::TimIntImpl::ApplyForceStiffConstraint(const double time,
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to Cardiovascular0D bcs */
-void STR::TimIntImpl::ApplyForceStiffCardiovascular0D(const double time,
+void STR::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
     const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
 {
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     cardvasc0dman_->EvaluateForceStiff(time, disn, fint, stiff, pwindk);
   }
@@ -994,9 +996,10 @@ void STR::TimIntImpl::ApplyForceStiffCardiovascular0D(const double time,
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to spring dashpot BCs */
-void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
-    Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector> veln, bool predict, Teuchos::ParameterList psprdash)
+void STR::TimIntImpl::apply_force_stiff_spring_dashpot(
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln, bool predict,
+    Teuchos::ParameterList psprdash)
 {
   psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
@@ -1004,7 +1007,7 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<CORE::LINALG::Sp
     auto stiff_sparse = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff);
     if (stiff_sparse == Teuchos::null)
       FOUR_C_THROW("Cannot cast stiffness matrix to sparse matrix!");
-    springman_->StiffnessAndInternalForces(stiff_sparse, fint, disn, veln, psprdash);
+    springman_->stiffness_and_internal_forces(stiff_sparse, fint, disn, veln, psprdash);
   }
 
   return;
@@ -1012,11 +1015,11 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<CORE::LINALG::Sp
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
-void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
+void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
     Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
     Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // *********** time measurement ***********
     double dtcpu = timer_->wallTime();
@@ -1027,7 +1030,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
 
     if (cmtbridge_->HaveContact())
     {
-      if (cmtbridge_->ContactManager()->GetStrategy().HasPoroNoPenetration())
+      if (cmtbridge_->ContactManager()->GetStrategy().has_poro_no_penetration())
       {
         // set structural velocity for poro normal no penetration
         Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*Velnp()));
@@ -1069,8 +1072,9 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to beam contact */
-void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,
-    Teuchos::RCP<Epetra_Vector>& fresm, Teuchos::RCP<Epetra_Vector>& dis, bool predict)
+void STR::TimIntImpl::apply_force_stiff_beam_contact(
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
+    Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
   if (HaveBeamContact())
   {
@@ -1112,13 +1116,13 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<CORE::LINALG::Spar
 
 /*----------------------------------------------------------------------*/
 /* Check residual displacement and limit it if necessary*/
-void STR::TimIntImpl::LimitStepsizeBeamContact(Teuchos::RCP<Epetra_Vector>& disi)
+void STR::TimIntImpl::limit_stepsize_beam_contact(Teuchos::RCP<Epetra_Vector>& disi)
 {
   if (HaveBeamContact())
   {
     double minimal_radius = beamcman_->GetMinEleRadius();
     double maxdisiscalefac =
-        beamcman_->BeamContactParameters().get<double>("BEAMS_MAXDISISCALEFAC");
+        beamcman_->beam_contact_parameters().get<double>("BEAMS_MAXDISISCALEFAC");
     if (maxdisiscalefac > 0)
     {
       double disi_infnorm = 0.0;
@@ -1142,7 +1146,7 @@ void STR::TimIntImpl::LimitStepsizeBeamContact(Teuchos::RCP<Epetra_Vector>& disi
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for displacements
  * originally by lw */
-double STR::TimIntImpl::CalcRefNormDisplacement()
+double STR::TimIntImpl::calc_ref_norm_displacement()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -1234,7 +1238,7 @@ bool STR::TimIntImpl::Converged()
   // check 0D cardiovascular model
   bool cv0d = true;
   bool cv0dincr = true;
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     cv0d = normcardvasc0d_ < tolcardvasc0d_;
     cv0dincr = normcardvasc0ddofincr_ < tolcardvasc0ddofincr_;
@@ -1242,7 +1246,7 @@ bool STR::TimIntImpl::Converged()
 
   // check contact (active set)
   bool ccontact = true;
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // check which case (application, strategy) we are in
     INPAR::CONTACT::SolvingStrategy stype =
@@ -1256,7 +1260,7 @@ bool STR::TimIntImpl::Converged()
         (stype == INPAR::CONTACT::solution_lagmult ||
             stype == INPAR::CONTACT::solution_augmented) &&
         semismooth)
-      ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
+      ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
@@ -1391,11 +1395,11 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 
   int nonlin_error = 0;
   // special nonlinear iterations for contact / meshtying
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // check additionally if we have contact AND a Cardiovascular0D or constraint bc
-    if (HaveCardiovascular0D())
-      nonlin_error = CmtWindkConstrNonlinearSolve();
+    if (have_cardiovascular0_d())
+      nonlin_error = cmt_windk_constr_nonlinear_solve();
     else
       nonlin_error = CmtNonlinearSolve();
   }
@@ -1404,7 +1408,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   else if (HaveBeamContact())
   {
     // choose solution technique in accordance with user's will
-    nonlin_error = BeamContactNonlinearSolve();
+    nonlin_error = beam_contact_nonlinear_solve();
   }
 
   // all other cases
@@ -1420,10 +1424,10 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
         nonlin_error = NewtonLS();
         break;
       case INPAR::STR::soltech_newtonuzawanonlin:
-        nonlin_error = UzawaNonLinearNewtonFull();
+        nonlin_error = uzawa_non_linear_newton_full();
         break;
       case INPAR::STR::soltech_newtonuzawalin:
-        nonlin_error = UzawaLinearNewtonFull();
+        nonlin_error = uzawa_linear_newton_full();
         break;
       case INPAR::STR::soltech_noxnewtonlinesearch:
       case INPAR::STR::soltech_noxgeneral:
@@ -1451,8 +1455,8 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
   // After a prescribed number of converged time steps, the time step is doubled again. The
   // following methods checks, if the time step size can be increased again.
-  CheckForTimeStepIncrease(status);
-  CheckFor3D0DPTCReset(status);
+  check_for_time_step_increase(status);
+  check_for3_d0_dptc_reset(status);
 
   return status;
 }
@@ -1504,12 +1508,13 @@ int STR::TimIntImpl::NewtonFull()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
-          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+      CORE::LINALG::apply_dirichlet_to_system(
+          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -1528,7 +1533,7 @@ int STR::TimIntImpl::NewtonFull()
     }
 
     // linear solver call (contact / meshtying case or default)
-    if (HaveContactMeshtying())
+    if (have_contact_meshtying())
       CmtLinearSolve();
     else
     {
@@ -1545,13 +1550,13 @@ int STR::TimIntImpl::NewtonFull()
 
     // In beam contact applications it can be necessary to limit the Newton step size (scaled
     // residual displacements)
-    LimitStepsizeBeamContact(disi_);
+    limit_stepsize_beam_contact(disi_);
 
     // recover standard displacements
     RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
-    if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
+    if (have_contact_meshtying()) cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
     dtsolve_ = timer_->wallTime() - dtcpu;
@@ -1575,7 +1580,7 @@ int STR::TimIntImpl::NewtonFull()
 
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
-    EvaluateForceStiffResidual(params);
+    evaluate_force_stiff_residual(params);
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
@@ -1604,19 +1609,19 @@ int STR::TimIntImpl::NewtonFull()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP =
-        (HaveContactMeshtying() && ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                                         cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                                            INPAR::CONTACT::solution_lagmult &&
-                                        (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-                                             cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                                INPAR::CONTACT::system_condensed ||
-                                            CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-                                                cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                                INPAR::CONTACT::system_condensed_lagmult)) ||
-                                       (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                                            cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                                           INPAR::CONTACT::solution_augmented)));
+    bool bContactSP = (have_contact_meshtying() &&
+                       ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                             cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
+                                INPAR::CONTACT::solution_lagmult &&
+                            (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                                 cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                                    INPAR::CONTACT::system_condensed ||
+                                CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                                    cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                                    INPAR::CONTACT::system_condensed_lagmult)) ||
+                           (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                                cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
+                               INPAR::CONTACT::solution_augmented)));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -1727,16 +1732,16 @@ int STR::TimIntImpl::NewtonFull()
   // call monitor
   if (conman_->HaveMonitor())
   {
-    conman_->ComputeMonitorValues(disn_);
+    conman_->compute_monitor_values(disn_);
   }
 
   // do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error, element_error);
+  return newton_full_error_check(linsolve_error, element_error);
 }
 
 /*----------------------------------------------------------------------*/
 /* error check for full Newton problems */
-int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
+int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
 {
   // if everything is fine print to screen and return
   if (Converged())
@@ -1934,7 +1939,7 @@ int STR::TimIntImpl::NewtonLS()
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
       fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
-      EvaluateForceStiffResidual(params);
+      evaluate_force_stiff_residual(params);
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
       if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
           params.get<bool>("eval_error") == true)
@@ -1994,7 +1999,7 @@ int STR::TimIntImpl::NewtonLS()
       /**************************************************************
       ***           Display line search information               ***
       ***************************************************************/
-      if (iter_ls == 0) LsPrintLineSearchIter(merit_fct.data(), iter_ls, step_red);
+      if (iter_ls == 0) ls_print_line_search_iter(merit_fct.data(), iter_ls, step_red);
 
       // increase inner loop count
       ++iter_ls;
@@ -2018,12 +2023,12 @@ int STR::TimIntImpl::NewtonLS()
       /**************************************************************
       ***   Update right-hand side (and part. stiffness matrix)   ***
       ***************************************************************/
-      LsUpdateStructuralRHSandStiff(eval_error, merit_fct[1]);
+      ls_update_structural_rh_sand_stiff(eval_error, merit_fct[1]);
 
       /**************************************************************
       ***           Display line search information               ***
       ***************************************************************/
-      LsPrintLineSearchIter(merit_fct.data(), iter_ls, step_red);
+      ls_print_line_search_iter(merit_fct.data(), iter_ls, step_red);
 
       if (!(eval_error) && (outputeveryiter_)) OutputEveryIter(true, true);
     }
@@ -2061,10 +2066,10 @@ int STR::TimIntImpl::NewtonLS()
   iter_ -= 1;
 
   // call monitor
-  if (conman_->HaveMonitor()) conman_->ComputeMonitorValues(disn_);
+  if (conman_->HaveMonitor()) conman_->compute_monitor_values(disn_);
 
   // do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error, 0);
+  return newton_full_error_check(linsolve_error, 0);
 }
 
 
@@ -2090,12 +2095,14 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   if (GetLocSysTrafo() != Teuchos::null)
   {
-    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
-        *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_, *GetLocSysTrafo(),
+        *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::apply_dirichlet_to_system(
+        *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   /**************************************************************
@@ -2127,7 +2134,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // In beam contact applications it can be necessary to limit the Newton step size (scaled residual
   // displacements)
-  LimitStepsizeBeamContact(disi_);
+  limit_stepsize_beam_contact(disi_);
 
   solver_->ResetTolerance();
 
@@ -2147,7 +2154,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 /*----------------------------------------------------------------------*/
 /*   Update structural RHS and stiff (line search)      hiermeier 09/13 */
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& merit_fct)
+void STR::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, double& merit_fct)
 {
   // --- Checking for floating point exceptions
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -2172,7 +2179,7 @@ void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept, double& meri
     // need to know the processor id
     params.set<int>("MyPID", myrank_);
   }
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // get residual of condensed variables (e.g. EAS) for NewtonLS
   if (fresn_str_ != Teuchos::null)
@@ -2270,7 +2277,7 @@ int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
 /*----------------------------------------------------------------------*/
 /*   Print information about the last line search step  hiermeier 09/13 */
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red)
+void STR::TimIntImpl::ls_print_line_search_iter(double* mf_value, int iter_ls, double step_red)
 {
   normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
   // print to standard out
@@ -2339,7 +2346,7 @@ bool STR::TimIntImpl::LsConverged(double* mf_value, double step_red)
 /*----------------------------------------------------------------------*/
 /* do non-linear Uzawa iteration within a full NRI is called,
  * originally by tk */
-int STR::TimIntImpl::UzawaNonLinearNewtonFull()
+int STR::TimIntImpl::uzawa_non_linear_newton_full()
 {
   // now or never, break it
   FOUR_C_THROW(
@@ -2405,16 +2412,16 @@ int STR::TimIntImpl::UzawaNonLinearNewtonFull()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepConstraint()
+void STR::TimIntImpl::update_step_constraint()
 {
   if (conman_->HaveConstraint()) conman_->Update();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepCardiovascular0D()
+void STR::TimIntImpl::update_step_cardiovascular0_d()
 {
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     cardvasc0dman_->UpdateTimeStep();
     if (cardvasc0dman_->GetIsPeriodic())
@@ -2426,7 +2433,7 @@ void STR::TimIntImpl::UpdateStepCardiovascular0D()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepSpringDashpot()
+void STR::TimIntImpl::update_step_spring_dashpot()
 {
   if (springman_->HaveSpringDashpot()) springman_->Update();
 }
@@ -2437,7 +2444,7 @@ bool STR::TimIntImpl::HaveConstraint() { return conman_->HaveConstraintLagr(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool STR::TimIntImpl::HaveCardiovascular0D() { return cardvasc0dman_->HaveCardiovascular0D(); }
+bool STR::TimIntImpl::have_cardiovascular0_d() { return cardvasc0dman_->have_cardiovascular0_d(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2445,7 +2452,7 @@ bool STR::TimIntImpl::HaveSpringDashpot() { return springman_->HaveSpringDashpot
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateIterIncrConstr(
+void STR::TimIntImpl::update_iter_incr_constr(
     Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
 )
 {
@@ -2454,7 +2461,7 @@ void STR::TimIntImpl::UpdateIterIncrConstr(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateIterIncrCardiovascular0D(
+void STR::TimIntImpl::update_iter_incr_cardiovascular0_d(
     Teuchos::RCP<Epetra_Vector> cv0ddofincr  ///< wk dof increment
 )
 {
@@ -2464,7 +2471,7 @@ void STR::TimIntImpl::UpdateIterIncrCardiovascular0D(
 /*----------------------------------------------------------------------*/
 /* do linearised Uzawa iterations with full NRI
  * originally by tk 11/07 */
-int STR::TimIntImpl::UzawaLinearNewtonFull()
+int STR::TimIntImpl::uzawa_linear_newton_full()
 {
   int linsolve_error = 0;
   int element_error = 0;
@@ -2507,13 +2514,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (GetLocSysTrafo() != Teuchos::null)
       {
-        CORE::LINALG::ApplyDirichletToSystem(
+        CORE::LINALG::apply_dirichlet_to_system(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::ApplyDirichletToSystem(
+        CORE::LINALG::apply_dirichlet_to_system(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -2576,7 +2583,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // compute residual forces #fres_ and stiffness #stiff_
       // which contain forces and stiffness of constraints
-      EvaluateForceStiffResidual(params);
+      evaluate_force_stiff_residual(params);
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
@@ -2642,7 +2649,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // correct iteration counter
     iter_ -= 1;
   }
-  else if (cardvasc0dman_->HaveCardiovascular0D())
+  else if (cardvasc0dman_->have_cardiovascular0_d())
   {
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->Filled())
@@ -2654,14 +2661,14 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     iter_ = 1;
     normfres_ = CalcRefNormForce();
     // normdisi_ was already set in predictor; this is strictly >0
-    normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
-    normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
+    normcardvasc0d_ = cardvasc0dman_->get_cardiovascular0_drhs_norm();
+    normcardvasc0ddofincr_ = cardvasc0dman_->get_cardiovascular0_d_dof_incr_norm();
     timer_->reset();
 
     double nc;
     double ncstr;
     fres_->NormInf(&ncstr);
-    double nc0d = 0.0;  // cardvasc0dman_->GetCardiovascular0DRHSInfNorm();
+    double nc0d = 0.0;  // cardvasc0dman_->get_cardiovascular0_drhs_inf_norm();
     if (ncstr >= nc0d)
       nc = ncstr;
     else
@@ -2670,7 +2677,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     double dti = cardvasc0dman_->Get_k_ptc();
 
     const bool ptc_3D0D = CORE::UTILS::IntegralValue<int>(
-        GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), "PTC_3D0D");
+        GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params(), "PTC_3D0D");
 
     // equilibrium iteration loop
     while (((not Converged() and (not linsolve_error) and (not element_error)) and
@@ -2696,13 +2703,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (GetLocSysTrafo() != Teuchos::null)
       {
-        CORE::LINALG::ApplyDirichletToSystem(
+        CORE::LINALG::apply_dirichlet_to_system(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::ApplyDirichletToSystem(
+        CORE::LINALG::apply_dirichlet_to_system(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -2714,8 +2721,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       STCPreconditioning();
 
       // linear solver call (contact / meshtying case or default)
-      if (HaveContactMeshtying())
-        linsolve_error = CmtWindkConstrLinearSolve(dti);
+      if (have_contact_meshtying())
+        linsolve_error = cmt_windk_constr_linear_solve(dti);
       else
       {
         // Call Cardiovascular0D solver to solve system
@@ -2728,7 +2735,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       linsolve_error = LinSolveErrorCheck(linsolve_error);
 
       // recover contact / meshtying Lagrange multipliers
-      if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
+      if (have_contact_meshtying()) cmtbridge_->Recover(disi_);
 
       // *********** time measurement ***********
       dtsolve_ = timer_->wallTime() - dtcpu;
@@ -2754,7 +2761,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // compute residual forces #fres_ and stiffness #stiff_
       // which contain forces and stiffness of Cardiovascular0Ds
-      EvaluateForceStiffResidual(params);
+      evaluate_force_stiff_residual(params);
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
@@ -2808,9 +2815,9 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         // build residual displacement norm
         normdisi_ = STR::CalculateVectorNorm(iternorm_, disi_);
         // build residual 0D cardiovascular residual norm
-        normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
+        normcardvasc0d_ = cardvasc0dman_->get_cardiovascular0_drhs_norm();
         // build residual 0D cardiovascular residual dof increment norm
-        normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
+        normcardvasc0ddofincr_ = cardvasc0dman_->get_cardiovascular0_d_dof_incr_norm();
       }
 
       // print stuff
@@ -2822,7 +2829,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         double np;
         double npstr;
         fres_->NormInf(&npstr);
-        double np0d = 0.0;  // cardvasc0dman_->GetCardiovascular0DRHSInfNorm();
+        double np0d = 0.0;  // cardvasc0dman_->get_cardiovascular0_drhs_inf_norm();
         if (npstr >= np0d)
           np = npstr;
         else
@@ -2843,11 +2850,11 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
   }
 
   // do nonlinear solver error check
-  return UzawaLinearNewtonFullErrorCheck(linsolve_error, element_error);
+  return uzawa_linear_newton_full_error_check(linsolve_error, element_error);
 }
 
 /*----------------------------------------------------------------------------*/
-int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
+int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int eleerror)
 {
   // if everything is fine print to screen and return
   if (Converged())
@@ -2855,14 +2862,14 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
     // compute and print monitor values
     if (conman_->HaveMonitor())
     {
-      conman_->ComputeMonitorValues(disn_);
+      conman_->compute_monitor_values(disn_);
     }
 
     // print newton message on proc 0
     if (myrank_ == 0) conman_->PrintMonitorValues();
 
     // print Cardiovascular0D output
-    if (cardvasc0dman_->HaveCardiovascular0D()) cardvasc0dman_->PrintPresFlux(false);
+    if (cardvasc0dman_->have_cardiovascular0_d()) cardvasc0dman_->PrintPresFlux(false);
 
     return 0;
   }
@@ -2903,7 +2910,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
     {
       if (myrank_ == 0)
         IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing" << IO::endl;
-      if (conman_->HaveMonitor()) conman_->ComputeMonitorValues(disn_);
+      if (conman_->HaveMonitor()) conman_->compute_monitor_values(disn_);
       return 0;
     }
     else if ((iter_ >= itermax_) and
@@ -2920,7 +2927,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
       return 1;
     }
   }
-  FOUR_C_THROW("Fatal error in UzawaLinearNewtonFullErrorCheck, case not implemented ");
+  FOUR_C_THROW("Fatal error in uzawa_linear_newton_full_error_check, case not implemented ");
   return 0;
 }
 
@@ -3039,7 +3046,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     if (error) return error;
 
     // update constraint norm
-    cmtbridge_->GetStrategy().UpdateConstraintNorm();
+    cmtbridge_->GetStrategy().update_constraint_norm();
   }
 
   //********************************************************************
@@ -3083,11 +3090,11 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       if (error) return error;
 
       // update constraint norm and penalty parameter
-      cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+      cmtbridge_->GetStrategy().update_constraint_norm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtbridge_->GetStrategy().UpdateUzawaAugmentedLagrange();
-      cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
+      cmtbridge_->GetStrategy().store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
@@ -3130,7 +3137,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     Teuchos::RCP<Epetra_Map> innerDofMap;
     Teuchos::RCP<Epetra_Map> activeDofMap;
     Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
-    strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+    strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
     if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -3183,7 +3190,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     // check if contact contributions are present,
     // if not we make a standard solver call to speed things up
     if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() &&
-        !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
+        !cmtbridge_->GetStrategy().was_in_contact_last_time_step())
     {
       solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
     }
@@ -3196,14 +3203,14 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<Epetra_Vector> blockrhs = Teuchos::null;
 
       // build the saddle point system
-      cmtbridge_->GetStrategy().BuildSaddlePointSystem(
+      cmtbridge_->GetStrategy().build_saddle_point_system(
           stiff_, fres_, disi_, dbcmaps_, blockMat, blocksol, blockrhs);
 
       // solve the linear system
       contactsolver_->Solve(blockMat, blocksol, blockrhs, solver_params);
 
       // split vector and update internal displacement and Lagrange multipliers
-      cmtbridge_->GetStrategy().UpdateDisplacementsAndLMincrements(disi_, blocksol);
+      cmtbridge_->GetStrategy().update_displacements_and_l_mincrements(disi_, blocksol);
     }
   }
 
@@ -3224,7 +3231,7 @@ void STR::TimIntImpl::CmtLinearSolve()
       // check if contact contributions are present,
       // if not we make a standard solver call to speed things up
       if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() &&
-          !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
+          !cmtbridge_->GetStrategy().was_in_contact_last_time_step())
       {
         // standard solver call (fallback solver for pure structure problem)
         solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
@@ -3244,14 +3251,14 @@ void STR::TimIntImpl::CmtLinearSolve()
 
 /*----------------------------------------------------------------------*/
 /* solution with nonlinear iteration for beam contact */
-int STR::TimIntImpl::BeamContactNonlinearSolve()
+int STR::TimIntImpl::beam_contact_nonlinear_solve()
 {
   //********************************************************************
   // get some parameters
   //********************************************************************
   // strategy type
   INPAR::BEAMCONTACT::Strategy strategy = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
-      beamcman_->BeamContactParameters(), "BEAMS_STRATEGY");
+      beamcman_->beam_contact_parameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
   if (itertype_ != INPAR::STR::soltech_newtonfull)
@@ -3349,19 +3356,20 @@ int STR::TimIntImpl::PTC()
           CORE::LINALG::CreateVector(SystemMatrix()->RowMap(), false);
       SystemMatrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *tmp, 1.0);
-      SystemMatrix()->ReplaceDiagonalValues(*diag);
+      SystemMatrix()->replace_diagonal_values(*diag);
     }
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
-          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+      CORE::LINALG::apply_dirichlet_to_system(
+          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -3383,7 +3391,7 @@ int STR::TimIntImpl::PTC()
       solver_params.lin_tol_better = solveradaptolbetter_;
     }
     // linear solver call (contact / meshtying case or default)
-    if (HaveContactMeshtying())
+    if (have_contact_meshtying())
       CmtLinearSolve();
     else
     {
@@ -3401,7 +3409,7 @@ int STR::TimIntImpl::PTC()
     RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
-    if (HaveContactMeshtying()) cmtbridge_->Recover(disi_);
+    if (have_contact_meshtying()) cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
     dtsolve_ = timer_->wallTime() - dtcpu;
@@ -3425,7 +3433,7 @@ int STR::TimIntImpl::PTC()
 
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
-    EvaluateForceStiffResidual(params);
+    evaluate_force_stiff_residual(params);
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
@@ -3450,7 +3458,7 @@ int STR::TimIntImpl::PTC()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP = (HaveContactMeshtying() &&
+    bool bContactSP = (have_contact_meshtying() &&
                        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                            cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
                            INPAR::CONTACT::solution_lagmult &&
@@ -3528,11 +3536,11 @@ int STR::TimIntImpl::PTC()
   // call monitor
   if (conman_->HaveMonitor())
   {
-    conman_->ComputeMonitorValues(disn_);
+    conman_->compute_monitor_values(disn_);
   }
 
   // do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error, element_error);
+  return newton_full_error_check(linsolve_error, element_error);
 }
 
 
@@ -3541,22 +3549,22 @@ int STR::TimIntImpl::PTC()
 void STR::TimIntImpl::UpdateIter(const int iter  //!< iteration counter
 )
 {
-  // Doing UpdateIterIteratively() is not sufficient in the first Newton step
+  // Doing update_iter_iteratively() is not sufficient in the first Newton step
   // since the predictor might lead to velocities and accelerations that are
   // not consistently computed from the displacements based on the time
   // integration scheme.
-  // Hence, in the first nonlinear iteration, we do UpdateIterIncrementally()
+  // Hence, in the first nonlinear iteration, we do update_iter_incrementally()
   // to ensure consistent velocities and accelerations across all predictors.
   //
   // From the second nonlinear iteration on, both update routines lead to
   // exactly the same results.
   if (iter <= 1)
   {
-    UpdateIterIncrementally();
+    update_iter_incrementally();
   }
   else
   {
-    UpdateIterIteratively();
+    update_iter_iteratively();
   }
 
   // morning is broken
@@ -3565,7 +3573,7 @@ void STR::TimIntImpl::UpdateIter(const int iter  //!< iteration counter
 
 /*----------------------------------------------------------------------*/
 /* Update iteration incrementally with prescribed residual displacements */
-void STR::TimIntImpl::UpdateIterIncrementally(
+void STR::TimIntImpl::update_iter_incrementally(
     const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
 )
 {
@@ -3578,10 +3586,10 @@ void STR::TimIntImpl::UpdateIterIncrementally(
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
   if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::tsi)
-    if (HaveContactMeshtying() && disi != Teuchos::null) cmtbridge_->Recover(disi_);
+    if (have_contact_meshtying() && disi != Teuchos::null) cmtbridge_->Recover(disi_);
 
   // Update using #disi_
-  UpdateIterIncrementally();
+  update_iter_incrementally();
 
   // leave this place
   return;
@@ -3633,13 +3641,13 @@ void STR::TimIntImpl::PrintNewtonIter()
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0) and printiter_)
   {
-    if (iter_ == 1) PrintNewtonIterHeader(stdout);
+    if (iter_ == 1) print_newton_iter_header(stdout);
     PrintNewtonIterText(stdout);
   }
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
+void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 {
   // open outstd::stringstream
   std::ostringstream oss;
@@ -3710,7 +3718,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
   }
 
   // add norms of Lagrange multiplier parts (contact/meshtying in saddlepoint formulation only)
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // strategy and system setup types
     INPAR::CONTACT::SolvingStrategy soltype =
@@ -3775,7 +3783,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
   }
 
   // add Cardiovascular0D norm
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     oss << std::setw(16) << "abs-0Dres-norm";
     oss << std::setw(16) << "abs-0Dinc-norm";
@@ -3789,10 +3797,10 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
   // add solution time
   oss << std::setw(13) << "ts";
   oss << std::setw(10) << "te";
-  if (HaveContactMeshtying()) oss << std::setw(10) << "tc";
+  if (have_contact_meshtying()) oss << std::setw(10) << "tc";
 
   // add contact set information
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // only print something for contact, not for meshtying
     if (cmtbridge_->HaveContact())
@@ -3893,7 +3901,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   }
 
   // add norms of Lagrange multiplier parts (contact/meshtying in saddlepoint formulation only)
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // strategy and system setup types
     INPAR::CONTACT::SolvingStrategy soltype =
@@ -3939,7 +3947,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   }
 
   // add Cardiovascular0D norm
-  if (cardvasc0dman_->HaveCardiovascular0D())
+  if (cardvasc0dman_->have_cardiovascular0_d())
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcardvasc0d_;
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcardvasc0ddofincr_;
@@ -3953,11 +3961,11 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   // add solution time
   oss << std::setw(13) << std::setprecision(2) << std::scientific << dtsolve_;
   oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
     oss << std::setw(10) << std::setprecision(2) << std::scientific << dtcmt_;
 
   // add contact set information
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
     // only print something for contact, not for meshtying
     INPAR::CONTACT::SolvingStrategy soltype =
@@ -3969,7 +3977,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     {
       if (soltype == INPAR::CONTACT::solution_augmented && semismooth)
       {
-        bool ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
+        bool ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
         // active set changed
         if (!ccontact)
           oss << std::setw(8) << cmtbridge_->GetStrategy().NumberOfActiveNodes() << "(c)";
@@ -3999,7 +4007,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
 
 /*----------------------------------------------------------------------*/
 /* Export active set and characteristic calculation times into text files */
-void STR::TimIntImpl::ExportContactQuantities()
+void STR::TimIntImpl::export_contact_quantities()
 {
   // add integration time contribution from every newton step
   inttime_global_ += cmtbridge_->GetStrategy().Inttime();
@@ -4057,9 +4065,9 @@ void STR::TimIntImpl::PrintNewtonConv()
 {
 #ifdef CONTACTEXPORT
   // output integration time for contact and more...
-  if (HaveContactMeshtying())
+  if (have_contact_meshtying())
   {
-    ExportContactQuantities();
+    export_contact_quantities();
   }
 #endif
 
@@ -4113,21 +4121,21 @@ void STR::TimIntImpl::PrintStepText(FILE* ofile)
 
 /*----------------------------------------------------------------------*/
 /* Linear structure solve with just an interface load */
-Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
+Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::solve_relaxation_linear()
 {
   // create parameter list
   Teuchos::ParameterList params;
 
   // Evaluate/define the residual force vector #fres_ for
-  // relaxation solution with SolveRelaxationLinear
-  EvaluateForceStiffResidualRelax(params);
+  // relaxation solution with solve_relaxation_linear
+  evaluate_force_stiff_residual_relax(params);
 
   // negative residual
   fres_->Scale(-1.0);
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
   CORE::LINALG::SolverParams solver_params;
@@ -4141,7 +4149,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
 /*----------------------------------------------------------------------*/
 /* Prepare system for solving with Newton's method */
-void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
+void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian)
 {
   // rotate residual to local coordinate systems
   if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
@@ -4174,11 +4182,12 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
   {
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
-          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+      CORE::LINALG::apply_dirichlet_to_system(
+          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
-      CORE::LINALG::ApplyDirichletToSystem(
+      CORE::LINALG::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -4376,7 +4385,7 @@ void STR::TimIntImpl::RecoverSTCSolution()
 
 /*----------------------------------------------------------------------*/
 /* solution with nonlinear iteration for contact / meshtying AND Cardiovascular0D bcs*/
-int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
+int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
 {
   //********************************************************************
   // get some parameters
@@ -4410,7 +4419,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     if (cmtbridge_->HaveContact() && semismooth)
     {
       // nonlinear iteration
-      int error = UzawaLinearNewtonFull();
+      int error = uzawa_linear_newton_full();
       if (error) return error;
     }
 
@@ -4434,7 +4443,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
         if (activeiter > 1) Predict();
 
         // nonlinear iteration
-        int error = UzawaLinearNewtonFull();
+        int error = uzawa_linear_newton_full();
         if (error) return error;
 
         // update of active set (fixed-point)
@@ -4452,7 +4461,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     else
     {
       // nonlinear iteration
-      int error = UzawaLinearNewtonFull();
+      int error = uzawa_linear_newton_full();
       if (error) return error;
     }
   }
@@ -4463,11 +4472,11 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   else if (soltype == INPAR::CONTACT::solution_penalty)
   {
     // nonlinear iteration
-    int error = UzawaLinearNewtonFull();
+    int error = uzawa_linear_newton_full();
     if (error) return error;
 
     // update constraint norm
-    cmtbridge_->GetStrategy().UpdateConstraintNorm();
+    cmtbridge_->GetStrategy().update_constraint_norm();
   }
 
   //********************************************************************
@@ -4498,15 +4507,15 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
       }
 
       // nonlinear iteration
-      int error = UzawaLinearNewtonFull();
+      int error = uzawa_linear_newton_full();
       if (error) return error;
 
       // update constraint norm and penalty parameter
-      cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+      cmtbridge_->GetStrategy().update_constraint_norm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtbridge_->GetStrategy().UpdateUzawaAugmentedLagrange();
-      cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
+      cmtbridge_->GetStrategy().store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
@@ -4521,7 +4530,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 
 /*----------------------------------------------------------------------*/
 /* linear solver call for contact / meshtying AND Cardiovascular0D bcs*/
-int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
+int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
 {
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype =
@@ -4542,7 +4551,7 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
     Teuchos::RCP<Epetra_Map> innerDofMap;
     Teuchos::RCP<Epetra_Map> activeDofMap;
     Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
-    strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+    strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
     // if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -4617,7 +4626,7 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void STR::TimIntImpl::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status)
+void STR::TimIntImpl::check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 4;
 
@@ -4651,7 +4660,7 @@ void STR::TimIntImpl::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& st
   }
 }
 
-void STR::TimIntImpl::CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status)
+void STR::TimIntImpl::check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 1;
 

@@ -58,13 +58,13 @@ namespace MAT
        */
       const CORE::LINALG::Matrix<3, 1>& GetFiber(int gp) const;
       const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
+      const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       // Tell the compiler that we still want the methods from FiberAnisotropyExtension with a
       // different signature
       using FiberAnisotropyExtension<1>::GetFiber;
       using FiberAnisotropyExtension<1>::GetStructuralTensor;
-      using FiberAnisotropyExtension<1>::GetStructuralTensor_stress;
+      using FiberAnisotropyExtension<1>::get_structural_tensor_stress;
     };
 
     namespace PAR
@@ -149,7 +149,7 @@ namespace MAT
        *
        * \param anisotropy anisotropy manager
        */
-      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
@@ -171,13 +171,13 @@ namespace MAT
        *
        * \return FiberAnisotropyExtension& Reference to the used MAT::FiberAnisotropyExtension
        */
-      FiberAnisotropyExtension<1>& GetFiberAnisotropyExtension() override
+      FiberAnisotropyExtension<1>& get_fiber_anisotropy_extension() override
       {
         return anisotropy_extension_;
       }
 
      protected:
-      const CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface() const override
+      const CoupAnisoExpoBaseInterface& get_coup_aniso_expo_base_interface() const override
       {
         return anisotropy_extension_;
       }

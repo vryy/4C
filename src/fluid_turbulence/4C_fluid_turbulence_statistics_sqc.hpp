@@ -84,7 +84,7 @@ namespace FLD
      This method allows to do the time average after a certain amount of
      timesteps.
     */
-    void DoLiftDragTimeSample(double dragforce, double liftforce);
+    void do_lift_drag_time_sample(double dragforce, double liftforce);
 
     /*!
     \brief The values of velocity and its squared values are added to

@@ -41,7 +41,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
           dynamic_cast<const DRT::ELEMENTS::FluidHDGWeakComp*>(ele))
   {
     // use complete polynomial space
-    usescompletepoly_ = hdgwkele->UsesCompletePolynomialSpace();
+    usescompletepoly_ = hdgwkele->uses_complete_polynomial_space();
 
     // initialize shapes
     if (shapes_ == Teuchos::null)
@@ -104,8 +104,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
   local_solver_->InitializeAll();
 
   // compute interior residual and matrices
-  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, ale_vel_);
-  local_solver_->ComputeInteriorMatrices(mat);
+  local_solver_->compute_interior_residual(mat, interior_val_, interior_acc_, ale_vel_);
+  local_solver_->compute_interior_matrices(mat);
 
   // compute face residual and face matrices
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -116,18 +116,18 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
   }
 
   // group residuals
-  local_solver_->ComputeLocalResidual();
-  local_solver_->ComputeGlobalResidual(*ele);
+  local_solver_->compute_local_residual();
+  local_solver_->compute_global_residual(*ele);
 
   // group matrices
-  local_solver_->ComputeLocalLocalMatrix();
-  local_solver_->ComputeLocalGlobalMatrix(*ele);
-  local_solver_->ComputeGlobalLocalMatrix(*ele);
-  local_solver_->ComputeGlobalGlobalMatrix(*ele);
+  local_solver_->compute_local_local_matrix();
+  local_solver_->compute_local_global_matrix(*ele);
+  local_solver_->compute_global_local_matrix(*ele);
+  local_solver_->compute_global_global_matrix(*ele);
 
   // condense local part
-  local_solver_->InvertLocalLocalMatrix();
-  local_solver_->CondenseLocalResidual(elevec1);
+  local_solver_->invert_local_local_matrix();
+  local_solver_->condense_local_residual(elevec1);
   local_solver_->CondenseLocalMatrix(elemat1);
 
   // divide rhs by alpha_f
@@ -233,7 +233,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMEN
     }
     case FLD::interpolate_hdg_to_node:
     {
-      return InterpolateSolutionToNodes(ele, discretization, elevec1);
+      return interpolate_solution_to_nodes(ele, discretization, elevec1);
       break;
     }
     case FLD::calc_fluid_error:
@@ -268,8 +268,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
   local_solver_->InitializeAll();
 
   // compute interior residual and matrices
-  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, ale_vel_);
-  local_solver_->ComputeInteriorMatrices(mat);
+  local_solver_->compute_interior_residual(mat, interior_val_, interior_acc_, ale_vel_);
+  local_solver_->compute_interior_matrices(mat);
 
   // compute face residual and face matrices
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -280,14 +280,14 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
   }
 
   // group residuals
-  local_solver_->ComputeLocalResidual();
+  local_solver_->compute_local_residual();
 
   // group matrices
-  local_solver_->ComputeLocalLocalMatrix();
-  local_solver_->ComputeLocalGlobalMatrix(*ele);
+  local_solver_->compute_local_local_matrix();
+  local_solver_->compute_local_global_matrix(*ele);
 
   // invert local-local matrix
-  local_solver_->InvertLocalLocalMatrix();
+  local_solver_->invert_local_local_matrix();
 
   // extract local trace increments
   std::vector<double> localtraceinc_vec;
@@ -484,7 +484,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
       // This function returns th value of the interior variables from the
       // given initial field that can be a know field or a user-defined one
-      EvaluateDensityMomentum(*startfunc, xyz, 0.0, r, w);
+      evaluate_density_momentum(*startfunc, xyz, 0.0, r, w);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -570,7 +570,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
       if (initfield != nullptr)  // Initial function
-        EvaluateDensityMomentum(*startfunc, xyz, 0.0, r, w);
+        evaluate_density_momentum(*startfunc, xyz, 0.0, r, w);
       else
       {
         // This is used to project a function only on the boundary during the
@@ -582,7 +582,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
         if ((*onoff)[0] == 1)
         {
           const int funct_num = (*functno)[0];
-          if (funct_num > 0) EvaluateDensityMomentum(funct_num, xyz, *time, r, dummy_w);
+          if (funct_num > 0) evaluate_density_momentum(funct_num, xyz, *time, r, dummy_w);
         }
 
         for (unsigned int d = 0; d < nsd_; ++d)
@@ -592,7 +592,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
           // If we are using the function, evaluate it
           const int funct_num = (*functno)[1 + d];
-          if (funct_num > 0) EvaluateDensityMomentum(funct_num, xyz, *time, dummy_r, w);
+          if (funct_num > 0) evaluate_density_momentum(funct_num, xyz, *time, dummy_r, w);
         }
       }
       // now fill the components in the mass matrix and the right hand side
@@ -646,7 +646,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
+int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nodes(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -854,7 +854,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(const int funcnum,
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momentum(const int funcnum,
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r,
     CORE::LINALG::Matrix<nsd_, 1>& w) const
 {
@@ -1034,7 +1034,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMaterialMatrix(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_material_matrix(
     const Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseMatrix& DL, CORE::LINALG::SerialDenseMatrix& Dw)
 {
@@ -1092,7 +1092,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteriorResidual(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_residual(
     const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const std::vector<double>& alevel)
 {
@@ -1152,7 +1152,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
     for (unsigned int d = 0; d < nsd_; ++d) dwdte(d, i) = accel[(msd_ + 1 + d) * ndofs_ + i];
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyze, DLe, Dwe);
+    compute_material_matrix(mat, xyze, DLe, Dwe);
 
     for (unsigned int d = 0; d < nsd_; ++d)
       for (unsigned int e = 0; e < nsd_; ++e) DwLe(d, i) += Dwe(d, e) * Le(e, i);
@@ -1209,7 +1209,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
     }
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyzeg, DLeg, Dweg);
+    compute_material_matrix(mat, xyzeg, DLeg, Dweg);
 
     // interpolate ale values on gauss points
     if (ale)
@@ -1292,7 +1292,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteriorMatrices(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_matrices(
     const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   // get material properties
@@ -1320,7 +1320,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
     for (unsigned int d = 0; d < nsd_; ++d) xyze(d) = shapes_.nodexyzreal(d, i);
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyze, DLe, Dwe);
+    compute_material_matrix(mat, xyze, DLe, Dwe);
 
     for (unsigned int d = 0; d < nsd_; ++d)
       for (unsigned int e = 0; e < nsd_; ++e) Dwemod(d * nsd_ + e, i) = Dwe(d, e);
@@ -1341,7 +1341,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
     for (unsigned int d = 0; d < nsd_; ++d) xyzeg(d) = shapes_.xyzreal(d, q);
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyzeg, DLeg, Dweg);
+    compute_material_matrix(mat, xyzeg, DLeg, Dweg);
 
     for (unsigned int i = 0; i < ndofs_; ++i)
     {
@@ -1571,7 +1571,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
     for (unsigned int d = 0; d < nsd_; ++d) xyzefg(d) = shapesface_.xyzreal(d, q);
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyzefg, DLefg, Dwefg);
+    compute_material_matrix(mat, xyzefg, DLefg, Dwefg);
 
     // compute residuals (interior contributions)
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1682,7 +1682,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
     for (unsigned int d = 0; d < nsd_; ++d) xyzefg(d) = shapesface_.xyzreal(d, q);
 
     // compute material matrix
-    ComputeMaterialMatrix(mat, xyzefg, DLefg, Dwefg);
+    compute_material_matrix(mat, xyzefg, DLefg, Dwefg);
 
     // compute matrices (interior - interior contributions)
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1814,7 +1814,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalResidual()
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_residual()
 {
   // fill vector
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1831,7 +1831,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalR
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalResidual(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_residual(
     DRT::ELEMENTS::Fluid& ele)
 {
   // loop in faces
@@ -1857,7 +1857,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalLocalMatrix()
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_local_matrix()
 {
   // fill matrix
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1900,7 +1900,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalL
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalGlobalMatrix(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_global_matrix(
     DRT::ELEMENTS::Fluid& ele)
 {
   // loop in faces
@@ -1951,7 +1951,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeLocalG
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalLocalMatrix(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_local_matrix(
     DRT::ELEMENTS::Fluid& ele)
 {
   // loop in faces
@@ -1988,7 +1988,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobalGlobalMatrix(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_global_matrix(
     DRT::ELEMENTS::Fluid& ele)
 {
   // loop in faces
@@ -2026,7 +2026,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeGlobal
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLocalMatrix()
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::invert_local_local_matrix()
 {
   KlocallocalInv = Klocallocal;
   KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv));
@@ -2037,7 +2037,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLo
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocalResidual(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_local_residual(
     CORE::LINALG::SerialDenseVector& eleVec)
 {
   // initialize element vector
@@ -2075,7 +2075,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::PrintMatricesAndResiduals(
+void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_matrices_and_residuals(
     DRT::ELEMENTS::Fluid& ele, CORE::LINALG::SerialDenseVector& eleVec,
     CORE::LINALG::SerialDenseMatrix& eleMat)
 {

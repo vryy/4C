@@ -65,21 +65,21 @@ namespace BEAMINTERACTION
     }
 
     /// number of crosslinkers per type
-    std::vector<int> const& NumCrosslinkerPerType() const
+    std::vector<int> const& num_crosslinker_per_type() const
     {
       CheckInitSetup();
       return numcrosslinkerpertype_;
     };
 
     /// number of crosslinkers per type
-    int NumInitCrosslinkerPerCrosslinkerMatId(int matid) const
+    int num_init_crosslinker_per_crosslinker_mat_id(int matid) const
     {
       CheckInitSetup();
       return maxnum_init_crosslinker_pertype_.at(matid);
     };
 
     /// number of crosslinkers per type
-    int TotalNumInitCrosslinker() const
+    int total_num_init_crosslinker() const
     {
       CheckInitSetup();
       int sum = 0;
@@ -88,7 +88,7 @@ namespace BEAMINTERACTION
     };
 
     /// material number for crosslinker types
-    std::vector<int> const& MatCrosslinkerPerType() const
+    std::vector<int> const& mat_crosslinker_per_type() const
     {
       CheckInitSetup();
       return matcrosslinkerpertype_;
@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
     };
 
     /// number of different crosslinker types in simulation volume
-    int NumberOfCrosslinkerTypes() const
+    int number_of_crosslinker_types() const
     {
       CheckInitSetup();
       return static_cast<int>(numcrosslinkerpertype_.size());
@@ -130,35 +130,36 @@ namespace BEAMINTERACTION
     };
 
     /// time step for stochastic events concerning crosslinking
-    CORE::LINALG::Matrix<3, 2> const& LinkerInitializationBox() const
+    CORE::LINALG::Matrix<3, 2> const& linker_initialization_box() const
     {
       CheckInitSetup();
       return init_box_;
     };
 
     // distance between two binding spots on a filament
-    int MaxNumberOfBondsPerFilamentBspot(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+    int max_number_of_bonds_per_filament_bspot(
+        INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
       return max_num_bonds_per_filament_bspot_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
-    double FilamentBspotIntervalGlobal(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+    double filament_bspot_interval_global(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
       return filamentbspotintervalglobal_.at(linkertype);
     };
 
     // distance between two binding spots on a filament
-    double FilamentBspotIntervalLocal(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+    double filament_bspot_interval_local(INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
       return filamentbspotintervallocal_.at(linkertype);
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::pair<double, double> const& FilamentBspotRangeLocal(
+    std::pair<double, double> const& filament_bspot_range_local(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();
@@ -166,7 +167,7 @@ namespace BEAMINTERACTION
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::pair<double, double> const& FilamentBspotRangeGlobal(
+    std::pair<double, double> const& filament_bspot_range_global(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       CheckInitSetup();

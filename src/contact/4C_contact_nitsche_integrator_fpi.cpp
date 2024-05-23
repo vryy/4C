@@ -40,10 +40,10 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
   // do quick orientation check
   CORE::LINALG::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
-  sele.ComputeUnitNormalAtXi(center, sn.A());
+  sele.compute_unit_normal_at_xi(center, sn.A());
   for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
-    (*mit)->ComputeUnitNormalAtXi(center, mn.A());
+    (*mit)->compute_unit_normal_at_xi(center, mn.A());
     if (sn.Dot(mn) > -1e-1)
     {
       meles.erase(mit);
@@ -53,8 +53,8 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
 
   if (!meles.size()) return;
 
-  if (xf_c_comm_->HigherIntegrationforContactElement(sele.Id()))
-    xf_c_comm_->GetCutSideIntegrationPoints(sele.Id(), coords_, weights_, ngp_);
+  if (xf_c_comm_->higher_integrationfor_contact_element(sele.Id()))
+    xf_c_comm_->get_cut_side_integration_points(sele.Id(), coords_, weights_, ngp_);
 
   // Call Base Contact Integratederiv with potentially increased number of GPs!
   CONTACT::Integrator::IntegrateDerivEle3D(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
@@ -76,7 +76,7 @@ void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
   // Here the consistent element normal is use to allow for a continous transition between FSI and
   // Contact
   double n[3];
-  sele.ComputeUnitNormalAtXi(sxi, n);
+  sele.compute_unit_normal_at_xi(sxi, n);
   std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
@@ -119,7 +119,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   CONTACT::UTILS::MapGPtoParent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
 
   bool gp_on_this_proc;
-  double normal_contact_transition = GetNormalContactTransition<dim>(
+  double normal_contact_transition = get_normal_contact_transition<dim>(
       sele, mele, sval, mval, sxi, pxsi, normal, FSI_integrated, gp_on_this_proc);
 
 #ifdef WRITE_GMSH
@@ -163,20 +163,20 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 #endif
 
 
-  if (!FSI_integrated || (gap < (1 + xf_c_comm_->Get_fpi_pcontact_fullfraction()) *
-                                     xf_c_comm_->Get_fpi_pcontact_exchange_dist() &&
-                             xf_c_comm_->Get_fpi_pcontact_exchange_dist() > 1e-16))
+  if (!FSI_integrated || (gap < (1 + xf_c_comm_->get_fpi_pcontact_fullfraction()) *
+                                     xf_c_comm_->get_fpi_pcontact_exchange_dist() &&
+                             xf_c_comm_->get_fpi_pcontact_exchange_dist() > 1e-16))
   {
     double ffac = 1;
-    if (gap < (1 + xf_c_comm_->Get_fpi_pcontact_fullfraction()) *
-                  xf_c_comm_->Get_fpi_pcontact_exchange_dist() &&
+    if (gap < (1 + xf_c_comm_->get_fpi_pcontact_fullfraction()) *
+                  xf_c_comm_->get_fpi_pcontact_exchange_dist() &&
         FSI_integrated &&
-        gap > xf_c_comm_->Get_fpi_pcontact_fullfraction() *
-                  xf_c_comm_->Get_fpi_pcontact_exchange_dist())
-      ffac = 1. - (gap / (xf_c_comm_->Get_fpi_pcontact_exchange_dist()) -
-                      xf_c_comm_->Get_fpi_pcontact_fullfraction());
+        gap > xf_c_comm_->get_fpi_pcontact_fullfraction() *
+                  xf_c_comm_->get_fpi_pcontact_exchange_dist())
+      ffac = 1. - (gap / (xf_c_comm_->get_fpi_pcontact_exchange_dist()) -
+                      xf_c_comm_->get_fpi_pcontact_fullfraction());
 
-    IntegratePoroNoOutFlow<dim>(
+    integrate_poro_no_out_flow<dim>(
         -ffac, sele, sxi, sval, sderiv, jac, jacintcellmap, wgt, normal, dnmap_unit, mele, mval);
 #ifdef WRITE_GMSH
     {
@@ -217,12 +217,12 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
       xf_c_comm_->Gmsh_Write(sgp_x, 2.0, 2);
     }
 #endif
-    UpdateEleContactState(sele, 0);
+    update_ele_contact_state(sele, 0);
   }
 
   if (snn_pengap >= normal_contact_transition)
   {
-    UpdateEleContactState(sele, -1);
+    update_ele_contact_state(sele, -1);
     if (!FSI_integrated)
       xf_c_comm_->Inc_GP(1);
     else
@@ -254,7 +254,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
       d_snn_av_pen_gap, cauchy_nn_weighted_average_deriv_p, normal, dnmap_unit);
 
-  UpdateEleContactState(sele, 1);
+  update_ele_contact_state(sele, 1);
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
@@ -269,26 +269,26 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   xf_c_comm_->Inc_GP(0);
 }
 
-void CONTACT::IntegratorNitscheFpi::UpdateEleContactState(MORTAR::Element& sele, int state)
+void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(MORTAR::Element& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
     ele_contact_state_ = state;
-    xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
   }
   else if (ele_contact_state_ == -2)
     ele_contact_state_ = state;
   else if (ele_contact_state_ == -state)  // switch between contact and no contact
   {
     ele_contact_state_ = 0;
-    xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double CONTACT::IntegratorNitscheFpi::GetNormalContactTransition(MORTAR::Element& sele,
+double CONTACT::IntegratorNitscheFpi::get_normal_contact_transition(MORTAR::Element& sele,
     MORTAR::Element& mele, const CORE::LINALG::SerialDenseVector& sval,
     const CORE::LINALG::SerialDenseVector& mval, const double* sxi,
     const CORE::LINALG::Matrix<dim, 1>& pxsi, const CORE::LINALG::Matrix<dim, 1>& normal,

@@ -113,14 +113,14 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
     // independent of number of procs
-    ComputeNearestAcinus(discret_, &elecolset, &nodecolset, Teuchos::null);
+    compute_nearest_acinus(discret_, &elecolset, &nodecolset, Teuchos::null);
 
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
     Teuchos::RCP<const Epetra_Map> extendedelecolmap =
         Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, discret_->Comm()));
 
-    discret_->ExportColumnElements(*extendedelecolmap);
+    discret_->export_column_elements(*extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
@@ -131,11 +131,11 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->FillComplete();
-    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret_);
+    CORE::REBALANCE::UTILS::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
     airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
-    ComputeNearestAcinus(discret_, nullptr, nullptr, airway_acinus_dep_);
+    compute_nearest_acinus(discret_, nullptr, nullptr, airway_acinus_dep_);
   }
 
   // -------------------------------------------------------------------
@@ -433,7 +433,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
   // Do prestressing if required
   if (calcV0PreStress_)
   {
-    ComputeVol0ForPreStress();
+    compute_vol0_for_pre_stress();
   }
 
   // Get coupling parameters in case of 3D/0D coupling
@@ -463,7 +463,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
  | volume of each acinus reaches the given volume in the .dat file when p_tp is|
  | applied                                                        roth 05/2015 |
  *-----------------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
+void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 {
   double p = transpulmpress_;
 
@@ -538,7 +538,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
 /*-----------------------------------------------------------------------------*
  |                                                                roth 02/2016 |
  *-----------------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::ComputeNearestAcinus(
+void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     Teuchos::RCP<DRT::Discretization const> search_discret, std::set<int>* elecolset,
     std::set<int>* nodecolset, Teuchos::RCP<Epetra_Vector> airway_acinus_dep)
 {
@@ -1080,7 +1080,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
 
-    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    CORE::LINALG::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   /***
@@ -2400,7 +2400,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
   // Apply the BCs to the system matrix and rhs
   {
-    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    CORE::LINALG::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   // Evaluate Residual
@@ -2413,7 +2413,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::SetAirwayFluxFromTissue(Teuchos::RCP<Epetra_Vector> coupflux)
+void AIRWAY::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
+    Teuchos::RCP<Epetra_Vector> coupflux)
 {
   const Epetra_BlockMap& condmap = coupflux->Map();
 

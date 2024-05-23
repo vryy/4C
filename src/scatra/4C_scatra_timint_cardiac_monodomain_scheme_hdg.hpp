@@ -44,10 +44,10 @@ namespace SCATRA
     void OutputState() override;
 
    protected:
-    void ElementMaterialTimeUpdate() override;
+    void element_material_time_update() override;
 
     //! write problem specific output
-    void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
+    void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
 
     //! adapt material
     void PackMaterial() override;

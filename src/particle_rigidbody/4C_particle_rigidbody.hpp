@@ -118,7 +118,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[out] particlestatestotypes map of particle types and corresponding states
      */
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
@@ -130,7 +130,7 @@ namespace PARTICLERIGIDBODY
      * \param[in] step output step
      * \param[in] time output time
      */
-    void WriteRigidBodyRuntimeOutput(const int step, const double time) const;
+    void write_rigid_body_runtime_output(const int step, const double time) const;
 
     /*!
      * \brief set initial affiliation pair data
@@ -141,7 +141,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetInitialAffiliationPairData();
+    void set_initial_affiliation_pair_data();
 
     /*!
      * \brief set unique global ids for all rigid bodies
@@ -151,14 +151,14 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetUniqueGlobalIdsForAllRigidBodies();
+    void set_unique_global_ids_for_all_rigid_bodies();
 
     /*!
      * \brief allocate rigid body states
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void AllocateRigidBodyStates();
+    void allocate_rigid_body_states();
 
     /*!
      * \brief initialize rigid body mass quantities and orientation
@@ -169,7 +169,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void InitializeRigidBodyMassQuantitiesAndOrientation();
+    void initialize_rigid_body_mass_quantities_and_orientation();
 
     /*!
      * \brief distribute rigid body
@@ -183,7 +183,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void CommunicateRigidBody();
+    void communicate_rigid_body();
 
     /*!
      * \brief clear forces and torques
@@ -193,7 +193,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearForcesAndTorques();
+    void clear_forces_and_torques();
 
     /*!
      * \brief add gravity acceleration
@@ -204,7 +204,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] gravity gravity acceleration
      */
-    void AddGravityAcceleration(std::vector<double>& gravity);
+    void add_gravity_acceleration(std::vector<double>& gravity);
 
     /*!
      * \brief compute accelerations of rigid bodies
@@ -216,7 +216,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputeAccelerations();
+    void compute_accelerations();
 
     /*!
      * \brief update positions with given time increment
@@ -263,7 +263,7 @@ namespace PARTICLERIGIDBODY
      *
      * \return have phase change
      */
-    bool HaveRigidBodyPhaseChange(
+    bool have_rigid_body_phase_change(
         const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
 
     /*!
@@ -276,10 +276,11 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] particlesfromphasetophase particle phase change tuples
      */
-    void EvaluateRigidBodyPhaseChange(
+    void evaluate_rigid_body_phase_change(
         const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
 
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
+    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> get_rigid_body_data_state()
+        const override
     {
       return rigidbodydatastate_;
     }
@@ -291,7 +292,7 @@ namespace PARTICLERIGIDBODY
      *
      * Evaluate initial conditions of rigid particles.
      */
-    void SetInitialConditions();
+    void set_initial_conditions();
 
    private:
     /*!
@@ -299,28 +300,28 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void InitRigidBodyUniqueGlobalIdHandler();
+    void init_rigid_body_unique_global_id_handler();
 
     /*!
      * \brief init rigid body data state container
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void InitRigidBodyDataState();
+    void init_rigid_body_data_state();
 
     /*!
      * \brief init rigid body runtime vtp writer
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void InitRigidBodyVtpWriter();
+    void init_rigid_body_vtp_writer();
 
     /*!
      * \brief init affiliation pair handler
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void InitAffiliationPairHandler();
+    void init_affiliation_pair_handler();
 
     /*!
      * \brief get packed rigid body state data
@@ -331,7 +332,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[out] buffer buffer of packed rigid body state data
      */
-    void GetPackedRigidBodyStates(std::vector<char>& buffer) const;
+    void get_packed_rigid_body_states(std::vector<char>& buffer) const;
 
     /*!
      * \brief extract packed rigid body state data
@@ -340,7 +341,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] buffer buffer of packed rigid body state data
      */
-    void ExtractPackedRigidBodyStates(std::vector<char>& buffer);
+    void extract_packed_rigid_body_states(std::vector<char>& buffer);
 
     /*!
      * \brief update rigid body ownership
@@ -349,7 +350,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 11/2020
      */
-    void UpdateRigidBodyOwnership();
+    void update_rigid_body_ownership();
 
     /*!
      * \brief determine owned and hosted rigid bodies
@@ -361,7 +362,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void DetermineOwnedAndHostedRigidBodies();
+    void determine_owned_and_hosted_rigid_bodies();
 
     /*!
      * \brief relate owned rigid bodies to all hosting processors
@@ -371,7 +372,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void RelateOwnedRigidBodiesToHostingProcs();
+    void relate_owned_rigid_bodies_to_hosting_procs();
 
     /*!
      * \brief communicate rigid body states
@@ -383,7 +384,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] previouslyownedrigidbodies rigid bodies previously owned by this processor
      */
-    void CommunicateRigidBodyStates(std::vector<int>& previouslyownedrigidbodies);
+    void communicate_rigid_body_states(std::vector<int>& previouslyownedrigidbodies);
 
     /*!
      * \brief compute mass quantities of rigid bodies
@@ -393,7 +394,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputeRigidBodyMassQuantities();
+    void compute_rigid_body_mass_quantities();
 
     /*!
      * \brief clear partial mass quantities of rigid bodies
@@ -402,7 +403,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearPartialMassQuantities();
+    void clear_partial_mass_quantities();
 
     /*!
      * \brief compute partial mass quantities of rigid bodies
@@ -411,7 +412,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputePartialMassQuantities();
+    void compute_partial_mass_quantities();
 
     /*!
      * \brief gather partial mass quantities of rigid bodies
@@ -425,7 +426,7 @@ namespace PARTICLERIGIDBODY
      * \param[out] gatheredpartialinertia  gathered partial inertia
      * \param[out] gatheredpartialposition gathered partial position
      */
-    void GatherPartialMassQuantities(
+    void gather_partial_mass_quantities(
         std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition);
@@ -442,7 +443,7 @@ namespace PARTICLERIGIDBODY
      * \param[in] gatheredpartialinertia  gathered partial inertia
      * \param[in] gatheredpartialposition gathered partial position
      */
-    void ComputeFullMassQuantities(
+    void compute_full_mass_quantities(
         std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
         std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition);
@@ -454,7 +455,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearRigidBodyForceAndTorque();
+    void clear_rigid_body_force_and_torque();
 
     /*!
      * \brief clear force acting on rigid particles
@@ -463,7 +464,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearRigidParticleForce();
+    void clear_rigid_particle_force();
 
     /*!
      * \brief compute partial force and torque acting on rigid bodies
@@ -473,7 +474,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputePartialForceAndTorque();
+    void compute_partial_force_and_torque();
 
     /*!
      * \brief gather partial and compute full force and torque acting on rigid bodies
@@ -483,7 +484,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void GatherPartialAndComputeFullForceAndTorque();
+    void gather_partial_and_compute_full_force_and_torque();
 
     /*!
      * \brief compute accelerations of rigid bodies from force and torque
@@ -493,7 +494,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ComputeAccelerationsFromForceAndTorque();
+    void compute_accelerations_from_force_and_torque();
 
     /*!
      * \brief clear orientation of rigid bodies
@@ -502,7 +503,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearRigidBodyOrientation();
+    void clear_rigid_body_orientation();
 
     /*!
      * \brief update positions of rigid bodies with given time increment
@@ -513,7 +514,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] timeincrement time increment
      */
-    void UpdateRigidBodyPositions(const double timeincrement);
+    void update_rigid_body_positions(const double timeincrement);
 
     /*!
      * \brief update velocities of rigid bodies with given time increment
@@ -524,7 +525,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] timeincrement time increment
      */
-    void UpdateRigidBodyVelocities(const double timeincrement);
+    void update_rigid_body_velocities(const double timeincrement);
 
     /*!
      * \brief clear accelerations of rigid bodies
@@ -533,7 +534,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearRigidBodyAccelerations();
+    void clear_rigid_body_accelerations();
 
     /*!
      * \brief broadcast positions of rigid bodies
@@ -542,7 +543,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void BroadcastRigidBodyPositions();
+    void broadcast_rigid_body_positions();
 
     /*!
      * \brief broadcast velocities of rigid bodies
@@ -552,7 +553,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void BroadcastRigidBodyVelocities();
+    void broadcast_rigid_body_velocities();
 
     /*!
      * \brief broadcast accelerations of rigid bodies
@@ -562,7 +563,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void BroadcastRigidBodyAccelerations();
+    void broadcast_rigid_body_accelerations();
 
     /*!
      * \brief set relative position of rigid particles in body frame
@@ -571,7 +572,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticleRelativePositionInBodyFrame();
+    void set_rigid_particle_relative_position_in_body_frame();
 
     /*!
      * \brief update relative position of rigid particles
@@ -581,7 +582,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void UpdateRigidParticleRelativePosition();
+    void update_rigid_particle_relative_position();
 
     /*!
      * \brief set position of rigid particles
@@ -591,7 +592,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticlePosition();
+    void set_rigid_particle_position();
 
     /*!
      * \brief set velocities of rigid particles
@@ -601,7 +602,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticleVelocities();
+    void set_rigid_particle_velocities();
 
     /*!
      * \brief set accelerations of rigid particles
@@ -611,7 +612,7 @@ namespace PARTICLERIGIDBODY
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticleAccelerations();
+    void set_rigid_particle_accelerations();
 
     /*!
      * \brief evaluate melting of rigid bodies
@@ -620,7 +621,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] particlesfromphasetophase particle phase change tuples
      */
-    void EvaluateRigidBodyMelting(
+    void evaluate_rigid_body_melting(
         const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
 
     /*!
@@ -630,7 +631,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] particlesfromphasetophase particle phase change tuples
      */
-    void EvaluateRigidBodySolidification(
+    void evaluate_rigid_body_solidification(
         const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
 
     /*!
@@ -642,7 +643,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] previousposition previous position of rigid bodies
      */
-    void SetRigidBodyVelocitiesAfterPhaseChange(
+    void set_rigid_body_velocities_after_phase_change(
         const std::vector<std::vector<double>>& previousposition);
 
     //! communicator

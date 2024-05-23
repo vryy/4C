@@ -147,11 +147,11 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::DoVcycle(
 
     //  Create coarser representation of the residual
     int NV = X.GetVector(0)->NumVectors();
-    Teuchos::RCP<BlockedVector> DXcoarse = rvec_[level]->NewRangeBlockedVector(NV, false);
+    Teuchos::RCP<BlockedVector> DXcoarse = rvec_[level]->new_range_blocked_vector(NV, false);
     rvec_[level]->Apply(DX, *DXcoarse);
 
     // Damp error with coarser levels
-    Teuchos::RCP<BlockedVector> DYcoarse = pvec_[level]->NewDomainBlockedVector(NV, false);
+    Teuchos::RCP<BlockedVector> DYcoarse = pvec_[level]->new_domain_blocked_vector(NV, false);
     DoVcycle(*DXcoarse, *DYcoarse, level + 1, true);
 
     // Compute correction

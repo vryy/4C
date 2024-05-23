@@ -82,7 +82,7 @@ namespace GEOMETRYPAIR
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
      */
-    static void ProjectPointOnLineToOther(const pair_type* pair,
+    static void project_point_on_line_to_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
         CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
@@ -99,7 +99,7 @@ namespace GEOMETRYPAIR
      * @param n_projections_valid (out) Number of valid projections.
      * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      */
-    static void ProjectPointsOnLineToOther(const pair_type* pair,
+    static void project_points_on_line_to_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -116,7 +116,7 @@ namespace GEOMETRYPAIR
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
      */
-    static void ProjectPointsOnLineToOther(const pair_type* pair,
+    static void project_points_on_line_to_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -132,7 +132,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segment (in/out) Vector with found projection points.
      */
-    static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
+    static void project_gauss_points_on_segment_to_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         LineSegment<scalar_type>& segment);
@@ -146,7 +146,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param intersection_points (out) vector with the found surface intersections.
      */
-    static void IntersectLineWithOther(const pair_type* pair,
+    static void intersect_line_with_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points);
@@ -213,7 +213,7 @@ namespace GEOMETRYPAIR
      * @param pair (in) Pointer to the pair object that is being evaluated.
      * @return  reference to line projection vector.
      */
-    static std::vector<bool>& GetLineProjectionVector(const pair_type* pair);
+    static std::vector<bool>& get_line_projection_vector(const pair_type* pair);
   };
 
 
@@ -281,7 +281,7 @@ namespace GEOMETRYPAIR
      * case.
      * @return Reference to segment tracking vector.
      */
-    static std::set<LineSegment<double>>& GetSegmentTrackingSet(const pair_type* pair);
+    static std::set<LineSegment<double>>& get_segment_tracking_set(const pair_type* pair);
   };
 
 }  // namespace GEOMETRYPAIR

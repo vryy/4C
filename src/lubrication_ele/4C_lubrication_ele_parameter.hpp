@@ -42,7 +42,7 @@ namespace DRT
       );
 
       //! set parameters
-      void SetGeneralParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_general_parameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
       double Time() const { return time_; };

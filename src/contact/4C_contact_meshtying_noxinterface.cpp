@@ -50,7 +50,7 @@ void CONTACT::MtNoxInterface::Setup()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
+double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
     NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
@@ -74,7 +74,7 @@ double CONTACT::MtNoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
+double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
     const Epetra_Vector& xOld, double aTol, double rTol,
     NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
 {
@@ -100,7 +100,7 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vect
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
+double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
     const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
     ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
@@ -127,7 +127,7 @@ double CONTACT::MtNoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Ve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
+double CONTACT::MtNoxInterface::get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
     NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {

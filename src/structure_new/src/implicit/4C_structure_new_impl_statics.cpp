@@ -238,7 +238,7 @@ void STR::IMPLICIT::Statics::UpdateStepElement()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(
+void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
@@ -252,7 +252,7 @@ void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::PredictConstVelConsistAcc(
+bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
@@ -264,7 +264,7 @@ bool STR::IMPLICIT::Statics::PredictConstVelConsistAcc(
       Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
   disp_inc->Update((*GlobalState().GetDeltaTime())[0], *GlobalState().GetVelN(), 0.);
   // apply the dbc on the auxiliary vector
-  TimInt().GetDBC().ApplyDirichletToVector(disp_inc);
+  TimInt().GetDBC().apply_dirichlet_to_vector(disp_inc);
   // update the solution variables
   disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
   disnp.Update(1.0, *disp_inc, 1.0);
@@ -282,7 +282,7 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
   CheckInitSetup();
   // If there is not enough history information try a different predictor with
   // less requirements.
-  if (GlobalState().GetStepN() < 2) return PredictConstVelConsistAcc(disnp, velnp, accnp);
+  if (GlobalState().GetStepN() < 2) return predict_const_vel_consist_acc(disnp, velnp, accnp);
 
   // Displacement increment over last time step
   Teuchos::RCP<Epetra_Vector> disp_inc =
@@ -291,7 +291,7 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
   disp_inc->Update(dt, *GlobalState().GetVelN(), 0.);
   disp_inc->Update(0.5 * dt * dt, *GlobalState().GetAccN(), 1.0);
   // apply the dbc on the auxiliary vector
-  TimInt().GetDBC().ApplyDirichletToVector(disp_inc);
+  TimInt().GetDBC().apply_dirichlet_to_vector(disp_inc);
   // update the solution variables
   disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
   disnp.Update(1., *disp_inc, 1.);
@@ -318,11 +318,11 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
 
   SetState(disnp);
 
-  EvalData().ClearValuesForAllEnergyTypes();
+  EvalData().clear_values_for_all_energy_types();
   STR::MODELEVALUATOR::Structure& str_model =
       dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
 
-  str_model.DetermineStrainEnergy(disnp, true);
+  str_model.determine_strain_energy(disnp, true);
   const double int_energy_np = EvalData().GetEnergyData(STR::internal_energy);
   double ext_energy_np = 0.0;
   GlobalState().GetFextNp()->Dot(disnp, &ext_energy_np);

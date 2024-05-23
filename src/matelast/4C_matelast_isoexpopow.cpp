@@ -36,7 +36,7 @@ void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const CORE::LINALG::
   if (k2 != 0) psi += k1 / (2. * k2) * (exp(k2 * pow(modinv(0) - 3., d)) - 1.);
 }
 
-void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+void MAT::ELASTIC::IsoExpoPow::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
     CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {

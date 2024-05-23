@@ -53,10 +53,10 @@ namespace FLD
     \brief parameter (fix over all time step) are set in this method.
            Therefore, these parameter are accessible in the fluid element
            and in the fluid boundary element*/
-    virtual void SetElementCustomParameter();
+    virtual void set_element_custom_parameter();
 
     //! set the initial porosity field
-    void SetInitialPorosityField(
+    void set_initial_porosity_field(
         const INPAR::POROELAST::InitialField init,  //!< type of initial field
         const int startfuncno                       //!< number of spatial function
         ) override;
@@ -65,7 +65,7 @@ namespace FLD
     \brief update iterative increment
 
     */
-    void UpdateIterIncrementally(
+    void update_iter_incrementally(
         Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
         ) override;
 
@@ -85,7 +85,7 @@ namespace FLD
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
+    void set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams) override;
 
     /*!
 
@@ -94,7 +94,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void TimIntCalculateAcceleration() override;
+    void tim_int_calculate_acceleration() override;
 
     /*!
 
@@ -103,7 +103,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementGeneralFluidParameter() override;
+    void set_element_general_fluid_parameter() override;
 
     /*!
 
@@ -112,7 +112,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTurbulenceParameters() override;
+    void set_element_turbulence_parameters() override;
 
 
    protected:

@@ -118,7 +118,7 @@ namespace MAT
     }
 
     /// return initial porosity
-    double RefPorosityTimeDeriv() const override { return dphiDphiref_ * refporositydot_; }
+    double ref_porosity_time_deriv() const override { return dphiDphiref_ * refporositydot_; }
 
     /// compute current porosity and save it
     void ComputePorosity(Teuchos::ParameterList& params,  ///< (i) element parameter list
@@ -135,7 +135,7 @@ namespace MAT
         bool save = true) override;
 
     //! evaluate constitutive relation for porosity and compute derivatives
-    void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
+    void constitutive_derivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
         double press,        ///< (i) fluid pressure at gauss point
         double J,            ///< (i) Jacobian determinant at gauss point
         double porosity,     ///< (i) porosity at gauss point

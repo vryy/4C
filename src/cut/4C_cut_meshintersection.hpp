@@ -72,7 +72,7 @@ namespace CORE::GEO
       void BuildSelfCutTree();
 
       /// build the static search tree for the collision detection
-      void BuildStaticSearchTree();
+      void build_static_search_tree();
 
       /*========================================================================*/
       //! @name Cut functionality, routines
@@ -90,14 +90,14 @@ namespace CORE::GEO
       void Cut_SelfCut(bool include_inner, bool screenoutput = true) override;
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
-      void Cut_CollisionDetection(bool include_inner, bool screenoutput = true) override;
+      void cut_collision_detection(bool include_inner, bool screenoutput = true) override;
 
       /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-      void Cut_MeshIntersection(bool screenoutput = true) override;
+      void cut_mesh_intersection(bool screenoutput = true) override;
 
       /// Routine for deciding the inside-outside position. This creates the dofset data, just
       /// serial
-      void Cut_Positions_Dofsets(bool include_inner, bool screenoutput = true);
+      void cut_positions_dofsets(bool include_inner, bool screenoutput = true);
 
       /*========================================================================*/
       //! @name get routines for nodes, elements, sides, mesh, meshhandles

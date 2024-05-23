@@ -72,7 +72,7 @@ namespace POROMULTIPHASE
     void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override;
 
     /// set (relaxed) fluid solution on structure field
-    void SetRelaxedFluidSolution() override;
+    void set_relaxed_fluid_solution() override;
 
     /// perform aitken
     void AitkenRelaxation(double& omega, const int itnum);

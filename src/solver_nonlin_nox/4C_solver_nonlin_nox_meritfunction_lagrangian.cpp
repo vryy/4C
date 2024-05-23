@@ -75,12 +75,12 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
     throwError("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
-  return constr_grp_ptr->GetLinearizedModelTerms(dir, Type(), linorder_first, lin_wrt_all_dofs);
+  return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computeMixed2ndOrderTerms(
+double NOX::NLN::MeritFunction::Lagrangian::compute_mixed2nd_order_terms(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
@@ -97,18 +97,19 @@ double NOX::NLN::MeritFunction::Lagrangian::computeMixed2ndOrderTerms(
     throwError("computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
-  return constr_grp_ptr->GetLinearizedModelTerms(dir, Type(), linorder_second, lin_wrt_mixed_dofs);
+  return constr_grp_ptr->get_linearized_model_terms(
+      dir, Type(), linorder_second, lin_wrt_mixed_dofs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(const double& stepPV,
+double NOX::NLN::MeritFunction::Lagrangian::compute_saddle_point_model(const double& stepPV,
     const double& stepLM, const ::NOX::Abstract::Vector& dir,
     const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
-    throwError("computeSaddlePointModel()",
+    throwError("compute_saddle_point_model()",
         "The current function value was not "
         "computed yet. Please call computeF() on the group passed into this function.");
   }
@@ -131,13 +132,13 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(const double
   // w.r.t the primary degrees of freedom
   // --------------------------------------------
   model += stepPV *
-           constr_grp.GetLinearizedModelTerms(dir, Type(), linorder_first, lin_wrt_primary_dofs);
+           constr_grp.get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_primary_dofs);
 
   // --------------------------------------------
   // Get the 1-st order linearization terms of the Lagrangian objective model
   // w.r.t the Lagrange multiplier degrees of freedom
   // --------------------------------------------
-  model += stepLM * constr_grp.GetLinearizedModelTerms(
+  model += stepLM * constr_grp.get_linearized_model_terms(
                         dir, Type(), linorder_first, lin_wrt_lagrange_multiplier_dofs);
 
   // --------------------------------------------
@@ -145,17 +146,17 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(const double
   // w.r.t the Lagrange multiplier AND primary degrees of freedom
   // --------------------------------------------
   model += stepLM * stepPV *
-           constr_grp.GetLinearizedModelTerms(dir, Type(), linorder_second, lin_wrt_mixed_dofs);
+           constr_grp.get_linearized_model_terms(dir, Type(), linorder_second, lin_wrt_mixed_dofs);
 
   return model;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
+double NOX::NLN::MeritFunction::Lagrangian::compute_saddle_point_model(
     const double& step, const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
-  return computeSaddlePointModel(step, step, dir, grp);
+  return compute_saddle_point_model(step, step, dir, grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -168,7 +169,7 @@ const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::map<std::string, NOX::NLN::MeritFunction::MeritFctName>
-NOX::NLN::MeritFunction::Lagrangian::GetSupportedTypeList() const
+NOX::NLN::MeritFunction::Lagrangian::get_supported_type_list() const
 {
   std::map<std::string, MeritFctName> type_names;
 
@@ -182,7 +183,7 @@ NOX::NLN::MeritFunction::Lagrangian::GetSupportedTypeList() const
  *----------------------------------------------------------------------*/
 void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
 {
-  static const std::map<std::string, MeritFctName> supported_type_names = GetSupportedTypeList();
+  static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
 
   auto cit = supported_type_names.cbegin();
   while (cit != supported_type_names.cend())

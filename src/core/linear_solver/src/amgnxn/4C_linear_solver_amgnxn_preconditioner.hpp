@@ -45,7 +45,7 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
 
-    std::string getParameterListName() const override { return "AMGnxn Parameters"; }
+    std::string get_parameter_list_name() const override { return "AMGnxn Parameters"; }
 
    private:
     // Private variables
@@ -65,9 +65,9 @@ namespace CORE::LINEAR_SOLVER
     std::vector<int> GetNullSpacesDim() { return null_spaces_dim_; }
     std::vector<Teuchos::RCP<std::vector<double>>> GetNullSpacesData() { return null_spaces_data_; }
     // int GetNumLevelAMG(){return NumLevelAMG_;}
-    Teuchos::ParameterList GetPreconditionerParams() { return prec_params_; }
+    Teuchos::ParameterList get_preconditioner_params() { return prec_params_; }
     Teuchos::ParameterList GetSmoothersParams() { return smoo_params_; }
-    std::string GetPreconditionerType() { return prec_type_; }
+    std::string get_preconditioner_type() { return prec_type_; }
 
    private:
     std::vector<std::string> xml_files_;

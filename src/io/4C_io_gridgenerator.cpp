@@ -44,7 +44,7 @@ namespace IO::GRIDGENERATOR
     const int numproc = comm.NumProc();
 
     INPUT::ElementDefinition ed;
-    ed.SetupValidElementLines();
+    ed.setup_valid_element_lines();
 
     // safety checks
     for (int i = 0; i < 3; ++i)
@@ -232,13 +232,13 @@ namespace IO::GRIDGENERATOR
     // build reasonable maps for elements from the
     // already valid and final node maps
     // note that nothing is actually redistributed in here
-    std::tie(elementRowMap, elementColMap) = dis.BuildElementRowColumn(*nodeRowMap, *nodeColMap);
+    std::tie(elementRowMap, elementColMap) = dis.build_element_row_column(*nodeRowMap, *nodeColMap);
 
     // we can now export elements to resonable row element distribution
     dis.ExportRowElements(*elementRowMap);
 
     // export to the column map / create ghosting of elements
-    dis.ExportColumnElements(*elementColMap);
+    dis.export_column_elements(*elementColMap);
 
     // Create the nodes according to their elements
     // number of nodes per direction

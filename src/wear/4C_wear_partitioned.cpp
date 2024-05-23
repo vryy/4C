@@ -104,7 +104,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
   // create interface coupling
   coupstrualei_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupstrualei_->SetupConditionCoupling(*StructureField()->Discretization(),
+  coupstrualei_->setup_condition_coupling(*StructureField()->Discretization(),
       StructureField()->Interface()->AleWearCondMap(), *AleField().Discretization(),
       AleField().Interface()->Map(AleField().Interface()->cond_ale_wear), "AleWear", ndim);
 
@@ -163,7 +163,7 @@ void WEAR::Partitioned::TimeLoop()
 void WEAR::Partitioned::TimeLoopIterStagg()
 {
   // counter and print header
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
 
   // prepare time step for both fields
@@ -177,7 +177,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // reset waccu, wold and wcurr...
-  cstrategy.UpdateWearDiscretIterate(false);
+  cstrategy.update_wear_discret_iterate(false);
 
   /*************************************************************
    * Nonlinear iterations between Structure and ALE:           *
@@ -221,7 +221,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
     converged = ConvergenceCheck(iter);
 
     // store old wear
-    cstrategy.UpdateWearDiscretIterate(true);
+    cstrategy.update_wear_discret_iterate(true);
 
     ++iter;
   }  // end nonlin loop
@@ -246,7 +246,7 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // counter and print header
-  IncrementTimeAndStep();
+  increment_time_and_step();
   PrintHeader();
 
   // prepare time step for both fields
@@ -296,11 +296,11 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
     UpdateSpatConf();
 
     // reset wear
-    cstrategy.UpdateWearDiscretIterate(false);
+    cstrategy.update_wear_discret_iterate(false);
   }
   else
   {
-    cstrategy.UpdateWearDiscretAccumulation();
+    cstrategy.update_wear_discret_accumulation();
   }
 
   /********************************************************************/
@@ -563,7 +563,7 @@ void WEAR::Partitioned::InterfaceDisp(
   if (wcoeffconf == INPAR::WEAR::wear_coeff_mat)
   {
     // redistribute int. according to spatial interfaces!
-    RedistributeMatInterfaces();
+    redistribute_mat_interfaces();
 
     // 1. pull back slave wear to material conf.
     WearPullBackSlave(disinterface_s);
@@ -595,8 +595,8 @@ void WEAR::Partitioned::InterfaceDisp(
     else if (wside == INPAR::WEAR::wear_both and wtype == INPAR::WEAR::wear_intstate)
     {
       // redistribute int. according to spatial interfaces!
-      RedistributeMatInterfaces();
-      WearSpatialMasterMap(disinterface_s, disinterface_m);
+      redistribute_mat_interfaces();
+      wear_spatial_master_map(disinterface_s, disinterface_m);
     }
     else
     {
@@ -620,7 +620,7 @@ void WEAR::Partitioned::InterfaceDisp(
 /*----------------------------------------------------------------------*
  | Wear in spatial conf.                                    farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::WearSpatialMasterMap(
+void WEAR::Partitioned::wear_spatial_master_map(
     Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
   if (disinterface_s == Teuchos::null) FOUR_C_THROW("no slave wear for mapping!");
@@ -660,7 +660,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
 
     // 3. calc N and areas
     winterface->SetElementAreas();
-    winterface->EvaluateNodalNormals();
+    winterface->evaluate_nodal_normals();
 
     // 6. init data container for d2 mat
     const Teuchos::RCP<Epetra_Map> masternodesmat =
@@ -809,7 +809,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
-    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+    cstrategy.store_nodal_quantities(MORTAR::StrategyBase::weightedwear);
 
   for (int i = 0; i < (int)interfaces_.size(); ++i)
   {
@@ -920,7 +920,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 /*----------------------------------------------------------------------*
  | Redistribute material interfaces acc. to cur interf.     farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::RedistributeMatInterfaces()
+void WEAR::Partitioned::redistribute_mat_interfaces()
 {
   // barrier
   Comm().Barrier();
@@ -953,10 +953,10 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
 
       // export nodes and elements to the column map (create ghosting)
       winterface->Discret().ExportColumnNodes(*interfaces_[m]->Discret().NodeColMap());
-      winterface->Discret().ExportColumnElements(*interfaces_[m]->Discret().ElementColMap());
+      winterface->Discret().export_column_elements(*interfaces_[m]->Discret().ElementColMap());
 
       winterface->FillComplete(true);
-      winterface->PrintParallelDistribution();
+      winterface->print_parallel_distribution();
 
       if (Comm().MyPID() == 0)
       {
@@ -991,7 +991,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
-    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+    cstrategy.store_nodal_quantities(MORTAR::StrategyBase::weightedwear);
 
   // loop over all interfaces
   for (int m = 0; m < (int)interfaces_.size(); ++m)
@@ -1014,7 +1014,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
     // 3. calc N and areas
     interfacesMat_[m]->SetElementAreas();
-    interfacesMat_[m]->EvaluateNodalNormals();
+    interfacesMat_[m]->evaluate_nodal_normals();
 
     // 4. calc -w*N
     for (int j = 0; j < winterface->SlaveRowNodes()->NumMyElements(); ++j)
@@ -1195,7 +1195,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
     // 3. calc N and areas
     winterfaceMat->SetElementAreas();
-    winterfaceMat->EvaluateNodalNormals();
+    winterfaceMat->evaluate_nodal_normals();
 
     // 4. calc -w*N
     for (int j = 0; j < winterface->MasterRowNodes()->NumMyElements(); ++j)
@@ -1713,13 +1713,13 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     //        StructureField()->Dispnp());
     //
     //    FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(
-    //        AleField().WriteAccessDiscretization(),
+    //        AleField().write_access_discretization(),
     //        dispnpstru );
     //
     //    AleField().WriteAccessDispnp()->Update(0.0, *(dispnpstru), 0.0);
     //
     //    // application of interface displacements as dirichlet conditions
-    //    //AleField().ApplyInterfaceDisplacements(idisale_global);
+    //    //AleField().apply_interface_displacements(idisale_global);
     //
     //    // solve time step
     //    AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
@@ -1732,7 +1732,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     AleField().WriteAccessDispnp()->Update(1.0, *(dispnpstru), 0.0);
 
     // application of interface displacements as dirichlet conditions
-    AleField().ApplyInterfaceDisplacements(idisale_global);
+    AleField().apply_interface_displacements(idisale_global);
 
     // solve time step
     AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
@@ -1741,7 +1741,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
   else if (wconf == INPAR::WEAR::wear_se_mat)
   {
     // application of interface displacements as dirichlet conditions
-    AleField().ApplyInterfaceDisplacements(idisale_global);
+    AleField().apply_interface_displacements(idisale_global);
 
     // solve time step
     AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);

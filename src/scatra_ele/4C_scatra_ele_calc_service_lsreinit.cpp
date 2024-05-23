@@ -65,7 +65,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       // penalty parameter to be computed
       double penalty = 0.0;
       // calculate penalty parameter for element
-      CalcElePenaltyParameter(penalty);
+      calc_ele_penalty_parameter(penalty);
 
       //------------------------------------------------------
       // Step 2: calculate matrix and rhs
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau, 0);
+  const double vol = my::eval_shape_func_and_derivs_at_int_point(intpoints_tau, 0);
 
   //----------------------------------------------------------------------
   // calculation of characteristic element length
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
-  const double charelelength = CalcCharEleLengthReinit(vol, gradphizero);
+  const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // initial phi at Gauss point
     double phizero = 0.0;
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParameter(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_parameter(
     double& penalty)
 {
   // safety check
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau, 0);
+  const double vol = my::eval_shape_func_and_derivs_at_int_point(intpoints_tau, 0);
 
   //----------------------------------------------------------------------
   // calculation of characteristic element length
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
-  const double charelelength = CalcCharEleLengthReinit(vol, gradphizero);
+  const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -261,7 +261,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // initial phi at Gauss point
     double phizero = 0.0;
@@ -348,7 +348,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_center, 0);
+  const double vol = my::eval_shape_func_and_derivs_at_int_point(intpoints_center, 0);
 
   //----------------------------------------------------------------------
   // calculation of characteristic element length
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
-  const double charelelength = CalcCharEleLengthReinit(vol, gradphizero);
+  const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // initial phi at Gauss point
     double phizero = 0.0;
@@ -433,12 +433,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     {
       case INPAR::SCATRA::reinitaction_sussman:
       {
-        my::CalcRHSHistAndSource(erhs, 0, fac, convelint(dir, 0));
+        my::calc_rhs_hist_and_source(erhs, 0, fac, convelint(dir, 0));
         break;
       }
       case INPAR::SCATRA::reinitaction_ellipticeq:
       {
-        my::CalcRHSHistAndSource(erhs, 0, fac, gradphi(dir, 0));
+        my::calc_rhs_hist_and_source(erhs, 0, fac, gradphi(dir, 0));
         break;
       }
       default:

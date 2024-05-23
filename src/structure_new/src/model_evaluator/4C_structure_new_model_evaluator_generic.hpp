@@ -153,7 +153,7 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual bool EvaluateInitialForce() { return EvaluateForce(); };
+      virtual bool evaluate_initial_force() { return EvaluateForce(); };
 
       /*! \brief Evaluate the current tangential stiffness matrix at \f$t_{n+1}\f$
        *
@@ -201,7 +201,7 @@ namespace STR
        * @param[in/out] rhs right-hand side vector
        *
        * \author hiermeier \date 03/18 */
-      virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) {}
+      virtual void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) {}
 
       /*! \brief Assemble the force right-hand-side
        *
@@ -308,7 +308,7 @@ namespace STR
        *  \param grp   : read only access to the group object
        *
        *  \author hiermeier \date 12/17 */
-      virtual void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+      virtual void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp)
       { /* empty */
       }
@@ -325,7 +325,7 @@ namespace STR
        *  \param grp   : read only access to the group object
        *
        *  \author hiermeier \date 12/17 */
-      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+      virtual void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp)
       { /* empty */
       }
@@ -336,9 +336,9 @@ namespace STR
       virtual void UpdateStepState(const double& timefac_n) = 0;
 
       // compute the element contributions for element based scaling using PTC
-      virtual void EvaluateJacobianContributionsFromElementLevelForPTC(){};
+      virtual void evaluate_jacobian_contributions_from_element_level_for_ptc(){};
       // assemble the element contributions
-      virtual void AssembleJacobianContributionsFromElementLevelForPTC(
+      virtual void assemble_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n){};
 
       //! Update the element by end of the time step
@@ -359,7 +359,7 @@ namespace STR
        *  \sa OutputStepState
        *
        *  \author hiermeier*/
-      virtual void DetermineStressStrain() = 0;
+      virtual void determine_stress_strain() = 0;
 
       /*! \brief calculate energy contributions of each model evaluator
        *
@@ -383,7 +383,7 @@ namespace STR
        *  \sa OutputStepState
        *
        *  \author hiermeier*/
-      virtual void DetermineOptionalQuantity() = 0;
+      virtual void determine_optional_quantity() = 0;
 
       /*! \brief Output routine for model evaluator
        *
@@ -394,10 +394,10 @@ namespace STR
       /**
        * \brief This method is called before the runtime output method is called.
        */
-      virtual void RuntimePreOutputStepState(){};
+      virtual void runtime_pre_output_step_state(){};
 
       //! runtime output routine for model evaluator
-      virtual void RuntimeOutputStepState() const {};
+      virtual void runtime_output_step_state() const {};
 
       //! reset routine for model evlaluator
       virtual void ResetStepState() = 0;
@@ -421,26 +421,26 @@ namespace STR
        *  global state in terms of the x-vector is recovered more globally.
        *
        *  \author hiermeier \date 12/17 */
-      virtual void RecoverFromBackupState(){/* do nothing in default */};
+      virtual void recover_from_backup_state(){/* do nothing in default */};
 
       //! @name Accessors to model specific things
       //! @{
       //! Returns a pointer to the model specific dof row map
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const = 0;
+      virtual Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const = 0;
 
       /*! Returns a pointer to the current model solution vector (usually the
        *  Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const = 0;
+      virtual Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const = 0;
 
       /*! Returns a pointer to the model solution vector of the last time step
        *  (usually the Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
+      virtual Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const = 0;
 
       /// access the current external load increment
       Teuchos::RCP<Epetra_Vector> GetFextIncr() const;
 
       //! Get the mechanical stress state vector (read access)
-      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetMechanicalStressState() const
+      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_mechanical_stress_state() const
       {
         return Teuchos::null;
       }

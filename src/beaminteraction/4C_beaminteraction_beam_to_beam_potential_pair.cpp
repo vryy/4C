@@ -81,8 +81,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   beam_element2_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element2());
   ele2length_ = BeamElement2()->RefLength();
 
-  radius1_ = BeamElement1()->GetCircularCrossSectionRadiusForInteractions();
-  radius2_ = BeamElement2()->GetCircularCrossSectionRadiusForInteractions();
+  radius1_ = BeamElement1()->get_circular_cross_section_radius_for_interactions();
+  radius2_ = BeamElement2()->get_circular_cross_section_radius_for_interactions();
 
   if (Element1()->ElementType() != Element2()->ElementType())
     FOUR_C_THROW(
@@ -105,7 +105,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     const std::vector<CORE::Conditions::Condition*> linechargeconds, const double k, const double m)
 {
   // no need to evaluate this pair in case of separation by far larger than cutoff or prefactor zero
-  if ((Params()->CutoffRadius() != -1.0 and AreElementsMuchMoreSeparatedThanCutoffDistance()) or
+  if ((Params()->CutoffRadius() != -1.0 and
+          are_elements_much_more_separated_than_cutoff_distance()) or
       k == 0.0)
     return false;
 
@@ -149,14 +150,14 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   {
     case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
-      EvaluateFpotandStiffpot_LargeSepApprox(
+      evaluate_fpotand_stiffpot_large_sep_approx(
           force_pot1, force_pot2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
       break;
     }
 
     case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_smallsepapprox:
     {
-      EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
+      evaluate_fpotand_stiffpot_double_length_specific_small_sep_approx(
           force_pot1, force_pot2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
       break;
     }
@@ -164,7 +165,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     case INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox:
     case INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple:
     {
-      EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
+      evaluate_fpotand_stiffpot_single_length_specific_small_sep_approx(
           force_pot1, force_pot2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
       break;
     }
@@ -194,21 +195,21 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateFpotandStiffpot_LargeSepApprox(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues,
-                                                   1, T>& force_pot1,
-    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+    evaluate_fpotand_stiffpot_large_sep_approx(
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
+        CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+        CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
 {
   // prepare differentiation via FAD if desired
-  SetAutomaticDifferentiationVariablesIfRequired(ele1pos_, ele2pos_);
+  set_automatic_differentiation_variables_if_required(ele1pos_, ele2pos_);
 
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
+  const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   CORE::FE::GaussRule1D gaussrule = GetGaussRule();
@@ -324,7 +325,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
         const double xi_GP1 = 0.5 * ((1.0 - xi_GP1_tilde) * integration_segment1_lower_limit +
                                         (1.0 + xi_GP1_tilde) * integration_segment1_upper_limit);
 
-        ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
+        compute_centerline_position(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
         centerline_coords_gp_1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
@@ -345,7 +346,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
                                           (1.0 + xi_GP2_tilde) * integration_segment2_upper_limit);
 
           // compute coord vector
-          ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
+          compute_centerline_position(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
           centerline_coords_gp_2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
@@ -411,9 +412,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
               stiffmat22 != nullptr)
           {
-            EvaluateStiffpotAnalyticContributions_LargeSepApprox(dist, norm_dist, norm_dist_exp1,
-                q1q2_JacFac_GaussWeights, N1_i[igp1], N2_i[igp2], *stiffmat11, *stiffmat12,
-                *stiffmat21, *stiffmat22);
+            evaluate_stiffpot_analytic_contributions_large_sep_approx(dist, norm_dist,
+                norm_dist_exp1, q1q2_JacFac_GaussWeights, N1_i[igp1], N2_i[igp2], *stiffmat11,
+                *stiffmat12, *stiffmat21, *stiffmat22);
           }
 
           // store for visualization
@@ -443,10 +444,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
       stiffmat22 != nullptr)
   {
-    ScaleStiffpotAnalyticContributionsIfRequired(
+    scale_stiffpot_analytic_contributions_if_required(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
 
-    CalcStiffmatAutomaticDifferentiationIfRequired(
+    calc_stiffmat_automatic_differentiation_if_required(
         force_pot1, force_pot2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
 }
@@ -455,8 +456,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateStiffpotAnalyticContributions_LargeSepApprox(CORE::LINALG::Matrix<3, 1,
-                                                                 double> const& dist,
+    T>::evaluate_stiffpot_analytic_contributions_large_sep_approx(CORE::LINALG::Matrix<3, 1,
+                                                                      double> const& dist,
     double const& norm_dist, double const& norm_dist_exp1, double q1q2_JacFac_GaussWeights,
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
     CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N2_i_GP2,
@@ -562,7 +563,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
+    evaluate_fpotand_stiffpot_double_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
@@ -575,7 +576,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         "of the point potential law smaller than 3.5!");
 
   // prepare differentiation via FAD if desired
-  SetAutomaticDifferentiationVariablesIfRequired(ele1pos_, ele2pos_);
+  set_automatic_differentiation_variables_if_required(ele1pos_, ele2pos_);
 
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
@@ -584,10 +585,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
       Params()->RegularizationType();
 
-  const double regularization_separation = Params()->RegularizationSeparation();
+  const double regularization_separation = Params()->regularization_separation();
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
+  const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   CORE::FE::GaussRule1D gaussrule = GetGaussRule();
@@ -737,7 +738,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                         (1.0 + xi_GP1_tilde) * integration_segment1_upper_limit);
 
         // compute coord vector
-        ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
+        compute_centerline_position(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
         centerline_coords_gp_1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
@@ -758,7 +759,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                           (1.0 + xi_GP2_tilde) * integration_segment2_upper_limit);
 
           // compute coord vector
-          ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
+          compute_centerline_position(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
           centerline_coords_gp_2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
@@ -892,7 +893,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
               stiffmat22 != nullptr)
           {
-            EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(dist,
+            evaluate_stiffpot_analytic_contributions_double_length_specific_small_sep_approx(dist,
                 norm_dist, gap, gap_regularized, gap_exp1, q1q2_JacFac_GaussWeights, N1_i[igp1],
                 N2_i[igp2], *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
           }
@@ -922,10 +923,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
       stiffmat22 != nullptr)
   {
-    ScaleStiffpotAnalyticContributionsIfRequired(
+    scale_stiffpot_analytic_contributions_if_required(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
 
-    CalcStiffmatAutomaticDifferentiationIfRequired(
+    calc_stiffmat_automatic_differentiation_if_required(
         force_pot1, force_pot2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
 }
@@ -934,7 +935,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
+    evaluate_stiffpot_analytic_contributions_double_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3, 1, double> const& dist, double const& norm_dist, double const& gap,
         double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
@@ -950,7 +951,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   double gap_exp2 = std::pow(gap_regularized, -m_ + 1.5);
 
   if (Params()->RegularizationType() == INPAR::BEAMPOTENTIAL::regularization_constant and
-      gap < Params()->RegularizationSeparation())
+      gap < Params()->regularization_separation())
   {
     /* in case of constant extrapolation of force law, the derivative of the force is zero
      * and this contribution to the stiffness matrix vanishes */
@@ -1047,7 +1048,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
+    evaluate_fpotand_stiffpot_single_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
@@ -1082,7 +1083,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
       Params()->RegularizationType();
 
-  const double regularization_separation = Params()->RegularizationSeparation();
+  const double regularization_separation = Params()->regularization_separation();
 
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */
@@ -1092,11 +1093,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   /* xi_master is used as additional, auxiliary primary Dof
    * since there is no closed-form expression for how xi_master depends on the 'real' primary Dofs.
    * It is determined iteratively via point-to-curve projection */
-  SetAutomaticDifferentiationVariablesIfRequired(ele1pos_, ele2pos_, xi_master);
+  set_automatic_differentiation_variables_if_required(ele1pos_, ele2pos_, xi_master);
 
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
+  const unsigned int num_integration_segments = Params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   CORE::FE::GaussRule1D gaussrule = GetGaussRule();
@@ -1327,8 +1328,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
       // compute coord vector and tangent vector on slave side
-      ComputeCenterlinePosition(r_slave, N_i_slave[igp], ele1pos_);
-      ComputeCenterlineTangent(r_xi_slave, N_i_xi_slave[igp], ele1pos_);
+      compute_centerline_position(r_slave, N_i_slave[igp], ele1pos_);
+      compute_centerline_tangent(r_xi_slave, N_i_xi_slave[igp], ele1pos_);
 
       norm_r_xi_slave = CORE::FADUTILS::VectorNorm(r_xi_slave);
 
@@ -1409,9 +1410,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           ele2length_);
 
       // compute coord vector and tangent vector on master side
-      ComputeCenterlinePosition(r_master, N_i_master, ele2pos_);
-      ComputeCenterlineTangent(r_xi_master, N_i_xi_master, ele2pos_);
-      ComputeCenterlineTangent(r_xixi_master, N_i_xixi_master, ele2pos_);
+      compute_centerline_position(r_master, N_i_master, ele2pos_);
+      compute_centerline_tangent(r_xi_master, N_i_xi_master, ele2pos_);
+      compute_centerline_tangent(r_xixi_master, N_i_xixi_master, ele2pos_);
 
 
       norm_r_xi_master = CORE::FADUTILS::VectorNorm(r_xi_master);
@@ -1503,7 +1504,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // 'full' disk-cylinder interaction potential
       if (Params()->Strategy() == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
       {
-        if (not EvaluateFullDiskCylinderPotential(interaction_potential_GP, force_pot_slave_GP,
+        if (not evaluate_full_disk_cylinder_potential(interaction_potential_GP, force_pot_slave_GP,
                 force_pot_master_GP, r_slave, r_xi_slave, t_slave, r_master, r_xi_master,
                 r_xixi_master, t_master, alpha, cos_alpha, dist_ul, xi_master_partial_r_slave,
                 xi_master_partial_r_master, xi_master_partial_r_xi_master,
@@ -1815,7 +1816,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             stiffmat22 != nullptr)
         {
           // evaluate contributions to linearization based on analytical expression
-          EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+          evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
               N_i_slave[igp], N_i_xi_slave[igp], N_i_master, N_i_xi_master, N_i_xixi_master,
               xi_master, r_xi_slave, r_xi_master, r_xixi_master, norm_dist_ul, normal_ul,
               pot_ia_deriv_gap_ul, pot_ia_deriv_cos_alpha, pot_ia_2ndderiv_gap_ul,
@@ -1838,9 +1839,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
           stiffmat22 != nullptr)
       {
-        AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(force_pot_slave_GP,
-            force_pot_master_GP, lin_xi_master_slaveDofs, lin_xi_master_masterDofs, *stiffmat11,
-            *stiffmat12, *stiffmat21, *stiffmat22);
+        add_stiffmat_contributions_xi_master_automatic_differentiation_if_required(
+            force_pot_slave_GP, force_pot_master_GP, lin_xi_master_slaveDofs,
+            lin_xi_master_masterDofs, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
       }
 
       // do this scaling down here, because the value without the prefactors is meant to be used
@@ -1861,11 +1862,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
       stiffmat22 != nullptr)
   {
-    ScaleStiffpotAnalyticContributionsIfRequired(
+    scale_stiffpot_analytic_contributions_if_required(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
 
 
-    CalcStiffmatAutomaticDifferentiationIfRequired(
+    calc_stiffmat_automatic_differentiation_if_required(
         force_pot1, force_pot2, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
   }
 }
@@ -1875,7 +1876,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+    evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_master,
@@ -2622,7 +2623,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
+    T>::evaluate_full_disk_cylinder_potential(T& interaction_potential_GP,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
     CORE::LINALG::Matrix<3, 1, T> const& r_slave, CORE::LINALG::Matrix<3, 1, T> const& r_xi_slave,
@@ -2648,7 +2649,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
       Params()->RegularizationType();
 
-  const double regularization_separation = Params()->RegularizationSeparation();
+  const double regularization_separation = Params()->regularization_separation();
 
 
   T sin_alpha = 0.0;                              // sine of mutual angle of tangent vectors
@@ -3386,7 +3387,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::ScaleStiffpotAnalyticContributionsIfRequired(double const& scalefactor,
+    T>::scale_stiffpot_analytic_contributions_if_required(double const& scalefactor,
     CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
     CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22) const
 {
@@ -3400,7 +3401,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    CalcStiffmatAutomaticDifferentiationIfRequired(
+    calc_stiffmat_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
@@ -3432,7 +3433,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(
+    add_stiffmat_contributions_xi_master_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
@@ -3474,7 +3475,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    CalcFpotGausspointAutomaticDifferentiationIfRequired(
+    calc_fpot_gausspoint_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
@@ -3501,7 +3502,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    CalcFpotGausspointAutomaticDifferentiationIfRequired(
+    calc_fpot_gausspoint_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -3546,7 +3547,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Prin
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+    T>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   CheckInitSetup();
 
@@ -3578,7 +3579,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetS
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::ComputeCenterlinePosition(CORE::LINALG::Matrix<3, 1, T>& r,
+    T>::compute_centerline_position(CORE::LINALG::Matrix<3, 1, T>& r,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
@@ -3590,7 +3591,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::ComputeCenterlineTangent(CORE::LINALG::Matrix<3, 1, T>& r_xi,
+    T>::compute_centerline_tangent(CORE::LINALG::Matrix<3, 1, T>& r_xi,
     const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
     const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
@@ -3625,7 +3626,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    SetAutomaticDifferentiationVariablesIfRequired(
+    set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -3644,7 +3645,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-    SetAutomaticDifferentiationVariablesIfRequired(
+    set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -3667,7 +3668,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::AreElementsMuchMoreSeparatedThanCutoffDistance()
+    T>::are_elements_much_more_separated_than_cutoff_distance()
 {
   const unsigned int num_spatial_dim = 3;
 

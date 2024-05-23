@@ -488,7 +488,7 @@ namespace CORE::FE::NURBS
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
+      bspline_xi.evaluate_bspline_and_deriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
 
       // add value to bezier_shape_funct
       bezier_shape_funct(rr) = bspline_xi_value;
@@ -665,7 +665,7 @@ namespace CORE::FE::NURBS
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+      bspline_xi.evaluate_bspline_first_and_second_deriv(
           bspline_xi_value, bspline_xi_derivative, bspline_xi_deriv2, xi, rr);
 
       // add value to bezier_shape_funct
@@ -1308,14 +1308,14 @@ namespace CORE::FE::NURBS
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
+      bspline_xi.evaluate_bspline_and_deriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
 
       for (int mm = 0; mm < degree + 1; ++mm)
       {
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBsplineAndDeriv(bspline_eta_value, bspline_eta_derivative, eta, mm);
+        bspline_eta.evaluate_bspline_and_deriv(bspline_eta_value, bspline_eta_derivative, eta, mm);
 
         // get the number of the basis function
         id = rr + mm * (degree + 1);
@@ -1750,7 +1750,7 @@ namespace CORE::FE::NURBS
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+      bspline_xi.evaluate_bspline_first_and_second_deriv(
           bspline_xi_value, bspline_xi_derivative, bspline_xi_deriv2, xi, rr);
 
       for (int mm = 0; mm < degree + 1; ++mm)
@@ -1758,7 +1758,7 @@ namespace CORE::FE::NURBS
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBsplineFirstAndSecondDeriv(
+        bspline_eta.evaluate_bspline_first_and_second_deriv(
             bspline_eta_value, bspline_eta_derivative, bspline_eta_deriv2, eta, mm);
 
         // get the number of the basis function
@@ -2767,21 +2767,21 @@ namespace CORE::FE::NURBS
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
+      bspline_xi.evaluate_bspline_and_deriv(bspline_xi_value, bspline_xi_derivative, xi, rr);
 
       for (int mm = 0; mm < degree + 1; ++mm)
       {
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBsplineAndDeriv(bspline_eta_value, bspline_eta_derivative, eta, mm);
+        bspline_eta.evaluate_bspline_and_deriv(bspline_eta_value, bspline_eta_derivative, eta, mm);
 
         for (int nn = 0; nn < degree + 1; ++nn)
         {
           // in third direction:
 
           // get bsplinevalue and derivative
-          bspline_nu.EvaluateBsplineAndDeriv(bspline_nu_value, bspline_nu_derivative, nu, nn);
+          bspline_nu.evaluate_bspline_and_deriv(bspline_nu_value, bspline_nu_derivative, nu, nn);
 
           // get the number of the basis function
           id = rr + (degree + 1) * (mm + nn * (degree + 1));
@@ -3413,7 +3413,7 @@ namespace CORE::FE::NURBS
       // in third direction:
 
       // get bsplinevalue and derivative
-      bspline_nu.EvaluateBsplineFirstAndSecondDeriv(
+      bspline_nu.evaluate_bspline_first_and_second_deriv(
           bspline_nu_value, bspline_nu_derivative, bspline_nu_deriv2, nu, nn);
 
       for (int mm = 0; mm < degreep; ++mm)
@@ -3421,7 +3421,7 @@ namespace CORE::FE::NURBS
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBsplineFirstAndSecondDeriv(
+        bspline_eta.evaluate_bspline_first_and_second_deriv(
             bspline_eta_value, bspline_eta_derivative, bspline_eta_deriv2, eta, mm);
 
         const double M_eta_L_nu = bspline_eta_value * bspline_nu_value;
@@ -3438,7 +3438,7 @@ namespace CORE::FE::NURBS
           // in first direction:
 
           // get bsplinevalue and derivative
-          bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+          bspline_xi.evaluate_bspline_first_and_second_deriv(
               bspline_xi_value, bspline_xi_derivative, bspline_xi_deriv2, xi, rr);
 
 

@@ -36,19 +36,19 @@ IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
 void IO::VisualizationWriterVtuPerRank::InitializeTimeStep(
     const double visualziation_time, const int visualization_step)
 {
-  vtu_writer_.ResetTimeAndTimeStep(visualziation_time, visualization_step);
+  vtu_writer_.reset_time_and_time_step(visualziation_time, visualization_step);
 
-  vtu_writer_.InitializeVtkFileStreamsForNewGeometryAndOrTimeStep();
+  vtu_writer_.initialize_vtk_file_streams_for_new_geometry_and_or_time_step();
   vtu_writer_.WriteVtkHeaders();
 }
 
 /**
  *
  */
-void IO::VisualizationWriterVtuPerRank::WriteFieldDataToDisk(
+void IO::VisualizationWriterVtuPerRank::write_field_data_to_disk(
     const std::map<std::string, visualization_vector_type_variant>& field_data_map)
 {
-  vtu_writer_.WriteVtkFieldDataAndOrTimeAndOrCycle(field_data_map);
+  vtu_writer_.write_vtk_field_data_and_or_time_and_or_cycle(field_data_map);
 }
 
 /**
@@ -61,24 +61,24 @@ void IO::VisualizationWriterVtuPerRank::WriteGeometryToDisk(
     const std::vector<IO::index_type>& face_connectivity,
     const std::vector<IO::index_type>& face_offset)
 {
-  vtu_writer_.WriteGeometryUnstructuredGrid(point_coordinates, point_cell_connectivity, cell_offset,
-      cell_types, face_connectivity, face_offset);
+  vtu_writer_.write_geometry_unstructured_grid(point_coordinates, point_cell_connectivity,
+      cell_offset, cell_types, face_connectivity, face_offset);
 }
 
 /**
  *
  */
-void IO::VisualizationWriterVtuPerRank::WritePointDataVectorToDisk(
+void IO::VisualizationWriterVtuPerRank::write_point_data_vector_to_disk(
     const visualization_vector_type_variant& data, unsigned int num_components_per_point,
     const std::string& name)
 {
-  vtu_writer_.WritePointDataVector(data, num_components_per_point, name);
+  vtu_writer_.write_point_data_vector(data, num_components_per_point, name);
 }
 
 /**
  *
  */
-void IO::VisualizationWriterVtuPerRank::WriteCellDataVectorToDisk(
+void IO::VisualizationWriterVtuPerRank::write_cell_data_vector_to_disk(
     const visualization_vector_type_variant& data, unsigned int num_components_per_point,
     const std::string& name)
 {
@@ -93,7 +93,7 @@ void IO::VisualizationWriterVtuPerRank::FinalizeTimeStep()
   vtu_writer_.WriteVtkFooters();
 
   // Write a collection file summarizing all previously written files
-  vtu_writer_.WriteVtkCollectionFileForAllWrittenMasterFiles(
+  vtu_writer_.write_vtk_collection_file_for_all_written_master_files(
       parameters_.file_name_prefix_ + "-" + visualization_data_name_);
 }
 FOUR_C_NAMESPACE_CLOSE

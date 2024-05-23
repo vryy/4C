@@ -90,11 +90,11 @@ void MAT::ScatraMultiScaleGP::Init()
   {
     // extract macro-scale parameter list
     const Teuchos::ParameterList& sdyn_macro =
-        GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+        GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
 
     // extract micro-scale parameter list and create deep copy
     Teuchos::RCP<Teuchos::ParameterList> sdyn_micro = Teuchos::rcp(new Teuchos::ParameterList(
-        GLOBAL::Problem::Instance(microdisnum_)->ScalarTransportDynamicParams()));
+        GLOBAL::Problem::Instance(microdisnum_)->scalar_transport_dynamic_params()));
 
     // preliminary safety check
     if (GLOBAL::Problem::Instance(microdisnum_)->NDim() != 1)
@@ -195,7 +195,7 @@ void MAT::ScatraMultiScaleGP::Init()
         GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
 
     // provide solver with null space information if necessary
-    microdis->ComputeNullSpaceIfNecessary(solver->Params());
+    microdis->compute_null_space_if_necessary(solver->Params());
 
     // supplementary parameter list
     Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -209,7 +209,7 @@ void MAT::ScatraMultiScaleGP::Init()
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(
         microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
     microdisnum_microtimint_map_[microdisnum_]->Init();
-    microdisnum_microtimint_map_[microdisnum_]->SetNumberOfDofSetVelocity(1);
+    microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
     microdisnum_microtimint_map_[microdisnum_]->Setup();
 
     // set initial velocity field
@@ -273,7 +273,7 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
 
     // calculate time derivative and pass to micro time integration as reaction coefficient
     CalculateDdetFDt(microtimint);
-    microtimint->SetMacroMicroReaCoeff(ddet_fdtnp_);
+    microtimint->set_macro_micro_rea_coeff(ddet_fdtnp_);
   }
 
   if (step_ == 0 or !solve)
@@ -281,7 +281,7 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
     // only evaluate the micro-scale coupling quantities without solving the entire micro-scale
     // problem relevant for truly partitioned multi-scale simulations or for calculation of initial
     // time derivative of macro-scale state vector
-    microtimint->EvaluateMacroMicroCoupling();
+    microtimint->evaluate_macro_micro_coupling();
   }
   else
   {
@@ -302,7 +302,7 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
+double MAT::ScatraMultiScaleGP::evaluate_mean_concentration() const
 {
   // extract micro-scale discretization
   DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->Discretization();
@@ -335,7 +335,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
+double MAT::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() const
 {
   // extract micro-scale discretization
   DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->Discretization();
@@ -421,7 +421,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
     if (restart) adaptname = false;
 
     Teuchos::RCP<IO::OutputControl> microcontrol = Teuchos::rcp(new IO::OutputControl(
-        microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximationType(),
+        microdis->Comm(), "Scalar_Transport", microproblem->spatial_approximation_type(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         GLOBAL::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
         CORE::UTILS::IntegralValue<bool>(
@@ -429,7 +429,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
         adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
-        microdis, microcontrol, microproblem->SpatialApproximationType()));
+        microdis, microcontrol, microproblem->spatial_approximation_type()));
     micro_output_->SetOutput(microcontrol);
     micro_output_->WriteMesh(
         step_, DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());

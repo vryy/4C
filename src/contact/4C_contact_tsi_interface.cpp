@@ -298,20 +298,20 @@ void CONTACT::TSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linCo
   const double beta_bar = alpha_s * alpha_m / (alpha_s + alpha_m);
   const double delta_bar = alpha_s / (alpha_s + alpha_m);
 
-  AssembleDualMassLumped(linConductThermoLMglobal, linConductDISglobal);
+  assemble_dual_mass_lumped(linConductThermoLMglobal, linConductDISglobal);
 
   AssembleLinDM_X(&linConductDISglobal, nullptr, -delta_bar, LinDM_Diss, activenodes_);
   AssembleDM_linDiss(
       &linConductDISglobal, nullptr, &linConductContactLMglobal, nullptr, -delta_bar);
 
   AssembleDM_LMn(-beta_bar, &linConductTEMPglobal);
-  AssembleLinLMnDM_Temp(-beta_bar, &linConductDISglobal, &linConductContactLMglobal);
+  assemble_lin_l_mn_dm_temp(-beta_bar, &linConductDISglobal, &linConductContactLMglobal);
 
   return;
 }
 
 
-void CONTACT::TSIInterface::AssembleDualMassLumped(
+void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     CORE::LINALG::SparseMatrix& dualMassGlobal, CORE::LINALG::SparseMatrix& linDualMassGlobal)
 {
   // loop over proc's slave nodes of the interface for assembly
@@ -679,7 +679,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
   }  // loop over all active LM slave nodes (row map)
 }
 
-void CONTACT::TSIInterface::AssembleLinLMnDM_Temp(
+void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
     const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm)
 {
   // get out if there's nothing to do
@@ -835,7 +835,7 @@ void CONTACT::TSIInterface::Initialize()
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
     CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
-    node->InitializeTSIDataContainer(
+    node->initialize_tsi_data_container(
         imortar_.get<double>("TEMP_REF"), imortar_.get<double>("TEMP_DAMAGE"));
     node->TSIData().Clear();
   }

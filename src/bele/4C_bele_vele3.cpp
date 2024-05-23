@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create(const int id, const 
 }
 
 
-void DRT::ELEMENTS::Vele3Type::NodalBlockInformation(
+void DRT::ELEMENTS::Vele3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
@@ -61,7 +61,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
   return nullspace;
 }
 
-void DRT::ELEMENTS::Vele3Type::SetupElementDefinition(
+void DRT::ELEMENTS::Vele3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["VELE3"];

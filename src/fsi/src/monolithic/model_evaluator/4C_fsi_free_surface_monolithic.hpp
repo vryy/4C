@@ -91,7 +91,7 @@ namespace FSI
     void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
-    static void LocalBlockRichardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
+    static void local_block_richardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
         const CORE::LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
         Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
         double omega, FILE* err, const Epetra_Comm& comm);
@@ -346,7 +346,7 @@ namespace FSI
     Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
 
     /// setup list with default parameters
-    void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+    void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)

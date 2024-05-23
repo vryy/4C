@@ -38,7 +38,7 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
       FOUR_C_THROW("At least one node of the element does not provide fibers.");
     }
 
-    for (const auto& pair : fiberNodes[inode]->CoordinateSystemDirections())
+    for (const auto& pair : fiberNodes[inode]->coordinate_system_directions())
     {
       coordinateSystemDirections[pair.first][inode] = pair.second;
     }
@@ -91,7 +91,7 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
     }
 
     // add quantity to the fiber holder
-    gpFiberHolder.SetCoordinateSystemDirection(type, gpQuantity);
+    gpFiberHolder.set_coordinate_system_direction(type, gpQuantity);
   }
 
   // project angles
@@ -107,13 +107,13 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
 
 
   // orthogonalize coordinate system
-  if (gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Circular) &&
-      gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Tangential))
+  if (gpFiberHolder.contains_coordinate_system_direction(CoordinateSystemDirection::Circular) &&
+      gpFiberHolder.contains_coordinate_system_direction(CoordinateSystemDirection::Tangential))
   {
     const std::vector<CORE::LINALG::Matrix<3, 1>>& cir =
-        gpFiberHolder.GetCoordinateSystemDirection(CoordinateSystemDirection::Circular);
+        gpFiberHolder.get_coordinate_system_direction(CoordinateSystemDirection::Circular);
     std::vector<CORE::LINALG::Matrix<3, 1>>& tan =
-        gpFiberHolder.GetCoordinateSystemDirectionMutual(CoordinateSystemDirection::Tangential);
+        gpFiberHolder.get_coordinate_system_direction_mutual(CoordinateSystemDirection::Tangential);
 
     // orthogonalize tangential vector, preserve circular direction
     for (std::size_t gp = 0; gp < tan.size(); ++gp)
@@ -124,10 +124,10 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
     }
 
     // orthogonalize radial vector, preserve circular and tangential direction
-    if (gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Radial))
+    if (gpFiberHolder.contains_coordinate_system_direction(CoordinateSystemDirection::Radial))
     {
       std::vector<CORE::LINALG::Matrix<3, 1>>& rad =
-          gpFiberHolder.GetCoordinateSystemDirectionMutual(CoordinateSystemDirection::Radial);
+          gpFiberHolder.get_coordinate_system_direction_mutual(CoordinateSystemDirection::Radial);
       for (std::size_t gp = 0; gp < tan.size(); ++gp)
       {
         double radcir = rad[gp].Dot(cir[gp]);
@@ -218,13 +218,13 @@ void DRT::FIBER::UTILS::SetupCardiacFibers(
       }
     }
   }
-  else if (fibers.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Circular) &&
-           fibers.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Tangential))
+  else if (fibers.contains_coordinate_system_direction(CoordinateSystemDirection::Circular) &&
+           fibers.contains_coordinate_system_direction(CoordinateSystemDirection::Tangential))
   {
     const std::vector<CORE::LINALG::Matrix<3, 1>>& cir =
-        fibers.GetCoordinateSystemDirection(CoordinateSystemDirection::Circular);
+        fibers.get_coordinate_system_direction(CoordinateSystemDirection::Circular);
     const std::vector<CORE::LINALG::Matrix<3, 1>>& tan =
-        fibers.GetCoordinateSystemDirection(CoordinateSystemDirection::Tangential);
+        fibers.get_coordinate_system_direction(CoordinateSystemDirection::Tangential);
     const std::vector<double>& helix = fibers.GetAngle(AngleType::Helix);
     const std::vector<double>& transverse = fibers.GetAngle(AngleType::Transverse);
     f.resize(cir.size());

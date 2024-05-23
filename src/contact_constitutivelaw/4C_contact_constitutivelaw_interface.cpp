@@ -42,7 +42,7 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
 /*----------------------------------------------------------------------*
  |  Evaluate regularized normal forces (nodes)                          |
  *----------------------------------------------------------------------*/
-void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
+void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     bool& localisincontact, bool& localactivesetchange)
 {
   // loop over all slave row nodes on the current interface
@@ -146,7 +146,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
 /*----------------------------------------------------------------------*
  |  Evaluate regularized tangential forces                              |
  *----------------------------------------------------------------------*/
-void CONTACT::ConstitutivelawInterface::AssembleRegTangentForcesPenalty()
+void CONTACT::ConstitutivelawInterface::assemble_reg_tangent_forces_penalty()
 {
   FOUR_C_THROW("Frictional contact not yet implemented for rough surfaces\n");
 }

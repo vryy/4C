@@ -1262,7 +1262,8 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GlobalifySSeleids(const int ssid) 
 /*------------------------------------------------------------------------*
  |creates gmsh-file to visualize mesh                             MF 07/08|
  *------------------------------------------------------------------------*/
-void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname, const EXODUS::Mesh& mymesh) const
+void EXODUS::Mesh::plot_element_blocks_gmsh(
+    const std::string fname, const EXODUS::Mesh& mymesh) const
 {
   Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
@@ -1310,7 +1311,7 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname, const EXODUS::
 /*------------------------------------------------------------------------*
  |creates gmsh-file to visualize mesh                             MF 07/08|
  *------------------------------------------------------------------------*/
-void EXODUS::Mesh::PlotElementBlocksGmsh(
+void EXODUS::Mesh::plot_element_blocks_gmsh(
     const std::string fname, const EXODUS::Mesh& mymesh, const std::vector<int>& ebids) const
 {
   Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.GetNodes();

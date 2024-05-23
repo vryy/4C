@@ -83,7 +83,7 @@ namespace PARTICLEINTERACTION
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! insert interaction dependent states of all particle types
-    virtual void InsertParticleStatesOfParticleTypes(
+    virtual void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) = 0;
 
@@ -94,23 +94,23 @@ namespace PARTICLEINTERACTION
     virtual void PreEvaluateTimeStep() = 0;
 
     //! evaluate particle interactions
-    virtual void EvaluateInteractions() = 0;
+    virtual void evaluate_interactions() = 0;
 
     //! post evaluate time step
-    virtual void PostEvaluateTimeStep(
+    virtual void post_evaluate_time_step(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) = 0;
 
     //! check particle interaction distance concerning bin size
-    virtual void CheckParticleInteractionDistanceConcerningBinSize() const final;
+    virtual void check_particle_interaction_distance_concerning_bin_size() const final;
 
     //! maximum interaction distance (on this processor)
-    virtual double MaxInteractionDistance() const = 0;
+    virtual double max_interaction_distance() const = 0;
 
     //! distribute interaction history
-    virtual void DistributeInteractionHistory() const = 0;
+    virtual void distribute_interaction_history() const = 0;
 
     //! communicate interaction history
-    virtual void CommunicateInteractionHistory() const = 0;
+    virtual void communicate_interaction_history() const = 0;
 
     //! set current time
     virtual void SetCurrentTime(const double currenttime);
@@ -119,20 +119,20 @@ namespace PARTICLEINTERACTION
     virtual void SetCurrentStepSize(const double currentstepsize);
 
     //! set current write result flag
-    virtual void SetCurrentWriteResultFlag(bool writeresultsthisstep);
+    virtual void set_current_write_result_flag(bool writeresultsthisstep);
 
     //! set gravity
     virtual void SetGravity(std::vector<double>& gravity) final;
 
     //! write interaction runtime output
-    virtual void WriteInteractionRuntimeOutput(const int step, const double time);
+    virtual void write_interaction_runtime_output(const int step, const double time);
 
    private:
     //! init particle material handler
-    virtual void InitParticleMaterialHandler();
+    virtual void init_particle_material_handler();
 
     //! init particle interaction writer
-    virtual void InitParticleInteractionWriter();
+    virtual void init_particle_interaction_writer();
 
    protected:
     //! maximum particle radius (on this processor)

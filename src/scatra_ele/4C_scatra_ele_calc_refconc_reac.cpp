@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
  |  Set reac. body force, reaction coefficient and derivatives     thon 02/16 |
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_terms(
     const int k,                                            //!< index of current scalar
     const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
     const double* gpcoord                                   //!< current Gauss-point coordinates
@@ -62,11 +62,12 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
 
   remanager->AddToReaBodyForce(
-      matreaclist->CalcReaBodyForceTerm(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / j_) * j_,
+      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / j_) *
+          j_,
       k);
 
-  matreaclist->CalcReaBodyForceDerivMatrix(
-      k, remanager->GetReaBodyForceDerivVector(k), my::scatravarmanager_->Phinp(), gpcoord);
+  matreaclist->calc_rea_body_force_deriv_matrix(
+      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->Phinp(), gpcoord);
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -85,10 +86,10 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
  | set internal variables                                           thon 02/16  |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // do the usual and...
-  advreac::SetInternalVariablesForMatAndRHS();
+  advreac::set_internal_variables_for_mat_and_rhs();
 
   /////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////
@@ -160,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
       const int fui = ui * my::numdofpernode_ + k;
 
       double laplawf = 0.0;
-      //      GetLaplacianWeakForm(laplawf,Diff_tens,vi,ui);
+      //      get_laplacian_weak_form(laplawf,Diff_tens,vi,ui);
       for (unsigned j = 0; j < nsd_; j++)
       {
         for (unsigned i = 0; i < nsd_; i++)
@@ -222,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
-    //    GetLaplacianWeakFormRHS(laplawf,Diff_tens,gradphi,vi);
+    //    get_laplacian_weak_form_rhs(laplawf,Diff_tens,gradphi,vi);
     for (unsigned j = 0; j < nsd_; j++)
     {
       for (unsigned i = 0; i < nsd_; i++)
@@ -245,7 +246,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf2(0.0);
-    //    GetLaplacianWeakFormRHS(laplawf2,Diff_tens2,dJdX_,vi);
+    //    get_laplacian_weak_form_rhs(laplawf2,Diff_tens2,dJdX_,vi);
     for (unsigned j = 0; j < nsd_; j++)
     {
       for (unsigned i = 0; i < nsd_; i++)

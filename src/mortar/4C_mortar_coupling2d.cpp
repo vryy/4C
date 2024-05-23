@@ -56,11 +56,11 @@ bool MORTAR::Coupling2d::RoughCheckOrient()
 
   // compute the unit normal vector at the slave element center
   std::array<double, 3> nsc = {0.0, 0.0, 0.0};
-  SlaveElement().ComputeUnitNormalAtXi(loccenter.data(), nsc.data());
+  SlaveElement().compute_unit_normal_at_xi(loccenter.data(), nsc.data());
 
   // compute the unit normal vector at the master element center
   std::array<double, 3> nmc = {0.0, 0.0, 0.0};
-  MasterElement().ComputeUnitNormalAtXi(loccenter.data(), nmc.data());
+  MasterElement().compute_unit_normal_at_xi(loccenter.data(), nmc.data());
 
   // check orientation of the two normals
   double dot = nsc[0] * nmc[0] + nsc[1] * nmc[1] + nsc[2] * nmc[2];
@@ -169,13 +169,13 @@ bool MORTAR::Coupling2d::Project()
       std::vector<int> mdofs(2);
       MORTAR::Node tmp_node(mnode->Id(), xm, mnode->Owner(), mdofs, false);
       MORTAR::Projector::Impl(SlaveElement())
-          ->ProjectElementNormal(tmp_node, SlaveElement(), xi.data());
+          ->project_element_normal(tmp_node, SlaveElement(), xi.data());
     }
     else
     {
       // TODO random?
       MORTAR::Projector::Impl(SlaveElement())
-          ->ProjectElementNormal(*mnode, SlaveElement(), xi.data());
+          ->project_element_normal(*mnode, SlaveElement(), xi.data());
     }
 
     // save projection if it is feasible
@@ -1161,7 +1161,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     // evaluate trace space shape functions
     if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
     {
-      SlaveElement().EvaluateShapeLagMultLin(
+      SlaveElement().evaluate_shape_lag_mult_lin(
           INPAR::MORTAR::shape_standard, sxi.data(), sval, sderiv, nnodes);
     }
     else

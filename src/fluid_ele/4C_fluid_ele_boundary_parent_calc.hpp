@@ -66,7 +66,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* ele1,
+      virtual void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* ele1,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat2) = 0;
@@ -121,7 +121,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
-      void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* surfele,
+      void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* surfele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat2) override;
@@ -158,8 +158,8 @@ namespace DRT
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
       template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
+      void estimate_nitsche_trace_max_eigenvalue(DRT::FaceElement* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
           CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2);
 
@@ -169,7 +169,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      void GetDensityAndViscosity(Teuchos::RCP<const CORE::MAT::Material> material,
+      void get_density_and_viscosity(Teuchos::RCP<const CORE::MAT::Material> material,
           const double pscaaf, const double thermpressaf, const double rateofstrain);
 
 
@@ -221,7 +221,7 @@ namespace DRT
       //  evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double SpaldingResidual_utau(
+      double spalding_residual_utau(
           const double y, const double visc, const double utau, const double normu)
       {
         // get dimensionless velocity
@@ -246,7 +246,7 @@ namespace DRT
       //     evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double JacobianSpaldingResidual(
+      double jacobian_spalding_residual(
           const double y, const double visc, const double tau_B, const double normu)
       {
         // constants
@@ -270,7 +270,7 @@ namespace DRT
       //     evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double JacobianSpaldingResidual_utau(
+      double jacobian_spalding_residual_utau(
           const double y, const double visc, const double utau, const double normu)
       {
         // get dimensionless velocity
@@ -300,7 +300,7 @@ namespace DRT
       //     evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double JacobianSpaldingResidual_u(
+      double jacobian_spalding_residual_u(
           const double y, const double visc, const double utau, const double normu)
       {
         // get dimensionless velocity
@@ -330,7 +330,7 @@ namespace DRT
       //     evaluate the residual of Spaldings law of the wall
       //                                           (private) gammi 11/09
       //-----------------------------------------------------------------
-      double JacobianSpaldingResidual_uplus(
+      double jacobian_spalding_residual_uplus(
           const double y, const double visc, const double utau, const double normu)
       {
         // get dimensionless velocity

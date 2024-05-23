@@ -81,7 +81,7 @@ namespace CONTACT
 
    private:
     // integrate surface gradient
-    void GP_WeightedSurfGradAndDeriv(MORTAR::Element& sele, const double* xi,
+    void gp_weighted_surf_grad_and_deriv(MORTAR::Element& sele, const double* xi,
         const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
         const CORE::LINALG::SerialDenseVector& lmval,
         const CORE::LINALG::SerialDenseMatrix& lmderiv,

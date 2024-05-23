@@ -96,8 +96,8 @@ namespace FBI
 
    protected:
     /**
-     * \brief Please use FBI::GeometryCouplerFactory::CreateGeometryCoupler to create an instance of
-     * this class
+     * \brief Please use FBI::GeometryCouplerFactory::create_geometry_coupler to create an instance
+     * of this class
      */
     FBIBinningGeometryCoupler();
 
@@ -108,7 +108,7 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      * \param[in] disp current displacements
      */
-    void ComputeCurrentPositions(DRT::Discretization& dis,
+    void compute_current_positions(DRT::Discretization& dis,
         Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const override;
 

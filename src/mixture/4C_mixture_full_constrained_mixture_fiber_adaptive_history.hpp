@@ -86,7 +86,7 @@ namespace MIXTURE
 
     void EmplaceBack(unsigned int level, unsigned int num_simpson_intervals);
 
-    unsigned int GetTotalNumberOfSimpsonIntervals();
+    unsigned int get_total_number_of_simpson_intervals();
 
     void SplitLevel(unsigned int level, unsigned int new_num_simpson_intervals);
 
@@ -209,7 +209,7 @@ namespace MIXTURE
       return indices;
     }
 
-    [[nodiscard]] unsigned int GetNumberOfSimpsonIntervals(unsigned int level) const;
+    [[nodiscard]] unsigned int get_number_of_simpson_intervals(unsigned int level) const;
 
     [[nodiscard]] unsigned int GetBeginIndex(unsigned int level) const;
 
@@ -322,11 +322,11 @@ namespace MIXTURE
             if (check_level == 0)
             {
               return (num_total_steps - 1) / 2 -
-                     current_adaptivity_info.GetTotalNumberOfSimpsonIntervals();
+                     current_adaptivity_info.get_total_number_of_simpson_intervals();
             }
             else
             {
-              return current_adaptivity_info.GetNumberOfSimpsonIntervals(check_level);
+              return current_adaptivity_info.get_number_of_simpson_intervals(check_level);
             }
           });
 
@@ -365,12 +365,12 @@ namespace MIXTURE
     const double dt = (end_time - begin_time) / 2;
     const Number numerical_integration =
         CORE::UTILS::IntegrateSimpsonStep(dt,
-            growth_evolution.EvaluateSurvivalFunction(time - begin_time),
-            growth_evolution.EvaluateSurvivalFunction(time - (begin_time + end_time) / 2),
-            growth_evolution.EvaluateSurvivalFunction(time - end_time)) /
+            growth_evolution.evaluate_survival_function(time - begin_time),
+            growth_evolution.evaluate_survival_function(time - (begin_time + end_time) / 2),
+            growth_evolution.evaluate_survival_function(time - end_time)) /
         growth_evolution.decay_time_;
     const Number exact_integration =
-        growth_evolution.EvaluateSurvivalFunctionIntegration(time, begin_time, end_time) /
+        growth_evolution.evaluate_survival_function_integration(time, begin_time, end_time) /
         growth_evolution.decay_time_;
 
     return CORE::FADUTILS::Norm<Number>(numerical_integration - exact_integration) <= tolerance ||

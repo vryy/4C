@@ -35,7 +35,7 @@ void PASI::PasiPartOneWayCoup::Setup()
   {
     // get interface to particle wall handler
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
-        particlealgorithm_->GetParticleWallHandlerInterface();
+        particlealgorithm_->get_particle_wall_handler_interface();
 
     // get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -70,7 +70,7 @@ void PASI::PasiPartOneWayCoup::Timeloop()
     StructStep();
 
     // extract interface states
-    ExtractInterfaceStates();
+    extract_interface_states();
 
     // set interface states
     SetInterfaceStates(intfdispnp_, intfvelnp_, intfaccnp_);
@@ -79,7 +79,7 @@ void PASI::PasiPartOneWayCoup::Timeloop()
     ParticleStep();
 
     // post evaluate time step
-    PostEvaluateTimeStep();
+    post_evaluate_time_step();
 
     // output of fields
     Output();

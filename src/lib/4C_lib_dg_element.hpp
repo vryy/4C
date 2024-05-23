@@ -22,9 +22,9 @@ namespace DRT
      \brief Destructor
     */
     virtual ~DgElement() = default;
-    virtual int NumDofPerNodeAuxiliary() const = 0;
+    virtual int num_dof_per_node_auxiliary() const = 0;
 
-    virtual int NumDofPerElementAuxiliary() const = 0;
+    virtual int num_dof_per_element_auxiliary() const = 0;
   };
 }  // namespace DRT
 

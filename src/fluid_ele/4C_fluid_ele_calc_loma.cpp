@@ -110,7 +110,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   // ost:         velocity/pressure at time n+1
   CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
   CORE::LINALG::Matrix<nen_, 1> epreaf(true);
-  my::ExtractValuesFromGlobalVector(
+  my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   CORE::LINALG::Matrix<nsd_, nen_> evelam(true);
@@ -118,31 +118,33 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible &&
       my::fldparatimint_->IsGenalpha())
   {
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
   if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes &&
       my::fldparatimint_->IsGenalpha())
   {
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
 
   CORE::LINALG::Matrix<nen_, 1> escaaf(true);
-  my::ExtractValuesFromGlobalVector(
+  my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
   CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist, nullptr, "hist");
+  my::extract_values_from_global_vector(
+      discretization, lm, *my::rotsymmpbc_, &emhist, nullptr, "hist");
 
   CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
   CORE::LINALG::Matrix<nen_, 1> escadtam(true);
-  my::ExtractValuesFromGlobalVector(
+  my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eaccam, &escadtam, "accam");
 
   CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
   CORE::LINALG::Matrix<nen_, 1> escaam(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln, &escaam, "scaam");
+  my::extract_values_from_global_vector(
+      discretization, lm, *my::rotsymmpbc_, &eveln, &escaam, "scaam");
 
   if (not my::fldparatimint_->IsGenalpha()) eaccam.Clear();
 
@@ -154,9 +156,9 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
 
   if (ele->IsAle())
   {
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
-    my::ExtractValuesFromGlobalVector(
+    my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &egridv, nullptr, "gridv");
   }
 
@@ -292,7 +294,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   if (isale) my::xyze_ += edispnp;
 
   // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
+  my::eval_shape_func_and_derivs_at_ele_center();
 
   // set element area or volume
   const double vol = my::fac_;
@@ -339,7 +341,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+    my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     // get convective velocity at integration point
     // (including grid velocity in ALE case,
@@ -384,7 +386,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
 
     // compute subgrid-scale part of scalar
     // -> different for generalized-alpha and other time-integration schemes
-    my::ComputeSubgridScaleScalar(escaaf, escaam);
+    my::compute_subgrid_scale_scalar(escaaf, escaam);
 
     // update material parameters including subgrid-scale part of scalar
     if (my::fldpara_->UpdateMat())
@@ -393,7 +395,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
           my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         FOUR_C_THROW("No material update in combination with smagorinsky model!");
-      my::UpdateMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
+      my::update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
           thermpressam, my::sgscaint_);
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
@@ -477,7 +479,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       double* saccn = nullptr;
       double* sveln = nullptr;
       double* svelnp = nullptr;
-      my::ComputeSubgridScaleVelocity(
+      my::compute_subgrid_scale_velocity(
           eaccam, fac1, fac2, fac3, facMtau, *iquad, saccn, sveln, svelnp);
 
       if (my::fldpara_->ContiCross() == INPAR::FLUID::cross_stress_stab)

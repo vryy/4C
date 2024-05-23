@@ -45,9 +45,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
 
   if (IsParamsInterface())
@@ -646,7 +646,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
   const auto* val = &condition.parameters().Get<std::vector<double>>("val");
@@ -820,7 +820,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
     if (iseas_)
     {
       // first, store the eas state of the previous accepted Newton step
-      StrParamsInterface().SumIntoMyPreviousSolNorm(
+      StrParamsInterface().sum_into_my_previous_sol_norm(
           NOX::NLN::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
 
       // get stored EAS history
@@ -1965,7 +1965,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
 
   if (IsParamsInterface())  // new structural time integration
   {
-    StrParamsInterface().AddContributionToEnergyType(internal_energy, STR::internal_energy);
+    StrParamsInterface().add_contribution_to_energy_type(internal_energy, STR::internal_energy);
   }
   else if (energies)  // old structural time integration
   {

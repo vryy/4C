@@ -131,7 +131,7 @@ namespace GEOMETRYPAIR
      *
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void CalculateAveragedReferenceNormals(
+    virtual void calculate_averaged_reference_normals(
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements){};
 
     /**
@@ -141,7 +141,7 @@ namespace GEOMETRYPAIR
      * @param r (out) Position on the face.
      * @param reference (in) If the reference position or the current position should be returned.
      */
-    virtual void EvaluateFacePositionDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    virtual void evaluate_face_position_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
 
     /**
@@ -156,7 +156,7 @@ namespace GEOMETRYPAIR
      * @param averaged_normal (in) If an averaged normal or an geometrical normal should be
      * returned.
      */
-    virtual void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    virtual void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const = 0;
 
@@ -233,7 +233,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference element data of this face.
      */
-    const auto& GetFaceReferenceElementData() const { return face_reference_position_; }
+    const auto& get_face_reference_element_data() const { return face_reference_position_; }
 
     /**
      * \brief Return the current element data of this face.
@@ -261,25 +261,28 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the position on this face as a double. (derived)
      */
-    void EvaluateFacePositionDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    void evaluate_face_position_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
 
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
     /**
      * \brief Return the number of DOFs of the interacting element.
      */
-    [[nodiscard]] unsigned int GetNumberOfDofOtherElement() const { return n_dof_other_element_; }
+    [[nodiscard]] unsigned int get_number_of_dof_other_element() const
+    {
+      return n_dof_other_element_;
+    }
 
     /**
      * \brief Return the number of DOFs of the interacting element.
      */
-    void SetNumberOfDofOtherElement(const unsigned int n_dof_other_element)
+    void set_number_of_dof_other_element(const unsigned int n_dof_other_element)
     {
       if (n_dof_other_element_ == 0)
       {
@@ -365,14 +368,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Calculate the averaged normals on the nodes of this face (derived).
      */
-    void CalculateAveragedReferenceNormals(
+    void calculate_averaged_reference_normals(
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
@@ -457,7 +460,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
         CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 

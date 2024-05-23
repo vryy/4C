@@ -63,9 +63,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create(
 
 
 /*----------------------------------------------------------------------*
- |  SetupElementDefinition                                              |
+ |  setup_element_definition                                              |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition(
+void DRT::ELEMENTS::RedInterAcinarDepType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];

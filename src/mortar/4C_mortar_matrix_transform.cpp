@@ -105,15 +105,15 @@ void MORTAR::MatrixRowColTransformer::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
-MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
+MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
     const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
-  ThrowIfNotInitAndSetup();
+  throw_if_not_init_and_setup();
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       **master_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
-  RedistributedToUnredistributed(bt, src_mat, *dst_mat);
+  redistributed_to_unredistributed(bt, src_mat, *dst_mat);
 
   dst_mat->Complete(**master_col_[bt], **master_row_[bt]);
   return dst_mat;
@@ -121,10 +121,11 @@ MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(const CONTACT::MatBlockType bt,
-    const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat)
+void MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
+    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
+    CORE::LINALG::SparseMatrix& dst_mat)
 {
-  ThrowIfNotInitAndSetup();
+  throw_if_not_init_and_setup();
 
   const int err =
       dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *slave_to_master_[bt], Insert);
@@ -138,15 +139,15 @@ void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(const CONTA
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
-MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
+MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
     const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
-  ThrowIfNotInitAndSetup();
+  throw_if_not_init_and_setup();
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       **slave_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
-  RedistributedToUnredistributed(bt, src_mat, *dst_mat);
+  redistributed_to_unredistributed(bt, src_mat, *dst_mat);
 
   dst_mat->Complete(**slave_col_[bt], **slave_row_[bt]);
   return dst_mat;
@@ -154,10 +155,11 @@ MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(const CONTACT::MatBlockType bt,
-    const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat)
+void MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
+    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
+    CORE::LINALG::SparseMatrix& dst_mat)
 {
-  ThrowIfNotInitAndSetup();
+  throw_if_not_init_and_setup();
 
   const int err =
       dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *master_to_slave_[bt], Insert);

@@ -53,7 +53,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     // get material for current particle type
     const MAT::PAR::ParticleMaterialSPHFluid* material =
         dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-            particlematerial->GetPtrToParticleMatParameter(type_i));
+            particlematerial->get_ptr_to_particle_mat_parameter(type_i));
 
     // create equation of state handler
     switch (equationofstatetype)

@@ -110,7 +110,7 @@ namespace CONTACT
      ONLY necessary for AuxPlane case!
 
      */
-    virtual bool SlaveVertexLinearization(
+    virtual bool slave_vertex_linearization(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!
@@ -119,7 +119,7 @@ namespace CONTACT
      Sub-method of VertexLinearization for master linearization.
 
      */
-    virtual bool MasterVertexLinearization(
+    virtual bool master_vertex_linearization(
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!
@@ -131,7 +131,7 @@ namespace CONTACT
      VertexLinearization3D!
 
      */
-    virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
+    virtual bool lineclip_vertex_linearization(MORTAR::Vertex& currv,
         std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
         MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
         std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
@@ -376,7 +376,7 @@ namespace CONTACT
      *
      * \date 04/16
      * \author hiermeier */
-    void FindFeasibleMasterElements(std::vector<MORTAR::Element*>& feasible_ma_eles) const;
+    void find_feasible_master_elements(std::vector<MORTAR::Element*>& feasible_ma_eles) const;
 
    protected:
     // don't want = operator and cctor

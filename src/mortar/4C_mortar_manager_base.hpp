@@ -106,7 +106,7 @@ namespace MORTAR
     //! @{
 
     //! Write interface quantities for postprocessing
-    virtual void PostprocessQuantities(IO::DiscretizationWriter& output) = 0;
+    virtual void postprocess_quantities(IO::DiscretizationWriter& output) = 0;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -115,7 +115,7 @@ namespace MORTAR
 
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
-    virtual void PostprocessQuantitiesPerInterface(
+    virtual void postprocess_quantities_per_interface(
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk

@@ -137,7 +137,7 @@ namespace IO
       \param Comm         (in): the communicator
       \param elemap      (out): element map
      */
-    Teuchos::RCP<std::vector<char>> ReadResultDataVecChar(std::string id_path,
+    Teuchos::RCP<std::vector<char>> read_result_data_vec_char(std::string id_path,
         std::string value_path, int columns, const Epetra_Comm& Comm,
         Teuchos::RCP<Epetra_Map>& elemap) const;
 

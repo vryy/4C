@@ -36,7 +36,7 @@ void MAT::ELASTIC::IsoMooneyRivlin::AddStrainEnergy(double& psi,
   psi += c1 * (modinv(0) - 3.) + c2 * (modinv(1) - 3.);
 }
 
-void MAT::ELASTIC::IsoMooneyRivlin::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+void MAT::ELASTIC::IsoMooneyRivlin::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
     CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {

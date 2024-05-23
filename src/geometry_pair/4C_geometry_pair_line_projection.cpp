@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointOnLineToOther(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_point_on_line_to_other(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
@@ -44,7 +44,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointOnLineToOther(const pair
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_points_on_line_to_other(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -58,7 +58,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   for (auto& point : projection_points)
   {
     // Project the point.
-    ProjectPointOnLineToOther(pair, element_data_line, element_data_other, point.GetEta(),
+    project_point_on_line_to_other(pair, element_data_line, element_data_other, point.GetEta(),
         point.GetXi(), point.GetProjectionResult());
 
     // Update the counters.
@@ -76,7 +76,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_points_on_line_to_other(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -86,7 +86,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   unsigned int n_projections_dummy;
 
   // Project the points.
-  ProjectPointsOnLineToOther(pair, element_data_line, element_data_other, projection_points,
+  project_points_on_line_to_other(pair, element_data_line, element_data_other, projection_points,
       n_projections_valid, n_projections_dummy);
 }
 
@@ -94,7 +94,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
+void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_other(
     const pair_type* pair, const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other, LineSegment<scalar_type>& segment)
 {
@@ -119,18 +119,18 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
   // Project the Gauss points to the other geometry.
   unsigned int n_valid_projections;
   unsigned int n_projections;
-  ProjectPointsOnLineToOther(pair, element_data_line, element_data_other, projection_points,
+  project_points_on_line_to_other(pair, element_data_line, element_data_other, projection_points,
       n_valid_projections, n_projections);
 
   // Check if a warning or an error should be output
   const bool all_valid = n_valid_projections == static_cast<unsigned int>(gauss_points.nquad);
   const bool all_projected = n_projections == static_cast<unsigned int>(gauss_points.nquad);
   const bool is_warning = all_projected and (!all_valid) and
-                          evaluation_data.GetNotAllGaussPointsProjectValidAction() ==
+                          evaluation_data.get_not_all_gauss_points_project_valid_action() ==
                               INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning;
   const bool is_error =
       !all_projected or
-      (!all_valid and evaluation_data.GetNotAllGaussPointsProjectValidAction() !=
+      (!all_valid and evaluation_data.get_not_all_gauss_points_project_valid_action() !=
                           INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning);
   if (is_warning or is_error)
   {
@@ -183,7 +183,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
  *
  */
 template <typename pair_type>
-void GEOMETRYPAIR::LineTo3DBase<pair_type>::IntersectLineWithOther(const pair_type* pair,
+void GEOMETRYPAIR::LineTo3DBase<pair_type>::intersect_line_with_other(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points)
@@ -195,7 +195,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::IntersectLineWithOther(const pair_ty
   StartValues<other::geometry_type_>::Set(xi_start);
 
   // Call the intersect function.
-  pair->IntersectLineWithOther(
+  pair->intersect_line_with_other(
       element_data_line, element_data_other, intersection_points, eta_start, xi_start);
 }
 
@@ -209,7 +209,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
     std::vector<LineSegment<scalar_type>>& segments)
 {
   // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVector(pair);
+  std::vector<bool>& line_projection_tracker = get_line_projection_vector(pair);
 
   // Gauss rule.
   CORE::FE::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
@@ -228,7 +228,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
     if (line_projection_tracker[index_gp] == false)
     {
       eta = gauss_points.qxg[index_gp][0];
-      LineTo3DBase<pair_type>::ProjectPointOnLineToOther(
+      LineTo3DBase<pair_type>::project_point_on_line_to_other(
           pair, element_data_line, element_data_other, eta, xi, projection_result);
       if (projection_result == ProjectionResult::projection_found_valid)
       {
@@ -279,13 +279,13 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
         segments.size());
 
   // Check if one point projected in PreEvaluate.
-  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
+  if (segments.size() == 1 && segments[0].get_number_of_projection_points() > 0)
   {
     // Flag if segmentation is needed.
     bool need_segmentation = false;
 
     // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVector(pair);
+    const std::vector<bool>& line_projection_tracker = get_line_projection_vector(pair);
     for (auto const& projects : line_projection_tracker)
       if (!projects) need_segmentation = true;
 
@@ -293,7 +293,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
     {
       // Segmentation is needed. First get the intersection points with the other geometry.
       std::vector<ProjectionPoint1DTo3D<scalar_type>> intersection_points;
-      LineTo3DBase<pair_type>::IntersectLineWithOther(
+      LineTo3DBase<pair_type>::intersect_line_with_other(
           pair, element_data_line, element_data_other, intersection_points);
 
       // This algorithm only works if one intersection point was found.
@@ -319,7 +319,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
+      LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_other(
           pair, element_data_line, element_data_other, segments[0]);
     }
   }
@@ -329,13 +329,14 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
  *
  */
 template <typename pair_type>
-std::vector<bool>& GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::GetLineProjectionVector(
+std::vector<bool>&
+GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::get_line_projection_vector(
     const pair_type* pair)
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = pair->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      pair->GetEvaluationData()->GetGaussPointProjectionTracker();
+      pair->GetEvaluationData()->get_gauss_point_projection_tracker();
   auto find = projection_tracker.find(line_element_id);
   if (find == projection_tracker.end())
     FOUR_C_THROW("Could not find the projection tracker for line id %d.", line_element_id);
@@ -359,7 +360,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
         segments.size());
 
   // Number of search points.
-  unsigned int n_search_points = pair->GetEvaluationData()->GetNumberOfSearchPoints();
+  unsigned int n_search_points = pair->GetEvaluationData()->get_number_of_search_points();
 
   // Set up vector with projection points for the search points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
@@ -376,7 +377,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   // Project all the search points.
   unsigned int dummy;
   unsigned int n_projections;
-  LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(
+  LineTo3DBase<pair_type>::project_points_on_line_to_other(
       pair, element_data_line, element_data_other, search_points, dummy, n_projections);
 
   // If no point could be projected return, as we assume that we wont find a surface projection.
@@ -407,7 +408,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
       if (point.GetProjectionResult() != ProjectionResult::projection_not_found)
       {
         // Get the intersections with the other geometry.
-        pair->IntersectLineWithOther(element_data_line, element_data_other,
+        pair->intersect_line_with_other(element_data_line, element_data_other,
             search_intersection_points, point.GetEta(), point.GetXi());
 
         // Add the found intersection points to the set.
@@ -431,7 +432,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
       search_points.reserve(intersection_points.size() - 1);
 
       // Loop over the middle points and check if they are projected valid or not.
-      std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker = GetSegmentTrackingSet(pair);
+      std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker = get_segment_tracking_set(pair);
       ProjectionResult projection_result;
       bool last_segment_active = false;
       ProjectionPoint1DTo3D<scalar_type> segment_start;
@@ -457,7 +458,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           xi_start.Scale(0.5);
 
           // Project and check result.
-          LineTo3DBase<pair_type>::ProjectPointOnLineToOther(
+          LineTo3DBase<pair_type>::project_point_on_line_to_other(
               pair, element_data_line, element_data_other, eta, xi_start, projection_result);
         }
         else
@@ -495,7 +496,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
               segment_tracker.insert(new_segment_double);
 
               // Project the Gauss points on the segment.
-              LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
+              LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_other(
                   pair, element_data_line, element_data_other, segments.back());
             }
 
@@ -516,7 +517,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
  */
 template <typename pair_type>
 std::set<GEOMETRYPAIR::LineSegment<double>>&
-GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::GetSegmentTrackingSet(const pair_type* pair)
+GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::get_segment_tracking_set(const pair_type* pair)
 {
   // Get the segment tracker for this line element.
   int line_element_id = pair->Element1()->Id();

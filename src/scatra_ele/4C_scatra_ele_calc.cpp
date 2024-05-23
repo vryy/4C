@@ -98,7 +98,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   // get element coordinates
-  ReadElementCoordinates(ele);
+  read_element_coordinates(ele);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if (DRT::NURBS::IsNurbs(distype))
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
         Teuchos::RCP<const MAT::ScatraMat> single_material =
             Teuchos::rcp_static_cast<const MAT::ScatraMat>(
                 material_list->MaterialById(material_id));
-        scatravarmanager_->SetReactsToForce(single_material->ReactsToExternalForce(), k);
+        scatravarmanager_->SetReactsToForce(single_material->reacts_to_external_force(), k);
       }
     }
   }
@@ -164,14 +164,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  extract_element_and_node_values(ele, params, discretization, la);
 
   //--------------------------------------------------------------------------------
   // prepare turbulence models
   //--------------------------------------------------------------------------------
 
   int nlayer = 0;
-  ExtractTurbulenceApproach(ele, params, discretization, la, nlayer);
+  extract_turbulence_approach(ele, params, discretization, la, nlayer);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix and rhs
@@ -191,7 +191,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
   if (turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky and turbparams_->CsAv())
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
-    StoreModelParametersForOutput(
+    store_model_parameters_for_output(
         ele, ele->Owner() == discretization.Comm().MyPID(), turbulencelist, nlayer);
   }
 
@@ -201,8 +201,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  rotsymmpbc_->RotateMyValuesIfNecessary(econvelnp_);
+  rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
 
   // get additional state vector for ALE case: grid displacement
   if (scatrapara_->IsAle())
@@ -245,7 +245,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
-    rotsymmpbc_->RotateMyValuesIfNecessary(evelnp_);
+    rotsymmpbc_->rotate_my_values_if_necessary(evelnp_);
 
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = scatrapara_->NdsDisp();
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
-    UpdateNodeCoordinates();
+    update_node_coordinates();
   }
   else
   {
@@ -288,7 +288,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
-    rotsymmpbc_->RotateMyValuesIfNecessary(eaccnp_);
+    rotsymmpbc_->rotate_my_values_if_necessary(eaccnp_);
 
     // construct location vector for pressure dofs
     std::vector<int> lmpre(nen_, -1);
@@ -330,13 +330,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   // further node-based source terms not given via Neumann volume condition
   // i.e., set special body force for homogeneous isotropic turbulence
   //--------------------------------------------------------------------------------
-  OtherNodeBasedSourceTerms(lm, discretization, params);
+  other_node_based_source_terms(lm, discretization, params);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(DRT::Element* ele,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, int& nlayer)
 {
@@ -363,7 +363,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
 
     // when no averaging was done, we just keep the calculated (clipped) value
     if (turbparams_->CsAv())
-      GetMeanPrtOfHomogenousDirection(params.sublist("TURBULENCE MODEL"), nlayer);
+      get_mean_prt_of_homogenous_direction(params.sublist("TURBULENCE MODEL"), nlayer);
   }
 
   // get fine-scale values
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
-  const double vol = EvalShapeFuncAndDerivsAtEleCenter();
+  const double vol = eval_shape_func_and_derivs_at_ele_center();
 
   //----------------------------------------------------------------------
   // get material and stabilization parameters (evaluation at element center)
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
   if (not scatrapara_->MatGP())
   {
     // set gauss point variables needed for evaluation of mat and rhs
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     GetMaterialParams(ele, densn, densnp, densam, visc);
   }
@@ -470,13 +470,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
       if (turbparams_->FSSGD())
-        CalcFineScaleSubgrDiff(sgdiff, subgrdiff, ele, vol, k, densnp[k],
+        calc_fine_scale_subgr_diff(sgdiff, subgrdiff, ele, vol, k, densnp[k],
             diffmanager_->GetIsotropicDiff(k), convelint);
 
       // calculation of stabilization parameter at element center
       CalcTau(tau[k], diffmanager_->GetIsotropicDiff(k),
-          reamanager_->GetStabilizationCoeff(k, scatravarmanager_->Phinp(k)), densnp[k], convelint,
-          vol);
+          reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
+          convelint, vol);
     }
   }
 
@@ -495,7 +495,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // hence, determine them if not yet available
       if (scatrapara_->MatGP())
       {
-        SetInternalVariablesForMatAndRHS();
+        set_internal_variables_for_mat_and_rhs();
 
         GetMaterialParams(ele, densn, densnp, densam, visc);
       }
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
       // calculate model coefficients
       for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs, D_mfs, vol, k, densnp[k],
+        calc_b_and_d_for_multifrac_subgrid_scales(B_mfs, D_mfs, vol, k, densnp[k],
             diffmanager_->GetIsotropicDiff(k), visc, scatravarmanager_->ConVel(k), fsvelint);
     }
   }
@@ -521,10 +521,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // set gauss point variables needed for evaluation of mat and rhs
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -580,7 +580,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
           // pre-calculation of stabilization parameter at integration point need for some forms of
           // artificial diffusion
           CalcTau(tau[k], diffmanager_->GetIsotropicDiff(k),
-              reamanager_->GetStabilizationCoeff(k, scatravarmanager_->Phinp(k)), densnp[k],
+              reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
               scatravarmanager_->ConVel(k), vol);
 
           // compute artificial diffusion
@@ -606,7 +606,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
         // calculation of fine-scale artificial subgrid diffusivity at element center
         if (turbparams_->FSSGD())
-          CalcFineScaleSubgrDiff(sgdiff, subgrdiff, ele, vol, k, densnp[k],
+          calc_fine_scale_subgr_diff(sgdiff, subgrdiff, ele, vol, k, densnp[k],
               diffmanager_->GetIsotropicDiff(k), scatravarmanager_->ConVel(k));
 
         // calculation of subgrid-scale velocity at integration point if required
@@ -626,7 +626,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
         // (re)compute stabilization parameter at integration point, since diffusion may have
         // changed
         CalcTau(tau[k], diffmanager_->GetIsotropicDiff(k),
-            reamanager_->GetStabilizationCoeff(k, scatravarmanager_->Phinp(k)), densnp[k],
+            reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
             scatravarmanager_->ConVel(k), vol);  // TODO:(Thon) do we really have to do this??
       }
 
@@ -635,7 +635,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       if (use2ndderiv_)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        GetLaplacianStrongForm(diff);
+        get_laplacian_strong_form(diff);
         diff.Scale(diffmanager_->GetIsotropicDiff(k));
       }
 
@@ -652,7 +652,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
         if (turbparams_->BD_Gp())
         {
           // calculate model coefficients
-          CalcBAndDForMultifracSubgridScales(B_mfs, D_mfs, vol, k, densnp[k],
+          calc_b_and_d_for_multifrac_subgrid_scales(B_mfs, D_mfs, vol, k, densnp[k],
               diffmanager_->GetIsotropicDiff(k), visc, scatravarmanager_->ConVel(k), fsvelint);
         }
 
@@ -705,7 +705,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // convective stabilization of convective term (in convective form)
       // transient stabilization of convective term (in convective form)
       if (scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-        CalcMatTransConvDiffStab(emat, k, timetaufac, densnp[k], sgconv, diff);
+        calc_mat_trans_conv_diff_stab(emat, k, timetaufac, densnp[k], sgconv, diff);
 
       //----------------------------------------------------------------
       // 2) element matrix: instationary terms
@@ -753,14 +753,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // and must not be changed
       ComputeRhsInt(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
 
-      RecomputeScatraResForRhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
+      recompute_scatra_res_for_rhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
 
-      RecomputeConvPhiForRhs(k, sgvelint, densnp[k], densn[k], vdiv);
+      recompute_conv_phi_for_rhs(k, sgvelint, densnp[k], densn[k], vdiv);
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
       //----------------------------------------------------------------
-      CalcRHSHistAndSource(erhs, k, fac, rhsint);
+      calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
       //----------------------------------------------------------------
       // standard Galerkin terms on right hand side
@@ -776,7 +776,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // stabilization terms
       //----------------------------------------------------------------
       if (scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-        CalcRHSTransConvDiffStab(erhs, k, rhstaufac, densnp[k], scatrares, sgconv, diff);
+        calc_rhs_trans_conv_diff_stab(erhs, k, rhstaufac, densnp[k], scatrares, sgconv, diff);
 
       //----------------------------------------------------------------
       // reactive terms (standard Galerkin and stabilization) on rhs
@@ -813,7 +813,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       //    macro-micro coupling in multi-scale simulations
       //----------------------------------------------------------------
       if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
-        CalcMatAndRhsMultiScale(ele, emat, erhs, k, iquad, timefacfac, rhsfac);
+        calc_mat_and_rhs_multi_scale(ele, emat, erhs, k, iquad, timefacfac, rhsfac);
 
       //----------------------------------------------------------------
       // 8) Compute Rhs for ElectroMagnetic Diffusion equation
@@ -889,7 +889,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::OtherNodeBasedSourceTerms(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source_terms(
     const std::vector<int>& lm, DRT::Discretization& discretization, Teuchos::ParameterList& params)
 {
   // set externally calculated source term instead of body force by volume
@@ -921,7 +921,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::OtherNodeBasedSourceTerms(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ReadElementCoordinates(const DRT::Element* ele)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::read_element_coordinates(
+    const DRT::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -930,7 +931,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ReadElementCoordinates(cons
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtEleCenter()
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_ele_center()
 {
   // use one-point Gauss rule to do calculations at the element center
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
@@ -938,7 +939,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtE
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau, 0);
+  const double vol = eval_shape_func_and_derivs_at_int_point(intpoints_tau, 0);
 
   return vol;
 }
@@ -946,14 +947,14 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtE
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtIntPoint(
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_int_point(
     const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
   for (unsigned idim = 0; idim < nsd_ele_; idim++) xsi_(idim) = gpcoord[idim];
 
-  const double det = EvalShapeFuncAndDerivsInParameterSpace();
+  const double det = eval_shape_func_and_derivs_in_parameter_space();
 
   if (det < 1E-16)
     FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
@@ -980,7 +981,8 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtI
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInParameterSpace()
+double
+DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_in_parameter_space()
 {
   double det = 0.0;
 
@@ -1278,14 +1280,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatElectrode(
   // set constant diffusivity
   diffmanager_->SetIsotropicDiff(
       Teuchos::rcp_static_cast<const MAT::Electrode>(material)
-          ->ComputeDiffusionCoefficientConcentrationDependent(scatravarmanager_->Phinp(0)),
+          ->compute_diffusion_coefficient_concentration_dependent(scatravarmanager_->Phinp(0)),
       0);
 }
 
 /*---------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetLaplacianStrongForm(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_form(
     CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   diff.Clear();
@@ -1392,7 +1394,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
     {
       const int fui = ui * numdofpernode_ + k;
       double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf, ui, vi);
+      get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi, fui) += fac_diffus * laplawf;
     }
   }
@@ -1401,7 +1403,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatTransConvDiffStab(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_trans_conv_diff_stab(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timetaufac,
     const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
     const CORE::LINALG::Matrix<nen_, 1>& diff)
@@ -1746,7 +1748,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ComputeRhsInt(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeScatraResForRhs(double& scatrares,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_scatra_res_for_rhs(double& scatrares,
     const int k, const CORE::LINALG::Matrix<nen_, 1>& diff, const double densn, const double densnp,
     double& rea_phi, const double rhsint)
 {
@@ -1795,7 +1797,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeScatraResForRhs(do
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeConvPhiForRhs(const int k,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_rhs(const int k,
     const CORE::LINALG::Matrix<nsd_, 1>& sgvelint, const double densnp, const double densn,
     const double vdiv)
 {
@@ -1858,7 +1860,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeConvPhiForRhs(cons
 /*-------------------------------------------------------------------------------------- *
  *---------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSHistAndSource(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_hist_and_source(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double rhsint)
 {
   double vrhs = fac * rhsint;
@@ -1902,7 +1904,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
     const int fvi = vi * numdofpernode_ + k;
 
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, gradphi, vi);
     erhs[fvi] -= vrhs * laplawf;
   }
 }
@@ -1910,7 +1912,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSTransConvDiffStab(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_trans_conv_diff_stab(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhstaufac, const double densnp,
     const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
     const CORE::LINALG::Matrix<nen_, 1>& diff)
@@ -1987,7 +1989,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(
     const int fvi = vi * numdofpernode_ + k;
 
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf, fsgradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, fsgradphi, vi);
     erhs[fvi] -= (vrhs * laplawf);
   }
 }
@@ -2034,7 +2036,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(
 /*-----------------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_scale(
     const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
     const double rhsfac)
@@ -2059,7 +2061,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
 
   // macro-scale matrix contribution
   const double matrixterm =
-      timefacfac * dq_dphi_micro[0] * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
+      timefacfac * dq_dphi_micro[0] * matmultiscale->specific_micro_scale_surface_area(detF);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = funct_(vi) * matrixterm;
@@ -2069,7 +2071,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   }
 
   // macro-scale vector contribution
-  const double rhsterm = rhsfac * q_micro * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
+  const double rhsterm = rhsfac * q_micro * matmultiscale->specific_micro_scale_surface_area(detF);
   for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * numdofpernode_ + k] -= funct_(vi) * rhsterm;
 }
 
@@ -2112,9 +2114,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs()
 {
-  scatravarmanager_->SetInternalVariables(
+  scatravarmanager_->set_internal_variables(
       funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_, eforcevelocity_);
 }
 

@@ -74,7 +74,7 @@ namespace XFEM
       fullpres_ = pres;
     }
 
-    void InitializeStrucPresMap(
+    void initialize_struc_pres_map(
         Teuchos::RCP<const Epetra_Map> pfmap, Teuchos::RCP<const Epetra_Map> psmap)
     {
       // We need to identify cutter dis dofs and pressure dofs on all processors for the whole
@@ -82,14 +82,15 @@ namespace XFEM
 
       if (pfmap->NumMyElements() != psmap->NumMyElements())
         FOUR_C_THROW(
-            "InitializeStrucPresMap: (pfmap->NumGlobalElements() != psmap->NumGlobalElements())!");
+            "initialize_struc_pres_map: (pfmap->NumGlobalElements() != "
+            "psmap->NumGlobalElements())!");
 
       Teuchos::RCP<Epetra_Map> fullpfmap = CORE::LINALG::AllreduceEMap(*pfmap);
       Teuchos::RCP<Epetra_Map> fullpsmap = CORE::LINALG::AllreduceEMap(*psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         FOUR_C_THROW(
-            "InitializeStrucPresMap: (fullpfmap->NumGlobalElements() != "
+            "initialize_struc_pres_map: (fullpfmap->NumGlobalElements() != "
             "fullpsmap->NumGlobalElements())!");
 
       for (int lid = 0; lid < fullpfmap->NumMyElements(); ++lid)
@@ -102,23 +103,23 @@ namespace XFEM
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
     template <CORE::FE::CellType DISTYPE, class T1, class M3>
-    void EvaluateCouplingConditions(T1& projection_matrix,  ///< Projection matrix
-        M3& normal                                          ///< surface normal of cut element
+    void evaluate_coupling_conditions(T1& projection_matrix,  ///< Projection matrix
+        M3& normal                                            ///< surface normal of cut element
     )
     {
-      EvalProjectionMatrix<DISTYPE>(projection_matrix, normal);
+      eval_projection_matrix<DISTYPE>(projection_matrix, normal);
       return;
     };
 
     // finalize the interface true residual vector
-    void CompleteStateVectors() override;
+    void complete_state_vectors() override;
 
-    virtual void ZeroStateVectors_FPI();
+    virtual void zero_state_vectors_fpi();
 
     void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
-    void GmshOutputDiscretization(std::ostream& gmshfilecontent) override;
+    void gmsh_output_discretization(std::ostream& gmshfilecontent) override;
 
     void LiftDrag(const int step, const double time) const override;
 
@@ -134,10 +135,10 @@ namespace XFEM
     double CalcPorosity(DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J);
 
     //! get distance when transition between FPSI and PSCI is started
-    double Get_fpi_pcontact_exchange_dist() { return fpsi_contact_hfraction_ * h_scaling_; }
+    double get_fpi_pcontact_exchange_dist() { return fpsi_contact_hfraction_ * h_scaling_; }
 
     //! ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is starte
-    double Get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
+    double get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
 
     /// Assign communicator to contact to mesh coupling object
     void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
@@ -157,10 +158,10 @@ namespace XFEM
     void RegisterSideProc(int sid);
 
     /// Reconnect Parent Pointers
-    void ReconnectParentPointers();
+    void reconnect_parent_pointers();
 
     /// Initialize Fluid State
-    bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
+    bool initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
@@ -170,22 +171,22 @@ namespace XFEM
 
    protected:
     //! Initializes configurationmap
-    void SetupConfigurationMap() override;
+    void setup_configuration_map() override;
 
     //! set the name of the coupling object based on the field coupling
     void SetCouplingName() override;
 
     //! Updates configurationmap for specific Gausspoint
-    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                              //< master sided dynamic viscosity
-        double& visc_s,                              //< slave sided dynamic viscosity
-        double& density_m,                           //< master sided density
-        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
-        double& full_stab,                           //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,     //< Condition
-        DRT::Element* ele,                           //< Element
-        DRT::Element* bele,                          //< Boundary Element
+    void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                //< master sided dynamic viscosity
+        double& visc_s,                                //< slave sided dynamic viscosity
+        double& density_m,                             //< master sided density
+        double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
+        double& full_stab,                             //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,       //< Condition
+        DRT::Element* ele,                             //< Element
+        DRT::Element* bele,                            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -196,15 +197,15 @@ namespace XFEM
 
     void InitStateVectors() override;
 
-    void DoConditionSpecificSetup() override;
+    void do_condition_specific_setup() override;
 
     bool HasMovingInterface() override { return true; }
 
-    void SetConditionSpecificParameters() override;
+    void set_condition_specific_parameters() override;
 
    private:
     //! Updates configurationmap for specific Gausspoint in the contact case
-    virtual void UpdateConfigurationMap_GP_Contact(double& kappa_m,  //< fluid sided weighting
+    virtual void update_configuration_map_gp_contact(double& kappa_m,  //< fluid sided weighting
         double& visc_m,                           //< master sided dynamic viscosity
         double& visc_s,                           //< slave sided dynamic viscosity
         double& density_m,                        //< master sided density
@@ -226,7 +227,7 @@ namespace XFEM
     double CalctrPermeability(DRT::Element* ele, double& porosity, double& J);
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
-    double ComputeJacobianandPressure(
+    double compute_jacobianand_pressure(
         DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres);
 
     //------------------------------- vectors -----------------------------

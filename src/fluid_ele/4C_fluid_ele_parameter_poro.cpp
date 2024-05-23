@@ -3,7 +3,7 @@
 
 \brief Evaluation of general fluid parameter for fluid in poroelast problem
 
-FluidEleParameter::SetElementPoroParameter(Teuchos::ParameterList& params)
+FluidEleParameter::set_element_poro_parameter(Teuchos::ParameterList& params)
 set all general porofluid parameter once for all elements.
 
 \level 2
@@ -46,10 +46,10 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
 //----------------------------------------------------------------------*
 //  set poro parameters                                      vuong 11/12|
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter(
+void DRT::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
-  SetElementGeneralFluidParameter(params, myrank);
+  set_element_general_fluid_parameter(params, myrank);
 
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration", false);
@@ -88,7 +88,7 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter(
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen                          rauch 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro() const
+void DRT::ELEMENTS::FluidEleParameterPoro::print_fluid_parameter_poro() const
 {
   std::cout << std::endl
             << "|-----------------------------------------------------------------------------"

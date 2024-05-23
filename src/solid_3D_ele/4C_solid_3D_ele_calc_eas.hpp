@@ -116,7 +116,7 @@ namespace DRT
 
       void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-      void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+      void evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
@@ -131,7 +131,7 @@ namespace DRT
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
+      double calculate_internal_energy(const DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
@@ -139,15 +139,15 @@ namespace DRT
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      void InitializeGaussPointDataOutput(const DRT::Element& ele,
+      void initialize_gauss_point_data_output(const DRT::Element& ele,
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void EvaluateGaussPointDataOutput(const DRT::Element& ele,
+      void evaluate_gauss_point_data_output(const DRT::Element& ele,
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
+      void reset_to_last_converged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
      private:
       /// EAS matrices and vectors to be stored between iterations

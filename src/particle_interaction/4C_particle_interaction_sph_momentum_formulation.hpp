@@ -58,19 +58,19 @@ namespace PARTICLEINTERACTION
         double* acc_j) const = 0;
 
     //! evaluate background pressure (standard formulation)
-    virtual void StandardBackgroundPressure(const double* dens_i, const double* dens_j,
+    virtual void standard_background_pressure(const double* dens_i, const double* dens_j,
         const double& bg_press_i, const double& bg_press_j, const double& speccoeff_ij,
         const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
         double* mod_acc_j) const = 0;
 
     //! evaluate background pressure  (generalized formulation)
-    virtual void GeneralizedBackgroundPressure(const double* dens_i, const double* dens_j,
+    virtual void generalized_background_pressure(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& mod_bg_press_i,
         const double& mod_bg_press_j, const double& mod_dWdrij, const double& mod_dWdrji,
         const double* e_ij, double* mod_acc_i, double* mod_acc_j) const = 0;
 
     //! evaluate modified velocity contribution
-    virtual void ModifiedVelocityContribution(const double* dens_i, const double* dens_j,
+    virtual void modified_velocity_contribution(const double* dens_i, const double* dens_j,
         const double* vel_i, const double* vel_j, const double* mod_vel_i, const double* mod_vel_j,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,
         double* acc_j) const = 0;
@@ -100,19 +100,19 @@ namespace PARTICLEINTERACTION
         double* acc_j) const override;
 
     //! evaluate background pressure (standard formulation)
-    void StandardBackgroundPressure(const double* dens_i, const double* dens_j,
+    void standard_background_pressure(const double* dens_i, const double* dens_j,
         const double& bg_press_i, const double& bg_press_j, const double& speccoeff_ij,
         const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
         double* mod_acc_j) const override;
 
     //! evaluate background pressure (generalized formulation)
-    void GeneralizedBackgroundPressure(const double* dens_i, const double* dens_j,
+    void generalized_background_pressure(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& mod_bg_press_i,
         const double& mod_bg_press_j, const double& mod_dWdrij, const double& mod_dWdrji,
         const double* e_ij, double* mod_acc_i, double* mod_acc_j) const override;
 
     //! evaluate modified velocity contribution
-    void ModifiedVelocityContribution(const double* dens_i, const double* dens_j,
+    void modified_velocity_contribution(const double* dens_i, const double* dens_j,
         const double* vel_i, const double* vel_j, const double* mod_vel_i, const double* mod_vel_j,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,
         double* acc_j) const override;
@@ -142,19 +142,19 @@ namespace PARTICLEINTERACTION
         double* acc_j) const override;
 
     //! evaluate background pressure (standard formulation)
-    void StandardBackgroundPressure(const double* dens_i, const double* dens_j,
+    void standard_background_pressure(const double* dens_i, const double* dens_j,
         const double& bg_press_i, const double& bg_press_j, const double& speccoeff_ij,
         const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
         double* mod_acc_j) const override;
 
     //! evaluate background pressure (generalized formulation)
-    void GeneralizedBackgroundPressure(const double* dens_i, const double* dens_j,
+    void generalized_background_pressure(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& mod_bg_press_i,
         const double& mod_bg_press_j, const double& mod_dWdrij, const double& mod_dWdrji,
         const double* e_ij, double* mod_acc_i, double* mod_acc_j) const override;
 
     //! evaluate modified velocity contribution
-    void ModifiedVelocityContribution(const double* dens_i, const double* dens_j,
+    void modified_velocity_contribution(const double* dens_i, const double* dens_j,
         const double* vel_i, const double* vel_j, const double* mod_vel_i, const double* mod_vel_j,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,
         double* acc_j) const override;

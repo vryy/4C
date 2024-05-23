@@ -731,7 +731,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(CORE::LINALG::SparseMatrix& linedis)
 /*----------------------------------------------------------------------*
  | Finite difference check of wear condition derivatives     farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::FDCheckDerivE_D_Master(CORE::LINALG::SparseMatrix& linedis)
+void WEAR::WearInterface::fd_check_deriv_e_d_master(CORE::LINALG::SparseMatrix& linedis)
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -1237,7 +1237,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(CORE::LINALG::SparseMatrix& lintdis)
 /*----------------------------------------------------------------------*
  | Finite difference check of wear condition derivatives     farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::FDCheckDerivT_D_Master(CORE::LINALG::SparseMatrix& lintdis)
+void WEAR::WearInterface::fd_check_deriv_t_d_master(CORE::LINALG::SparseMatrix& lintdis)
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -2658,7 +2658,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for T-Mortar derivatives (Master) farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
+void WEAR::WearInterface::fd_check_mortar_t_master_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
@@ -3112,7 +3112,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for E-Mortar derivatives (Master) farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
+void WEAR::WearInterface::fd_check_mortar_e_master_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);

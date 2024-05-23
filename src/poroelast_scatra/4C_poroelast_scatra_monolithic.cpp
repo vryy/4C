@@ -48,7 +48,8 @@ POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
       blockrowdofmap_(Teuchos::null),
       directsolve_(true)
 {
-  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams =
+      GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
@@ -142,7 +143,7 @@ void POROELASTSCATRA::PoroScatraMono::PrepareTimeStep(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sinc!
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   if (printheader) PrintHeader();
 
@@ -170,7 +171,7 @@ void POROELASTSCATRA::PoroScatraMono::PrepareOutput()
 void POROELASTSCATRA::PoroScatraMono::Output()
 {
   PoroField()->Output();
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -181,7 +182,7 @@ void POROELASTSCATRA::PoroScatraMono::Update()
   PoroField()->Update();
 
   ScaTraField()->Update();
-  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -220,8 +221,8 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
     // build linear system stiffness matrix and rhs/force residual for each
     // field, here e.g. for structure field: field want the iteration increment
     // 1.) Update(iterinc_),
-    // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve()
+    // 2.) evaluate_force_stiff_residual(),
+    // 3.) prepare_system_for_newton_solve()
     Evaluate(iterinc_);
 
     // check whether we have a sanely filled tangent matrix
@@ -236,12 +237,12 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
     // FDCheck();
 
     // build norms
-    BuildConvergenceNorms();
+    build_convergence_norms();
 
     if ((not Converged()) or combincfres_ == INPAR::POROELAST::bop_or)
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-      // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
+      // is done in prepare_system_for_newton_solve() within Evaluate(iterinc_)
       LinearSolve();
       // cout << "  time for Evaluate LinearSolve: " << timer.totalElapsedTime(true) << "\n";
       // timer.reset();
@@ -250,7 +251,7 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
       solver_->ResetTolerance();
 
       // build norms
-      BuildConvergenceNorms();
+      build_convergence_norms();
     }
 
     // print stuff
@@ -302,7 +303,7 @@ void POROELASTSCATRA::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector>
 
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
-  //  UpdateIterIncrementally(fx),
+  //  update_iter_incrementally(fx),
   ScaTraField()->UpdateIter(scatrainc);
 
   // call all elements and assemble rhs and matrices
@@ -465,7 +466,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   //----------------------------------------------------------------------
 
   // evaluate off-diagonal matrix block in fluid
-  EvaluateODBlockMatPoro();
+  evaluate_od_block_mat_poro();
 
   // k_ps_->Complete(mat_pp->DomainMap(),mat_ss->RangeMap());
   //  k_ps_->Complete();
@@ -486,7 +487,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   //----------------------------------------------------------------------
 
   // evaluate off-diagonal matrix block in scatra
-  EvaluateODBlockMatScatra();
+  evaluate_od_block_mat_scatra();
 
   //  k_sp_->Complete();
   //
@@ -528,7 +529,7 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
     // merge blockmatrix to SparseMatrix and solve
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-    CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+    CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
     //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
     // standard solver call
@@ -541,7 +542,7 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
   {
     // in case of inclined boundary conditions
     // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
@@ -558,7 +559,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   // create a linear solver
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poroscatradyn =
-      GLOBAL::Problem::Instance()->PoroScatraControlParams();
+      GLOBAL::Problem::Instance()->poro_scatra_control_params();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poroscatradyn.get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
@@ -686,7 +687,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIter()
   // replace myrank_ here general by Comm().MyPID()
   if ((Comm().MyPID() == 0) and printscreen_ and (Step() % printscreen_ == 0) and printiter_)
   {
-    if (iter_ == 1) PrintNewtonIterHeader(stdout);
+    if (iter_ == 1) print_newton_iter_header(stdout);
     PrintNewtonIterText(stdout);
   }
 
@@ -697,7 +698,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIter()
  | print Newton-Raphson iteration to screen and error file    vuong 08/13  |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
+void POROELASTSCATRA::PoroScatraMono::print_newton_iter_header(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -809,7 +810,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}  // PrintNewtonIterHeader()
+}  // print_newton_iter_header()
 
 
 /*----------------------------------------------------------------------*
@@ -918,7 +919,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonConv()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::BuildConvergenceNorms()
+void POROELASTSCATRA::PoroScatraMono::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
 
@@ -1044,7 +1045,7 @@ void POROELASTSCATRA::PoroScatraMono::SetDofRowMaps(
 /*----------------------------------------------------------------------*
  |  Evaluate off diagonal matrix in poro row                  vuong 08/13   |
  *---------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatPoro()
+void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_poro()
 {
   k_pfs_->Zero();
 
@@ -1133,7 +1134,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatPoro()
 /*----------------------------------------------------------------------*
  |  Evaluate off diagonal matrix in scatra row                    |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
+void POROELASTSCATRA::PoroScatraMono::evaluate_od_block_mat_scatra()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_struct;
@@ -1268,7 +1269,7 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichletToSystem(
+    CORE::LINALG::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
 

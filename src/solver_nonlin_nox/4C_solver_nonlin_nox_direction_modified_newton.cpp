@@ -51,7 +51,7 @@ NOX::NLN::Direction::ModifiedNewton::ModifiedNewton(
       params_(&p)
 {
   Teuchos::ParameterList& pmod = p.sublist("Newton", true).sublist("Modified", true);
-  fillDefaultStepTests(pmod);
+  fill_default_step_tests(pmod);
 
   if (p.sublist("Newton").get("Forcing Term Method", "Constant") == "Constant")
     use_adjustable_forcing_term_ = false;
@@ -67,7 +67,8 @@ NOX::NLN::Direction::ModifiedNewton::ModifiedNewton(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::fillDefaultStepTests(Teuchos::ParameterList& pmodnewton)
+void NOX::NLN::Direction::ModifiedNewton::fill_default_step_tests(
+    Teuchos::ParameterList& pmodnewton)
 {
   enum DefaultStepTest dstest_type =
       Teuchos::getIntegralValue<DefaultStepTest>(pmodnewton, "Default Step Test");
@@ -90,7 +91,7 @@ void NOX::NLN::Direction::ModifiedNewton::fillDefaultStepTests(Teuchos::Paramete
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::computeCorrectionDirection(::NOX::Abstract::Vector& dir,
+bool NOX::NLN::Direction::ModifiedNewton::compute_correction_direction(::NOX::Abstract::Vector& dir,
     ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver,
     NOX::NLN::CorrectionType corr_type)
 {
@@ -135,31 +136,31 @@ bool NOX::NLN::Direction::ModifiedNewton::compute(
   NOX::NLN::CorrectionType corr_type = nln_grp.GetCorrectionType();
   if (corr_type != NOX::NLN::CorrectionType::vague)
   {
-    const bool corr_status = computeCorrectionDirection(dir, grp, solver, corr_type);
+    const bool corr_status = compute_correction_direction(dir, grp, solver, corr_type);
     print(utils_->out(), &corr_type);
 
     return corr_status;
   }
 
-  const bool newton_status = solveUnmodifiedSystem(dir, grp, solver);
+  const bool newton_status = solve_unmodified_system(dir, grp, solver);
   bool mod_newton_status = false;
 
   // Modify the system if a default Newton step failed
-  if (not newton_status) mod_newton_status = computeModifiedNewton(dir, grp, solver);
+  if (not newton_status) mod_newton_status = compute_modified_newton(dir, grp, solver);
 
   Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::null;
-  bool dst_success = testDefaultStepQuality(dir, grp, diagonal, true);
+  bool dst_success = test_default_step_quality(dir, grp, diagonal, true);
 
   while (not dst_success)
   {
-    mod_newton_status = computeModifiedNewton(dir, grp, solver, diagonal.get());
+    mod_newton_status = compute_modified_newton(dir, grp, solver, diagonal.get());
     if (not mod_newton_status) break;
 
-    dst_success = testDefaultStepQuality(dir, grp, diagonal);
+    dst_success = test_default_step_quality(dir, grp, diagonal);
   }
 
   // update the successive reduction counter
-  updateSuccessiveReductionCounter();
+  update_successive_reduction_counter();
 
   // print info to screen
   if (*corr_counter_ > 0) print(utils_->out());
@@ -167,7 +168,7 @@ bool NOX::NLN::Direction::ModifiedNewton::compute(
   /* If the system has been modified and the modification has been successful,
    * the correction factor is stored for the future. In this way, the history
    * information can be used to avoid unnecessary linear solver calls. */
-  if (mod_newton_status) storeCorrectionFactor();
+  if (mod_newton_status) store_correction_factor();
 
   return (*corr_counter_ == 0 ? newton_status : mod_newton_status);
 }
@@ -181,7 +182,7 @@ bool NOX::NLN::Direction::ModifiedNewton::useUnmodifiedSystem() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::updateSuccessiveReductionCounter()
+void NOX::NLN::Direction::ModifiedNewton::update_successive_reduction_counter()
 {
   if (*corr_counter_ <= 1)
     ++successive_red_counter_;
@@ -218,7 +219,7 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::ModifiedNewton::getDiagonal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::testDefaultStepQuality(::NOX::Abstract::Vector& dir,
+bool NOX::NLN::Direction::ModifiedNewton::test_default_step_quality(::NOX::Abstract::Vector& dir,
     ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test)
 {
   bool status = true;
@@ -242,7 +243,7 @@ bool NOX::NLN::Direction::ModifiedNewton::testDefaultStepQuality(::NOX::Abstract
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::computeModifiedNewton(::NOX::Abstract::Vector& dir,
+bool NOX::NLN::Direction::ModifiedNewton::compute_modified_newton(::NOX::Abstract::Vector& dir,
     ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal)
 {
   // Compute F and Jacobian at current solution.
@@ -257,7 +258,7 @@ bool NOX::NLN::Direction::ModifiedNewton::computeModifiedNewton(::NOX::Abstract:
   bool success = solveModifiedSystem(dir, grp, solver);
 
   // recursive call if the solving attempt fails
-  return (success ? true : computeModifiedNewton(dir, grp, solver));
+  return (success ? true : compute_modified_newton(dir, grp, solver));
 }
 
 /*----------------------------------------------------------------------------*
@@ -287,14 +288,14 @@ bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
     status = ::NOX::Abstract::Group::ReturnType::Failed;
 
   dir = grp.getNewton();
-  if (status == ::NOX::Abstract::Group::Ok) setStagnationCounter(dir);
+  if (status == ::NOX::Abstract::Group::Ok) set_stagnation_counter(dir);
 
   return (status == ::NOX::Abstract::Group::Ok);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::ModifiedNewton::solveUnmodifiedSystem(
+bool NOX::NLN::Direction::ModifiedNewton::solve_unmodified_system(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   if (not useUnmodifiedSystem()) return false;
@@ -323,7 +324,7 @@ bool NOX::NLN::Direction::ModifiedNewton::solveUnmodifiedSystem(
 bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
     ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal)
 {
-  primal_diag_corr_ = getPrimalDiagCorrection(*corr_counter_ == 0);
+  primal_diag_corr_ = get_primal_diag_correction(*corr_counter_ == 0);
 
   // the maximal correction factor is reached without success
   if (primal_diag_corr_ > max_primal_diag_corr_) return false;
@@ -333,7 +334,7 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::setStagnationCounter(::NOX::Abstract::Vector& dir)
+void NOX::NLN::Direction::ModifiedNewton::set_stagnation_counter(::NOX::Abstract::Vector& dir)
 {
   double dir_nrm2 = dir.norm(::NOX::Abstract::Vector::TwoNorm);
   static double prev_dir_nrm2 = 0.0;
@@ -360,7 +361,7 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
   if (*corr_counter_ == 0)
   {
     // store the copy of the original diagonal
-    original_diag_ptr_ = nln_grp.getDiagonalOfJacobian(0);
+    original_diag_ptr_ = nln_grp.get_diagonal_of_jacobian(0);
   }
 
   Teuchos::RCP<Epetra_Vector> mod_diag_ptr = Teuchos::null;
@@ -381,7 +382,7 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
   mod_diag_ptr->Scale(primal_diag_corr);
   mod_diag_ptr->Update(1.0, *original_diag_ptr_, 1.0);
 
-  nln_grp.replaceDiagonalOfJacobian(*mod_diag_ptr, 0);
+  nln_grp.replace_diagonal_of_jacobian(*mod_diag_ptr, 0);
 
   ++(*corr_counter_);
 
@@ -390,16 +391,16 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Direction::ModifiedNewton::getPrimalDiagCorrection(const bool first) const
+double NOX::NLN::Direction::ModifiedNewton::get_primal_diag_correction(const bool first) const
 {
-  if (first) return getFirstPrimalDiagCorrection();
+  if (first) return get_first_primal_diag_correction();
 
-  return getPrimalDiagCorrection();
+  return get_primal_diag_correction();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Direction::ModifiedNewton::getFirstPrimalDiagCorrection() const
+double NOX::NLN::Direction::ModifiedNewton::get_first_primal_diag_correction() const
 {
   if (primal_diag_corr_last_ == 0.0)
     return init_primal_diag_corr_;
@@ -409,7 +410,7 @@ double NOX::NLN::Direction::ModifiedNewton::getFirstPrimalDiagCorrection() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Direction::ModifiedNewton::getPrimalDiagCorrection() const
+double NOX::NLN::Direction::ModifiedNewton::get_primal_diag_correction() const
 {
   if (primal_diag_corr_last_ == 0.0)
     return primal_diag_corr_ * primal_high_acc_fac_;
@@ -419,7 +420,7 @@ double NOX::NLN::Direction::ModifiedNewton::getPrimalDiagCorrection() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::ModifiedNewton::storeCorrectionFactor()
+void NOX::NLN::Direction::ModifiedNewton::store_correction_factor()
 {
   primal_diag_corr_last_ = primal_diag_corr_;
 }

@@ -95,13 +95,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::Red
   // left multiply V^T * (M * V)
   Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
       Teuchos::rcp(new Epetra_MultiVector(*structmapr_, M_tmp->NumVectors(), true));
-  MultiplyEpetraMultiVectors(
+  multiply_epetra_multi_vectors(
       projmatrix_, 'T', M_tmp, 'N', redstructmapr_, structrimpo_, M_red_mvec);
 
   // convert Epetra_MultiVector to CORE::LINALG::SparseMatrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> M_red =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*structmapr_, 0, false, true));
-  EpetraMultiVectorToLINALGSparseMatrix(M_red_mvec, structmapr_, Teuchos::null, M_red);
+  epetra_multi_vector_to_linalg_sparse_matrix(M_red_mvec, structmapr_, Teuchos::null, M_red);
 
   return M_red;
 }
@@ -122,7 +122,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::Red
   Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
   Teuchos::RCP<CORE::LINALG::SparseMatrix> M_red =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*rangemap, 0, false, true));
-  EpetraMultiVectorToLINALGSparseMatrix(M_tmp, rangemap, structmapr_, M_red);
+  epetra_multi_vector_to_linalg_sparse_matrix(M_tmp, rangemap, structmapr_, M_red);
 
   return M_red;
 }
@@ -134,7 +134,7 @@ Teuchos::RCP<Epetra_MultiVector> MOR::ProperOrthogonalDecomposition::ReduceRHS(
     Teuchos::RCP<Epetra_MultiVector> v)
 {
   Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_, true));
-  MultiplyEpetraMultiVectors(projmatrix_, 'T', v, 'N', redstructmapr_, structrimpo_, v_red);
+  multiply_epetra_multi_vectors(projmatrix_, 'T', v, 'N', redstructmapr_, structrimpo_, v_red);
 
   return v_red;
 }
@@ -173,7 +173,7 @@ Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ExtendSolution(
 /*----------------------------------------------------------------------*
  | multiply two Epetra MultiVectors                       pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void MOR::ProperOrthogonalDecomposition::MultiplyEpetraMultiVectors(
+void MOR::ProperOrthogonalDecomposition::multiply_epetra_multi_vectors(
     Teuchos::RCP<Epetra_MultiVector> multivect1, char multivect1Trans,
     Teuchos::RCP<Epetra_MultiVector> multivect2, char multivect2Trans,
     Teuchos::RCP<Epetra_Map> redmap, Teuchos::RCP<Epetra_Import> impo,
@@ -197,7 +197,7 @@ void MOR::ProperOrthogonalDecomposition::MultiplyEpetraMultiVectors(
 /*----------------------------------------------------------------------*
  | Epetra_MultiVector to CORE::LINALG::SparseMatrix             pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void MOR::ProperOrthogonalDecomposition::EpetraMultiVectorToLINALGSparseMatrix(
+void MOR::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg_sparse_matrix(
     Teuchos::RCP<Epetra_MultiVector> multivect, Teuchos::RCP<Epetra_Map> rangemap,
     Teuchos::RCP<Epetra_Map> domainmap, Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat)
 {

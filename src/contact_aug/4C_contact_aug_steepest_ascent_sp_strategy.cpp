@@ -36,16 +36,16 @@ CONTACT::AUG::STEEPESTASCENT_SP::Strategy::Strategy(
     int maxdof)
     : CONTACT::AUG::Strategy(data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
-  Data().InitSubDataContainer(INPAR::CONTACT::solution_steepest_ascent_sp);
+  Data().init_sub_data_container(INPAR::CONTACT::solution_steepest_ascent_sp);
   const Teuchos::ParameterList& sa_params =
       Params().sublist("AUGMENTED", true).sublist("STEEPESTASCENT", true);
 
-  Data().SaData().SetPenaltyCorrectionParameter(sa_params.get<double>("CORRECTION_PARAMETER"));
+  Data().SaData().set_penalty_correction_parameter(sa_params.get<double>("CORRECTION_PARAMETER"));
 
-  Data().SaData().SetPenaltyDecreaseCorrectionParameter(
+  Data().SaData().set_penalty_decrease_correction_parameter(
       sa_params.get<double>("DECREASE_CORRECTION_PARAMETER"));
 
-  Data().SaData().LagrangeMultiplierFuncPtr() = Teuchos::rcp(new LagrangeMultiplierFunction());
+  Data().SaData().lagrange_multiplier_func_ptr() = Teuchos::rcp(new LagrangeMultiplierFunction());
 
   Data().SaData().PenaltyUpdatePtr() = Teuchos::rcp(PenaltyUpdate::Create(sa_params));
 }
@@ -54,7 +54,7 @@ CONTACT::AUG::STEEPESTASCENT_SP::Strategy::Strategy(
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
 {
-  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
   {
     Data().StrContactRhsPtr() = Teuchos::null;
     return;
@@ -93,22 +93,22 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::PostSetup(bool redistributed, bo
     Data().SaData().PenaltyUpdate().Init(this, &Data());
 
 #ifdef LAGRANGE_FUNC
-    Data().SaData().LagrangeMultiplierFunc().Init(this, Data());
-    Data().SaData().LagrangeMultiplierFunc().Setup();
+    Data().SaData().lagrange_multiplier_func().Init(this, Data());
+    Data().SaData().lagrange_multiplier_func().Setup();
 #endif
   }
 
   if (redistributed)
   {
 #ifdef LAGRANGE_FUNC
-    Data().SaData().LagrangeMultiplierFunc().Redistribute();
+    Data().SaData().lagrange_multiplier_func().Redistribute();
 #endif
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::RunPostApplyJacobianInverse(
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::run_post_apply_jacobian_inverse(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
     const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
@@ -118,13 +118,13 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::RunPostApplyJacobianInverse(
    * after the augmentation, since the used formulas expect a direction vector.
    *                                                         hiermeier, 12/17 */
   result.Scale(-1.0);
-  SetPenaltyUpdateState(cparams, xold, result);
+  set_penalty_update_state(cparams, xold, result);
   result.Scale(-1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::SetPenaltyUpdateState(
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::set_penalty_update_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   const NOX::NLN::CorrectionType corrtype = cparams.GetCorrectionType();
@@ -158,10 +158,10 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::RunPostIterate(
   IO::cout(IO::debug) << "IsDefaultStep = " << (cparams.IsDefaultStep() ? "TRUE" : "FALSE")
                       << IO::endl;
   IO::cout(IO::debug) << "Number of modified Newton corrections = "
-                      << cparams.GetNumberOfModifiedNewtonCorrections() << IO::endl;
+                      << cparams.get_number_of_modified_newton_corrections() << IO::endl;
   IO::cout(IO::debug) << std::string(40, '*') << "\n";
 
-  if (cparams.IsDefaultStep() or cparams.GetNumberOfModifiedNewtonCorrections() == 0)
+  if (cparams.IsDefaultStep() or cparams.get_number_of_modified_newton_corrections() == 0)
     UpdateCn(cparams);
   else
     DecreaseCn(cparams);
@@ -183,10 +183,10 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::DecreaseCn(const CONTACT::Params
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::AddContributionsToMatrixBlockLmLm(
+void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::add_contributions_to_matrix_block_lm_lm(
     CORE::LINALG::SparseMatrix& kzz) const
 {
-  Teuchos::RCP<Epetra_Vector> active_mod_diag = GetKzzDiagModification();
+  Teuchos::RCP<Epetra_Vector> active_mod_diag = get_kzz_diag_modification();
   if (CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(kzz, *active_mod_diag))
   {
     Epetra_Vector kzz_diag = Epetra_Vector(kzz.RangeMap(), true);
@@ -194,22 +194,22 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::AddContributionsToMatrixBlockLmL
     CORE::LINALG::AssembleMyVector(1.0, kzz_diag, 1.0, *active_mod_diag);
 
     // if the matrix is filled, we try to replace the diagonal
-    if (kzz.ReplaceDiagonalValues(kzz_diag)) FOUR_C_THROW("ReplaceDiagonalValues failed!");
+    if (kzz.replace_diagonal_values(kzz_diag)) FOUR_C_THROW("replace_diagonal_values failed!");
   }
 
-  CONTACT::AUG::Strategy::AddContributionsToMatrixBlockLmLm(kzz);
+  CONTACT::AUG::Strategy::add_contributions_to_matrix_block_lm_lm(kzz);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT_SP::Strategy::GetKzzDiagModification()
+Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT_SP::Strategy::get_kzz_diag_modification()
     const
 {
   Teuchos::RCP<Epetra_Vector> active_mod_vec =
       Teuchos::rcp(new Epetra_Vector(*Data().KappaVecPtr()));
-  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*Data().GActiveNDofRowMapPtr()));
+  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*Data().g_active_n_dof_row_map_ptr()));
 
-  MultiplyElementwise(*Data().CnPtr(), *Data().GActiveNodeRowMapPtr(), *active_mod_vec, true);
+  MultiplyElementwise(*Data().CnPtr(), *Data().g_active_node_row_map_ptr(), *active_mod_vec, true);
 
   return active_mod_vec;
 }

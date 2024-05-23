@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& dis)
+void DRT::ELEMENTS::NStet5Type::element_deformation_gradient(DRT::Discretization& dis)
 {
   // current displacement
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
@@ -115,7 +115,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
   CORE::LINALG::SerialDenseVector force;
 
   //-------------------------------------- construct F for each NStet5
-  ElementDeformationGradient(dis);
+  element_deformation_gradient(dis);
 
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a 4C-unusual way

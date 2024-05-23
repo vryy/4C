@@ -62,12 +62,12 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
     case INPAR::STR::pred_constdis:
     case INPAR::STR::pred_constdispres:
     {
-      ImplInt().PredictConstDisConsistVelAcc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
+      ImplInt().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
     case INPAR::STR::pred_constvel:
     {
-      ok = ImplInt().PredictConstVelConsistAcc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
+      ok = ImplInt().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
     case INPAR::STR::pred_constacc:

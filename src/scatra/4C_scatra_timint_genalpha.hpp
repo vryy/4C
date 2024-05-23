@@ -42,13 +42,13 @@ namespace SCATRA
       }
     }
 
-    void ComputeIntermediateValues() override;
+    void compute_intermediate_values() override;
 
-    void ComputeInteriorValues() override{};
+    void compute_interior_values() override{};
 
-    void ComputeTimeDerivative() override;
+    void compute_time_derivative() override;
 
-    void ComputeTimeDerivPot0(const bool init) override{};
+    void compute_time_deriv_pot0(const bool init) override{};
 
     void Update() override;
 
@@ -68,7 +68,7 @@ namespace SCATRA
       return fsphiaf_;
     };
 
-    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
+    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
       Teuchos::RCP<Teuchos::ParameterList> timeparams;
       timeparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -80,9 +80,9 @@ namespace SCATRA
       return timeparams;
     }
 
-    void PreCalcInitialTimeDerivative() override;
+    void pre_calc_initial_time_derivative() override;
 
-    void PostCalcInitialTimeDerivative() override;
+    void post_calc_initial_time_derivative() override;
 
 
    protected:
@@ -92,27 +92,27 @@ namespace SCATRA
     /// copy constructor
     TimIntGenAlpha(const TimIntGenAlpha& old);
 
-    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
+    void set_element_time_parameter(bool forcedincrementalsolver = false) const override;
 
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
+    void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) override;
 
-    void SetElementTimeParameterBackwardEuler() const override;
+    void set_element_time_parameter_backward_euler() const override;
 
-    void CalcInitialTimeDerivative() override;
+    void calc_initial_time_derivative() override;
 
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     void ExplicitPredictor() const override;
 
-    void AddNeumannToResidual() override;
+    void add_neumann_to_residual() override;
 
     void AVM3Separation() override;
 
-    void DynamicComputationOfCs() override;
+    void dynamic_computation_of_cs() override;
 
-    void DynamicComputationOfCv() override;
+    void dynamic_computation_of_cv() override;
 
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
+    void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     void WriteRestart() const override;
 

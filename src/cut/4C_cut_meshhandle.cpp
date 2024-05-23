@@ -882,7 +882,7 @@ void CORE::GEO::CUT::MeshHandle::RemoveSubSide(CORE::GEO::CUT::Side* side)
     if (qit != quadraticsides_.end())
     {
       QuadraticSideHandle& qsh = *qit->second;
-      qsh.RemoveSubSidePointer(side);
+      qsh.remove_sub_side_pointer(side);
     }
     else
       FOUR_C_THROW("Couldn't Identify side %d!", side->Id());
@@ -917,12 +917,12 @@ void CORE::GEO::CUT::MeshHandle::AddSubSide(CORE::GEO::CUT::Side* side)
   }
 }
 
-void CORE::GEO::CUT::MeshHandle::MarkSubSideasUnphysical(CORE::GEO::CUT::Side* side)
+void CORE::GEO::CUT::MeshHandle::mark_sub_sideas_unphysical(CORE::GEO::CUT::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
   if (lit != linearsides_.end())
   {
-    std::cout << "==| WARNING: MeshHandle::MarkSubSideasUnphysical: Your Subside belongs to a "
+    std::cout << "==| WARNING: MeshHandle::mark_sub_sideas_unphysical: Your Subside belongs to a "
                  "LinearSideHandle and, thus, cannot be removed. In case this happens - except for "
                  "a CutTest - this is critical and should be implemented! |=="
               << std::endl;
@@ -934,11 +934,11 @@ void CORE::GEO::CUT::MeshHandle::MarkSubSideasUnphysical(CORE::GEO::CUT::Side* s
     if (qit != quadraticsides_.end())
     {
       QuadraticSideHandle& qsh = *qit->second;
-      qsh.MarkSubSideunphysical(side);
+      qsh.mark_sub_sideunphysical(side);
     }
     else
       FOUR_C_THROW(
-          "MeshHandle::MarkSubSideasUnphysical: The SideHandle for Side %d does not exist yet!",
+          "MeshHandle::mark_sub_sideas_unphysical: The SideHandle for Side %d does not exist yet!",
           side->Id());
   }
 }

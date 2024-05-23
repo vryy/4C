@@ -59,7 +59,7 @@ FLD::XFluidState::CouplingState::CouplingState(
 /*----------------------------------------------------------------------*
  |  zero coupling matrices and rhs vectors                 schott 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::CouplingState::ZeroCouplingMatricesAndRhs()
+void FLD::XFluidState::CouplingState::zero_coupling_matrices_and_rhs()
 {
   if (!is_active_) return;
 
@@ -75,7 +75,7 @@ void FLD::XFluidState::CouplingState::ZeroCouplingMatricesAndRhs()
 /*----------------------------------------------------------------------*
  |  complete coupling matrices and rhs vectors             schott 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::CouplingState::CompleteCouplingMatricesAndRhs(
+void FLD::XFluidState::CouplingState::complete_coupling_matrices_and_rhs(
     const Epetra_Map& xfluiddofrowmap, const Epetra_Map& slavedofrowmap)
 {
   if (!is_active_) return;
@@ -135,7 +135,7 @@ FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condit
   InitSystemMatrix();
   InitStateVectors();
 
-  InitCouplingMatricesAndRhs();
+  init_coupling_matrices_and_rhs();
 }
 
 /*----------------------------------------------------------------------*
@@ -224,7 +224,7 @@ void FLD::XFluidState::InitStateVectors()
 /*----------------------------------------------------------------------*
  |  Initialize coupling matrices                           schott 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::InitCouplingMatricesAndRhs()
+void FLD::XFluidState::init_coupling_matrices_and_rhs()
 {
   // loop all coupling objects
   for (int coup_idx = 0; coup_idx < condition_manager_->NumCoupling(); coup_idx++)
@@ -286,38 +286,38 @@ void FLD::XFluidState::InitALEStateVectors(const Teuchos::RCP<DRT::Discretizatio
 {
   //! @name Ale Displacement at time n+1
   dispnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  xdiscret->ExportInitialtoActiveVector(dispnp_initmap, dispnp_);
+  xdiscret->export_initialto_active_vector(dispnp_initmap, dispnp_);
 
   //! @name Grid Velocity at time n+1
   gridvnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  xdiscret->ExportInitialtoActiveVector(gridvnp_initmap, gridvnp_);
+  xdiscret->export_initialto_active_vector(gridvnp_initmap, gridvnp_);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Initialize state vectors                               schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::ZeroCouplingMatricesAndRhs()
+void FLD::XFluidState::zero_coupling_matrices_and_rhs()
 {
   // loop all coupling objects
   for (std::map<int, Teuchos::RCP<CouplingState>>::iterator cs = coup_state_.begin();
        cs != coup_state_.end(); cs++)
-    cs->second->ZeroCouplingMatricesAndRhs();
+    cs->second->zero_coupling_matrices_and_rhs();
 }
 
 /*----------------------------------------------------------------------*
  |  Complete coupling matrices and rhs vectors             schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::CompleteCouplingMatricesAndRhs()
+void FLD::XFluidState::complete_coupling_matrices_and_rhs()
 {
-  CompleteCouplingMatricesAndRhs(xfluiddofrowmap_);
+  complete_coupling_matrices_and_rhs(xfluiddofrowmap_);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Complete coupling matrices and rhs vectors             schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::CompleteCouplingMatricesAndRhs(
+void FLD::XFluidState::complete_coupling_matrices_and_rhs(
     const Teuchos::RCP<const Epetra_Map>& fluiddofrowmap  ///< fluid dof row map used for complete
 )
 {
@@ -332,7 +332,7 @@ void FLD::XFluidState::CompleteCouplingMatricesAndRhs(
     if (condition_manager_->IsMeshCondition(coupl_idx))
     {
       Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->GetCouplingByIdx(coupl_idx);
-      cs->second->CompleteCouplingMatricesAndRhs(
+      cs->second->complete_coupling_matrices_and_rhs(
           *fluiddofrowmap, *coupling->GetCondDis()->DofRowMap());  // complete w.r.t
     }
   }
@@ -342,7 +342,7 @@ void FLD::XFluidState::CompleteCouplingMatricesAndRhs(
 /*----------------------------------------------------------------------*
  |    /// zero system matrix and related rhs vectors       schott 08/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::ZeroSystemMatrixAndRhs()
+void FLD::XFluidState::zero_system_matrix_and_rhs()
 {
   XFEM::ZeroMatrix(sysmat_);
 
@@ -438,7 +438,7 @@ bool FLD::XFluidState::Destroy()
   return true;
 }
 
-void FLD::XFluidState::UpdateBoundaryCellCoords()
+void FLD::XFluidState::update_boundary_cell_coords()
 {
   // loop all mesh coupling objects
   for (int mc_idx = 0; mc_idx < condition_manager_->NumMeshCoupling(); mc_idx++)
@@ -447,8 +447,8 @@ void FLD::XFluidState::UpdateBoundaryCellCoords()
 
     if (!mc_coupl->CutGeometry()) continue;  // If don't cut the background mesh.
 
-    wizard_->UpdateBoundaryCellCoords(mc_coupl->GetCutterDis(), mc_coupl->GetCutterDispCol(),
-        condition_manager_->GetMeshCouplingStartGID(mc_idx));
+    wizard_->update_boundary_cell_coords(mc_coupl->GetCutterDis(), mc_coupl->GetCutterDispCol(),
+        condition_manager_->get_mesh_coupling_start_gid(mc_idx));
   }
 }
 

@@ -51,7 +51,7 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
   if (!discret->Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!discret->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!discret->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
 

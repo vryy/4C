@@ -104,7 +104,7 @@ namespace MAT
 
 
       // Add derivatives with respect to modified invariants.
-      void AddDerivativesModified(
+      void add_derivatives_modified(
           CORE::LINALG::Matrix<3, 1>&
               dPmodI,  ///< first derivative with respect to modified invariants
           CORE::LINALG::Matrix<6, 1>&

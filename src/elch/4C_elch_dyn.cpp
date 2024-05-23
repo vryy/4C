@@ -56,7 +56,7 @@ void elch_dyn(int restart)
   if (comm.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, elchcontrol);
 
   // access the scalar transport parameter list
-  const auto& scatradyn = problem->ScalarTransportDynamicParams();
+  const auto& scatradyn = problem->scalar_transport_dynamic_params();
   const auto veltype =
       CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
 
@@ -88,7 +88,7 @@ void elch_dyn(int restart)
           GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
+      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -200,12 +200,12 @@ void elch_dyn(int restart)
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        elch->ScaTraField()->set_number_of_dof_set_velocity(1);
 
         // add proxy of ALE degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->SetNumberOfDofSetDisplacement(2);
+        elch->ScaTraField()->set_number_of_dof_set_displacement(2);
 
         // now we must call Init()
         elch->Init();
@@ -250,7 +250,7 @@ void elch_dyn(int restart)
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
+        elch->ScaTraField()->set_number_of_dof_set_velocity(1);
 
         // now we must call Init()
         elch->Init();

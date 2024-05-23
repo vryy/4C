@@ -58,7 +58,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const int id, cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
+void DRT::ELEMENTS::Beam3ebType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;  // 3 translations, 3 tangent DOFs per node
@@ -201,7 +201,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
+void DRT::ELEMENTS::Beam3ebType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
@@ -262,7 +262,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
       }
     }
 
-    currele->SetUpReferenceGeometry(xrefe);
+    currele->set_up_reference_geometry(xrefe);
   }
 
   return 0;
@@ -416,7 +416,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Beam3eb::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
+void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
     const std::vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be

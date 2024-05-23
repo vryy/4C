@@ -172,19 +172,19 @@ namespace CORE::GEO
 
       /*! \brief Create integrationcells by performing tessellation over the volumecells
        *  of the element. This uses QHULL */
-      void CreateIntegrationCells(Mesh& mesh, int count, bool tetcellsonly = false);
+      void create_integration_cells(Mesh& mesh, int count, bool tetcellsonly = false);
 
       /*! \brief Try to create simpled shaped integrationcells */
-      bool CreateSimpleShapedIntegrationCells(Mesh& mesh);
+      bool create_simple_shaped_integration_cells(Mesh& mesh);
 
       /*! \brief Construct quadrature rules for the volumecells by solving the moment
        *  fitting equations */
-      void MomentFitGaussWeights(
+      void moment_fit_gauss_weights(
           Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
       /*! \brief Construct quadrature rules for the volumecells by triangulating the
        *  facets and applying divergence theorem */
-      void DirectDivergenceGaussRule(
+      void direct_divergence_gauss_rule(
           Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
       /*! \brief Return the level set value at the given global coordinate
@@ -201,12 +201,12 @@ namespace CORE::GEO
       /*! \brief Return the level set value at the given local coordinate
        *  which has to be INSIDE the element. */
       template <class T>
-      double GetLevelSetValueAtLocalCoords(const T& rst)
+      double get_level_set_value_at_local_coords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        return GetLevelSetValueAtLocalCoords(rst.A());
+        return get_level_set_value_at_local_coords(rst.A());
       }
 
       /*! \brief Return the level set gradient at the given global coordinate
@@ -238,28 +238,28 @@ namespace CORE::GEO
         return GetLevelSetGradient(xyz.A());
       }
       template <class T>
-      std::vector<double> GetLevelSetGradientAtLocalCoords(const T& rst)
+      std::vector<double> get_level_set_gradient_at_local_coords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        return GetLevelSetGradientAtLocalCoords(rst.A());
+        return get_level_set_gradient_at_local_coords(rst.A());
       }
       template <class T>
-      std::vector<double> GetLevelSetGradientInLocalCoords(const T& xyz)
+      std::vector<double> get_level_set_gradient_in_local_coords(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return GetLevelSetGradientInLocalCoords(xyz.A());
+        return get_level_set_gradient_in_local_coords(xyz.A());
       }
       template <class T>
-      std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const T& rst)
+      std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (probdim = %d)", ProbDim());
 
-        return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst.A());
+        return get_level_set_gradient_at_local_coords_in_local_coords(rst.A());
       }
       /*! \brief Does the element contain a level set side. */
       bool HasLevelSetSide();
@@ -270,7 +270,7 @@ namespace CORE::GEO
        *  still be some empty volume cells. Those are artificial cells with zero
        *  volume and need to be removed from their elements, before we count nodal
        *  dof sets. */
-      void RemoveEmptyVolumeCells();
+      void remove_empty_volume_cells();
 
       /*! \brief Determine the inside/outside/on cut-surface position for the element's nodes */
       void FindNodePositions();
@@ -311,7 +311,7 @@ namespace CORE::GEO
       bool OnSide(const std::vector<Point*>& facet_points);
 
       /*! \brief Get the integrationcells created from this element */
-      INPAR::CUT::ElementIntegrationType GetElementIntegrationType() { return eleinttype_; }
+      INPAR::CUT::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
 
       /*! \brief Get the integrationcells created from this element */
       void GetIntegrationCells(plain_integrationcell_set& cells);
@@ -389,20 +389,20 @@ namespace CORE::GEO
       /*! \brief When the cut library breaks down, this writes the element
        * geometry and all the cut sides to inspect visually whether the cut
        * configuration is appropriate */
-      void GmshFailureElementDump();
+      void gmsh_failure_element_dump();
 
       void DumpFacets();
 
       /*!
       \brief Inset this volumecell to this element
        */
-      void AssignOtherVolumeCell(VolumeCell* vc) { cells_.insert(vc); }
+      void assign_other_volume_cell(VolumeCell* vc) { cells_.insert(vc); }
 
       /*!
       \brief Calculate the volume of all the volumecells associated with this element only when
       tessellation is used
        */
-      void CalculateVolumeOfCellsTessellation();
+      void calculate_volume_of_cells_tessellation();
 
       /*!
       \brief Transform the scalar variable either from local coordinates to the global coordinates
@@ -411,7 +411,8 @@ namespace CORE::GEO
       shadow element is derived
        */
       template <int probdim, CORE::FE::CellType distype>
-      double ScalarFromLocalToGlobal(double scalar, std::string transformType, bool shadow = false)
+      double scalar_from_local_to_global(
+          double scalar, std::string transformType, bool shadow = false)
       {
         const int nen = CORE::FE::num_nodes<distype>;
         const int dim = CORE::FE::dim<distype>;
@@ -459,7 +460,7 @@ namespace CORE::GEO
 
       /*! \brief Integrate pre-defined functions over each volumecell
        * created from this element when using Tessellation */
-      void integrateSpecificFunctionsTessellation();
+      void integrate_specific_functions_tessellation();
 
       /*! \brief Assign the subelement his parent id (equal to the subelement
        * id eid_ for linear elements) */
@@ -503,7 +504,7 @@ namespace CORE::GEO
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
       which this shadow element is derived
        */
-      void LocalCoordinatesQuad(
+      void local_coordinates_quad(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
 
       /*!
@@ -560,7 +561,7 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param rst (in) : local parameter space coordinates */
-      virtual double GetLevelSetValueAtLocalCoords(const double* rst) = 0;
+      virtual double get_level_set_value_at_local_coords(const double* rst) = 0;
 
       /*! \brief Return the level set gradient in global coordinates
        *
@@ -570,17 +571,17 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param rst (in) : local parameter space coordinates */
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst) = 0;
+      virtual std::vector<double> get_level_set_gradient_at_local_coords(const double* rst) = 0;
 
       /*! \brief Return the level set gradient in local (parameter space) coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      virtual std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz) = 0;
+      virtual std::vector<double> get_level_set_gradient_in_local_coords(const double* xyz) = 0;
 
       /*! \brief Return the level set gradient in local (parameter space) coordinates
        *
        *  \param rst (in) : local parameter space coordinates */
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(
+      virtual std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
           const double* rst) = 0;
       //! @}
      private:
@@ -787,14 +788,14 @@ namespace CORE::GEO
       {
         CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
-        return GetLevelSetValueAtLocalCoords(rst);
+        return get_level_set_value_at_local_coords(rst);
       }
 
       /*! \brief Return the level set value at the given local coordinate which
        *   has to be INSIDE the element.
        *
        *  \param rst (in) : local parameter space coordinates */
-      double GetLevelSetValueAtLocalCoords(const CORE::LINALG::Matrix<dim, 1>& rst)
+      double get_level_set_value_at_local_coords(const CORE::LINALG::Matrix<dim, 1>& rst)
       {
         CORE::LINALG::Matrix<numNodesElement, 1> funct;
 
@@ -822,13 +823,14 @@ namespace CORE::GEO
       {
         CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
-        return GetLevelSetGradientAtLocalCoords(rst);
+        return get_level_set_gradient_at_local_coords(rst);
       }
 
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param rst (in) : local parameter space coordinates */
-      std::vector<double> GetLevelSetGradientAtLocalCoords(const CORE::LINALG::Matrix<dim, 1>& rst)
+      std::vector<double> get_level_set_gradient_at_local_coords(
+          const CORE::LINALG::Matrix<dim, 1>& rst)
       {
         // Calculate global derivatives
         //----------------------------------
@@ -876,18 +878,18 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in local (parameter space) coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      std::vector<double> GetLevelSetGradientInLocalCoords(
+      std::vector<double> get_level_set_gradient_in_local_coords(
           const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
-        return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst);
+        return get_level_set_gradient_at_local_coords_in_local_coords(rst);
       }
 
       /*! \brief Return the level set gradient in local (parameter space) coordinates
        *
        *  \param rst (in) : local parameter space coordinates */
-      std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(
+      std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
           const CORE::LINALG::Matrix<dim, 1>& rst)
       {
         CORE::LINALG::Matrix<dim, numNodesElement> deriv1;
@@ -952,10 +954,10 @@ namespace CORE::GEO
         return GetLevelSetValue(xyz_mat);
       }
 
-      double GetLevelSetValueAtLocalCoords(const double* rst) override
+      double get_level_set_value_at_local_coords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        return GetLevelSetValueAtLocalCoords(rst_mat);
+        return get_level_set_value_at_local_coords(rst_mat);
       }
 
       //! derived
@@ -966,24 +968,25 @@ namespace CORE::GEO
       }
 
       //! derived
-      std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst) override
+      std::vector<double> get_level_set_gradient_at_local_coords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        return GetLevelSetGradientAtLocalCoords(rst_mat);
+        return get_level_set_gradient_at_local_coords(rst_mat);
       }
 
       //! derived
-      std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz) override
+      std::vector<double> get_level_set_gradient_in_local_coords(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        return GetLevelSetGradientInLocalCoords(xyz_mat);
+        return get_level_set_gradient_in_local_coords(xyz_mat);
       }
 
       //! derived
-      std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst) override
+      std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
+          const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst_mat);
+        return get_level_set_gradient_at_local_coords_in_local_coords(rst_mat);
       }
     };  // class ConcreteElement
 
@@ -999,7 +1002,7 @@ namespace CORE::GEO
 
      private:
       template <CORE::FE::CellType elementtype>
-      Element* CreateConcreteElement(int eid, const std::vector<Side*>& sides,
+      Element* create_concrete_element(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
         Element* e = nullptr;

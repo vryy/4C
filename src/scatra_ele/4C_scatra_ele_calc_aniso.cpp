@@ -126,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf, DiffManager()->GetAnisotropicDiff(k), gradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, DiffManager()->GetAnisotropicDiff(k), gradphi, vi);
     erhs[fvi] -= rhsfac * laplawf;
   }
 
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf, DiffManager()->GetAnisotropicDiff(k), ui, vi);
+      get_laplacian_weak_form(laplawf, DiffManager()->GetAnisotropicDiff(k), ui, vi);
       emat(fvi, fui) += timefacfac * laplawf;
     }
   }

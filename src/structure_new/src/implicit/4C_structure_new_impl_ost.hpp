@@ -85,12 +85,12 @@ namespace STR
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations (derived) */
-      void PredictConstDisConsistVelAcc(
+      void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      bool PredictConstVelConsistAcc(
+      bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations and consistent velocities (derived)
@@ -114,7 +114,7 @@ namespace STR
        * velocity, and the 2nd the acceleration.
        *
        *  See the SetState() routine for the iterative update of the current state. */
-      void UpdateConstantStateContributions() override;
+      void update_constant_state_contributions() override;
 
       //! @name Attributes access functions
       //@{
@@ -129,25 +129,25 @@ namespace STR
       int MethodSteps() const override { return 1; }
 
       //! Give local order of accuracy of displacement part
-      int MethodOrderOfAccuracyDis() const override
+      int method_order_of_accuracy_dis() const override
       {
         return fabs(MethodLinErrCoeff1()) < 1e-6 ? 2 : 1;
       }
 
       //! Give local order of accuracy of velocity part
-      int MethodOrderOfAccuracyVel() const override { return MethodOrderOfAccuracyDis(); }
+      int method_order_of_accuracy_vel() const override { return method_order_of_accuracy_dis(); }
 
       //! Return linear error coefficient of displacements
-      double MethodLinErrCoeffDis() const override
+      double method_lin_err_coeff_dis() const override
       {
-        if (MethodOrderOfAccuracyDis() == 1)
+        if (method_order_of_accuracy_dis() == 1)
           return MethodLinErrCoeff1();
         else
           return MethodLinErrCoeff2();
       }
 
       //! Return linear error coefficient of velocities
-      double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }
+      double method_lin_err_coeff_vel() const override { return method_lin_err_coeff_dis(); }
 
       //! Linear error coefficient if 1st order accurate
       double MethodLinErrCoeff1() const { return 1. / 2. - theta_; }
@@ -177,7 +177,7 @@ namespace STR
        *        + C \cdot [\theta  * V_{n+1} + (1-\theta) * V_{n}]
        *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
        *  \f] */
-      void AddViscoMassContributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Epetra_Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -192,7 +192,7 @@ namespace STR
        *                + (1 - \frac{1}{\Delta t} \boldsymbol{C}
        *                + theta  \boldsymbol{K}_{T}
        *  \f] */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /** \brief Access the time integration coefficient \f$\theta\f$
        *

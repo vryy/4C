@@ -796,7 +796,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother(int level)
     AMGNXN::NullSpaceInfo myNS(h_->GetNumPDEs(i), h_->GetNullSpaceDim(i), h_->GetNullSpaceData(i));
     null_space_blocks.push_back(myNS);
   }
-  mySmootherCreator.SetNullSpaceAllBlocks(null_space_blocks);
+  mySmootherCreator.set_null_space_all_blocks(null_space_blocks);
 
   Teuchos::RCP<AMGNXN::GenericSmoother> Sbase = mySmootherCreator.Create();
   Teuchos::RCP<AMGNXN::BlockedSmoother> Sblock =

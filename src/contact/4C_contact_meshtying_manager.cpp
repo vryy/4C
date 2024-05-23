@@ -346,7 +346,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
   //**********************************************************************
   // parallel redistribution of all interfaces
-  GetStrategy().RedistributeMeshtying();
+  GetStrategy().redistribute_meshtying();
   //**********************************************************************
 
   // create binary search tree
@@ -363,14 +363,14 @@ bool CONTACT::MtManager::ReadAndCheckInput(
     Teuchos::ParameterList& mtparams, const DRT::Discretization& discret)
 {
   // read parameter lists from GLOBAL::Problem
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
   // read Problem Type and Problem Dimension from GLOBAL::Problem
   const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
   const int spatialDim = GLOBAL::Problem::Instance()->NDim();
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
 
   // get mortar information
   std::vector<CORE::Conditions::Condition*> mtcond(0);
@@ -604,7 +604,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
           problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       (spatialDim != 3) && (spatialDim != 2))
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
@@ -644,7 +644,7 @@ void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
+void CONTACT::MtManager::postprocess_quantities(IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
@@ -675,10 +675,10 @@ void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::MtManager::PostprocessQuantitiesPerInterface(
+void CONTACT::MtManager::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
-  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
+  GetStrategy().postprocess_quantities_per_interface(outputParams);
 }
 
 FOUR_C_NAMESPACE_CLOSE

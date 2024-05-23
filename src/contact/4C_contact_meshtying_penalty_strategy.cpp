@@ -242,7 +242,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(
   z_->Update(-pp, *g_, 1.0);
 
   // store updated LM into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  store_nodal_quantities(MORTAR::StrategyBase::lmupdate);
 
   // add penalty meshtying force terms
   Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -355,7 +355,7 @@ void CONTACT::MtPenaltyStrategy::ModifyPenalty()
 /*----------------------------------------------------------------------*
  | evaluate L2-norm of active constraints                     popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
+void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
 {
   // initialize parameters
   double cnorm = 0.0;
@@ -414,14 +414,14 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 /*----------------------------------------------------------------------*
  | store Lagrange multipliers for next Uzawa step             popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::UpdateUzawaAugmentedLagrange()
+void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
 {
   // store current LM into Uzawa LM
   // (note that this is also done after the last Uzawa step of one
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
-  StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+  store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
 
   return;
 }

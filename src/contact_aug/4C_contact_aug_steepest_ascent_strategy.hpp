@@ -55,11 +55,11 @@ namespace CONTACT
         void EvalStrContactRHS() override { AUG::Strategy::EvalStrContactRHS(); }
 
         /// derived
-        Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
+        Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(
             const enum CONTACT::VecBlockType& bt) const override;
 
         /// derived
-        void AddContributionsToConstrRHS(Epetra_Vector& augConstrRhs) const override;
+        void add_contributions_to_constr_rhs(Epetra_Vector& augConstrRhs) const override;
 
         /// derived
         Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
@@ -67,28 +67,28 @@ namespace CONTACT
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
-        void AddContributionsToMatrixBlockDisplDispl(CORE::LINALG::SparseMatrix& kdd,
+        void add_contributions_to_matrix_block_displ_displ(CORE::LINALG::SparseMatrix& kdd,
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
-        void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+        void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
             const NOX::NLN::Group& grp) override;
 
         /// derived
-        void RemoveCondensedContributionsFromRhs(Epetra_Vector& str_rhs) const override;
+        void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
 
        private:
         void AugmentDirection(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
             Epetra_Vector& dir_mutable);
 
-        Teuchos::RCP<Epetra_Vector> ComputeActiveLagrangeIncrInNormalDirection(
+        Teuchos::RCP<Epetra_Vector> compute_active_lagrange_incr_in_normal_direction(
             const Epetra_Vector& displ_incr);
 
-        Teuchos::RCP<Epetra_Vector> ComputeInactiveLagrangeIncrInNormalDirection(
+        Teuchos::RCP<Epetra_Vector> compute_inactive_lagrange_incr_in_normal_direction(
             const Epetra_Vector& displ_incr, const Epetra_Vector& zold);
 
-        void PostAugmentDirection(
+        void post_augment_direction(
             const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir);
       };  //  class Strategy
 

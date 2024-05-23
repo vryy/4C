@@ -52,7 +52,7 @@ namespace NOX
         /*! \brief Compute the correction system of given type.
          *
          *  \return TRUE if computation was successful. */
-        virtual bool computeCorrectionSystem(const enum CorrectionType type,
+        virtual bool compute_correction_system(const enum CorrectionType type,
             const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
             Epetra_Operator& jac)
         {
@@ -60,7 +60,7 @@ namespace NOX
         };
 
         virtual Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        CalcJacobianContributionsFromElementLevelForPTC() = 0;
+        calc_jacobian_contributions_from_element_level_for_ptc() = 0;
       };
     }  // end namespace Interface
   }    // end namespace NLN

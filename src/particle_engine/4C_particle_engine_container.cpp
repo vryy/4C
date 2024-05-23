@@ -58,7 +58,7 @@ void PARTICLEENGINE::ParticleContainer::Setup(
   }
 }
 
-void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
+void PARTICLEENGINE::ParticleContainer::increase_container_size()
 {
   // size of container is doubled
   containersize_ *= 2;
@@ -74,7 +74,7 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
   }
 }
 
-void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
+void PARTICLEENGINE::ParticleContainer::decrease_container_size()
 {
   // size of container is halved
   int newsize = static_cast<int>(0.5 * containersize_);
@@ -104,7 +104,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
     int& index, int globalid, const ParticleStates& states)
 {
   // increase size of container
-  if (particlestored_ == containersize_) IncreaseContainerSize();
+  if (particlestored_ == containersize_) increase_container_size();
 
   // store global id
   globalids_[particlestored_] = globalid;

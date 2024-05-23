@@ -62,7 +62,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
         }
       }
 
-      IntegrateShapeFunction(params, discretization, lm, elevec1, mydispnp);
+      integrate_shape_function(params, discretization, lm, elevec1, mydispnp);
       break;
     }
     default:
@@ -217,7 +217,7 @@ double DRT::ELEMENTS::Bele3Line::f2_substitution(const CORE::LINALG::SerialDense
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
@@ -295,6 +295,6 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   }  // end of loop over integrationen points
 
   return;
-}  // DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction
+}  // DRT::ELEMENTS::Bele3Line::integrate_shape_function
 
 FOUR_C_NAMESPACE_CLOSE

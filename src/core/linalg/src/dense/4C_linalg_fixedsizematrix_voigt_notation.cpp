@@ -53,7 +53,7 @@ void CORE::LINALG::VOIGT::FourthOrderIdentityMatrix(CORE::LINALG::Matrix<6, 6>& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void CORE::LINALG::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(
+void CORE::LINALG::VOIGT::VoigtUtils<type>::symmetric_outer_product(
     const CORE::LINALG::Matrix<3, 1>& vec_a, const CORE::LINALG::Matrix<3, 1>& vec_b,
     CORE::LINALG::Matrix<6, 1>& ab_ba)
 {
@@ -67,13 +67,13 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(
       ab_ba(IndexMappings::SymToVoigt6(i, j)) += outer_product(i, j) + outer_product(j, i);
 
   // scale off-diagonal values
-  ScaleOffDiagonalVals(ab_ba);
+  scale_off_diagonal_vals(ab_ba);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void CORE::LINALG::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
+void CORE::LINALG::VOIGT::VoigtUtils<type>::multiply_tensor_vector(
     const CORE::LINALG::Matrix<6, 1>& strain, const CORE::LINALG::Matrix<3, 1>& vec,
     CORE::LINALG::Matrix<3, 1>& res)
 {
@@ -90,7 +90,7 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void CORE::LINALG::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(const unsigned pow,
+void CORE::LINALG::VOIGT::VoigtUtils<type>::power_of_symmetric_tensor(const unsigned pow,
     const CORE::LINALG::Matrix<6, 1>& strain, CORE::LINALG::Matrix<6, 1>& strain_pow)
 {
   std::copy(strain.A(), strain.A() + 6, strain_pow.A());
@@ -98,7 +98,7 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(const unsigne
   if (pow > 1)
   {
     // unscale the off-diagonal values
-    UnscaleOffDiagonalVals(strain_pow);
+    unscale_off_diagonal_vals(strain_pow);
 
     CORE::LINALG::Matrix<6, 1> prod(false);
 
@@ -124,7 +124,7 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(const unsigne
     }
 
     // scale the off-diagonal values again
-    ScaleOffDiagonalVals(strain_pow);
+    scale_off_diagonal_vals(strain_pow);
   }
 }
 
@@ -193,7 +193,8 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::MatrixToVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void CORE::LINALG::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain)
+void CORE::LINALG::VOIGT::VoigtUtils<type>::scale_off_diagonal_vals(
+    CORE::LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor(i);
 }
@@ -201,7 +202,7 @@ void CORE::LINALG::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(CORE::LINALG::M
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void CORE::LINALG::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(
+void CORE::LINALG::VOIGT::VoigtUtils<type>::unscale_off_diagonal_vals(
     CORE::LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);

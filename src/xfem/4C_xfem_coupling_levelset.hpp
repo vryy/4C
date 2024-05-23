@@ -59,13 +59,13 @@ namespace XFEM
 
     // TODO: sort the functions...
 
-    void SetCutterDiscretization() override;
+    void set_cutter_discretization() override;
 
-    void SetConditionSpecificParameters() override{};
+    void set_condition_specific_parameters() override{};
 
     void PrepareCutterOutput() override;
 
-    void DoConditionSpecificSetup() override;
+    void do_condition_specific_setup() override;
 
 
     /// set levelset field by function, return if interface moved compared to last time step
@@ -76,12 +76,12 @@ namespace XFEM
 
     virtual void InitStateVectors_Bg();
 
-    virtual void InitStateVectors_Cutter();
+    virtual void init_state_vectors_cutter();
 
     /// set level-boolean type
-    virtual void SetLevelSetBooleanType();
+    virtual void set_level_set_boolean_type();
 
-    virtual bool ApplyComplementaryOperator();
+    virtual bool apply_complementary_operator();
 
     virtual void Output(
         const int step, const double time, const bool write_restart_data, const int lsc_idx = 0);
@@ -89,22 +89,22 @@ namespace XFEM
     void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
-    Teuchos::RCP<Epetra_Vector> GetLevelSetFieldAsNodeRowVector();
+    Teuchos::RCP<Epetra_Vector> get_level_set_field_as_node_row_vector();
 
     virtual void ReadRestart(const int step, const int lsc_idx = 0);
 
     bool HasMovingInterface() override { return true; }
 
-    void GetInterfaceSlaveMaterial(
+    void get_interface_slave_material(
         DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
     {
       mat = Teuchos::null;
     }
 
-    XFEM::CouplingBase::LevelSetBooleanType GetBooleanCombination() { return ls_boolean_type_; }
+    XFEM::CouplingBase::LevelSetBooleanType get_boolean_combination() { return ls_boolean_type_; }
 
     //! export row vectors storing geometric quantities to col vectors
-    virtual void ExportGeometricQuantities(){};
+    virtual void export_geometric_quantities(){};
 
 
    private:
@@ -208,29 +208,29 @@ namespace XFEM
     }
 
    public:
-    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
-    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
    protected:
     //! Initializes configurationmap
-    void SetupConfigurationMap() override;
+    void setup_configuration_map() override;
 
     //! Updates configurationmap for specific Gausspoint
-    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                              //< master sided dynamic viscosity
-        double& visc_s,                              //< slave sided dynamic viscosity
-        double& density_m,                           //< master sided density
-        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
-        double& full_stab,                           //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,     //< Condition
-        DRT::Element* ele,                           //< Element
-        DRT::Element* bele,                          //< Boundary Element
+    void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                //< master sided dynamic viscosity
+        double& visc_s,                                //< slave sided dynamic viscosity
+        double& density_m,                             //< master sided density
+        double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
+        double& full_stab,                             //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,       //< Condition
+        DRT::Element* ele,                             //< Element
+        DRT::Element* bele,                            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -265,37 +265,37 @@ namespace XFEM
 
    public:
     //! Evaluate Neumann traction 3 components
-    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
     //! Evaluate Neumann traction 6 components
-    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
-    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
    protected:
     //! Do condition specific setup
-    void DoConditionSpecificSetup() override;
+    void do_condition_specific_setup() override;
 
     //! Initializes configurationmap
-    void SetupConfigurationMap() override;
+    void setup_configuration_map() override;
 
     //! Updates configurationmap for specific Gausspoint
-    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                              //< master sided dynamic viscosity
-        double& visc_s,                              //< slave sided dynamic viscosity
-        double& density_m,                           //< master sided density
-        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
-        double& full_stab,                           //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,     //< Condition
-        DRT::Element* ele,                           //< Element
-        DRT::Element* bele,                          //< Boundary Element
+    void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                //< master sided dynamic viscosity
+        double& visc_s,                                //< slave sided dynamic viscosity
+        double& density_m,                             //< master sided density
+        double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
+        double& full_stab,                             //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,       //< Condition
+        DRT::Element* ele,                             //< Element
+        DRT::Element* bele,                            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -328,11 +328,11 @@ namespace XFEM
     );
 
    public:
-    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
-    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const CORE::Conditions::Condition* cond) override;
 
@@ -346,7 +346,7 @@ namespace XFEM
      */
     template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
-    void EvaluateCouplingConditions(V1& ivel,     ///< prescribed velocity at interface
+    void evaluate_coupling_conditions(V1& ivel,   ///< prescribed velocity at interface
         V2& itraction,                            ///< prescribed traction at interface
         X1& x,                                    ///< coordinates of gauss point
         const CORE::Conditions::Condition* cond,  ///< condition prescribed to this surface
@@ -360,8 +360,8 @@ namespace XFEM
         double& visc_s    ///< slave sided dynamic viscosity
     )
     {
-      EvalProjectionMatrix<DISTYPE>(projection_matrix, eid, funct, derxy, normal);
-      EvaluateCouplingConditions(ivel, itraction, x, cond);
+      eval_projection_matrix<DISTYPE>(projection_matrix, eid, funct, derxy, normal);
+      evaluate_coupling_conditions(ivel, itraction, x, cond);
 
       if (has_neumann_jump_)
       {
@@ -404,8 +404,8 @@ namespace XFEM
      Return a smoothed/non-smoothed tangiential projection of the level set surface.
      */
     template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2, class M3>
-    void EvalProjectionMatrix(T1& projection_matrix,  ///< Projection matrix
-        int eid,                                      ///< element ID
+    void eval_projection_matrix(T1& projection_matrix,  ///< Projection matrix
+        int eid,                                        ///< element ID
         M1& funct,  ///< local shape function for Gauss Point (from fluid element)
         M2& derxy,  ///< local derivatives of shape function for Gauss Point (from fluid element)
         M3& normal  ///< surface normal of cut element
@@ -491,36 +491,36 @@ namespace XFEM
       else
         gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
 
-      SetupProjectionMatrix(projection_matrix, gradphi);
+      setup_projection_matrix(projection_matrix, gradphi);
 
       return;
     }
 
    protected:
-    void SetElementConditions() override;
+    void set_element_conditions() override;
 
-    void SetElementSpecificConditions(std::vector<CORE::Conditions::Condition*>& cutterele_cond,
+    void set_element_specific_conditions(std::vector<CORE::Conditions::Condition*>& cutterele_cond,
         const std::string& cond_name, const int& robin_id);
 
-    void SetConditionSpecificParameters() override;
+    void set_condition_specific_parameters() override;
 
-    void GetConditionByRobinId(const std::vector<CORE::Conditions::Condition*>& mycond,
+    void get_condition_by_robin_id(const std::vector<CORE::Conditions::Condition*>& mycond,
         const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
 
     //! Initializes configurationmap
-    void SetupConfigurationMap() override;
+    void setup_configuration_map() override;
 
     //! Updates configurationmap for specific Gausspoint
-    void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                              //< master sided dynamic viscosity
-        double& visc_s,                              //< slave sided dynamic viscosity
-        double& density_m,                           //< master sided density
-        double& visc_stab_tang,                      //< viscous tangential NIT Penalty scaling
-        double& full_stab,                           //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,         //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,     //< Condition
-        DRT::Element* ele,                           //< Element
-        DRT::Element* bele,                          //< Boundary Element
+    void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                //< master sided dynamic viscosity
+        double& visc_s,                                //< slave sided dynamic viscosity
+        double& density_m,                             //< master sided density
+        double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
+        double& full_stab,                             //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const CORE::Conditions::Condition* cond,       //< Condition
+        DRT::Element* ele,                             //< Element
+        DRT::Element* bele,                            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
@@ -550,13 +550,13 @@ namespace XFEM
 
 
   /// set levelset field by given vector
-  void WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
+  void write_access_geometric_quantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
       Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
       Teuchos::RCP<Epetra_Vector>& curvatureaf);
 
 
   /// set material pointer for coupling slave side
-  void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
+  void get_interface_slave_material(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
 
   template <CORE::FE::CellType DISTYPE, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed
@@ -614,7 +614,7 @@ namespace XFEM
 
 
   template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2>
-  void EvalProjectionMatrix(
+  void eval_projection_matrix(
       T1& itraction_jump_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
       int eid,                    ///< element ID
       M1& funct,                  ///< local shape function for Gauss Point (from fluid element)

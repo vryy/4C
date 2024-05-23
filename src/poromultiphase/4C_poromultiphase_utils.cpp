@@ -49,16 +49,16 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     // get coupling method
     auto arterycoupl =
         CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-            problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+            problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
     const bool evaluate_on_lateral_surface = CORE::UTILS::IntegralValue<int>(
-        problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+        problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
         "LATERAL_SURFACE_COUPLING");
 
     // get MAXNUMSEGPERARTELE
-    const int maxnumsegperele = problem->PoroFluidMultiPhaseDynamicParams()
+    const int maxnumsegperele = problem->poro_fluid_multi_phase_dynamic_params()
                                     .sublist("ARTERY COUPLING")
                                     .get<int>("MAXNUMSEGPERARTELE");
 
@@ -136,7 +136,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 /*----------------------------------------------------------------------*
  | exchange material pointers of both discretizations       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::AssignMaterialPointers(
+void POROMULTIPHASE::UTILS::assign_material_pointers(
     const std::string& struct_disname, const std::string& fluid_disname)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();

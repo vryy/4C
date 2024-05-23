@@ -30,7 +30,7 @@ void test_cut_volumes()
   create_hex8_mesh(mesh1, 4, 4, 4);
   create_hex8_mesh(mesh2, 3, 5, 2);
 
-  mesh2.CreateSideIds_CutTest();
+  mesh2.create_side_ids_cut_test();
 
   CORE::GEO::CUT::plain_element_set elements_done;
 
@@ -38,7 +38,7 @@ void test_cut_volumes()
 
   cutmesh(mesh1);
 
-  mesh2.AssignOtherVolumeCells_CutTest(mesh1);
+  mesh2.assign_other_volume_cells_cut_test(mesh1);
 }
 
 void test_cut_volumes2()
@@ -61,7 +61,7 @@ void test_cut_volumes2()
         create_hex8_mesh(mesh1, 1, 1, 1);
         create_hex8_mesh(mesh2, i, j, k);
 
-        mesh2.CreateSideIds_CutTest();
+        mesh2.create_side_ids_cut_test();
 
         CORE::GEO::CUT::plain_element_set elements_done;
 
@@ -69,7 +69,7 @@ void test_cut_volumes2()
 
         cutmesh(mesh1);
 
-        mesh2.AssignOtherVolumeCells_CutTest(mesh1);
+        mesh2.assign_other_volume_cells_cut_test(mesh1);
       }
     }
   }

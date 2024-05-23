@@ -64,7 +64,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
 {
   // check if this is an hdg element and init completepoly
   if (const DRT::ELEMENTS::Elemag* hdgele = dynamic_cast<const DRT::ELEMENTS::Elemag*>(ele))
-    usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
+    usescompletepoly_ = hdgele->uses_complete_polynomial_space();
   else
     FOUR_C_THROW("cannot cast element to elemag element");
   ELEMAG::Action action;
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     }
     case ELEMAG::project_field_test_trace:
     {
-      local_solver_->ProjectFieldTestTrace(ele, params, elevec1);
+      local_solver_->project_field_test_trace(ele, params, elevec1);
 
       break;
     }
@@ -136,13 +136,13 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     }
     case ELEMAG::ele_init_from_restart:
     {
-      ElementInitFromRestart(ele, discretization);
+      element_init_from_restart(ele, discretization);
       break;
     }
     case ELEMAG::interpolate_hdg_to_node:
     {
       ReadGlobalVectors(ele, discretization, lm);
-      InterpolateSolutionToNodes(ele, discretization, elevec1);
+      interpolate_solution_to_nodes(ele, discretization, elevec1);
       break;
     }
     case ELEMAG::calc_abc:
@@ -169,7 +169,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     case ELEMAG::bd_integrate:
     {
       int face = params.get<int>("face");
-      localSolver_->ComputeBoundaryIntegral(ele, params, face);
+      localSolver_->compute_boundary_integral(ele, params, face);
 
       break;
     }
@@ -215,7 +215,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
         localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_);
       */
 
-      UpdateInteriorVariablesAndComputeResidual(
+      update_interior_variables_and_compute_residual(
           params, *ele, mat, elevec1, dt, errormaps, updateonly);
 
       break;
@@ -382,10 +382,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::FillRestartVectors(
 }
 
 /*----------------------------------------------------------------------*
- * ElementInitFromRestart
+ * element_init_from_restart
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagEleCalc<distype>::ElementInitFromRestart(
+void DRT::ELEMENTS::ElemagEleCalc<distype>::element_init_from_restart(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   DRT::ELEMENTS::Elemag* elemagele = dynamic_cast<DRT::ELEMENTS::Elemag*>(ele);
@@ -731,10 +731,10 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(DRT::EL
 }
 
 /*----------------------------------------------------------------------*
- * ProjectFieldTestTrace
+ * project_field_test_trace
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
+int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::project_field_test_trace(
     DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -972,10 +972,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
 }
 
 /*----------------------------------------------------------------------*
- | InterpolateSolutionToNodes                          berardocco 04/18 |
+ | interpolate_solution_to_nodes                          berardocco 04/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEMENTS::Elemag* ele,
+int DRT::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(DRT::ELEMENTS::Elemag* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
@@ -1221,16 +1221,16 @@ DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::LocalSolver(const DRT::ELEME
 }
 
 /*----------------------------------------------------------------------*
- * UpdateInteriorVariablesAndComputeResidual
+ * update_interior_variables_and_compute_residual
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeResidual(
+void DRT::ELEMENTS::ElemagEleCalc<distype>::update_interior_variables_and_compute_residual(
     Teuchos::ParameterList& params, DRT::ELEMENTS::Elemag& ele,
     const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec,
     double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "DRT::ELEMENTS::ElemagEleCalc::UpdateInteriorVariablesAndComputeResidual");
+      "DRT::ELEMENTS::ElemagEleCalc::update_interior_variables_and_compute_residual");
 
   // *****************************************************
   // update interior variables first
@@ -1382,7 +1382,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
   CORE::LINALG::multiply(-1.0, elevec, -1.0, local_solver_->Imat, yVec);  //  = -Ix -Jy
 
   return;
-}  // UpdateInteriorVariablesAndComputeResidual
+}  // update_interior_variables_and_compute_residual
 
 /*----------------------------------------------------------------------*
  * ComputeAbsorbingBC
@@ -1596,17 +1596,17 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeSource(
 }
 
 /*----------------------------------------------------------------------*
- * ComputeInteriorMatrices
+ * compute_interior_matrices
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
+void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::compute_interior_matrices(
     double dt, double sigma, double mu, double epsilon)
 {
   // The definitions of the matrices created here can be found in the internal
   // paper from Gravemeier "A hybridizable discontinous Galerkin method for
   // electromagnetics in subsurface applications".
   // The explicit form of these matrices is reported for convenience?
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagEleCalc::ComputeInteriorMatrices");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagEleCalc::compute_interior_matrices");
   // Why is this made in this order? Is it faster in this order? Or is it better
   // to have it shape_functions->quadrature_points?
   // loop quadrature points
@@ -2097,7 +2097,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
   Lmat.putScalar(0.0);
 
   // Here is the computation for the matrices of volume integrals
-  ComputeInteriorMatrices(dt, sigma, mu, epsilon);
+  compute_interior_matrices(dt, sigma, mu, epsilon);
 
   // sumindex is going to be used to decide where we are inside the face matrix
   // because for every face we move to different dofs

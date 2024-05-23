@@ -50,7 +50,7 @@ namespace ADAPTER
     explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     //! set pointer to model evaluator
-    void SetModelEvaluatorPtr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedPASI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedPASI> me)
     {
       pasi_model_evaluator_ = me;
       return;

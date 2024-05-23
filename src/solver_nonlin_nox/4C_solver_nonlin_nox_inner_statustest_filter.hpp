@@ -195,7 +195,7 @@ namespace NOX
 
           /** identify all points in the current filter set which are not
            * dominated by the new trial point */
-          void IdentifyNonDominatedFilterPoints(
+          void identify_non_dominated_filter_points(
               const Point& trial_fp, const unsigned non_dominated_index);
 
           /// set-up all model terms
@@ -203,7 +203,7 @@ namespace NOX
               const ::NOX::Abstract::Group& grp, const Interface::Required& interface);
 
           /// execute the sufficient reduction check
-          enum NOX::NLN::INNER::StatusTest::StatusType SufficientReductionCheck(
+          enum NOX::NLN::INNER::StatusTest::StatusType sufficient_reduction_check(
               const Point& trial_fp) const;
 
           /// Is the step still larger than the minimal step length estimate?
@@ -215,7 +215,7 @@ namespace NOX
               const ::NOX::Solver::Generic& solver) const;
 
           /// get the specified constraint tolerance
-          double GetConstraintTolerance(const ::NOX::Solver::Generic& solver) const;
+          double get_constraint_tolerance(const ::NOX::Solver::Generic& solver) const;
 
           /** \brief Augment the current filter
            *
@@ -233,10 +233,10 @@ namespace NOX
            *  is set.
            *
            *  \author hiermeier \date 04/17 */
-          void ComputeMinimalStepLengthEstimates();
+          void compute_minimal_step_length_estimates();
 
           /// Compute the minimal step length estimate based on the objective function model
-          double MinimalStepLengthEstimateOfObjFuncFilterCheck() const;
+          double minimal_step_length_estimate_of_obj_func_filter_check() const;
 
           /** \brief Check the F-Type switching condition for the given step-length
            *
@@ -245,7 +245,7 @@ namespace NOX
            *  \return TRUE if the condition is fulfilled, otherwise false.
            *
            *  \author hiermeier \date 04/17 */
-          bool CheckFTypeSwitchingCondition(const double step) const;
+          bool check_f_type_switching_condition(const double step) const;
 
           /** \brief Evaluate the F-Type switching condition
            *
@@ -253,7 +253,7 @@ namespace NOX
            *  \param d    (in) : internal scaling factor (must be larger than zero)
            *
            *  \author hiermeier \date 04/17 */
-          double computeFTypeSwitchingCondition(const double step, const double d) const;
+          double compute_f_type_switching_condition(const double step, const double d) const;
 
           /** \brief Compute the minimal step length estimate based on the f-type switching
            *         condition
@@ -261,7 +261,7 @@ namespace NOX
            *  This routine uses a local Newton scheme for the calculation of the estimate.
            *
            *  \author hiermeier \date 04/17 */
-          double MinimalStepLengthEstimateOfFTypeCondition() const;
+          double minimal_step_length_estimate_of_f_type_condition() const;
 
           /// evaluate the objective model based on the given step length
           double GetObjModel(const double step) const;
@@ -518,12 +518,12 @@ namespace NOX
                 double* theta_slope_values) const;
 
             /// compute mixed 2-nd order terms of all infeasibility merit functions
-            void computeMixed2ndOrderTerms(const ::NOX::Abstract::Vector& dir,
+            void compute_mixed2nd_order_terms(const ::NOX::Abstract::Vector& dir,
                 const ::NOX::Abstract::Group& grp, double* theta_mixed_values) const;
 
             /** \brief compute the over-all minimal step length estimate based on
              *  all infeasibility merit functions */
-            double minimalStepLengthEstimate(
+            double minimal_step_length_estimate(
                 const double* accepted_theta, const double* theta_slope) const;
 
             /// set of infeasibility merit functions
@@ -556,25 +556,25 @@ namespace NOX
             static void resetStaticMembers();
 
             /// (re)set the global margin safety factors
-            static void setMarginSafetyFactors();
+            static void set_margin_safety_factors();
 
             static void reinitFilter(plain_point_set& filter,
                 const Infeasibility& infeasibility_func, const double& downscale_fac);
 
            private:
-            static void clearFilterPointRegister();
+            static void clear_filter_point_register();
 
             /** \brief Add a new filter point to the register
              *
              *  Before we add a new filter point all unused filter points in the
              *  register are removed. */
-            static void addFilterPointToRegister(const Teuchos::RCP<Point>& fp_ptr);
+            static void add_filter_point_to_register(const Teuchos::RCP<Point>& fp_ptr);
 
             /** scale the coordinate with the given %id as soon as the corresponding
              * scaling changes its state from invalid to valid */
-            static void scaleCoordinateOfAllRegisteredFilterPoints(const int id);
+            static void scale_coordinate_of_all_registered_filter_points(const int id);
 
-            static void setInitialScaledMaxThetaValue(const int id, const double& val);
+            static void set_initial_scaled_max_theta_value(const int id, const double& val);
 
             static void scaleMaxThetaValues(const double& fac);
 
@@ -615,7 +615,7 @@ namespace NOX
             bool IsFeasible(const double tol) const;
 
             //
-            bool IsSufficientlyReducedComparedToMaxTheta(const double& red_fac) const;
+            bool is_sufficiently_reduced_compared_to_max_theta(const double& red_fac) const;
 
             /** \brief access the point coordinate %index
              *

@@ -48,7 +48,7 @@ namespace DRT
       static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
-      int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int integrate_shape_function(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints) override
       {
@@ -56,8 +56,9 @@ namespace DRT
         return 1;
       }
 
-      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+      int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
@@ -117,7 +118,7 @@ namespace DRT
 
       /*! \brief Interpolates an HDG solution to the element nodes for output
        */
-      virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
+      virtual int interpolate_solution_to_nodes(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
@@ -148,7 +149,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
+      int compute_error_interface(DRT::ELEMENTS::Fluid* ele,         ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -182,7 +183,7 @@ namespace DRT
       }
 
 
-      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -209,7 +210,7 @@ namespace DRT
         return;
       }
 
-      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
+      void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,     ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -234,7 +235,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) override
       {
@@ -242,7 +243,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -276,12 +277,12 @@ namespace DRT
         void InitializeAll();
 
         /// compute material matrix
-        void ComputeMaterialMatrix(const Teuchos::RCP<CORE::MAT::Material>& mat,
+        void compute_material_matrix(const Teuchos::RCP<CORE::MAT::Material>& mat,
             const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& DL,
             CORE::LINALG::SerialDenseMatrix& Dw);
 
         /// compute interior residual
-        void ComputeInteriorResidual(const Teuchos::RCP<CORE::MAT::Material>& mat,
+        void compute_interior_residual(const Teuchos::RCP<CORE::MAT::Material>& mat,
             const std::vector<double>& valnp, const std::vector<double>& accel,
             const std::vector<double>& alevel);
 
@@ -291,40 +292,40 @@ namespace DRT
             const std::vector<double>& alevel);
 
         /// compute interior matrices
-        void ComputeInteriorMatrices(const Teuchos::RCP<CORE::MAT::Material>& mat);
+        void compute_interior_matrices(const Teuchos::RCP<CORE::MAT::Material>& mat);
 
         /// compute face matrices
         void ComputeFaceMatrices(const int f, const Teuchos::RCP<CORE::MAT::Material>& mat);
 
         /// compute local residual
-        void ComputeLocalResidual();
+        void compute_local_residual();
 
         /// compute global residual
-        void ComputeGlobalResidual(DRT::ELEMENTS::Fluid& ele);
+        void compute_global_residual(DRT::ELEMENTS::Fluid& ele);
 
         /// compute local-local matrix
-        void ComputeLocalLocalMatrix();
+        void compute_local_local_matrix();
 
         /// compute local-global matrix
-        void ComputeLocalGlobalMatrix(DRT::ELEMENTS::Fluid& ele);
+        void compute_local_global_matrix(DRT::ELEMENTS::Fluid& ele);
 
         /// compute global-local matrix
-        void ComputeGlobalLocalMatrix(DRT::ELEMENTS::Fluid& ele);
+        void compute_global_local_matrix(DRT::ELEMENTS::Fluid& ele);
 
         /// compute global-global matrix
-        void ComputeGlobalGlobalMatrix(DRT::ELEMENTS::Fluid& ele);
+        void compute_global_global_matrix(DRT::ELEMENTS::Fluid& ele);
 
         /// invert local-local matrix
-        void InvertLocalLocalMatrix();
+        void invert_local_local_matrix();
 
         /// condense local residual
-        void CondenseLocalResidual(CORE::LINALG::SerialDenseVector& eleVec);
+        void condense_local_residual(CORE::LINALG::SerialDenseVector& eleVec);
 
         /// condense local matrix
         void CondenseLocalMatrix(CORE::LINALG::SerialDenseMatrix& eleMat);
 
         // print matrices and residuals
-        void PrintMatricesAndResiduals(DRT::ELEMENTS::Fluid& ele,
+        void print_matrices_and_residuals(DRT::ELEMENTS::Fluid& ele,
             CORE::LINALG::SerialDenseVector& eleVec, CORE::LINALG::SerialDenseMatrix& eleMat);
 
         // number of degrees of freedom
@@ -440,7 +441,7 @@ namespace DRT
           CORE::LINALG::Matrix<msd_, 1>& L, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// evaluate density and momentum
-      void EvaluateDensityMomentum(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
+      void evaluate_density_momentum(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
           const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// local data object

@@ -148,7 +148,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
+void SCATRA::TimIntCardiacMonodomain::element_material_time_update()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -169,7 +169,7 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
+void SCATRA::TimIntCardiacMonodomain::set_element_specific_sca_tra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check

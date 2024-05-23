@@ -89,14 +89,14 @@ namespace FLD
         int count = -1){};
 
     /// Gmsh solution output for previous time step
-    virtual void GmshSolutionOutputPrevious(
+    virtual void gmsh_solution_output_previous(
         const std::string& filename_base,             ///< name for output file
         int step,                                     ///< step number
         const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
         int count = -1){};
 
     /// Gmsh output of solution (debug)
-    virtual void GmshSolutionOutputDebug(
+    virtual void gmsh_solution_output_debug(
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
@@ -104,7 +104,7 @@ namespace FLD
     ){};
 
     /// Gmsh output of residual (debug)
-    virtual void GmshResidualOutputDebug(
+    virtual void gmsh_residual_output_debug(
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
@@ -112,7 +112,7 @@ namespace FLD
     ){};
 
     /// Gmsh output of increment (debug)
-    virtual void GmshIncrementOutputDebug(
+    virtual void gmsh_increment_output_debug(
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
@@ -120,7 +120,7 @@ namespace FLD
     ){};
 
     /// Gmsh output of discretization
-    virtual void GmshOutputDiscretization(bool print_faces, int step,
+    virtual void gmsh_output_discretization(bool print_faces, int step,
         std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr){};
 
     /// Main output routine for gmsh output
@@ -179,34 +179,34 @@ namespace FLD
         int count = -1) override;
 
     /// Gmsh solution output for previous time step
-    void GmshSolutionOutputPrevious(const std::string& filename_base,  ///< name for output file
-        int step,                                                      ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,                   ///< state
+    void gmsh_solution_output_previous(const std::string& filename_base,  ///< name for output file
+        int step,                                                         ///< step number
+        const Teuchos::RCP<FLD::XFluidState>& state,                      ///< state
         int count = -1) override;
 
     /// Gmsh output of solution (debug)
-    void GmshSolutionOutputDebug(const std::string& filename_base,  ///< name for output file
-        int step,                                                   ///< step number
+    void gmsh_solution_output_debug(const std::string& filename_base,  ///< name for output file
+        int step,                                                      ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of residual (debug)
-    void GmshResidualOutputDebug(const std::string& filename_base,  ///< name for output file
-        int step,                                                   ///< step number
+    void gmsh_residual_output_debug(const std::string& filename_base,  ///< name for output file
+        int step,                                                      ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of increment (debug)
-    void GmshIncrementOutputDebug(const std::string& filename_base,  ///< name for output file
-        int step,                                                    ///< step number
+    void gmsh_increment_output_debug(const std::string& filename_base,  ///< name for output file
+        int step,                                                       ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of discretization
-    void GmshOutputDiscretization(bool print_faces, int step,
+    void gmsh_output_discretization(bool print_faces, int step,
         std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr) override;
 
     /// Main output routine for gmsh output
@@ -241,9 +241,9 @@ namespace FLD
     );
 
     /// Gmsh output function for volumecells
-    void GmshOutputVolumeCell(DRT::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,                                ///< output file stream for velocity
-        std::ofstream& press_f,                              ///< output file stream for pressure
+    void gmsh_output_volume_cell(DRT::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& vel_f,                                   ///< output file stream for velocity
+        std::ofstream& press_f,                                 ///< output file stream for pressure
         std::ofstream& acc_f,                      ///< output file stream for acceleration
         DRT::Element* actele,                      ///< element
         CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
@@ -254,7 +254,8 @@ namespace FLD
     );
 
     /// Gmsh output function for boundarycells
-    void GmshOutputBoundaryCell(DRT::Discretization& discret,  ///< background fluid discretization
+    void gmsh_output_boundary_cell(
+        DRT::Discretization& discret,                     ///< background fluid discretization
         std::ofstream& bound_f,                           ///< output file stream for boundary mesh
         CORE::GEO::CUT::VolumeCell* vc,                   ///< volumecell
         const Teuchos::RCP<CORE::GEO::CutWizard>& wizard  ///< cut wizard

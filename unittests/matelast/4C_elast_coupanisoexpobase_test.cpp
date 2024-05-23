@@ -69,7 +69,7 @@ namespace
       return tensors_.at(gp);
     }
 
-    [[nodiscard]] const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(
+    [[nodiscard]] const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(
         int gp) const override
     {
       return tensors_stress_.at(gp);
@@ -96,8 +96,8 @@ namespace
     }
 
    protected:
-    [[nodiscard]] const MAT::ELASTIC::CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface()
-        const override
+    [[nodiscard]] const MAT::ELASTIC::CoupAnisoExpoBaseInterface&
+    get_coup_aniso_expo_base_interface() const override
     {
       return anisotropy_extension_;
     }
@@ -211,22 +211,22 @@ namespace
   {
     CORE::LINALG::Matrix<2, 1> dPIaniso(true);
 
-    summand_.EvaluateFirstDerivativesAniso(dPIaniso, C1_, 0, 0);
+    summand_.evaluate_first_derivatives_aniso(dPIaniso, C1_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), 0.6000375695574949, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
     dPIaniso.Clear();
-    summand_.EvaluateFirstDerivativesAniso(dPIaniso, C2_, 0, 0);
+    summand_.evaluate_first_derivatives_aniso(dPIaniso, C2_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), -0.1603915791546372, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
     dPIaniso.Clear();
-    summand_.EvaluateFirstDerivativesAniso(dPIaniso, C1_, 1, 0);
+    summand_.evaluate_first_derivatives_aniso(dPIaniso, C1_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), 0.4435645526048857, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
     dPIaniso.Clear();
-    summand_.EvaluateFirstDerivativesAniso(dPIaniso, C2_, 1, 0);
+    summand_.evaluate_first_derivatives_aniso(dPIaniso, C2_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), -0.15968456768492822, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
   }
@@ -235,25 +235,25 @@ namespace
   {
     CORE::LINALG::Matrix<3, 1> ddPIaniso(true);
 
-    summand_.EvaluateSecondDerivativesAniso(ddPIaniso, C1_, 0, 0);
+    summand_.evaluate_second_derivatives_aniso(ddPIaniso, C1_, 0, 0);
     EXPECT_NEAR(ddPIaniso(0), 2.329771574299716, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
     ddPIaniso.Clear();
-    summand_.EvaluateSecondDerivativesAniso(ddPIaniso, C2_, 0, 0);
+    summand_.evaluate_second_derivatives_aniso(ddPIaniso, C2_, 0, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.4808816133878135, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
     ddPIaniso.Clear();
-    summand_.EvaluateSecondDerivativesAniso(ddPIaniso, C1_, 1, 0);
+    summand_.evaluate_second_derivatives_aniso(ddPIaniso, C1_, 1, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.9509145858930543, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
 
     ddPIaniso.Clear();
-    summand_.EvaluateSecondDerivativesAniso(ddPIaniso, C2_, 1, 0);
+    summand_.evaluate_second_derivatives_aniso(ddPIaniso, C2_, 1, 0);
     EXPECT_NEAR(ddPIaniso(0), 1.480185139428871, 1e-10);
     EXPECT_NEAR(ddPIaniso(1), 0.0, 1e-10);
     EXPECT_NEAR(ddPIaniso(2), 0.0, 1e-10);
@@ -328,13 +328,13 @@ namespace
     EXPECT_NEAR(dddPIaniso(3), 0.0, 1e-10);
   }
 
-  TEST_F(CoupAnisoExpoBaseTest, AddStressAnisoPrincipal)
+  TEST_F(CoupAnisoExpoBaseTest, add_stress_aniso_principal)
   {
     CORE::LINALG::Matrix<6, 1> S_stress;
     CORE::LINALG::Matrix<6, 6> cmat;
     Teuchos::ParameterList dummyParams{};
 
-    summand_.AddStressAnisoPrincipal(C1_strain_, cmat, S_stress, dummyParams, 0, 0);
+    summand_.add_stress_aniso_principal(C1_strain_, cmat, S_stress, dummyParams, 0, 0);
     EXPECT_NEAR(S_stress(0), 0.04027188481644165, 1e-10);
     EXPECT_NEAR(S_stress(1), 0.14958128646107013, 1e-10);
     EXPECT_NEAR(S_stress(2), 0.03451875841409305, 1e-10);
@@ -380,7 +380,7 @@ namespace
 
     S_stress.Clear();
     cmat.Clear();
-    summand_.AddStressAnisoPrincipal(C2_strain_, cmat, S_stress, dummyParams, 0, 0);
+    summand_.add_stress_aniso_principal(C2_strain_, cmat, S_stress, dummyParams, 0, 0);
     EXPECT_NEAR(S_stress(0), -0.010764777955497356, 1e-10);
     EXPECT_NEAR(S_stress(1), -0.03998346097756192, 1e-10);
     EXPECT_NEAR(S_stress(2), -0.009226952533283502, 1e-10);
@@ -426,7 +426,7 @@ namespace
 
     S_stress.Clear();
     cmat.Clear();
-    summand_.AddStressAnisoPrincipal(C1_strain_, cmat, S_stress, dummyParams, 1, 0);
+    summand_.add_stress_aniso_principal(C1_strain_, cmat, S_stress, dummyParams, 1, 0);
     EXPECT_NEAR(S_stress(0), 0.015011340776480562, 1e-10);
     EXPECT_NEAR(S_stress(1), 0.07880953907652338, 1e-10);
     EXPECT_NEAR(S_stress(2), 0.055041582847095864, 1e-10);
@@ -472,7 +472,7 @@ namespace
 
     S_stress.Clear();
     cmat.Clear();
-    summand_.AddStressAnisoPrincipal(C2_strain_, cmat, S_stress, dummyParams, 1, 0);
+    summand_.add_stress_aniso_principal(C2_strain_, cmat, S_stress, dummyParams, 1, 0);
     EXPECT_NEAR(S_stress(0), -0.005404127647681264, 1e-10);
     EXPECT_NEAR(S_stress(1), -0.028371670150326794, 1e-10);
     EXPECT_NEAR(S_stress(2), -0.019815134708164803, 1e-10);

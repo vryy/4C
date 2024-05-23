@@ -26,7 +26,7 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::AxialMetricsAtOrigin(
+void DRT::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
     const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,
     CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac0, CORE::LINALG::Matrix<NUMDIM_, 1>& metr0)
 {
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::SoSh8p8::AnsSetup3(
 }
 
 
-void DRT::ELEMENTS::SoSh8p8::Matrix2TensorToVector9Voigt_Inconsistent(
+void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_vector9_voigt_inconsistent(
     CORE::LINALG::Matrix<NUMDFGR_, 1>& fvct, const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,
     const bool transpose)
 {
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::SoSh8p8::Matrix2TensorToVector9Voigt_Inconsistent(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::InvVector9VoigtDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::inv_vector9_voigt_diff_by_itself(
     CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& invfderf,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat, const bool transpose)
 {
@@ -432,7 +432,7 @@ void DRT::ELEMENTS::SoSh8p8::InvVector9VoigtDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::InvVector6VoigtDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_diff_by_itself(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& invfderf,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat)
 {
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::SoSh8p8::InvVector6VoigtDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::InvVector6VoigtTwiceDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_twice_diff_by_itself(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& invbvdderb,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ibt)
 {
@@ -523,7 +523,7 @@ void DRT::ELEMENTS::SoSh8p8::InvVector6VoigtTwiceDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_diff_by_itself(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& sqfderf,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, CORE::LINALG::VOIGT::NotationType outvoigt6)
 {
@@ -578,7 +578,7 @@ void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
+void DRT::ELEMENTS::So_sh8p8::sq_vector9_voigt_diff_by_itself(
   CORE::LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,
   const CORE::LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
   const bool transpose
@@ -617,7 +617,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtTwiceDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& sqfdderf,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat)
 {
@@ -661,7 +661,7 @@ void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtTwiceDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtTwiceDiffByItself(
+void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
     int* isqfdderf,  //[MAT::NUM_STRESS_3D*6];
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 6>& sqfdderf)
 {
@@ -749,7 +749,7 @@ void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtTwiceDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Matrix2TensorToMatrix6x9Voigt(
+void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_>& bm,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt, const bool transpose)
 {
@@ -790,7 +790,7 @@ void DRT::ELEMENTS::SoSh8p8::Matrix2TensorToMatrix6x9Voigt(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
+void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voigt(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose,                              ///< 3x3 input matrix is transposed
@@ -969,7 +969,7 @@ void DRT::ELEMENTS::SoSh8p8::StretchTensor(double* detut,  // determinant of mat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoSh8p8::SymSpectralDecompJacIter(CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ew,
+int DRT::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ew,
     CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ev, const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& at,
     const double itertol, const int itermax)
 {

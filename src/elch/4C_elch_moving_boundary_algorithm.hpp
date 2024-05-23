@@ -64,7 +64,7 @@ namespace ELCH
     void SolveScaTra();
 
     /// compute interface displacement and velocity
-    void ComputeInterfaceVectors(
+    void compute_interface_vectors(
         Teuchos::RCP<Epetra_Vector> idispnp_, Teuchos::RCP<Epetra_Vector> iveln_);
 
     /// take current results for converged and save for next time step

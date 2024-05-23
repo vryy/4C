@@ -115,13 +115,13 @@ namespace DRT::ELEMENTS
 
     int Initialize(DRT::Discretization& dis) override;
 
-    void NodalBlockInformation(
+    void nodal_block_information(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
     CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-    void SetupElementDefinition(
+    void setup_element_definition(
         std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
 
    private:
@@ -229,7 +229,7 @@ namespace DRT::ELEMENTS
     const double& GetKappaMax() const { return kappa_max_; }
 
     //! \brief Get material cross-section deformation measures, i.e. strain resultants
-    inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
+    inline void get_material_strain_resultants_at_all_g_ps(std::vector<double>& axial_strain_GPs,
         std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
         std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
         std::vector<double>& curvature_3_GPs) const override
@@ -247,7 +247,7 @@ namespace DRT::ELEMENTS
     }
 
     //! \brief Get material cross-section stress resultants
-    inline void GetMaterialStressResultantsAtAllGPs(std::vector<double>& axial_force_GPs,
+    inline void get_material_stress_resultants_at_all_g_ps(std::vector<double>& axial_force_GPs,
         std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
         std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
         std::vector<double>& bending_moment_3_GPs) const override
@@ -425,11 +425,11 @@ namespace DRT::ELEMENTS
     //@}
     //! sets up from current nodal position all geometric parameters (considering current position
     //! as reference configuration)
-    void SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit = false);
+    void set_up_reference_geometry(const std::vector<double>& xrefe, const bool secondinit = false);
 
     /* computes the number of different random numbers required in each time step for generation
      of stochastic forces                                                                    */
-    int HowManyRandomNumbersINeed() const override;
+    int how_many_random_numbers_i_need() const override;
 
     //! \brief add indices of those DOFs of a given node that are positions
     inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const override
@@ -452,7 +452,7 @@ namespace DRT::ELEMENTS
     /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
      * rotation vectors)
      */
-    inline void RotationVecDofIndices(
+    inline void rotation_vec_dof_indices(
         std::vector<int>& rotvecdofs, const DRT::Node& node) const override
     {
     }
@@ -461,7 +461,7 @@ namespace DRT::ELEMENTS
      *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
      *          rotvec=false)
      */
-    inline void Rotation1DDofIndices(
+    inline void rotation1_d_dof_indices(
         std::vector<int>& twistdofs, const DRT::Node& node) const override
     {
     }
@@ -469,13 +469,13 @@ namespace DRT::ELEMENTS
     /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
      *         (additive, e.g. in case of beam3k with rotvec=true)
      */
-    inline void TangentLengthDofIndices(
+    inline void tangent_length_dof_indices(
         std::vector<int>& tangnormdofs, const DRT::Node& node) const override
     {
     }
 
     //! \brief get element local indices of those Dofs that are used for centerline interpolation
-    inline void CenterlineDofIndicesOfElement(
+    inline void centerline_dof_indices_of_element(
         std::vector<unsigned int>& centerlinedofindices) const override
     {
       centerlinedofindices.resize(12, 0);
@@ -486,8 +486,9 @@ namespace DRT::ELEMENTS
     /** \brief extract values for those Dofs relevant for centerline-interpolation from total
      * state vector
      */
-    inline void ExtractCenterlineDofValuesFromElementStateVector(const std::vector<double>& dofvec,
-        std::vector<double>& dofvec_centerline, bool add_reference_values = false) const override
+    inline void extract_centerline_dof_values_from_element_state_vector(
+        const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
+        bool add_reference_values = false) const override
     {
       if (dofvec.size() != 12)
         FOUR_C_THROW(
@@ -560,7 +561,7 @@ namespace DRT::ELEMENTS
     //! @name Internal calculation methods
 
     //! calculation of nonlinear stiffness and mass matrix
-    void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
+    void calc_internal_and_inertia_forces_and_stiff(Teuchos::ParameterList& params,
         std::vector<double>& vel, std::vector<double>& disp,
         CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
         CORE::LINALG::SerialDenseVector* force);
@@ -574,7 +575,7 @@ namespace DRT::ELEMENTS
 
     //! computes translational damping forces and stiffness
     template <unsigned int nnode, unsigned int vpernode, int ndim>
-    void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+    void evaluate_translational_damping(Teuchos::ParameterList& params,  //!< parameter list
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
         CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -584,7 +585,7 @@ namespace DRT::ELEMENTS
     //! computes stochastic forces and resulting stiffness
     template <unsigned int nnode, unsigned int vpernode, unsigned int ndim,
         unsigned int randompergauss>
-    void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+    void evaluate_stochastic_forces(Teuchos::ParameterList& params,  //!< parameter list
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
         CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
         CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
@@ -594,7 +595,7 @@ namespace DRT::ELEMENTS
      *         fluctuation dissipation
      */
     template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
-    void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+    void calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
         std::vector<double>& vel,                      //!< element velocity vector
         std::vector<double>& disp,                     //!< element displacement vector
         CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix

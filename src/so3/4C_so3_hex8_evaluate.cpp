@@ -67,9 +67,9 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
@@ -461,11 +461,11 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       {
         stressdata = StrParamsInterface().StressDataPtr();
         straindata = StrParamsInterface().StrainDataPtr();
-        plstraindata = StrParamsInterface().PlasticStrainDataPtr();
+        plstraindata = StrParamsInterface().plastic_strain_data_ptr();
 
         iostress = StrParamsInterface().GetStressOutputType();
         iostrain = StrParamsInterface().GetStrainOutputType();
-        ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
+        ioplstrain = StrParamsInterface().get_plastic_strain_output_type();
       }
       else
       {
@@ -534,17 +534,18 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
-          NUMGPT_SOH8);
+      StrParamsInterface()
+          .gauss_point_data_output_manager_ptr()
+          ->add_element_number_of_gauss_points(NUMGPT_SOH8);
 
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
 
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->RegisterOutputDataNames(quantities_map);
+      SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
     }
     break;
     case ELEMENTS::struct_gauss_point_data_output:
@@ -554,7 +555,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().gauss_point_data_output_manager_ptr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -567,26 +568,30 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().gauss_point_data_output_manager_ptr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->get_element_center_data()
+                      .at(quantity_name);
               CORE::FE::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                  StrParamsInterface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
-                      quantity_name);
+                  *StrParamsInterface()
+                       .gauss_point_data_output_manager_ptr()
+                       ->GetNodalDataCount()
+                       .at(quantity_name);
 
               static auto gauss_integration = CORE::FE::IntegrationPoints3D(
                   CORE::FE::NumGaussPointsToGaussRule<CORE::FE::CellType::hex8>(NUMGPT_SOH8));
@@ -598,8 +603,10 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
-                      quantity_name);
+                  StrParamsInterface()
+                      .gauss_point_data_output_manager_ptr()
+                      ->GetGaussPointData()
+                      .at(quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
@@ -901,7 +908,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -1092,7 +1099,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           }
 
           // push-forward invJ for every gaussian point
-          UpdateJacobianMapping(mydisp, *prestress_);
+          update_jacobian_mapping(mydisp, *prestress_);
 
           // Update constraintmixture material
           if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -1274,7 +1281,7 @@ int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
   const auto* val = &condition.parameters().Get<std::vector<double>>("val");
@@ -1547,7 +1554,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
     if (iseas)
     {
       // first, store the eas state of the previous accepted Newton step
-      StrParamsInterface().SumIntoMyPreviousSolNorm(
+      StrParamsInterface().sum_into_my_previous_sol_norm(
           NOX::NLN::StatusTest::quantity_eas, neas_, (*alpha)[0], Owner());
 
       // compute the eas increment
@@ -1967,7 +1974,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
 
       // calculate deformation gradient consistent with modified GL strain tensor
       if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
-        CalcConsistentDefgrd(defgrd, glstrain, defgrd_mod);
+        calc_consistent_defgrd(defgrd, glstrain, defgrd_mod);
 
       const double det_defgrd_mod = defgrd_mod.Determinant();
       if (det_defgrd_mod <= 0.0)
@@ -2145,19 +2152,19 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
         Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
         Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
-      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      soh8_gauss_point_refe_coords(point, xrefe, gp);
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
       point.Clear();
-      soh8_ElementCenterRefeCoords(point, xrefe);
+      soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
 
@@ -2295,7 +2302,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
         stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
       else
       {
-        EvaluateFiniteDifferenceMaterialTangent(stiffmatrix, stress, disp, detJ_w, detJ, detJ0,
+        evaluate_finite_difference_material_tangent(stiffmatrix, stress, disp, detJ_w, detJ, detJ0,
             elediagonallength, bop, cb, N_XYZ, T0invT, M_GP, alpha, M, gp, params);
       }
 
@@ -2757,7 +2764,7 @@ void DRT::ELEMENTS::SoHex8::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoHex8::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
@@ -2830,18 +2837,18 @@ void DRT::ELEMENTS::SoHex8::Update_element(std::vector<double>& disp,
     // center of element in reference configuration
     CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(false);
     point.Clear();
-    soh8_ElementCenterRefeCoords(point, xrefe);
+    soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
-      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      soh8_gauss_point_refe_coords(point, xrefe, gp);
       params.set("gp_coords_ref", point);
       CORE::LINALG::Matrix<3, 8> derivs(false);
       soh8_derivs(derivs, gp);
 
       // Compute deformation gradient
-      UTILS::ComputeDeformationGradient<CORE::FE::CellType::hex8>(
+      UTILS::compute_deformation_gradient<CORE::FE::CellType::hex8>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update
@@ -2932,7 +2939,7 @@ void DRT::ELEMENTS::SoHex8::PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D,
 /*----------------------------------------------------------------------*
  |  Calculate consistent deformation gradient               seitz 04/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+void DRT::ELEMENTS::SoHex8::calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
     CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod) const
 {
   CORE::LINALG::Matrix<3, 3> R;       // rotation tensor
@@ -2987,7 +2994,7 @@ void DRT::ELEMENTS::SoHex8::CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3
  | check the constitutive tensor and/or use the approximation as        |
  | elastic stiffness matrix                                  rauch 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::EvaluateFiniteDifferenceMaterialTangent(
+void DRT::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress, std::vector<double>& disp,
     const double detJ_w, const double detJ, const double detJ0, const double charelelength,
@@ -3117,7 +3124,7 @@ void DRT::ELEMENTS::SoHex8::EvaluateFiniteDifferenceMaterialTangent(
 
       // calculate deformation gradient consistent with modified GL strain tensor
       if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
-        CalcConsistentDefgrd(defgrd_fd, glstrain_fd, defgrd_fd_mod);
+        calc_consistent_defgrd(defgrd_fd, glstrain_fd, defgrd_fd_mod);
     }  // ------------------------------------------------------------------ EAS
 
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat_fd;
@@ -3202,10 +3209,10 @@ void DRT::ELEMENTS::SoHex8::EvaluateFiniteDifferenceMaterialTangent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
-    const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+void DRT::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
+    const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
@@ -3276,9 +3283,10 @@ void DRT::ELEMENTS::SoHex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::
   static CORE::LINALG::Matrix<9, NUMDIM_SOH8> d2_cauchyndir_dF_dn(true);
   static CORE::LINALG::Matrix<9, NUMDIM_SOH8> d2_cauchyndir_dF_ddir(true);
 
-  SolidMaterial()->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
-      d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
-      &d2_cauchyndir_dF_ddir, -1, Id(), concentration, nullptr, nullptr, nullptr);
+  SolidMaterial()->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir,
+      d_cauchyndir_dn, d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2,
+      &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, Id(), concentration, nullptr, nullptr,
+      nullptr);
 
   if (d_cauchyndir_dd)
   {
@@ -3418,7 +3426,7 @@ void DRT::ELEMENTS::SoHex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::
   if (d_cauchyndir_dc != nullptr)
   {
     static CORE::LINALG::Matrix<9, 1> d_F_dc(true);
-    SolidMaterial()->EvaluateLinearizationOD(defgrd, *concentration, &d_F_dc);
+    SolidMaterial()->evaluate_linearization_od(defgrd, *concentration, &d_F_dc);
     *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }

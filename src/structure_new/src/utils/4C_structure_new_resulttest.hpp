@@ -144,7 +144,7 @@ namespace STR
      *  \return  The number of linear iterations, if possible. Otherwise -1.
      *
      */
-    std::optional<int> GetLastLinIterationNumber(
+    std::optional<int> get_last_lin_iteration_number(
         const std::string& quantity, Status& special_status) const;
 
     /** \brief Get the number of nonlinear iterations
@@ -164,10 +164,10 @@ namespace STR
      *  \return  The number of nonlinear iterations, if possible. Otherwise -1.
      *
      *  \author hiermeier \date 11/17 */
-    std::optional<int> GetNlnIterationNumber(
+    std::optional<int> get_nln_iteration_number(
         const std::string& quantity, Status& special_status) const;
 
-    std::optional<int> GetNodesPerProcNumber(
+    std::optional<int> get_nodes_per_proc_number(
         const std::string& quantity, Status& special_status) const;
 
 

@@ -45,7 +45,7 @@ void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const CORE::LINALG::Mat
          0.75 * mue;
 }
 
-void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+void MAT::ELASTIC::CoupSVK::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
@@ -58,7 +58,7 @@ void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& 
   ddPII(0) += 0.5 * mue + 0.25 * lambda;
 }
 
-void MAT::ELASTIC::CoupSVK::AddThirdDerivativesPrincipalIso(
+void MAT::ELASTIC::CoupSVK::add_third_derivatives_principal_iso(
     CORE::LINALG::Matrix<10, 1>& dddPIII_iso, const CORE::LINALG::Matrix<3, 1>& prinv_iso,
     const int gp, const int eleGID)
 {

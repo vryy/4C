@@ -68,7 +68,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
   CORE::LINALG::Matrix<4, 1> funct;
   ShapeFunction(funct, gploc, gploc, gploc, gploc);
   CORE::LINALG::Matrix<4, 4> deriv(true);
-  ShapeFunctionDerivatives(deriv);
+  shape_function_derivatives(deriv);
   CORE::LINALG::Matrix<3, 4> tmp;
   CORE::LINALG::Matrix<4, 3> Iaug;  // initialize to zero
   CORE::LINALG::Matrix<4, 3> partials;
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     partials = 0.0;
     solver.SetMatrix(J);
     solver.SetVectors(partials, Iaug);
-    solver.FactorWithEquilibration(true);
+    solver.factor_with_equilibration(true);
     int err = solver.Factor();
     int err2 = solver.Solve();
     if (err || err2) FOUR_C_THROW("Inversion of Jacobian failed");

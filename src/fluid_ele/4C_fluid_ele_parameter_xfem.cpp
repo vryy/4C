@@ -53,7 +53,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
 //----------------------------------------------------------------------*/
 //    check parameter combination for consistency
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank) const
+void DRT::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency(int myrank) const
 {
   if (visc_adjoint_scaling_ == INPAR::XFEM::adj_sym &&
       coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
 //----------------------------------------------------------------------*/
 //    check parameter combination for consistency
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveragingStrategy(
+void DRT::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_averaging_strategy(
     int myrank, INPAR::XFEM::AveragingStrategy averaging_strategy) const
 {
   // Determine, whether this is an embedded-sided Nitsche-approach
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
   if (isEmbNitsche)
   {
     // check element l
-    if (ViscStabTracEstimate() != INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
+    if (visc_stab_trac_estimate() != INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
     {
       if (ViscStabHK() == INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf or
           ViscStabHK() == INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf)
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
   }
 
   // Consistency Check for EVP and Xfluid-sided Nitsche
-  if (!isEmbNitsche and ViscStabTracEstimate() == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
+  if (!isEmbNitsche and visc_stab_trac_estimate() == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
     FOUR_C_THROW(
         "estimating trace inequality scaling via solving eigenvalue problems not supported for "
         "xfluid-sided Nitsche!");
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
 //----------------------------------------------------------------------*/
 //    set parameters
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
+void DRT::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
     Teuchos::ParameterList& params,  ///< parameter list
     int myrank                       ///< pid (for output purpose)
 )
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   //--------------------------------------------
 
   // finally, perform the consistency check
-  CheckParameterConsistency(myrank);
+  check_parameter_consistency(myrank);
 
   return;
 }

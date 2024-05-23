@@ -27,7 +27,7 @@ FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*
  | redistribute the FPSI interface                           thon 11/14 |
  *----------------------------------------------------------------------*/
-void FPSI::FpsiBase::RedistributeInterface()
+void FPSI::FpsiBase::redistribute_interface()
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
@@ -37,17 +37,17 @@ void FPSI::FpsiBase::RedistributeInterface()
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
   {
     Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap =
-        FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
+        FPSI_UTILS->get_fluid_poro_fluid_interface_map();
     Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap =
-        FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
+        FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid"), problem->GetDis("porofluid"),
+    FPSI_UTILS->redistribute_interface(problem->GetDis("fluid"), problem->GetDis("porofluid"),
         "FPSICoupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("ale"), problem->GetDis("porofluid"),
+    FPSI_UTILS->redistribute_interface(problem->GetDis("ale"), problem->GetDis("porofluid"),
         "FPSICoupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"), problem->GetDis("fluid"),
+    FPSI_UTILS->redistribute_interface(problem->GetDis("porofluid"), problem->GetDis("fluid"),
         "FPSICoupling", *Fluid_PoroFluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"), problem->GetDis("fluid"),
+    FPSI_UTILS->redistribute_interface(problem->GetDis("structure"), problem->GetDis("fluid"),
         "FPSICoupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.

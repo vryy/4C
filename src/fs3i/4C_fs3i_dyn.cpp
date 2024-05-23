@@ -78,7 +78,7 @@ void fs3i_dyn()
   fs3i->ReadRestart();
 
   // if running FPS3I in parallel one needs to redistribute the interface after restarting
-  fs3i->RedistributeInterface();
+  fs3i->redistribute_interface();
 
   // now do the coupling and create combined dofmaps
   fs3i->SetupSystem();

@@ -93,7 +93,7 @@ void STR::TimIntOneStepTheta::Setup()
   if (!HaveNonlinearMass())
   {
     // determine mass, damping and initial accelerations
-    DetermineMassDampConsistAccel();
+    determine_mass_damp_consist_accel();
   }
   else
   {
@@ -143,12 +143,12 @@ void STR::TimIntOneStepTheta::Setup()
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", 1.0);
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D((*time_)[0], (*dis_)(0), fint_, stiff_, pwindk);
+  apply_force_stiff_cardiovascular0_d((*time_)[0], (*dis_)(0), fint_, stiff_, pwindk);
 
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal(
+    apply_force_stiff_internal(
         (*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, params);
   }
   else
@@ -157,10 +157,10 @@ void STR::TimIntOneStepTheta::Setup()
     double timeintfac_vel = theta_ * (*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel,
+    apply_force_stiff_internal_and_inertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel,
         (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_, params);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
+    nonlinear_mass_sanity_check(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
   }
 
   return;
@@ -169,7 +169,7 @@ void STR::TimIntOneStepTheta::Setup()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
+void STR::TimIntOneStepTheta::predict_const_dis_consist_vel_acc()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -197,7 +197,7 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant velocities,
  * extrapolated displacements and consistent accelerations */
-void STR::TimIntOneStepTheta::PredictConstVelConsistAcc()
+void STR::TimIntOneStepTheta::predict_const_vel_consist_acc()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -256,7 +256,7 @@ void STR::TimIntOneStepTheta::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
+void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
 {
   // get info about prediction step from parameter list
   bool predict = false;
@@ -273,7 +273,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -287,7 +287,8 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   if (!HaveNonlinearMass())
   {
     // ordinary internal force and stiffness
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params, damp_);
+    apply_force_stiff_internal(
+        timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params, damp_);
   }
   else
   {
@@ -317,7 +318,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
 
     double timintfac_dis = theta_ * theta_ * (*dt_)[0] * (*dt_)[0];
     double timintfac_vel = theta_ * (*dt_)[0];
-    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_,
+    apply_force_stiff_internal_and_inertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_,
         disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_, params);
   }
 
@@ -325,19 +326,19 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   Teuchos::ParameterList psprdash;
   psprdash.set("time_fac", 1. / (theta_ * (*dt_)[0]));
   psprdash.set("dt", (*dt_)[0]);  // needed only for cursurfnormal option!!
-  ApplyForceStiffSpringDashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
+  apply_force_stiff_spring_dashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
 
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon;
   // constraint matrix has to be scaled with the same value fintn_ is scaled with
   pcon.set("scaleConstrMat", theta_);
-  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
+  apply_force_stiff_constraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // add forces and stiffness due to 0D cardiovascular coupling conditions
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", theta_);
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
+  apply_force_stiff_cardiovascular0_d(timen_, disn_, fintn_, stiff_, pwindk);
 
   // ************************** (3) INERTIAL FORCES ***************************
 
@@ -388,7 +389,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   }
 
   // apply forces and stiffness due to beam contact
-  ApplyForceStiffBeamContact(stiff_, fres_, disn_, predict);
+  apply_force_stiff_beam_contact(stiff_, fres_, disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
   // Note that we ALWAYS use a TR-like approach to compute the interface
@@ -396,7 +397,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // mid-point n+theta, but use a linear combination of the old end-
   // point n and the new end-point n+1 instead:
   // F_{c;n+theta} := theta * F_{c;n+1} +  (1-theta) * F_{c;n}
-  ApplyForceStiffContactMeshtying(stiff_, fres_, disn_, predict);
+  apply_force_stiff_contact_meshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
   stiff_->Complete();
@@ -406,11 +407,11 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
- * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
+ * relaxation solution with solve_relaxation_linear */
+void STR::TimIntOneStepTheta::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-theta_, *fifc_, 0.0);
@@ -418,7 +419,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax(Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /* Evaluate residual */
-void STR::TimIntOneStepTheta::EvaluateForceResidual()
+void STR::TimIntOneStepTheta::evaluate_force_residual()
 {
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -556,7 +557,7 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::UpdateIterIncrementally()
+void STR::TimIntOneStepTheta::update_iter_incrementally()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -575,7 +576,7 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::TimIntOneStepTheta::UpdateIterIteratively()
+void STR::TimIntOneStepTheta::update_iter_iteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -622,19 +623,19 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   finert_->Update(1.0, *finertn_, 0.0);
 
   // update constraints
-  UpdateStepConstraint();
+  update_step_constraint();
 
   // update constraints
-  UpdateStepCardiovascular0D();
+  update_step_cardiovascular0_d();
 
   // update constraints
-  UpdateStepSpringDashpot();
+  update_step_spring_dashpot();
 
   // update contact / meshtying
-  UpdateStepContactMeshtying();
+  update_step_contact_meshtying();
 
   // update beam contact
-  UpdateStepBeamContact();
+  update_step_beam_contact();
 
   // look out
   return;

@@ -131,7 +131,7 @@ namespace PARTICLEENGINE
      * \param[in] step output step
      * \param[in] time output time
      */
-    void WriteParticleRuntimeOutput(const int step, const double time) const;
+    void write_particle_runtime_output(const int step, const double time) const;
 
     /*!
      * \brief free unique global ids
@@ -154,7 +154,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestogetuniquegids particles to get unique global ids
      */
-    void GetUniqueGlobalIdsForAllParticles(
+    void get_unique_global_ids_for_all_particles(
         std::vector<ParticleObjShrdPtr>& particlestogetuniquegids) override;
 
     /*!
@@ -166,7 +166,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void CheckNumberOfUniqueGlobalIds();
+    void check_number_of_unique_global_ids();
 
     /*!
      * \brief erase particles outside bounding box
@@ -178,7 +178,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestocheck particles to be checked if located in bounding box
      */
-    void EraseParticlesOutsideBoundingBox(std::vector<ParticleObjShrdPtr>& particlestocheck);
+    void erase_particles_outside_bounding_box(std::vector<ParticleObjShrdPtr>& particlestocheck);
 
     /*!
      * \brief distribute particles to owning processor
@@ -234,7 +234,7 @@ namespace PARTICLEENGINE
      * \param[in] particlestatestotypes particle types and corresponding particle states to be
      *                                  refreshed
      */
-    void RefreshParticlesOfSpecificStatesAndTypes(
+    void refresh_particles_of_specific_states_and_types(
         const StatesOfTypesToRefresh& particlestatestotypes) const override;
 
     /*!
@@ -246,7 +246,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void DynamicLoadBalancing();
+    void dynamic_load_balancing();
 
     /*!
      * \brief hand over particles to be removed
@@ -262,7 +262,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      */
-    void HandOverParticlesToBeRemoved(std::vector<std::set<int>>& particlestoremove) override;
+    void hand_over_particles_to_be_removed(std::vector<std::set<int>>& particlestoremove) override;
 
     /*!
      * \brief hand over particles to be inserted
@@ -276,7 +276,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void HandOverParticlesToBeInserted(
+    void hand_over_particles_to_be_inserted(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
     /*!
@@ -286,7 +286,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void BuildParticleToParticleNeighbors();
+    void build_particle_to_particle_neighbors();
 
     /*!
      * \brief build global id to local index map
@@ -295,21 +295,21 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 10/2018
      */
-    void BuildGlobalIDToLocalIndexMap();
+    void build_global_id_to_local_index_map();
 
     /*!
      * \brief check for valid particle connectivity
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    bool HaveValidParticleConnectivity() const;
+    bool have_valid_particle_connectivity() const;
 
     /*!
      * \brief check for valid particle neighbors
      *
      * \author Sebastian Fuchs \date 04/2019
      */
-    bool HaveValidParticleNeighbors() const;
+    bool have_valid_particle_neighbors() const;
 
     /*!
      * \brief get binning strategy
@@ -341,7 +341,7 @@ namespace PARTICLEENGINE
      */
     Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
 
-    ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
+    ParticleContainerBundleShrdPtr get_particle_container_bundle() const override
     {
       return particlecontainerbundle_;
     };
@@ -355,16 +355,16 @@ namespace PARTICLEENGINE
      */
     const ParticlesToBins& GetParticlesToBins() const;
 
-    const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
+    const PotentialParticleNeighbors& get_potential_particle_neighbors() const override;
 
-    const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const override
+    const std::vector<std::vector<int>>& get_communicated_particle_targets() const override
     {
       return communicatedparticletargets_;
     };
 
-    LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
+    LocalIndexTupleShrdPtr get_local_index_in_specific_container(int globalid) const override;
 
-    std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
+    std::shared_ptr<IO::DiscretizationWriter> get_bin_discretization_writer() const override;
 
     /*!
      * \brief relate all particles to all processors
@@ -379,7 +379,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlestoproc relate global id of particles to global id of processor
      */
-    void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
+    void relate_all_particles_to_all_procs(std::vector<int>& particlestoproc) const override;
 
     /*!
      * \brief get particles within radius
@@ -395,20 +395,20 @@ namespace PARTICLEENGINE
      * \param[in]  radius               search radius around search point
      * \param[out] neighboringparticles particles within search radius
      */
-    void GetParticlesWithinRadius(const double* position, const double radius,
+    void get_particles_within_radius(const double* position, const double radius,
         std::vector<LocalIndexTuple>& neighboringparticles) const override;
 
     const double* BinSize() const override;
 
     double MinBinSize() const override { return minbinsize_; };
 
-    bool HavePeriodicBoundaryConditions() const override;
+    bool have_periodic_boundary_conditions() const override;
 
-    bool HavePeriodicBoundaryConditionsInSpatialDirection(const int dim) const override;
+    bool have_periodic_boundary_conditions_in_spatial_direction(const int dim) const override;
 
-    double LengthOfBinningDomainInASpatialDirection(const int dim) const override;
+    double length_of_binning_domain_in_a_spatial_direction(const int dim) const override;
 
-    CORE::LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const override;
+    CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries
@@ -423,7 +423,7 @@ namespace PARTICLEENGINE
      * \param[in]  pos_j pointer to position of particle j
      * \param[out] r_ji  vector from particle i to j
      */
-    void DistanceBetweenParticles(
+    void distance_between_particles(
         const double* pos_i, const double* pos_j, double* r_ji) const override;
 
     /*!
@@ -437,9 +437,9 @@ namespace PARTICLEENGINE
      */
     std::shared_ptr<IO::DiscretizationReader> BinDisReader(int restartstep) const;
 
-    int GetNumberOfParticles() const override;
+    int get_number_of_particles() const override;
 
-    int GetNumberOfParticlesOfSpecificType(const ParticleType type) const override;
+    int get_number_of_particles_of_specific_type(const ParticleType type) const override;
 
     /*!
      * \brief write binning discretization output
@@ -470,7 +470,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void SetupBinningStrategy();
+    void setup_binning_strategy();
 
     /*!
      * \brief setup ghosting of bins
@@ -484,7 +484,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void InitParticleContainerBundle();
+    void init_particle_container_bundle();
 
     /*!
      * \brief setup particle container bundle
@@ -493,7 +493,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void SetupParticleContainerBundle(
+    void setup_particle_container_bundle(
         const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes) const;
 
     /*!
@@ -501,14 +501,14 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void InitParticleUniqueGlobalIdHandler();
+    void init_particle_unique_global_id_handler();
 
     /*!
      * \brief setup particle unique global identifier handler
      *
      * \author Sebastian Fuchs \date 11/2019
      */
-    void SetupParticleUniqueGlobalIdHandler() const;
+    void setup_particle_unique_global_id_handler() const;
 
     /*!
      * \brief setup data storage
@@ -525,14 +525,14 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void InitParticleVtpWriter();
+    void init_particle_vtp_writer();
 
     /*!
      * \brief setup particle runtime vtp writer
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void SetupParticleVtpWriter() const;
+    void setup_particle_vtp_writer() const;
 
     /*!
      * \brief setup particle type weights for dynamic load balancing
@@ -557,7 +557,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void DetermineBinDisDependentMapsAndSets();
+    void determine_bin_dis_dependent_maps_and_sets();
 
     /*!
      * \brief determine ghosting dependent maps/sets for communication
@@ -568,7 +568,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void DetermineGhostingDependentMapsAndSets();
+    void determine_ghosting_dependent_maps_and_sets();
 
     /*!
      * \brief relate half neighboring bins to owned bins
@@ -582,7 +582,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 01/2019
      */
-    void RelateHalfNeighboringBinsToOwnedBins();
+    void relate_half_neighboring_bins_to_owned_bins();
 
     //! @}
 
@@ -598,7 +598,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlestoremove particles to be removed from containers
      */
-    void CheckParticlesAtBoundaries(std::vector<std::set<int>>& particlestoremove) const;
+    void check_particles_at_boundaries(std::vector<std::set<int>>& particlestoremove) const;
 
     /*!
      * \brief determine particles that need to be distributed
@@ -611,7 +611,8 @@ namespace PARTICLEENGINE
      * \param[out] particlestosend       particles to be send to other processors
      * \param[out] particlestokeep       particles to be kept at this processor
      */
-    void DetermineParticlesToBeDistributed(std::vector<ParticleObjShrdPtr>& particlestodistribute,
+    void determine_particles_to_be_distributed(
+        std::vector<ParticleObjShrdPtr>& particlestodistribute,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep);
 
@@ -629,7 +630,7 @@ namespace PARTICLEENGINE
      * \param[out] particlestoremove particles to be removed from containers on this processor
      * \param[out] particlestosend   particles to be send to other processors
      */
-    void DetermineParticlesToBeTransfered(std::vector<std::set<int>>& particlestoremove,
+    void determine_particles_to_be_transfered(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend);
 
     /*!
@@ -642,7 +643,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlestosend particles to be send to other processors
      */
-    void DetermineParticlesToBeGhosted(
+    void determine_particles_to_be_ghosted(
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     /*!
@@ -655,7 +656,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlestosend particles to be send to other processors
      */
-    void DetermineParticlesToBeRefreshed(
+    void determine_particles_to_be_refreshed(
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     /*!
@@ -667,7 +668,7 @@ namespace PARTICLEENGINE
      *                                   refreshed
      * \param[out] particlestosend       particles to be send to other processors
      */
-    void DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
+    void determine_specific_states_of_particles_of_specific_types_to_be_refreshed(
         const StatesOfTypesToRefresh& particlestatestotypes,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
@@ -682,7 +683,7 @@ namespace PARTICLEENGINE
      * \param[in]  particlestosend    particles to be send to other processors
      * \param[out] particlestoreceive particles to be received on this processor
      */
-    void CommunicateParticles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
+    void communicate_particles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
 
     /*!
@@ -695,7 +696,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] directghosting direct ghosting information
      */
-    void CommunicateDirectGhostingMap(
+    void communicate_direct_ghosting_map(
         std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
 
     /*!
@@ -705,7 +706,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void InsertOwnedParticles(
+    void insert_owned_particles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert);
 
     /*!
@@ -716,7 +717,7 @@ namespace PARTICLEENGINE
      * \param[in]  particlestoinsert particles to be inserted into containers on this processor
      * \param[out] directghosting    direct ghosting information
      */
-    void InsertGhostedParticles(
+    void insert_ghosted_particles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
         std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
 
@@ -727,7 +728,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    void InsertRefreshedParticles(
+    void insert_refreshed_particles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const;
 
     /*!
@@ -737,28 +738,28 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      */
-    void RemoveParticlesFromContainers(std::vector<std::set<int>>& particlestoremove);
+    void remove_particles_from_containers(std::vector<std::set<int>>& particlestoremove);
 
     /*!
      * \brief store particle positions after transfer of particles
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    void StorePositionsAfterParticleTransfer();
+    void store_positions_after_particle_transfer();
 
     /*!
      * \brief relate owned particles to bins
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void RelateOwnedParticlesToBins();
+    void relate_owned_particles_to_bins();
 
     /*!
      * \brief determine minimum relevant bin size
      *
      * \author Sebastian Fuchs \date 08/2018
      */
-    void DetermineMinRelevantBinSize();
+    void determine_min_relevant_bin_size();
 
     /*!
      * \brief determine bin weights needed for repartitioning
@@ -772,7 +773,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    void InvalidateParticleSafetyFlags();
+    void invalidate_particle_safety_flags();
 
     //! communicator
     const Epetra_Comm& comm_;

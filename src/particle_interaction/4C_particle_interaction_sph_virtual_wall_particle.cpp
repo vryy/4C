@@ -54,7 +54,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall handler
   particlewallinterface_ = particlewallinterface;
@@ -81,11 +81,11 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
       intfluidtypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::InitRelativePositionsOfVirtualParticles(
+void PARTICLEINTERACTION::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles(
     const double maxinteractiondistance)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHVirtualWallParticle::InitRelativePositionsOfVirtualParticles");
+      "PARTICLEINTERACTION::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles");
 
   // clear relative positions of virtual particles
   virtualparticles_.clear();
@@ -120,11 +120,11 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitRelativePositionsOfVirtual
   }
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
+void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_points(
     std::vector<double>& gravity)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints");
+      "PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_points");
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -132,7 +132,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
   // get reference to particle-wall pair data
   const SPHParticleWallPairData& particlewallpairdata =
-      neighborpairs_->GetRefToParticleWallPairData();
+      neighborpairs_->get_ref_to_particle_wall_pair_data();
 
   // get number of particle-wall pairs
   const int numparticlewallpairs = particlewallpairdata.size();
@@ -145,7 +145,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticleWallPairIndices(intfluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_wall_pair_indices(intfluidtypes_, relindices);
 
   // iterate over relevant particle-wall pairs
   for (const int particlewallpairindex : relindices)
@@ -160,7 +160,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
     const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
@@ -189,7 +189,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       ele->LocationVector(
-          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+          *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // acceleration of wall contact point j
@@ -217,7 +217,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
     // get particles within radius
     std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
-    particleengineinterface_->GetParticlesWithinRadius(pos_j, rad_j[0], neighboringparticles);
+    particleengineinterface_->get_particles_within_radius(pos_j, rad_j[0], neighboringparticles);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (not(neighboringparticles.size() > 0))
@@ -244,7 +244,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
 
       // get container of particles of current particle type
       PARTICLEENGINE::ParticleContainer* container_k =
-          particlecontainerbundle_->GetSpecificContainer(type_k, status_k);
+          particlecontainerbundle_->get_specific_container(type_k, status_k);
 
       // get pointer to particle states
       const double* pos_k = container_k->GetPtrToState(PARTICLEENGINE::Position, particle_k);
@@ -256,7 +256,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
       double r_jk[3];
 
       // distance between wall contact point and particle considering periodic boundaries
-      particleengineinterface_->DistanceBetweenParticles(pos_k, pos_j, r_jk);
+      particleengineinterface_->distance_between_particles(pos_k, pos_j, r_jk);
 
       // absolute distance between particles
       const double absdist = UTILS::VecNormTwo(r_jk);

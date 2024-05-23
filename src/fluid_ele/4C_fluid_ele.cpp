@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const int id, const 
 }
 
 
-void DRT::ELEMENTS::FluidType::NodalBlockInformation(
+void DRT::ELEMENTS::FluidType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -69,7 +69,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidType::ComputeNullSpace(
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-void DRT::ELEMENTS::FluidType::SetupElementDefinition(
+void DRT::ELEMENTS::FluidType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["FLUID"];

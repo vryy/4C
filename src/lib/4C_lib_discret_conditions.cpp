@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Build boundary condition geometries (public)             mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BoundaryConditionsGeometry()
+void DRT::Discretization::boundary_conditions_geometry()
 {
   // As a first step we delete ALL references to any conditions
   // in the discretization
@@ -76,16 +76,16 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     //  - surface conditions in 2D
     //  - volume conditions in 3D
     else if ((int)(condition->GType()) == GLOBAL::Problem::Instance()->NDim())
-      havenewelements = BuildVolumesinCondition(name, condition);
+      havenewelements = build_volumesin_condition(name, condition);
     // dimension of condition must not larger than the one of the problem itself
     else if ((int)(condition->GType()) > GLOBAL::Problem::Instance()->NDim())
       FOUR_C_THROW("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
     else if (condition->GType() == CORE::Conditions::geometry_type_line)
-      havenewelements = BuildLinesinCondition(name, condition);
+      havenewelements = build_linesin_condition(name, condition);
     // build a surface element geometry description
     else if (condition->GType() == CORE::Conditions::geometry_type_surface)
-      havenewelements = BuildSurfacesinCondition(name, condition);
+      havenewelements = build_surfacesin_condition(name, condition);
     // this should be it. if not: FOUR_C_THROW.
     else
       FOUR_C_THROW("Somehow the condition geometry does not fit to the problem dimension.");
@@ -230,7 +230,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
-bool DRT::Discretization::BuildLinesinCondition(
+bool DRT::Discretization::build_linesin_condition(
     const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   /* First: Create the line objects that belong to the condition. */
@@ -321,18 +321,18 @@ bool DRT::Discretization::BuildLinesinCondition(
 
   // elements where created that need new unique ids
   bool havenewelements = true;
-  // note: this seems useless since this BuildLinesinCondition always creates
+  // note: this seems useless since this build_linesin_condition always creates
   //       elements. However, this function is overloaded in
   //       MeshfreeDiscretization where it does not necessarily build elements.
   return havenewelements;
 
-}  // DRT::Discretization::BuildLinesinCondition
+}  // DRT::Discretization::build_linesin_condition
 
 
 /*----------------------------------------------------------------------*
  |  Build surface geometry in a condition (public)          rauch 10/16 |
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::BuildSurfacesinCondition(
+bool DRT::Discretization::build_surfacesin_condition(
     const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
@@ -340,17 +340,17 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   // we want to allow building surfaces where two volume elements which belong to
   // the same discretization share a common surface. the condition surface element however,
   // is associated to only one of the two volume elements.
-  // these volume elements are inserted into VolEleIDs via the method FindAssociatedEleIDs.
+  // these volume elements are inserted into VolEleIDs via the method find_associated_ele_i_ds.
   std::set<int> VolEleIDs;
   if (cond->Type() == CORE::Conditions::StructFluidSurfCoupling)
   {
     if ((cond->parameters().Get<std::string>("field")) == "structure")
     {
-      FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
+      find_associated_ele_i_ds(cond, VolEleIDs, "StructFluidVolCoupling");
     }
   }
   else if (cond->Type() == CORE::Conditions::RedAirwayTissue)
-    FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
+    find_associated_ele_i_ds(cond, VolEleIDs, "StructFluidVolCoupling");
 
   /* First: Create the surface objects that belong to the condition. */
 
@@ -550,18 +550,18 @@ bool DRT::Discretization::BuildSurfacesinCondition(
 
   // elements were created that need new unique ids
   bool havenewelements = true;
-  // note: this seems useless since this BuildSurfacesinCondition always
+  // note: this seems useless since this build_surfacesin_condition always
   //       creates elements. However, this function is overloaded in
   //       MeshfreeDiscretization where it does not necessarily build elements.
   return havenewelements;
 
-}  // DRT::Discretization::BuildSurfacesinCondition
+}  // DRT::Discretization::build_surfacesin_condition
 
 
 /*----------------------------------------------------------------------*
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::BuildVolumesinCondition(
+bool DRT::Discretization::build_volumesin_condition(
     const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
@@ -605,13 +605,13 @@ bool DRT::Discretization::BuildVolumesinCondition(
 
   // no elements where created to assign new unique ids to
   return false;
-}  // DRT::Discretization::BuildVolumesinCondition
+}  // DRT::Discretization::build_volumesin_condition
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<CORE::Conditions::Condition> cond,
+void DRT::Discretization::find_associated_ele_i_ds(Teuchos::RCP<CORE::Conditions::Condition> cond,
     std::set<int>& VolEleIDs, const std::string& name)
 {
   // determine constraint number
@@ -659,6 +659,6 @@ void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<CORE::Conditions::Co
       }
     }
   }
-}  // DRT::Discretization::FindAssociatedEleIDs
+}  // DRT::Discretization::find_associated_ele_i_ds
 
 FOUR_C_NAMESPACE_CLOSE

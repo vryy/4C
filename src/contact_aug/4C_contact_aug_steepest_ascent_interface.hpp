@@ -46,8 +46,8 @@ namespace CONTACT
             bool selfcontact);
 
        protected:
-        Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy()
-            override;
+        Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
+        create_node_based_assemble_strategy() override;
 
       };  // class Interface
 
@@ -76,7 +76,7 @@ namespace CONTACT
           void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;
 
           /// derived
-          void AssembleDGGLinMatrix(
+          void assemble_dgg_lin_matrix(
               CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
         };
 

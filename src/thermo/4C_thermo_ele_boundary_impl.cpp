@@ -187,7 +187,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
-    IntegrateShapeFunctions(ele, params, elevec1_epetra, addarea);
+    integrate_shape_functions(ele, params, elevec1_epetra, addarea);
   }
 
   // surface heat transfer boundary condition q^_c = h (T - T_infty)
@@ -304,9 +304,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
     if (kintype == INPAR::STR::KinemType::linear)  // geo_linear
     {
       // and now check if there is a convection heat transfer boundary condition
-      CalculateConvectionFintCond(ele,  // current boundary element
-          &etang,                       // element-matrix
-          &efext,                       // element-rhs
+      calculate_convection_fint_cond(ele,  // current boundary element
+          &etang,                          // element-matrix
+          &efext,                          // element-rhs
           coeff, surtemp, *tempstate);
     }  // geo_linear
 
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
         CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
-        CalculateNlnConvectionFintCond(ele,  // current boundary element
+        calculate_nln_convection_fint_cond(ele,  // current boundary element
             mydisp,
             &etang,   // element-matrix k_TT
             nullptr,  // coupling matrix k_Td
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::Th
         CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
-        CalculateNlnConvectionFintCond(ele,  // current boundary element
+        calculate_nln_convection_fint_cond(ele,  // current boundary element
             mydisp,
             nullptr,      // element-matrix k_TT
             &etangcoupl,  // coupling matrix k_Td
@@ -614,7 +614,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Eleme
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // output of function: fac_ =  detJ * w(gp)
-    EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -667,7 +667,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Eleme
  | evaluate a convective thermo boundary condition          dano 12/10 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
     const DRT::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
     const std::string& tempstate)
@@ -682,8 +682,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
   for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
   {
     // output of function: fac_ = detJ * w(gp)
-    EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id());
-    // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    // fac_ = Gauss weight * det(J) is calculated in eval_shape_func_and_int_fac()
 
     // ------------right-hand-side
     // q . n = h ( T - T_sur )
@@ -742,14 +742,14 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
 
   return;
 
-}  // CalculateConvectionFintCond()
+}  // calculate_convection_fint_cond()
 
 
 /*----------------------------------------------------------------------*
  | evaluate a convective thermo boundary condition          dano 11/12 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_cond(
     const DRT::Element* ele,
     const std::vector<double>& disp,  // current displacements
     CORE::LINALG::Matrix<nen_, nen_>* econd,
@@ -798,8 +798,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // output of function: fac_ = detJ * w(gp)
     // allocate vector for shape functions (funct_) and matrix for derivatives
     // (deriv_) for boundary element
-    EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id());
-    // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    // fac_ = Gauss weight * det(J) is calculated in eval_shape_func_and_int_fac()
 
     // calculate the current normal vector normal and the area
     CORE::LINALG::Matrix<nsd_ + 1, 1> normal;  // (3x1)
@@ -940,14 +940,14 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 
   return;
 
-}  // CalculateNlnConvectionFintCond()
+}  // calculate_nln_convection_fint_cond()
 
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac(
     const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  // integration points
     const int& iquad,                                      // id of current Gauss point
     const int& eleid                                       // the element id
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // say goodbye
   return;
-}  // EvalShapeFuncAndIntFac()
+}  // eval_shape_func_and_int_fac()
 
 
 /*----------------------------------------------------------------------*
@@ -1043,7 +1043,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
  | integrate shapefunctions over surface (private)            gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(const DRT::Element* ele,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
 {
   // access boundary area variable with its actual value
@@ -1059,7 +1059,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
   {
-    EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
 
     // compute integral of shape functions
     for (int node = 0; node < nen_; ++node)
@@ -1083,7 +1083,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
 
   return;
 
-}  // IntegrateShapeFunction()
+}  // integrate_shape_function()
 
 
 /*----------------------------------------------------------------------*
@@ -1174,7 +1174,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
   myknots_.resize(2);
 
   const auto* faceele = dynamic_cast<const DRT::FaceElement*>(ele);
-  (*nurbsdis).GetKnotVector()->GetBoundaryEleAndParentKnots(parentknots, myknots_, normalfac_,
+  (*nurbsdis).GetKnotVector()->get_boundary_ele_and_parent_knots(parentknots, myknots_, normalfac_,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
   // get weights from cp's

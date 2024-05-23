@@ -76,7 +76,7 @@ namespace CONTACT
       void Setup();
 
       /// set active and inactive Lagrange multiplier state vectors
-      void SetActiveInactiveState();
+      void set_active_inactive_state();
 
       /// compute the contact potential terms
       void Compute();
@@ -139,10 +139,10 @@ namespace CONTACT
           enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const;
 
       /// return active contributions for the linear Lagrangian model
-      double GetActiveLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const;
+      double get_active_lagrangian_lin(const enum POTENTIAL::LinTerm lin_term) const;
 
       /// return inactive contributions for the linear Lagrangian model
-      double GetInactiveLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const;
+      double get_inactive_lagrangian_lin(const enum POTENTIAL::LinTerm lin_term) const;
 
       /// @}
 
@@ -150,17 +150,17 @@ namespace CONTACT
       /// @{
 
       /// return the augmented Lagrangian constraint part belonging to \c pot_set
-      double GetAugmentedLagrangian(enum POTENTIAL::SetType pot_set) const;
+      double get_augmented_lagrangian(enum POTENTIAL::SetType pot_set) const;
 
       /// return contributions for the linear augmented Lagrangian model
-      double GetAugmentedLagrangianLin(
+      double get_augmented_lagrangian_lin(
           enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const;
 
       /// return active contributions for the linear aug. Lagrangian model
-      double GetActiveAugmentedLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const;
+      double get_active_augmented_lagrangian_lin(const enum POTENTIAL::LinTerm lin_term) const;
 
       /// return inactive contributions for the linear aug. Lagrangian model
-      double GetInactiveAugmentedLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const;
+      double get_inactive_augmented_lagrangian_lin(const enum POTENTIAL::LinTerm lin_term) const;
 
       /// @}
 
@@ -168,17 +168,17 @@ namespace CONTACT
       /// @{
 
       /// return the infeasibility function value belonging to \c pot_set
-      double GetInfeasibilityMeasure(enum POTENTIAL::SetType pot_set) const;
+      double get_infeasibility_measure(enum POTENTIAL::SetType pot_set) const;
 
       /// return contributions for the linear infeasibility model
-      double GetInfeasibilityMeasureLin(
+      double get_infeasibility_measure_lin(
           enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const;
 
       /// return active contributions for the linear infeasibility model
-      double GetActiveInfeasibilityMeasureLin(enum POTENTIAL::LinTerm lin_term) const;
+      double get_active_infeasibility_measure_lin(enum POTENTIAL::LinTerm lin_term) const;
 
       /// return inactive contributions for the linear infeasibility model
-      double GetInactiveInfeasibilityMeasureLin(enum POTENTIAL::LinTerm lin_term) const;
+      double get_inactive_infeasibility_measure_lin(enum POTENTIAL::LinTerm lin_term) const;
 
       /// @}
 
@@ -192,7 +192,7 @@ namespace CONTACT
       double TimeIntScaleNp(const double static_part) const;
 
       /// return the time integration coefficient corresponding to \f$t_{n}\f$
-      double GetTimeIntegrationFactor() const;
+      double get_time_integration_factor() const;
 
      private:
       /// container for all isvalid flags

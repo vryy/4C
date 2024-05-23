@@ -94,8 +94,8 @@ void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::Element& slave_ele,
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> d_slave_normal_dd(0, 0);
   std::vector<CORE::GEN::Pairedvector<int, double>> d_master_normal_dd(0, 0);
-  slave_ele.ComputeUnitNormalAtXi(slave_xi, slave_normal.A());
-  master_ele.ComputeUnitNormalAtXi(master_xi, master_normal.A());
+  slave_ele.compute_unit_normal_at_xi(slave_xi, slave_normal.A());
+  master_ele.compute_unit_normal_at_xi(master_xi, master_normal.A());
   slave_ele.DerivUnitNormalAtXi(slave_xi, d_slave_normal_dd);
   master_ele.DerivUnitNormalAtXi(master_xi, d_master_normal_dd);
 
@@ -142,7 +142,7 @@ void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::Element& slave_ele,
     }
 
     // integrate the scatra-scatra interface condition
-    IntegrateSSIInterfaceCondition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
+    integrate_ssi_interface_condition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
         master_ele, master_shape, master_shape_deriv, d_master_xi_dd, cauchy_nn_average_pen_gap,
         d_cauchy_nn_weighted_average_dd, d_cauchy_nn_weighted_average_ds, jac, d_jac_dd, gp_wgt);
   }
@@ -200,9 +200,10 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_el
   if (mortar_ele.MoData().ParentScalar().empty())
   {
     dynamic_cast<DRT::ELEMENTS::SoBase*>(mortar_ele.ParentElement())
-        ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(), gp_normal,
-            test_dir, sigma_nt, &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn,
-            &d_sigma_nt_dt, &d_sigma_nt_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+        ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr,
+            &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi, nullptr, nullptr, nullptr, nullptr,
+            nullptr);
   }
   else
   {
@@ -212,7 +213,7 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_el
       {
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
@@ -221,7 +222,7 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_el
       {
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->get_cauchy_n_dir_and_derivatives_at_xi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
@@ -298,7 +299,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateTest(const double fac, MORTAR::Elem
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::SetupGpConcentrations(MORTAR::Element& ele,
+void CONTACT::IntegratorNitscheSsi::setup_gp_concentrations(MORTAR::Element& ele,
     const CORE::LINALG::SerialDenseVector& shape_func,
     const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double& gp_conc,
@@ -338,7 +339,7 @@ void CONTACT::IntegratorNitscheSsi::SetupGpConcentrations(MORTAR::Element& ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Element& slave_ele,
+void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(MORTAR::Element& slave_ele,
     const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
@@ -359,13 +360,13 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Eleme
   double slave_conc(0.0), master_conc(0.0);
   CORE::GEN::Pairedvector<int, double> d_slave_conc_dc(0), d_master_conc_dc(0), d_slave_conc_dd(0),
       d_master_conc_dd(0);
-  SetupGpConcentrations<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, slave_conc,
+  setup_gp_concentrations<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, slave_conc,
       d_slave_conc_dc, d_slave_conc_dd);
-  SetupGpConcentrations<dim>(master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
+  setup_gp_concentrations<dim>(master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
       master_conc, d_master_conc_dc, d_master_conc_dd);
 
   // get the scatra-scatra interface condition kinetic model
-  const int kinetic_model = GetScaTraEleParameterBoundary()->KineticModel();
+  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->KineticModel();
 
   double flux;
   CORE::GEN::Pairedvector<int, double> dflux_dd;
@@ -376,7 +377,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Eleme
   {
     case INPAR::S2I::kinetics_constperm:
     {
-      const double permeability = (*GetScaTraEleParameterBoundary()->Permeabilities())[0];
+      const double permeability = (*get_sca_tra_ele_parameter_boundary()->Permeabilities())[0];
 
       // calculate the interface flux
       flux = permeability * (slave_conc - master_conc);
@@ -395,7 +396,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Eleme
     }
     case INPAR::S2I::kinetics_linearperm:
     {
-      const double permeability = (*GetScaTraEleParameterBoundary()->Permeabilities())[0];
+      const double permeability = (*get_sca_tra_ele_parameter_boundary()->Permeabilities())[0];
 
       // calculate the interface flux
       // the minus sign is to obtain the absolute value of the contact forces
@@ -459,8 +460,8 @@ void CONTACT::IntegratorNitscheSsi::IntegrateScaTraTest(const double fac, MORTAR
     const CORE::GEN::Pairedvector<int, double>& d_test_val_ds)
 {
   // get time integration factors
-  const double time_fac = GetScaTraEleParameterTimInt()->TimeFac();
-  const double time_fac_rhs = GetScaTraEleParameterTimInt()->TimeFacRhs();
+  const double time_fac = get_sca_tra_ele_parameter_tim_int()->TimeFac();
+  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->TimeFacRhs();
 
   const double val = fac * jac * wgt * test_val;
 

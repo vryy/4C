@@ -40,13 +40,13 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   // perform structural meshtying
-  if (ssi_part_->SSIInterfaceMeshtying())
+  if (ssi_part_->ssi_interface_meshtying())
   {
     // cast old Jacobian
     auto& jac_sparse = dynamic_cast<CORE::LINALG::SparseMatrix&>(jac);
 
-    auto map_structure_interior = ssi_part_->SSIStructureMeshTying()->InteriorMap();
-    auto cond_master_dof_map = ssi_part_->SSIStructureMeshTying()->FullMasterSideMap();
+    auto map_structure_interior = ssi_part_->ssi_structure_mesh_tying()->InteriorMap();
+    auto cond_master_dof_map = ssi_part_->ssi_structure_mesh_tying()->FullMasterSideMap();
 
     // initialize new Jacobian
     CORE::LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
@@ -67,7 +67,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     CORE::LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
         *cond_master_dof_map, 1.0, nullptr, nullptr, jac_new, true, true);
 
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
     {
       auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
       auto converter = meshtying->SlaveSideConverter();
@@ -92,7 +92,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
       CORE::LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      for (const auto& meshtying2 : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
+      for (const auto& meshtying2 : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
       {
         auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
         auto converter2 = meshtying2->SlaveSideConverter();
@@ -103,7 +103,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
       }
     }
 
-    auto slavemaps = ssi_part_->SSIStructureMeshTying()->FullSlaveSideMap();
+    auto slavemaps = ssi_part_->ssi_structure_mesh_tying()->FullSlaveSideMap();
 
     // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize
     // structural meshtying
@@ -123,11 +123,11 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
   // perform structural meshtying
-  if (ssi_part_->SSIInterfaceMeshtying())
+  if (ssi_part_->ssi_interface_meshtying())
   {
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
     {
-      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+      auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // transform and assemble master-side part of structural increment vector to slave side
       coupling_map_extractor->InsertVector(
@@ -156,11 +156,11 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // perform structural meshtying
-  if (ssi_part_->SSIInterfaceMeshtying() and ssi_part_->IsSetup())
+  if (ssi_part_->ssi_interface_meshtying() and ssi_part_->IsSetup())
   {
-    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
     {
-      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+      auto coupling_map_extractor = meshtying->slave_master_extractor();
       // transform and assemble slave-side part of structural right-hand side vector to master side
       coupling_map_extractor->AddVector(*meshtying->SlaveMasterCoupling()->SlaveToMaster(
                                             coupling_map_extractor->ExtractVector(f, 1)),

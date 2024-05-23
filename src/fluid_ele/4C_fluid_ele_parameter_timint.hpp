@@ -38,11 +38,11 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! time parameter are set
-      void SetElementTimeParameter(Teuchos::ParameterList& params  //> parameter list
+      void set_element_time_parameter(Teuchos::ParameterList& params  //> parameter list
       );
 
       //! print parameter to screen
-      void PrintFluidTimeParameter();
+      void print_fluid_time_parameter();
 
       //! flag to (de)activate generalized-alpha time-integration scheme
       bool IsGenalpha() { return is_genalpha_; };
@@ -55,13 +55,13 @@ namespace DRT
       bool IsOneStepTheta() { return is_one_step_theta_; };
       //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq
       //! accordingly)
-      bool IsFullImplPressureAndCont() const { return is_cont_impl_press_impl_; };
+      bool is_full_impl_pressure_and_cont() const { return is_cont_impl_press_impl_; };
       //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq
       //! accordingly)
       bool IsImplPressure() const { return is_cont_impl_press_normal_; };
 
       //! flag for new or old implementation. WILL BE REMOVED!
-      bool IsNewOSTImplementation() const { return ostnew_; };
+      bool is_new_ost_implementation() const { return ostnew_; };
 
       /// parameters for the time integration
       //! time algorithm

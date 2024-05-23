@@ -175,10 +175,10 @@ namespace STR
       Teuchos::RCP<std::vector<char>>& StrainDataPtr() override;
 
       //! mutable access to the plastic strain data vector
-      Teuchos::RCP<std::vector<char>>& PlasticStrainDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() override;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& CouplingStressDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() override;
 
       //! mutable access to the optional quantity data vector
       Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() override;
@@ -190,19 +190,19 @@ namespace STR
       [[nodiscard]] enum INPAR::STR::StrainType GetStrainOutputType() const override;
 
       //! get the current plastic strain type [derived]
-      [[nodiscard]] enum INPAR::STR::StrainType GetPlasticStrainOutputType() const override;
+      [[nodiscard]] enum INPAR::STR::StrainType get_plastic_strain_output_type() const override;
 
       //! get the current coupling stress type [derived]
-      [[nodiscard]] enum INPAR::STR::StressType GetCouplingStressOutputType() const override;
+      [[nodiscard]] enum INPAR::STR::StressType get_coupling_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      virtual enum INPAR::STR::OptQuantityType GetOptQuantityOutputType() const;
+      virtual enum INPAR::STR::OptQuantityType get_opt_quantity_output_type() const;
 
       //< get the manager of Gauss point data output
-      Teuchos::RCP<GaussPointDataOutputManager>& GaussPointDataOutputManagerPtr() override;
+      Teuchos::RCP<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
 
       //! register energy type to be computed and written to file
-      void InsertEnergyTypeToBeConsidered(enum STR::EnergyType type);
+      void insert_energy_type_to_be_considered(enum STR::EnergyType type);
 
       //! read-only access to energy data
       std::map<enum STR::EnergyType, double> const& GetEnergyData() const;
@@ -214,22 +214,22 @@ namespace STR
       double GetEnergyData(const std::string type) const;
 
       //! set value for a specific energy type
-      void SetValueForEnergyType(double value, enum STR::EnergyType type);
+      void set_value_for_energy_type(double value, enum STR::EnergyType type);
 
       //! clear values for all energy types
-      void ClearValuesForAllEnergyTypes();
+      void clear_values_for_all_energy_types();
 
       /*! \brief Add contribution to energy of specified type [derived]
        *
        * @param value Value to be added
        * @param type Type of energy to be added to
        */
-      void AddContributionToEnergyType(
+      void add_contribution_to_energy_type(
           const double value, const enum STR::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
-      [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface()
-          const override
+      [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface>
+      get_brownian_dyn_param_interface() const override
       {
         CheckInitSetup();
         return browniandyn_data_ptr_;
@@ -237,7 +237,7 @@ namespace STR
 
       //! get special parameter interface for beam elements [derived]
       [[nodiscard]] inline Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
-      GetBeamParamsInterfacePtr() const override
+      get_beam_params_interface_ptr() const override
       {
         FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return beam_data_ptr_;
@@ -262,7 +262,7 @@ namespace STR
       }
 
       /// get number of system modifications in case of a mod. Newton direction method
-      int GetNumberOfModifiedNewtonCorrections() const
+      int get_number_of_modified_newton_corrections() const
       {
         CheckInitSetup();
         return num_corr_mod_newton_;
@@ -298,7 +298,7 @@ namespace STR
        * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
        *                  entries)
        *
-       * \sa SumIntoMyPreviousSolNorm
+       * \sa sum_into_my_previous_sol_norm
        */
       void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
@@ -314,7 +314,7 @@ namespace STR
        *
        * \sa SumIntoMyUpdateNorm
        */
-      void SumIntoMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      void sum_into_my_previous_sol_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_old_sol_values, const int& owner) override;
 
       //!@}
@@ -361,7 +361,8 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline double GetMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+      inline double get_my_previous_sol_norm(
+          const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
         std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
@@ -386,7 +387,7 @@ namespace STR
         static bool iscollected = false;
         if (not iscollected)
         {
-          CollectNormTypesOverAllProcs(normtype_update_);
+          collect_norm_types_over_all_procs(normtype_update_);
           iscollected = true;
         }
 
@@ -468,7 +469,7 @@ namespace STR
       }
 
       /// set the number of system corrections in case of a mod. Newton direction method
-      inline void SetNumberOfModifiedNewtonCorrections(const int num_corr)
+      inline void set_number_of_modified_newton_corrections(const int num_corr)
       {
         num_corr_mod_newton_ = num_corr;
       }
@@ -514,15 +515,15 @@ namespace STR
        *
        * \param data_manager Manager of gauss point data output
        */
-      inline void SetGaussPointDataOutputManagerPtr(
+      inline void set_gauss_point_data_output_manager_ptr(
           const Teuchos::RCP<GaussPointDataOutputManager> data_manager)
       {
         gauss_point_data_manager_ptr_ = data_manager;
       }
 
       /// Return constant manager of gauss point data output
-      inline const Teuchos::RCP<GaussPointDataOutputManager>& GetGaussPointDataOutputManagerPtr()
-          const
+      inline const Teuchos::RCP<GaussPointDataOutputManager>&
+      get_gauss_point_data_output_manager_ptr() const
       {
         CheckInitSetup();
         return gauss_point_data_manager_ptr_;
@@ -535,37 +536,37 @@ namespace STR
       }
 
       //! get nodal postprocessed stress data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessed() const
+      inline const Teuchos::RCP<Epetra_MultiVector>& get_stress_data_node_postprocessed() const
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessed()
+      inline Teuchos::RCP<Epetra_MultiVector>& get_stress_data_node_postprocessed()
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessed() const
+      inline const Teuchos::RCP<Epetra_MultiVector>& get_stress_data_element_postprocessed() const
       {
         return stressdata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessed()
+      inline Teuchos::RCP<Epetra_MultiVector>& get_stress_data_element_postprocessed()
       {
         return stressdata_postprocessed_element_ptr_;
       }
 
       //! set element volume data vector
-      inline void SetElementVolumeData(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
+      inline void set_element_volume_data(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
       {
         elevolumes_ptr_ = ele_volumes;
       }
 
       //! set stress data vector
-      inline void SetCouplingStressData(const Teuchos::RCP<std::vector<char>>& couplstressdata)
+      inline void set_coupling_stress_data(const Teuchos::RCP<std::vector<char>>& couplstressdata)
       {
         couplstressdata_ptr_ = couplstressdata;
       }
@@ -583,31 +584,31 @@ namespace STR
       }
 
       //! get nodal postprocessed strain data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessed() const
+      inline const Teuchos::RCP<Epetra_MultiVector>& get_strain_data_node_postprocessed() const
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessed()
+      inline Teuchos::RCP<Epetra_MultiVector>& get_strain_data_node_postprocessed()
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessed() const
+      inline const Teuchos::RCP<Epetra_MultiVector>& get_strain_data_element_postprocessed() const
       {
         return straindata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessed()
+      inline Teuchos::RCP<Epetra_MultiVector>& get_strain_data_element_postprocessed()
       {
         return straindata_postprocessed_element_ptr_;
       }
 
       //! set plastic strain data vector
-      inline void SetPlasticStrainData(const Teuchos::RCP<std::vector<char>>& plastic_straindata)
+      inline void set_plastic_strain_data(const Teuchos::RCP<std::vector<char>>& plastic_straindata)
       {
         plastic_straindata_ptr_ = plastic_straindata;
       }
@@ -625,7 +626,7 @@ namespace STR
       void ResetMyNorms(const bool& isdefaultstep);
 
       //! return element volume data vector (read-only)
-      const Epetra_Vector& CurrentElementVolumeData() const;
+      const Epetra_Vector& current_element_volume_data() const;
 
       //! return the stress data (read-only)
       const std::vector<char>& StressData() const;
@@ -801,11 +802,11 @@ namespace STR
        * \param[in] my_new_sol_values Local part of the already updated solution vector
        * \param[in/out] my_rms Root mean squared norm (to be summed into)
        */
-      void SumIntoMyRelativeMeanSquare(const double& atol, const double& rtol,
+      void sum_into_my_relative_mean_square(const double& atol, const double& rtol,
           const double& step_length, const int& numentries, const double* my_update_values,
           const double* my_new_sol_values, double& my_rms) const;
 
-      void CollectNormTypesOverAllProcs(const quantity_norm_type_map& normtypes) const;
+      void collect_norm_types_over_all_procs(const quantity_norm_type_map& normtypes) const;
 
      private:
       //! indicator if the Init() routine has been called, yet.
@@ -1124,10 +1125,10 @@ namespace STR
       }
 
       /// derived
-      int GetNumberOfModifiedNewtonCorrections() const override
+      int get_number_of_modified_newton_corrections() const override
       {
         CheckInit();
-        return str_data_ptr_->GetNumberOfModifiedNewtonCorrections();
+        return str_data_ptr_->get_number_of_modified_newton_corrections();
       }
 
       /*! \brief Get the current active predictor type
@@ -1182,14 +1183,14 @@ namespace STR
       [[nodiscard]] std::string GetOutputFilePath() const override;
 
       //! get variational approach enumerator
-      [[nodiscard]] enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType()
+      [[nodiscard]] enum INPAR::CONTACT::VariationalApproach get_variational_approach_type()
           const override
       {
         return var_type_;
       }
 
       //! set variational approach enumerator
-      void SetVariationalApproachType(
+      void set_variational_approach_type(
           const enum INPAR::CONTACT::VariationalApproach var_type) override
       {
         var_type_ = var_type;
@@ -1320,7 +1321,7 @@ namespace STR
       };
 
       //! get specified time curve number of imposed Dirichlet BCs
-      void ResizeRandomForceMVector(
+      void resize_random_force_m_vector(
           Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
@@ -1338,7 +1339,7 @@ namespace STR
       };
 
       /// thermal energy
-      double const& TimeStepConstRandNumb() const
+      double const& time_step_const_rand_numb() const
       {
         CheckInitSetup();
         return timeintconstrandnumb_;
@@ -1363,26 +1364,26 @@ namespace STR
 
       /// the way how damping coefficient values for beams are specified
       [[nodiscard]] INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
-      HowBeamDampingCoefficientsAreSpecified() const override
+      how_beam_damping_coefficients_are_specified() const override
       {
         CheckInitSetup();
         return beam_damping_coeff_specified_via_;
       }
 
       /// get prefactors for damping coefficients of beams if they are specified via input file
-      [[nodiscard]] std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile()
-          const override
+      [[nodiscard]] std::vector<double> const&
+      get_beam_damping_coefficient_prefactors_from_input_file() const override
       {
         CheckInitSetup();
         return beams_damping_coefficient_prefactors_perunitlength_;
       };
 
       //! get vector holding periodic bounding box object
-      [[nodiscard]] Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox()
-          const override
+      [[nodiscard]] Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&
+      get_periodic_bounding_box() const override
       {
         CheckInitSetup();
-        return str_data_ptr_->SDyn().GetPeriodicBoundingBox();
+        return str_data_ptr_->SDyn().get_periodic_bounding_box();
       }
       //! @}
 

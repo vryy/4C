@@ -150,7 +150,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasSetup()
  |  Defgrd consistent with enhanced GL strain (private)     seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::CalcConsistentDefgrd()
+void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
 {
   static CORE::LINALG::Matrix<numstr_, 1> glstrain_mod(false);
   glstrain_mod(0) = 0.5 * (RCG()(0, 0) - 1.0);
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasEnhanceStrains()
   SetRCG()(0, 2) = SetRCG()(2, 0) = total_glstrain(5);
 
   // calculate deformation gradient consistent with modified GL strain tensor
-  CalcConsistentDefgrd();
+  calc_consistent_defgrd();
 }
 
 template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>;

@@ -52,12 +52,12 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
   }
 }
 
-void XFEM::XfaCouplingManager::PredictCouplingStates()
+void XFEM::XfaCouplingManager::predict_coupling_states()
 {
   /*
     if (Ale_Struct_coupling_ != Teuchos::null)
     {
-      std::cout << "XFEM::XFACoupling_Manager::PredictCouplingStates"<< std::endl;
+      std::cout << "XFEM::XFACoupling_Manager::predict_coupling_states"<< std::endl;
 
       //-------------------------------------------
       // Perform a 1st predictor to the ALE field (required, otherwise relaxation solve is bad
@@ -103,7 +103,7 @@ void XFEM::XfaCouplingManager::SetCouplingStates()
   xfluid_->UpdateGridv();
 
   // update also ALE vectors w.r.t. current state
-  xfluid_->UpdateALEStateVectors();
+  xfluid_->update_ale_state_vectors();
 
   return;
 }

@@ -77,7 +77,7 @@ namespace PARTICLERIGIDBODY
      *
      * \return rigid body data state container
      */
-    virtual std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState()
+    virtual std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> get_rigid_body_data_state()
         const = 0;
 
     /*!

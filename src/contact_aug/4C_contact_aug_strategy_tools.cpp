@@ -39,7 +39,8 @@ void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
     first_attempt = false;
   }
 
-  FD_Debug::Instance(this)->Evaluate(Data().DLmNWGapLinMatrixPtr(), Data().WGapPtr(), cparams);
+  FD_Debug::Instance(this)->Evaluate(
+      Data().d_lm_nw_gap_lin_matrix_ptr(), Data().WGapPtr(), cparams);
 #endif
 
   /*---------------------------------*

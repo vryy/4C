@@ -59,7 +59,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! init boundary particle states
-    virtual void InitBoundaryParticleStates(std::vector<double>& gravity) = 0;
+    virtual void init_boundary_particle_states(std::vector<double>& gravity) = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -93,7 +93,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! init boundary particle states
-    void InitBoundaryParticleStates(std::vector<double>& gravity) override;
+    void init_boundary_particle_states(std::vector<double>& gravity) override;
 
    private:
     //! modified states of ghosted boundary particles to refresh

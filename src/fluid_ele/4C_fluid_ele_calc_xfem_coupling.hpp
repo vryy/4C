@@ -71,7 +71,7 @@ namespace DRT
         );
 
         //! create a pure coupling slave element representation
-        static Teuchos::RCP<SlaveElementInterface<distype>> CreateSlaveElementRepresentation(
+        static Teuchos::RCP<SlaveElementInterface<distype>> create_slave_element_representation(
             DRT::Element* slave_ele,  ///< coupling slave element
             CORE::LINALG::SerialDenseMatrix&
                 slave_xyz  ///< global node coordinates of coupling slave element
@@ -158,7 +158,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void GetInterfaceVelGradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
+        virtual void get_interface_vel_gradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -166,7 +166,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void GetInterfaceVelGradn(CORE::LINALG::Matrix<nsd_, nsd_>&
+        virtual void get_interface_vel_gradn(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -174,7 +174,7 @@ namespace DRT
         };
 
         //! set state for interface velocity jump
-        virtual void SetInterfaceJumpStatenp(
+        virtual void set_interface_jump_statenp(
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
@@ -184,7 +184,7 @@ namespace DRT
         };
 
         //! set state for interface velocity jump for previous time step
-        virtual void SetInterfaceJumpStaten(
+        virtual void set_interface_jump_staten(
             const DRT::Discretization& cutterdis,  ///< cutter discretization
             const std::string state,               ///< state
             const std::vector<int>& lm             ///< local map
@@ -194,7 +194,7 @@ namespace DRT
         };
 
         //! get interface velocity jump at Gaussian point
-        virtual void GetInterfaceJumpVelnp(
+        virtual void get_interface_jump_velnp(
             CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                          ///< or prescribed DBC at Gaussian point
         ) const
@@ -203,7 +203,7 @@ namespace DRT
         };
 
         //! get interface velocity jump at Gaussian point for previous time step
-        virtual void GetInterfaceJumpVeln(CORE::LINALG::Matrix<nsd_, 1>&
+        virtual void get_interface_jump_veln(CORE::LINALG::Matrix<nsd_, 1>&
                 ivelintn_jump  ///< cutter element interface velocity jump or
                                ///< prescribed DBC at Gaussian point
         ) const
@@ -229,7 +229,7 @@ namespace DRT
         }
 
         //! compute interface force for side nodes
-        virtual void ComputeInterfaceForce(
+        virtual void compute_interface_force(
             CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
             CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
             const double& fac                         ///< integration factor
@@ -271,7 +271,7 @@ namespace DRT
         /// number of nodal DOF for master element (always a xfem-fluid element)
         static constexpr unsigned master_numdof_ = nsd_ + 1;
 
-        static Teuchos::RCP<NitscheInterface<distype>> CreateNitscheCoupling_XFluidWDBC(
+        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
             const DRT::ELEMENTS::FluidEleParameterXFEM&
@@ -279,7 +279,7 @@ namespace DRT
         );
 
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
-        static Teuchos::RCP<NitscheInterface<distype>> CreateNitscheCoupling_XFluidWDBC(
+        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             DRT::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -290,7 +290,7 @@ namespace DRT
         );
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
-        static Teuchos::RCP<NitscheInterface<distype>> CreateNitscheCoupling_XFluidSided(
+        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
             DRT::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -306,7 +306,7 @@ namespace DRT
 
         //! create a coupling interface for Nitsche's method for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
-        static Teuchos::RCP<NitscheInterface<distype>> CreateNitscheCoupling_TwoSided(
+        static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
             DRT::Element* vele,  ///< volumetric element to couple with
             CORE::LINALG::SerialDenseMatrix::Base&
                 vele_xyz,  ///< global node coordinates of volumetric element
@@ -341,7 +341,7 @@ namespace DRT
             ) = 0;
 
         //! build coupling matrices for Nitsche's method (NIT)
-        virtual void NIT_evaluateCoupling(
+        virtual void nit_evaluate_coupling(
             const CORE::LINALG::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
@@ -374,7 +374,7 @@ namespace DRT
             ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
-        virtual void NIT_evaluateCouplingOldState(
+        virtual void nit_evaluate_coupling_old_state(
             const CORE::LINALG::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
@@ -419,14 +419,14 @@ namespace DRT
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
-        static Teuchos::RCP<HybridLMInterface<distype>> CreateHybridLMCoupling_XFluidWDBC(
+        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
             bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard
                                           ///< & adjoint viscous term
         );
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
-        static Teuchos::RCP<HybridLMInterface<distype>> CreateHybridLMCoupling_XFluidWDBC(
+        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
             DRT::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of boundary element
@@ -436,7 +436,7 @@ namespace DRT
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling
         //! strategy
-        static Teuchos::RCP<HybridLMInterface<distype>> CreateHybridLMCoupling_XFluidSided(
+        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_sided(
             DRT::Element* bele,  ///< boundary element
             CORE::LINALG::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
@@ -451,7 +451,7 @@ namespace DRT
 
         //! create a coupling interface for mixed/hybrid LM approach for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
-        static Teuchos::RCP<HybridLMInterface<distype>> CreateHybridLMCoupling_TwoSided(
+        static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_two_sided(
             DRT::Element* vele,  ///< volumetric element to couple with
             CORE::LINALG::SerialDenseMatrix&
                 vele_xyz,  ///< global node coordinates of volumetric element
@@ -472,7 +472,7 @@ namespace DRT
         }
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
-        virtual void MHCS_buildCouplingMatrices(
+        virtual void mhcs_build_coupling_matrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
             const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
@@ -485,7 +485,7 @@ namespace DRT
             ) = 0;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
-        virtual void MHVS_buildCouplingMatrices(
+        virtual void mhvs_build_coupling_matrices(
             const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
             const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
@@ -503,7 +503,7 @@ namespace DRT
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based
         //! coupling (MHCS or MHVS)
-        virtual void HybridLM_buildFinalCouplingMatrices(
+        virtual void hybrid_lm_build_final_coupling_matrices(
             CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
                 numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
             CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,

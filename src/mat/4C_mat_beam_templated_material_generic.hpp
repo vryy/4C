@@ -44,7 +44,7 @@ namespace MAT
      *
      *\param[in] Cur curvature
      */
-    virtual void EvaluateMomentContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressM,
+    virtual void evaluate_moment_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressM,
         const CORE::LINALG::Matrix<3, 3, T>& CM, const CORE::LINALG::Matrix<3, 1, T>& Cur,
         const unsigned int gp) = 0;
 
@@ -58,28 +58,28 @@ namespace MAT
      *\param[in] Gamma triad
      */
 
-    virtual void EvaluateForceContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressN,
+    virtual void evaluate_force_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressN,
         const CORE::LINALG::Matrix<3, 3, T>& CN, const CORE::LINALG::Matrix<3, 1, T>& Gamma,
         const unsigned int gp) = 0;
 
     /*
      * \brief Update material-dependent variables
      */
-    virtual void ComputeConstitutiveParameter(
+    virtual void compute_constitutive_parameter(
         CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M) = 0;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
      *
      */
-    virtual void GetConstitutiveMatrixOfForcesMaterialFrame(
+    virtual void get_constitutive_matrix_of_forces_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& C_N) const = 0;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
      */
-    virtual void GetConstitutiveMatrixOfMomentsMaterialFrame(
+    virtual void get_constitutive_matrix_of_moments_material_frame(
         CORE::LINALG::Matrix<3, 3, T>& C_M) const = 0;
 
     /** \brief get linearization of the constitutive law relating stress moment resultants and
@@ -88,7 +88,7 @@ namespace MAT
      *\param[in] C_M constitutive matrix
      *\param[out] stiffness_matrix
      */
-    virtual void GetStiffnessMatrixOfMoments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
+    virtual void get_stiffness_matrix_of_moments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
         const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) = 0;
 
     /** \brief get linearization of the constitutive law relating stress force resultants and
@@ -97,7 +97,7 @@ namespace MAT
      *\param[in] C_N constitutive matrix
      *\param[out] stiffness_matrix
      */
-    virtual void GetStiffnessMatrixOfForces(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
+    virtual void get_stiffness_matrix_of_forces(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
         const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) = 0;
   };
 }  // namespace MAT

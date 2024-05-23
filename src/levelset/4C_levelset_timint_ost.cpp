@@ -94,25 +94,25 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
  | calculate consistent initial scalar time derivatives in compliance with    |
  | initial scalar field                                            fang 09/15 |
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::CalcInitialTimeDerivative()
+void SCATRA::LevelSetTimIntOneStepTheta::calc_initial_time_derivative()
 {
   if (not switchreinit_)
-    TimIntOneStepTheta::CalcInitialTimeDerivative();
+    TimIntOneStepTheta::calc_initial_time_derivative();
 
   else
   {
     // set element parameters with stabilization and artificial diffusivity deactivated
-    SetReinitializationElementParameters(true);
+    set_reinitialization_element_parameters(true);
 
     // note: time-integration parameter list has not to be overwritten here, since we rely on
     // incremental solve
-    //       as already set in PrepareTimeLoopReinit()
+    //       as already set in prepare_time_loop_reinit()
 
     // compute time derivative of phi at pseudo-time tau=0
-    ScaTraTimIntImpl::CalcInitialTimeDerivative();
+    ScaTraTimIntImpl::calc_initial_time_derivative();
 
     // eventually, undo changes in general parameter list
-    SetReinitializationElementParameters();
+    set_reinitialization_element_parameters();
   }
 
   return;
@@ -123,10 +123,10 @@ void SCATRA::LevelSetTimIntOneStepTheta::CalcInitialTimeDerivative()
  | set part of the residual vector belonging to the old timestep        |
  |                                                      rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
+void SCATRA::LevelSetTimIntOneStepTheta::set_old_part_of_righthandside()
 {
   if (not switchreinit_)
-    TimIntOneStepTheta::SetOldPartOfRighthandside();
+    TimIntOneStepTheta::set_old_part_of_righthandside();
   else
     // hist_ = phin_ + dt*(1-Theta)*phidtn_
     hist_->Update(1.0, *phin_, dtau_ * (1.0 - thetareinit_), *phidtn_, 0.0);
@@ -166,10 +166,10 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
   if (not switchreinit_)
   {
     // compute time derivative at time n+1
-    ComputeTimeDerivative();
+    compute_time_derivative();
 
     // after the next command (time shift of solutions) do NOT call
-    // ComputeTimeDerivative() anymore within the current time step!!!
+    // compute_time_derivative() anymore within the current time step!!!
 
     // solution of this step becomes most recent solution of the last step
     phin_->Update(1.0, *phinp_, 0.0);
@@ -188,13 +188,13 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
 
     // we also have reset the time-integration parameter list, since incremental solver has to be
     // overwritten if used
-    SetElementTimeParameter(true);
+    set_element_time_parameter(true);
 
     // compute time derivative at time n (and n+1)
-    ScaTraTimIntImpl::CalcInitialTimeDerivative();
+    ScaTraTimIntImpl::calc_initial_time_derivative();
 
     // reset element time-integration parameters
-    SetElementTimeParameter();
+    set_element_time_parameter();
   }
 
   return;

@@ -121,7 +121,7 @@ namespace CONTACT
 
     \param[in] output Output writer of structure discretization to write results to disk
     */
-    void PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
+    void postprocess_quantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -130,7 +130,7 @@ namespace CONTACT
 
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
-    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams);
+    void postprocess_quantities_per_interface(Teuchos::RCP<Teuchos::ParameterList> outputParams);
 
     /*!
     \brief read restart
@@ -154,7 +154,7 @@ namespace CONTACT
     \brief store dirichlet status
 
     */
-    void StoreDirichletStatus(Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
+    void store_dirichlet_status(Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief update
@@ -187,7 +187,7 @@ namespace CONTACT
     //! Meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> mtman_;
 
-  };  // class MeshtyingContactBridge
+  };  // class meshtying_contact_bridge
 }  // namespace CONTACT
 
 FOUR_C_NAMESPACE_CLOSE

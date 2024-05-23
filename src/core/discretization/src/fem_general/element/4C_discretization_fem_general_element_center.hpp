@@ -23,7 +23,7 @@ namespace CORE::FE
 {
   // return center coordinates of @p ele. Note that the average of all nodal coordinates is
   // computed.
-  std::vector<double> ElementCenterRefeCoords(const DRT::Element& ele);
+  std::vector<double> element_center_refe_coords(const DRT::Element& ele);
 }  // namespace CORE::FE
 
 #endif

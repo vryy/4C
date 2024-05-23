@@ -256,7 +256,7 @@ void MAT::AaAraghavanvorpDamage::Update()
  |  Transform Second Piola-Kirchhoff Stress Tensor in the Cauchy one(public)         05/08|
  *----------------------------------------------------------------------*/
 
-void MAT::AaAraghavanvorpDamage::StressTensTransfSPKtoCauchy(
+void MAT::AaAraghavanvorpDamage::stress_tens_transf_sp_kto_cauchy(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
     const double detf,                               ///< determinant of deformation gradient tensor
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
@@ -294,7 +294,7 @@ void MAT::AaAraghavanvorpDamage::StressTensTransfSPKtoCauchy(
 /*----------------------------------------------------------------------*
  |  Transform Cauchy Stress Tensor in the Second Piola-Kirchhoff one(public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::AaAraghavanvorpDamage::StressTensTransfCauchytoSPK(
+void MAT::AaAraghavanvorpDamage::stress_tens_transf_cauchyto_spk(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& invf,  ///< deformation gradient tensor
     const double detf,                             ///< determinant of deformation gradient tensor
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
@@ -472,9 +472,9 @@ void MAT::AaAraghavanvorpDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
 
 
   // CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigmvol(true); // Cauchy stress tensor, init to 0
-  // StressTensTransfSPKtoCauchy(fvol,detf,pktwovol,sigmvol);
+  // stress_tens_transf_sp_kto_cauchy(fvol,detf,pktwovol,sigmvol);
   // sigmvol.Scale(strength);
-  // StressTensTransfCauchytoSPK(invfvol,detf,sigmvol,pktwovol);
+  // stress_tens_transf_cauchyto_spk(invfvol,detf,sigmvol,pktwovol);
 
 
   // 2nd step: isochoric part
@@ -495,9 +495,9 @@ void MAT::AaAraghavanvorpDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   for (int i = 0; i < 3; i++) pktwoiso(i) += isochor1;
 
   // CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigmiso(true); // Cauchy stress tensor, init to 0
-  // StressTensTransfSPKtoCauchy(fvol,1.0,pktwoiso,sigmiso);
+  // stress_tens_transf_sp_kto_cauchy(fvol,1.0,pktwoiso,sigmiso);
   // sigmiso.Scale(strength);
-  // StressTensTransfCauchytoSPK(invfiso,1.0,sigmvol,pktwoiso);
+  // stress_tens_transf_cauchyto_spk(invfiso,1.0,sigmvol,pktwoiso);
 
 
   //--- do elasticity matrix -------------------------------------------------------------
@@ -645,13 +645,13 @@ void MAT::AaAraghavanvorpDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
 
     CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigm(true); // Cauchy stress tensor, init to 0
 
-    StressTensTransfSPKtoCauchy(f,detf,pktwo,sigm);
+    stress_tens_transf_sp_kto_cauchy(f,detf,pktwo,sigm);
 
     sigm.Scale(strength);
 
     CORE::LINALG::Matrix<NUM_STRESS_3D,1> realpktwo(true); // Cauchy stress tensor, init to 0
 
-    StressTensTransfCauchytoSPK(invf,detf,sigm,realpktwo);
+    stress_tens_transf_cauchyto_spk(invf,detf,sigm,realpktwo);
    */
   return;
 }

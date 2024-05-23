@@ -54,7 +54,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
 }
 
 
-void DRT::ELEMENTS::RedAirBloodScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_AIR_BLOOD_SCATRA"];

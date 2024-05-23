@@ -26,14 +26,14 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
     : CORE::UTILS::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
-  myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
+  myerror_ = fluid.evaluate_error_compared_to_analytical_sol();
   mysol_ = fluid.velnp_;
 
   // quantities not implemented in the HDG formulation
-  if (GLOBAL::Problem::Instance()->SpatialApproximationType() != CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->spatial_approximation_type() != CORE::FE::ShapeFunctionType::hdg)
   {
     mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
-    mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
+    mywss_ = fluid.stressmanager_->get_pre_calc_wall_shear_stresses(fluid.trueresidual_);
     mydivu_ = fluid.EvaluateDivU();
   }
 }

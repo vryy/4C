@@ -92,7 +92,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// elastic energy based on @p epsilon
-    double EvaluateElasticEnergy(const double epsilon) const
+    double evaluate_elastic_energy(const double epsilon) const
     {
       return 0.5 * EvaluatePK2(epsilon) * epsilon;
     }
@@ -152,7 +152,7 @@ namespace MAT
       return Teuchos::rcp(new LinElast1DGrowth(*this));
     }
     /// elastic energy based on @p def_grad and @p conc
-    double EvaluateElasticEnergy(double def_grad, double conc) const;
+    double evaluate_elastic_energy(double def_grad, double conc) const;
 
     /// 2nd Piola-Kirchhoff stress based on @p def_grad and @p conc
     double EvaluatePK2(double def_grad, double conc) const;
@@ -179,13 +179,13 @@ namespace MAT
 
    private:
     /// polynomial growth factor based on amount of substance (@p conc * @p def_grad)
-    double GetGrowthFactorAoSProp(double conc, double def_grad) const;
+    double get_growth_factor_ao_s_prop(double conc, double def_grad) const;
 
     /// derivative of polynomial growth factor based on amount of substance w.r.t @p def_grad
-    double GetGrowthFactorAoSPropDeriv(double conc, double def_grad) const;
+    double get_growth_factor_ao_s_prop_deriv(double conc, double def_grad) const;
 
     /// polynomial growth factor based on concentration (@p conc)
-    double GetGrowthFactorConcProp(double conc) const;
+    double get_growth_factor_conc_prop(double conc) const;
 
     /// my material parameters
     MAT::PAR::LinElast1DGrowth* growth_params_;

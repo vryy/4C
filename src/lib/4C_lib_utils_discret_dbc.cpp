@@ -56,7 +56,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {
   if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // get the current time
   double time = -1.0;
@@ -93,7 +93,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
   // --------------------------------------------------------------------------
-  BuildDbcMapExtractor(discret, dbcgids[set_row], dbcmapextractor);
+  build_dbc_map_extractor(discret, dbcgids[set_row], dbcmapextractor);
 
   return;
 }
@@ -145,17 +145,17 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::Discretization& discret, double time,
   // --------------------------------------------------------------------------
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conds(0);
   discret.GetCondition("Dirichlet", conds);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids);
+  read_dirichlet_condition(discret, conds, time, info, dbcgids);
   // --------------------------------------------------------------------------
   // Now, as we know from the toggle vector which dofs actually have
   // Dirichlet BCs, we can assign the values to the system vectors.
   // --------------------------------------------------------------------------
-  DoDirichletCondition(discret, conds, time, systemvectors, info.toggle, dbcgids);
+  do_dirichlet_condition(discret, conds, time, systemvectors, info.toggle, dbcgids);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::read_dirichlet_condition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -164,15 +164,15 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
   // check. This logic can be understood by contraposition: if, for example, Point DBC is read
   // first, the dof values will not be altered by Line/Surface/Volume DBC. Hence inconsistency in
   // Line/Surface/Volume DBC cannot be detected.
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::VolumeDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::SurfaceDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::LineDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::PointDirichlet);
+  read_dirichlet_condition(discret, conds, time, info, dbcgids, CORE::Conditions::VolumeDirichlet);
+  read_dirichlet_condition(discret, conds, time, info, dbcgids, CORE::Conditions::SurfaceDirichlet);
+  read_dirichlet_condition(discret, conds, time, info, dbcgids, CORE::Conditions::LineDirichlet);
+  read_dirichlet_condition(discret, conds, time, info, dbcgids, CORE::Conditions::PointDirichlet);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::read_dirichlet_condition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum CORE::Conditions::ConditionType& type) const
@@ -203,13 +203,13 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     // skip conditions of different type
     if (cond->Type() != type) continue;
 
-    ReadDirichletCondition(discret, *cond, time, info, dbcgids, hierarchical_order);
+    read_dirichlet_condition(discret, *cond, time, info, dbcgids, hierarchical_order);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::read_dirichlet_condition(const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -411,24 +411,24 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::do_dirichlet_condition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
-  DoDirichletCondition(
+  do_dirichlet_condition(
       discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::VolumeDirichlet);
-  DoDirichletCondition(
+  do_dirichlet_condition(
       discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::SurfaceDirichlet);
-  DoDirichletCondition(
+  do_dirichlet_condition(
       discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::LineDirichlet);
-  DoDirichletCondition(
+  do_dirichlet_condition(
       discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::PointDirichlet);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::do_dirichlet_condition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -439,13 +439,13 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     // skip conditions of different type
     if (cond->Type() != type) continue;
 
-    DoDirichletCondition(discret, *cond, time, systemvectors, toggle, dbcgids);
+    do_dirichlet_condition(discret, *cond, time, systemvectors, toggle, dbcgids);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::do_dirichlet_condition(const DRT::Discretization& discret,
     const CORE::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -536,7 +536,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
         if (funct_num > 0)
           functimederivfac = GLOBAL::Problem::Instance()
                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                 .EvaluateTimeDerivative(actnode->X().data(), time, deg, onesetj);
+                                 .evaluate_time_derivative(actnode->X().data(), time, deg, onesetj);
       }
 
       // apply factors to Dirichlet value
@@ -558,7 +558,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::Discretization& discret,
+void DRT::UTILS::Dbc::build_dbc_map_extractor(const DRT::Discretization& discret,
     const Teuchos::RCP<const std::set<int>>& dbcrowgids,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {

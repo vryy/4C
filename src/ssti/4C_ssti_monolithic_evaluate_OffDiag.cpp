@@ -51,7 +51,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDomain(
+void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_structure_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain)
 {
   // initialize thermo-structure matrix block
@@ -66,7 +66,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
   thermo_->ScaTraField()->Discretization()->ClearState();
 
   // add state vectors to thermo discretization
-  thermo_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+  thermo_->ScaTraField()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of thermo-structure matrix block
   DRT::AssembleStrategy strategyscatrastructure(
@@ -83,7 +83,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
 }
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureInterface(
+void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_structure_interface(
     Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface)
 {
   thermostructureinterface->Zero();
@@ -118,9 +118,9 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
     }
   }
 
-  EvaluateThermoStructureInterfaceSlaveSide(slavematrix);
+  evaluate_thermo_structure_interface_slave_side(slavematrix);
 
-  CopySlaveToMasterThermoStructureInterface(slavematrix, mastermatrix);
+  copy_slave_to_master_thermo_structure_interface(slavematrix, mastermatrix);
 
   thermostructureinterface->Add(*slavematrix, false, 1.0, 1.0);
   thermostructureinterface->Add(*mastermatrix, false, 1.0, 1.0);
@@ -152,7 +152,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDomain(
+void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_thermo_domain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain)
 {
   structurethermodomain->Zero();
@@ -188,7 +188,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInterface(
+void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure_interface(
     Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
 {
@@ -277,7 +277,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlaveSide(
+void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_slave_side(
     Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix)
 {
   Teuchos::ParameterList condparams;
@@ -290,7 +290,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   thermo_->ScaTraField()->Discretization()->ClearState();
 
-  thermo_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+  thermo_->ScaTraField()->add_time_integration_specific_vectors();
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> evaluate_matrix;
   if (thermo_->ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
@@ -315,13 +315,14 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   // evaluate interface coupling
   for (auto kinetics_slave_cond :
-      meshtying_strategy_thermo_->KineticsConditionsMeshtyingSlaveSide())
+      meshtying_strategy_thermo_->kinetics_conditions_meshtying_slave_side())
   {
     if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
         static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_thermo_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+      meshtying_strategy_thermo_->set_condition_specific_sca_tra_parameters(
+          *kinetics_slave_cond.second);
       // evaluate the condition
       thermo_->ScaTraField()->Discretization()->EvaluateCondition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
@@ -344,7 +345,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
@@ -383,7 +384,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       for (const auto& meshtying : ssti_structure_meshtying_->MeshTyingHandlers())
       {
-        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =

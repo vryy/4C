@@ -79,7 +79,7 @@ namespace MAT
      * \return true if the material is parametrized so that element fibers should be used
      * \return false otherwise
      */
-    bool DoElementFiberInitialization() override;
+    bool do_element_fiber_initialization() override;
 
     /*!
      * \brief Initializes Gauss point fibers
@@ -87,7 +87,7 @@ namespace MAT
      * \return true if the materials is parametrized so that Gauss point fibers should be used
      * \return false otherwise
      */
-    bool DoGPFiberInitialization() override;
+    bool do_gp_fiber_initialization() override;
 
     /*!
      * \brief Set Fiber vectors by a new angle gamma in the current configuration
@@ -126,7 +126,7 @@ namespace MAT
     /*!
      * \brief The single fiber is aligned in z-direction
      */
-    virtual void DoExternalFiberInitialization();
+    virtual void do_external_fiber_initialization();
 
    private:
     /// Initialization mode

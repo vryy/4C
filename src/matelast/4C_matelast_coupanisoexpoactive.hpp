@@ -125,12 +125,12 @@ namespace MAT
       /// Setup of active summand
       void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
-      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
-      void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+      void evaluate_first_derivatives_aniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
           const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
-      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+      void evaluate_second_derivatives_aniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
           const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /// retrieve coefficients of first, second and third derivative
@@ -149,8 +149,9 @@ namespace MAT
 
       /// Add anisotropic principal stresses
       /// ATTENTION: this is only the passive contribution of the fiber!
-      void AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>&
-                                       rcg,  ///< right Cauchy Green in "strain-like" Voigt notation
+      void add_stress_aniso_principal(
+          const CORE::LINALG::Matrix<6, 1>&
+              rcg,                           ///< right Cauchy Green in "strain-like" Voigt notation
           CORE::LINALG::Matrix<6, 6>& cmat,  ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,  ///< 2nd PK-stress
           Teuchos::ParameterList&
@@ -168,7 +169,7 @@ namespace MAT
 
       /// evaluate stress and cmat
       /// ATTENTION: this is only the active contribution of the fiber!
-      void AddActiveStressCmatAniso(
+      void add_active_stress_cmat_aniso(
           CORE::LINALG::Matrix<3, 3> const& CM,  ///< rigtht Cauchy Green tensor
           CORE::LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
@@ -179,7 +180,7 @@ namespace MAT
       /// evaluate stress and cmat
       /// ATTENTION: this is only the active contribution of the fiber!
       template <typename T>
-      void EvaluateActiveStressCmatAniso(
+      void evaluate_active_stress_cmat_aniso(
           CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< rigtht Cauchy Green tensor
           CORE::LINALG::Matrix<6, 6, T>& cmat,      ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1, T>& stress,    ///< 2nd PK-stress
@@ -201,12 +202,12 @@ namespace MAT
       /// @name Access methods
       //@{
       template <typename T>
-      inline void GetDerivativeAnisoActive(T& dPIact) const
+      inline void get_derivative_aniso_active(T& dPIact) const
       {
         dPIact = d_p_iact_;
       };
 
-      double GetDerivativeAnisoActive() const override { return d_p_iact_; };
+      double get_derivative_aniso_active() const override { return d_p_iact_; };
 
       //@}
 
@@ -238,7 +239,7 @@ namespace MAT
        *
        * \return FiberAnisotropyExtension& Reference to the used MAT::AnisotropyExtension
        */
-      FiberAnisotropyExtension<1>& GetFiberAnisotropyExtension() override
+      FiberAnisotropyExtension<1>& get_fiber_anisotropy_extension() override
       {
         return anisotropy_extension_;
       }

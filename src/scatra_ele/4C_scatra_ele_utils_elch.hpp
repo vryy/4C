@@ -48,8 +48,9 @@ namespace DRT
       virtual ~ScaTraEleUtilsElch() = default;
 
       //! evaluation of electrochemistry kinetics at integration point on domain or boundary element
-      void EvaluateElchKineticsAtIntegrationPoint(const DRT::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,                            ///< element matrix
+      void evaluate_elch_kinetics_at_integration_point(
+          const DRT::Element* ele,                ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
           CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
@@ -73,7 +74,8 @@ namespace DRT
 
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
-      void EvaluateElectrodeStatusAtIntegrationPoint(const DRT::Element* ele,  ///< current element
+      void evaluate_electrode_status_at_integration_point(
+          const DRT::Element* ele,                                ///< current element
           CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
           const Teuchos::ParameterList& params,                   ///< parameter list
           const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition

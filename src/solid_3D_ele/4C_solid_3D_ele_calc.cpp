@@ -62,24 +62,26 @@ namespace
     [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_displacements() const
     {
-      return EvaluateDDeformationGradientDDisplacements(ele_, element_nodes_, xi_, shape_functions_,
-          jacobian_mapping_, deformation_gradient_, preparation_data_, history_data_);
+      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_displacements(ele_, element_nodes_,
+          xi_, shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
+          history_data_);
     }
 
     [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_xi() const
     {
-      return EvaluateDDeformationGradientDXi(ele_, element_nodes_, xi_, shape_functions_,
-          jacobian_mapping_, deformation_gradient_, preparation_data_, history_data_);
+      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_xi(ele_, element_nodes_, xi_,
+          shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
+          history_data_);
     }
 
     [[nodiscard]] CORE::LINALG::Matrix<9,
         CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
     evaluate_d2_deformation_gradient_d_displacements_d_xi() const
     {
-      return EvaluateDDeformationGradientDDisplacementsDXi(ele_, element_nodes_, xi_,
-          shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
-          history_data_);
+      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_displacements_d_xi(ele_,
+          element_nodes_, xi_, shape_functions_, jacobian_mapping_, deformation_gradient_,
+          preparation_data_, history_data_);
     }
 
    private:
@@ -153,7 +155,7 @@ namespace
     }
 
     double cauchy_n_dir = 0;
-    mat.EvaluateCauchyNDirAndDerivatives(deformation_gradient, n, dir, cauchy_n_dir,
+    mat.evaluate_cauchy_n_dir_and_derivatives(deformation_gradient, n, dir, cauchy_n_dir,
         linearizations.d_cauchyndir_dn, linearizations.d_cauchyndir_ddir, get_ptr(d_cauchyndir_dF),
         get_ptr(d2_cauchyndir_dF2), get_ptr(d2_cauchyndir_dF_dn), get_ptr(d2_cauchyndir_dF_ddir),
         -1, eleGID, nullptr, nullptr, nullptr, nullptr);
@@ -235,10 +237,11 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Unpack(
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateNonlinearForceStiffnessMass(
-    const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+void DRT::ELEMENTS::SolidEleCalc<celltype,
+    ElementFormulation>::evaluate_nonlinear_force_stiffness_mass(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
@@ -280,8 +283,9 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateNonlinea
 
               if (force.has_value())
               {
-                DRT::ELEMENTS::AddInternalForceVector<ElementFormulation, celltype>(linearization,
-                    stress, integration_factor, preparation_data, history_data_, gp, *force);
+                DRT::ELEMENTS::add_internal_force_vector<ElementFormulation, celltype>(
+                    linearization, stress, integration_factor, preparation_data, history_data_, gp,
+                    *force);
               }
 
               if (stiff.has_value())
@@ -357,7 +361,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(const DRT
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateInternalEnergy(
+double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_internal_energy(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -493,7 +497,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::MaterialPostSetu
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::InitializeGaussPointDataOutput(
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::initialize_gauss_point_data_output(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -505,7 +509,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::InitializeGaussP
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateGaussPointDataOutput(
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::evaluate_gauss_point_data_output(
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
@@ -517,7 +521,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateGaussPoi
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::ResetToLastConverged(
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::reset_to_last_converged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();

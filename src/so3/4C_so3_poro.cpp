@@ -201,15 +201,16 @@ bool DRT::ELEMENTS::So3Poro<so3_ele, distype>::ReadElement(
   if (poromat == Teuchos::null) FOUR_C_THROW("no poro material assigned to poro element!");
   poromat->PoroSetup(numgpt_, linedef);
 
-  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
-  ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
+  read_anisotropic_permeability_directions_from_element_line_definition(linedef);
+  read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(linedef);
 
   return true;
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Poro<so3_ele, distype>::
-    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
+    read_anisotropic_permeability_directions_from_element_line_definition(
+        INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -221,7 +222,8 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::
 
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Poro<so3_ele, distype>::
-    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
+    read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
+        INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
   {

@@ -33,7 +33,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8P1J1Type::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
     return ele;
@@ -49,7 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(const int id, c
 }
 
 
-void DRT::ELEMENTS::SoHex8P1J1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8P1J1Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   //   numdf = 3;
@@ -65,10 +65,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8P1J1Type::ComputeNullSpace(
   return nullspace;
 }
 
-void DRT::ELEMENTS::SoHex8P1J1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8P1J1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
@@ -131,7 +131,7 @@ DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(int id, int owner) : DRT::ELEMENTS::SoHex8
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;

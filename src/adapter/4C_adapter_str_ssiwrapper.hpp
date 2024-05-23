@@ -44,7 +44,7 @@ namespace ADAPTER
     explicit SSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// set pointer to model evaluator
-    void SetModelEvaluatorPtr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> me)
     {
       ssi_model_evaluator_ = me;
       return;

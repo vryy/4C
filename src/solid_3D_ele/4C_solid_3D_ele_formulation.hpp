@@ -368,7 +368,7 @@ namespace DRT::ELEMENTS
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-  EvaluateDDeformationGradientDDisplacements(const DRT::Element& ele,
+  evaluate_d_deformation_gradient_d_displacements(const DRT::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -387,7 +387,7 @@ namespace DRT::ELEMENTS
       return std::apply(
           [](auto&&... args)
           {
-            return SolidFormulation::EvaluateDDeformationGradientDDisplacements(
+            return SolidFormulation::evaluate_d_deformation_gradient_d_displacements(
                 std::forward<decltype(args)>(args)...);
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
@@ -400,7 +400,7 @@ namespace DRT::ELEMENTS
    * @brief Evaluate the derivative of the deformation gradient w.r.t. the xi
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> EvaluateDDeformationGradientDXi(
+  inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> evaluate_d_deformation_gradient_d_xi(
       const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -419,7 +419,7 @@ namespace DRT::ELEMENTS
       return std::apply(
           [](auto&&... args)
           {
-            return SolidFormulation::EvaluateDDeformationGradientDXi(
+            return SolidFormulation::evaluate_d_deformation_gradient_d_xi(
                 std::forward<decltype(args)>(args)...);
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
@@ -435,7 +435,7 @@ namespace DRT::ELEMENTS
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   inline CORE::LINALG::Matrix<9,
       CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
-  EvaluateDDeformationGradientDDisplacementsDXi(const DRT::Element& ele,
+  evaluate_d_deformation_gradient_d_displacements_d_xi(const DRT::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -454,7 +454,7 @@ namespace DRT::ELEMENTS
       return std::apply(
           [](auto&&... args)
           {
-            return SolidFormulation::EvaluateDDeformationGradientDDisplacementsDXi(
+            return SolidFormulation::evaluate_d_deformation_gradient_d_displacements_d_xi(
                 std::forward<decltype(args)>(args)...);
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
@@ -478,7 +478,7 @@ namespace DRT::ELEMENTS
    * @brief Add the internal force vector contribution of the Gauss point to @p force_vector
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  static inline void AddInternalForceVector(
+  static inline void add_internal_force_vector(
       const typename SolidFormulation::LinearizationContainer& linearization,
       const Stress<celltype>& stress, const double integration_factor,
       const PreparationData<SolidFormulation>& preparation_data,
@@ -487,7 +487,7 @@ namespace DRT::ELEMENTS
           force_vector)
   {
     std::apply([](auto&&... args)
-        { SolidFormulation::AddInternalForceVector(std::forward<decltype(args)>(args)...); },
+        { SolidFormulation::add_internal_force_vector(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(std::forward_as_tuple(linearization, stress, integration_factor),
             DETAILS::GetAdditionalTuple(preparation_data, history_data, gp),
             std::forward_as_tuple(force_vector)));

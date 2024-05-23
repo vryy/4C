@@ -1466,9 +1466,9 @@ void test_position2d()
   side_xyze.Scale(scale);
   xyz.Scale(scale);
 
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(
       INPAR::CUT::floattype_cln);  // use cln
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(
       INPAR::CUT::floattype_double);  // use
                                       // double
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =

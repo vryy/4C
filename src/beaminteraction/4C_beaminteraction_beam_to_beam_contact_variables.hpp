@@ -203,7 +203,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 12/16 */
-    inline void PrintSummaryInOneLine(std::ostream& out) const
+    inline void print_summary_in_one_line(std::ostream& out) const
     {
       out << std::setw(9) << std::left << std::setprecision(2) << closestpoint_.first
           << std::setw(9) << std::left << std::setprecision(2) << closestpoint_.second

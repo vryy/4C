@@ -42,7 +42,7 @@ ADAPTER::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> st
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
 {
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& jep = sdyn.sublist("TIMEADAPTIVITY").sublist("JOINT EXPLICIT");
 
   // get the parameters of the auxiliary integrator
@@ -87,7 +87,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
 
   // setup global state
   Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate =
-      STR::TIMINT::BuildDataGlobalState();
+      STR::TIMINT::build_data_global_state();
   dataglobalstate->Init(stm_->Discretization(), adyn, datasdyn);
   dataglobalstate->Setup();
 
@@ -115,11 +115,11 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   }
 
   // check order
-  if (sta_->MethodOrderOfAccuracyDis() > stm_->MethodOrderOfAccuracyDis())
+  if (sta_->method_order_of_accuracy_dis() > stm_->method_order_of_accuracy_dis())
   {
     ada_ = ada_upward;
   }
-  else if (sta_->MethodOrderOfAccuracyDis() < stm_->MethodOrderOfAccuracyDis())
+  else if (sta_->method_order_of_accuracy_dis() < stm_->method_order_of_accuracy_dis())
   {
     ada_ = ada_downward;
   }
@@ -142,30 +142,30 @@ std::string ADAPTER::StructureTimeAdaJoint::MethodTitle() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::StructureTimeAdaJoint::MethodOrderOfAccuracyDis() const
+int ADAPTER::StructureTimeAdaJoint::method_order_of_accuracy_dis() const
 {
-  return sta_->MethodOrderOfAccuracyDis();
+  return sta_->method_order_of_accuracy_dis();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::StructureTimeAdaJoint::MethodOrderOfAccuracyVel() const
+int ADAPTER::StructureTimeAdaJoint::method_order_of_accuracy_vel() const
 {
-  return sta_->MethodOrderOfAccuracyVel();
+  return sta_->method_order_of_accuracy_vel();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::StructureTimeAdaJoint::MethodLinErrCoeffDis() const
+double ADAPTER::StructureTimeAdaJoint::method_lin_err_coeff_dis() const
 {
-  return sta_->MethodLinErrCoeffDis();
+  return sta_->method_lin_err_coeff_dis();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::StructureTimeAdaJoint::MethodLinErrCoeffVel() const
+double ADAPTER::StructureTimeAdaJoint::method_lin_err_coeff_vel() const
 {
-  return sta_->MethodLinErrCoeffVel();
+  return sta_->method_lin_err_coeff_vel();
 }
 
 /*----------------------------------------------------------------------*/
@@ -177,7 +177,7 @@ enum ADAPTER::StructureTimeAda::AdaEnum ADAPTER::StructureTimeAdaJoint::MethodAd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaJoint::IntegrateStepAuxiliar()
+void ADAPTER::StructureTimeAdaJoint::integrate_step_auxiliar()
 {
   // set current step size
   sta_->SetDeltaTime(stepsize_);

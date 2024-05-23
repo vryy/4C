@@ -214,7 +214,7 @@ void BEAMINTERACTION::BeamPotentialParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamPotentialParams::throw_error_if_not_init_and_setup() const
 {
   if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }

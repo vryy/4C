@@ -61,7 +61,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create(const int id, co
 }
 
 
-void DRT::ELEMENTS::TransportType::NodalBlockInformation(
+void DRT::ELEMENTS::TransportType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -84,7 +84,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::TransportType::ComputeNullSpace(
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-void DRT::ELEMENTS::TransportType::SetupElementDefinition(
+void DRT::ELEMENTS::TransportType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRANSP"];
@@ -93,147 +93,147 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition(
                      .AddIntVector("HEX8", 8)
                      .AddNamedInt("MAT")
                      .AddNamedString("TYPE")
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
                      .Build();
 
   defs["HEX20"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("HEX20", 20)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["HEX27"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("HEX27", 27)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["NURBS27"] = INPUT::LineDefinition::Builder()
                         .AddIntVector("NURBS27", 27)
                         .AddNamedInt("MAT")
                         .AddNamedString("TYPE")
-                        .AddOptionalNamedDoubleVector("FIBER1", 3)
+                        .add_optional_named_double_vector("FIBER1", 3)
                         .Build();
 
   defs["NURBS8"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS8", 8)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 
   defs["TET4"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TET4", 4)
                      .AddNamedInt("MAT")
                      .AddNamedString("TYPE")
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
                      .Build();
 
   defs["TET10"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("TET10", 10)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["WEDGE6"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("WEDGE6", 6)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 
   defs["WEDGE15"] = INPUT::LineDefinition::Builder()
                         .AddIntVector("WEDGE15", 15)
                         .AddNamedInt("MAT")
                         .AddNamedString("TYPE")
-                        .AddOptionalNamedDoubleVector("FIBER1", 3)
+                        .add_optional_named_double_vector("FIBER1", 3)
                         .Build();
 
   defs["PYRAMID5"] = INPUT::LineDefinition::Builder()
                          .AddIntVector("PYRAMID5", 5)
                          .AddNamedInt("MAT")
                          .AddNamedString("TYPE")
-                         .AddOptionalNamedDoubleVector("FIBER1", 3)
+                         .add_optional_named_double_vector("FIBER1", 3)
                          .Build();
 
   defs["QUAD4"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD4", 4)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["QUAD8"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD8", 8)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["QUAD9"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("QUAD9", 9)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["TRI3"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TRI3", 3)
                      .AddNamedInt("MAT")
                      .AddNamedString("TYPE")
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
                      .Build();
 
   defs["TRI6"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("TRI6", 6)
                      .AddNamedInt("MAT")
                      .AddNamedString("TYPE")
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
                      .Build();
 
   defs["NURBS4"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS4", 4)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 
   defs["NURBS9"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS9", 9)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 
   defs["LINE2"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["LINE3"] = INPUT::LineDefinition::Builder()
                       .AddIntVector("LINE3", 3)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
                       .Build();
 
   defs["NURBS2"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS2", 2)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 
   defs["NURBS3"] = INPUT::LineDefinition::Builder()
                        .AddIntVector("NURBS3", 3)
                        .AddNamedInt("MAT")
                        .AddNamedString("TYPE")
-                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .add_optional_named_double_vector("FIBER1", 3)
                        .Build();
 }
 
@@ -757,7 +757,7 @@ DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   return;
 }
 

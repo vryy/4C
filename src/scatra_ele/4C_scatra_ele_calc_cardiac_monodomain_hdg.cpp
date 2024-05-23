@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   DRT::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
-  if (actmat->DiffusionAtEleCenter())
+  if (actmat->diffusion_at_ele_center())
   {
     // get diffusivity at ele center
     CORE::LINALG::Matrix<probdim, probdim> diff(true);
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   }
   else
   {
-    actmat->ResetDiffusionTensor();
+    actmat->reset_diffusion_tensor();
 
     Teuchos::RCP<CORE::FE::ShapeValues<distype>> shapes =
         Teuchos::rcp(new CORE::FE::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     std::vector<CORE::LINALG::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
     DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
-    for (unsigned int q = 0; q < shapes->nqpoints_; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
+    for (unsigned int q = 0; q < shapes->nqpoints_; ++q) actmat->setup_diffusion_tensor(fibergp[q]);
 
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
     {
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   DRT::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
-  if (actmat->DiffusionAtEleCenter())
+  if (actmat->diffusion_at_ele_center())
   {
     // get diffusivity at ele center
     CORE::LINALG::Matrix<probdim, probdim> diff(true);
@@ -191,7 +191,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   }
   else
   {
-    actmat->ResetDiffusionTensor();
+    actmat->reset_diffusion_tensor();
 
     const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
 
-    for (unsigned int q = 0; q < numgp; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
+    for (unsigned int q = 0; q < numgp; ++q) actmat->setup_diffusion_tensor(fibergp[q]);
 
     for (unsigned int q = 0; q < numgp; ++q)
     {
@@ -460,8 +460,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
  |  Get Material Internal State for Restart              hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMaterialInternalState(
-    const DRT::Element* ele,  //!< the element we are dealing with
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+    probdim>::get_material_internal_state(const DRT::Element*
+                                              ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
@@ -476,7 +477,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
     {
       Teuchos::RCP<MAT::Myocard> material =
           Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
-      for (int k = 0; k < material->GetNumberOfInternalStateVariables(); ++k)
+      for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
         double material_state = 0;
         unsigned int nqpoints = material->GetNumberOfGP();
@@ -501,8 +502,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
  |  Set Material Internal State after Restart            hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMaterialInternalState(
-    const DRT::Element* ele,  //!< the element we are dealing with
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+    probdim>::set_material_internal_state(const DRT::Element*
+                                              ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
@@ -517,7 +519,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
     {
       Teuchos::RCP<MAT::Myocard> material =
           Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
-      for (int k = 0; k < material->GetNumberOfInternalStateVariables(); ++k)
+      for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
         int nqpoints = material->GetNumberOfGP();
         for (int q = 0; q < nqpoints; ++q)
@@ -538,14 +540,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
  |  Project Material Field                               hoermann 01/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialField(
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
   if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
-    return ProjectMaterialFieldTet(ele);
+    return project_material_field_tet(ele);
   else
-    return ProjectMaterialFieldAll(ele);
+    return project_material_field_all(ele);
 }
 
 
@@ -553,7 +555,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
  |  Project Material Field                               hoermann 12/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldAll(
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field_all(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -590,7 +592,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   CORE::LINALG::SerialDenseMatrix Mmat(shapes->ndofs_, shapes->ndofs_);
 
   CORE::LINALG::SerialDenseMatrix state_variables(
-      shapes_old->nqpoints_, actmat->GetNumberOfInternalStateVariables());
+      shapes_old->nqpoints_, actmat->get_number_of_internal_state_variables());
 
   if (shapes->ndofs_ != shapes_old->ndofs_)
     FOUR_C_THROW("Number of shape functions not identical!");
@@ -612,11 +614,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   CORE::LINALG::multiplyNT(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shapes_old->nqpoints_; ++q)
-    for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
+    for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
       state_variables(q, k) = actmat->GetInternalState(k, q);
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
-      shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
+      shapes->ndofs_, actmat->get_number_of_internal_state_variables());
   CORE::LINALG::multiply(tempMat1, massPartOldW, state_variables);
 
   using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -630,15 +632,15 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
-      shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
+      shapes->nqpoints_, actmat->get_number_of_internal_state_variables());
   CORE::LINALG::multiplyTN(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shapes->nqpoints_);
-  actmat->ResizeInternalStateVariables();
+  actmat->resize_internal_state_variables();
 
 
   for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
-    for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
+    for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
       actmat->SetInternalState(k, tempMat2(q, k), q);
 
   return 0;
@@ -649,7 +651,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
  |  Project Material Field for Tet                       hoermann 01/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectMaterialFieldTet(
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field_tet(
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
@@ -722,7 +724,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   CORE::LINALG::SerialDenseMatrix Mmat(polySpace->Size(), polySpace->Size());
 
   CORE::LINALG::SerialDenseMatrix state_variables(
-      shape_gp_old.size(), actmat->GetNumberOfInternalStateVariables());
+      shape_gp_old.size(), actmat->get_number_of_internal_state_variables());
 
   for (unsigned int i = 0; i < polySpace->Size(); ++i)
   {
@@ -741,11 +743,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   CORE::LINALG::multiplyNT(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
-    for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
+    for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
       state_variables(q, k) = actmat->GetInternalState(k, q);
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
-      polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
+      polySpace->Size(), actmat->get_number_of_internal_state_variables());
   CORE::LINALG::multiply(tempMat1, massPartOldW, state_variables);
 
   using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -759,15 +761,15 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
-      shape_gp.size(), actmat->GetNumberOfInternalStateVariables());
+      shape_gp.size(), actmat->get_number_of_internal_state_variables());
   CORE::LINALG::multiplyTN(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shape_gp.size());
-  actmat->ResizeInternalStateVariables();
+  actmat->resize_internal_state_variables();
 
 
   for (unsigned int q = 0; q < shape_gp.size(); ++q)
-    for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
+    for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
       actmat->SetInternalState(k, tempMat2(q, k), q);
 
   return 0;

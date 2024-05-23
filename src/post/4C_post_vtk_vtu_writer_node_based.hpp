@@ -78,12 +78,12 @@ class PostVtuWriterNode : public PostVtuWriter
       const bool fillzeros) override;
 
   //! Write a single result step
-  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
-  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -100,16 +100,16 @@ class PostVtuWriterNode : public PostVtuWriter
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
-      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
-      const bool fillzeros);
+  virtual void wirte_dof_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from, const bool fillzeros);
 
-  void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele, const int& ncomponents,
-      const int& numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector>& ghostedData,
-      const int& from, const bool fillzeros) override;
+  void write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
+      const int& ncomponents, const int& numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element
-  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+  virtual void write_nodal_result_step_nurbs_ele(const DRT::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 

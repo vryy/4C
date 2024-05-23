@@ -93,7 +93,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  extract_element_and_node_values(ele, params, discretization, la);
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element_and_node_values(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    double fac = EvalShapeFuncAndIntFac(intpoints, iquad);
+    double fac = eval_shape_func_and_int_fac(intpoints, iquad);
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -246,7 +246,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
  | evaluate shape functions and int. factor at int. point     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
+double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_func_and_int_fac(
     const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad,                                       ///< id of current Gauss point
     CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)

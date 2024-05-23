@@ -54,7 +54,7 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -68,17 +68,17 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::Setup(
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-        particlematerial_->GetPtrToParticleMatParameter(type_i));
+        particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 }
 
-void PARTICLEINTERACTION::SPHHeatLossEvaporation::EvaluateEvaporationInducedHeatLoss() const
+void PARTICLEINTERACTION::SPHHeatLossEvaporation::evaluate_evaporation_induced_heat_loss() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHHeatLossEvaporation::EvaluateEvaporationInducedHeatLoss");
+      "PARTICLEINTERACTION::SPHHeatLossEvaporation::evaluate_evaporation_induced_heat_loss");
 
   // get container of owned particles of evaporating phase
   PARTICLEENGINE::ParticleContainer* container_i =
-      particlecontainerbundle_->GetSpecificContainer(evaporatingphase_, PARTICLEENGINE::Owned);
+      particlecontainerbundle_->get_specific_container(evaporatingphase_, PARTICLEENGINE::Owned);
 
   const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[evaporatingphase_];
 

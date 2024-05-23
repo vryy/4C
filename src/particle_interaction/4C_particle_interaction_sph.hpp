@@ -82,7 +82,7 @@ namespace PARTICLEINTERACTION
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
 
@@ -93,20 +93,20 @@ namespace PARTICLEINTERACTION
     void PreEvaluateTimeStep() override;
 
     //! evaluate particle interactions
-    void EvaluateInteractions() override;
+    void evaluate_interactions() override;
 
     //! post evaluate time step
-    void PostEvaluateTimeStep(
+    void post_evaluate_time_step(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) override;
 
     //! maximum interaction distance (on this processor)
-    double MaxInteractionDistance() const override;
+    double max_interaction_distance() const override;
 
     //! distribute interaction history
-    void DistributeInteractionHistory() const override;
+    void distribute_interaction_history() const override;
 
     //! communicate interaction history
-    void CommunicateInteractionHistory() const override;
+    void communicate_interaction_history() const override;
 
     //! set current time
     void SetCurrentTime(const double currenttime) override;
@@ -119,10 +119,10 @@ namespace PARTICLEINTERACTION
     void InitKernelHandler();
 
     //! init equation of state bundle
-    void InitEquationOfStateBundle();
+    void init_equation_of_state_bundle();
 
     //! init neighbor pair handler
-    void InitNeighborPairHandler();
+    void init_neighbor_pair_handler();
 
     //! init density handler
     void InitDensityHandler();
@@ -131,31 +131,31 @@ namespace PARTICLEINTERACTION
     void InitPressureHandler();
 
     //! init temperature handler
-    void InitTemperatureHandler();
+    void init_temperature_handler();
 
     //! init momentum handler
     void InitMomentumHandler();
 
     //! init surface tension handler
-    void InitSurfaceTensionHandler();
+    void init_surface_tension_handler();
 
     //! init boundary particle handler
-    void InitBoundaryParticleHandler();
+    void init_boundary_particle_handler();
 
     //! init dirichlet open boundary handler
-    void InitDirichletOpenBoundaryHandler();
+    void init_dirichlet_open_boundary_handler();
 
     //! init neumann open boundary handler
-    void InitNeumannOpenBoundaryHandler();
+    void init_neumann_open_boundary_handler();
 
     //! init virtual wall particle handler
-    void InitVirtualWallParticleHandler();
+    void init_virtual_wall_particle_handler();
 
     //! init phase change handler
-    void InitPhaseChangeHandler();
+    void init_phase_change_handler();
 
     //! init rigid particle contact handler
-    void InitRigidParticleContactHandler();
+    void init_rigid_particle_contact_handler();
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

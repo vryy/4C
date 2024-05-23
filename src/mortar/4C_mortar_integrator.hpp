@@ -66,10 +66,10 @@ namespace MORTAR
     virtual void IntegrateEleBased3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
-    virtual void IntegrateCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    virtual void integrate_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
 
-    virtual void IntegrateCell3DAuxPlaneQuad(MORTAR::Element& sele, MORTAR::Element& mele,
+    virtual void integrate_cell3_d_aux_plane_quad(MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) = 0;
 
@@ -162,7 +162,7 @@ namespace MORTAR
            using a so-called auxiliary plane
 
     */
-    void IntegrateCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
 
     /*!
@@ -171,7 +171,7 @@ namespace MORTAR
            using a so-called auxiliary plane with quadratic interpolation
 
     */
-    void IntegrateCell3DAuxPlaneQuad(MORTAR::Element& sele, MORTAR::Element& mele,
+    void integrate_cell3_d_aux_plane_quad(MORTAR::Element& sele, MORTAR::Element& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) override;
 

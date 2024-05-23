@@ -32,7 +32,7 @@ CORE::LINALG::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetr
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
 {
   if (translate_params_to_belos)
-    *params_ = TranslateSolverParameters(inparams);
+    *params_ = translate_solver_parameters(inparams);
   else
     *params_ = inparams;
 }
@@ -232,7 +232,7 @@ int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, const Solve
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToIfpack(
+Teuchos::ParameterList CORE::LINALG::Solver::translate_four_c_to_ifpack(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
@@ -412,7 +412,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = TranslateSolverParameters(
+        SchurCompList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       }
       break;
@@ -427,10 +427,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = TranslateSolverParameters(
+        predictList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = TranslateSolverParameters(
+        SchurCompList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
@@ -440,10 +440,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = TranslateSolverParameters(
+        predictList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = TranslateSolverParameters(
+        SchurCompList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
@@ -453,10 +453,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
         smolevelsublist.set("smoother: sweeps", mlsmotimessteps[i]);
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
-        predictList = TranslateSolverParameters(
+        predictList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-        SchurCompList = TranslateSolverParameters(
+        SchurCompList = translate_solver_parameters(
             GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
@@ -518,7 +518,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = TranslateSolverParameters(
+      SchurCompList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
@@ -533,10 +533,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = TranslateSolverParameters(
+      predictList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = TranslateSolverParameters(
+      SchurCompList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
@@ -546,10 +546,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = TranslateSolverParameters(
+      predictList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = TranslateSolverParameters(
+      SchurCompList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
@@ -559,10 +559,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
       mllist.set("coarse: sweeps", mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
-      predictList = TranslateSolverParameters(
+      predictList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
-      SchurCompList = TranslateSolverParameters(
+      SchurCompList = translate_solver_parameters(
           GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
@@ -582,7 +582,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToMuelu(
+Teuchos::ParameterList CORE::LINALG::Solver::translate_four_c_to_muelu(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
@@ -599,7 +599,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToMuelu(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
+Teuchos::ParameterList CORE::LINALG::Solver::translate_four_c_to_belos(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList outparams;
@@ -732,7 +732,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
       azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::icc)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-    ifpacklist = CORE::LINALG::Solver::TranslateFourCToIfpack(inparams);
+    ifpacklist = CORE::LINALG::Solver::translate_four_c_to_ifpack(inparams);
   }
 
   // set parameters for CheapSIMPLE if used
@@ -741,10 +741,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
     Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
     simplelist.set("Prec Type", "CheapSIMPLE");  // not used
     Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
-    predictList = TranslateSolverParameters(
+    predictList = translate_solver_parameters(
         GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
     Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
-    schurList = TranslateSolverParameters(
+    schurList = translate_solver_parameters(
         GLOBAL::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
 
@@ -759,32 +759,32 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2)
   {
@@ -823,10 +823,10 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
+Teuchos::ParameterList CORE::LINALG::Solver::translate_solver_parameters(
     const Teuchos::ParameterList& inparams)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  0)   TranslateSolverParameters");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  0)   translate_solver_parameters");
 
   Teuchos::ParameterList outparams;
   if (inparams.isParameter("NAME"))
@@ -846,7 +846,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
       outparams.set("solver", "superlu");
       break;
     case CORE::LINEAR_SOLVER::SolverType::belos:
-      outparams = CORE::LINALG::Solver::TranslateFourCToBelos(inparams);
+      outparams = CORE::LINALG::Solver::translate_four_c_to_belos(inparams);
       break;
     default:
       FOUR_C_THROW("Unsupported type of solver");

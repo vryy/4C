@@ -191,17 +191,17 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   // define variables for eigenvalue analysis
   static CORE::LINALG::Matrix<3, 1> EigenvaluesFe_trial;
   static CORE::LINALG::Matrix<3, 3> EigenvectorsFe_trial;
-  CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
+  calculate_trial_elastic_defgrad_eigenvalues_and_eigenvectors(
       Fe_trial, EigenvaluesFe_trial, EigenvectorsFe_trial);
 
   // elastic trial rotation
   static CORE::LINALG::Matrix<3, 3> Re_trial;
-  Re_trial = CalculateTrialElasticRotation(Fe_trial, EigenvectorsFe_trial, EigenvaluesFe_trial);
+  Re_trial = calculate_trial_elastic_rotation(Fe_trial, EigenvectorsFe_trial, EigenvaluesFe_trial);
 
   // logarithmic strain
   static CORE::LINALG::Matrix<6, 1> Ee_trial_Vstrain;
-  Ee_trial_Vstrain =
-      CalculateLogElasticStrainInStrainLikeVoigtNotation(EigenvectorsFe_trial, EigenvaluesFe_trial);
+  Ee_trial_Vstrain = calculate_log_elastic_strain_in_strain_like_voigt_notation(
+      EigenvectorsFe_trial, EigenvaluesFe_trial);
 
   // setup elasticity tensor (stress-stress-like)
   SetupCmat(*cmat);
@@ -215,8 +215,8 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   const double p = 1.0 / 3.0 * (Me_trial_Vstress(0) + Me_trial_Vstress(1) + Me_trial_Vstress(2));
 
   static CORE::LINALG::Matrix<3, 3> Me_trial_dev;
-  Me_trial_dev = CalculateDeviatoricTrialStresses(Me_trial_Vstress, p);
-  const double Me_trial_eqv = CalculateTrialEquivalentStress(Me_trial_dev);
+  Me_trial_dev = calculate_deviatoric_trial_stresses(Me_trial_Vstress, p);
+  const double Me_trial_eqv = calculate_trial_equivalent_stress(Me_trial_dev);
 
   // solution vector with variables x(0) = Me_eqv;  x(1) = S
   static CORE::LINALG::Matrix<2, 1> x;
@@ -243,11 +243,11 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   Me.Update(eta, Me_trial_dev, p, id2);
 
   static CORE::LINALG::Matrix<3, 3> PK2;
-  PK2 = CalculateSecondPiolaKirchhoffStresses(defgrd, Re_trial, Me);
+  PK2 = calculate_second_piola_kirchhoff_stresses(defgrd, Re_trial, Me);
 
   // current inverse plastic deformation gradient
   static CORE::LINALG::Matrix<3, 3> current_iFv;
-  current_iFv = CalculateUpdatedInverseViscousDefgrad(
+  current_iFv = calculate_updated_inverse_viscous_defgrad(
       last_iFv, EigenvectorsFe_trial, EigenvaluesFe_trial, eta);
 
   // update history variables of current Gauss-point
@@ -257,13 +257,13 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const CORE::LINALG::Matrix<3, 3>*
   // transform stresses to stress-like Voigt notation
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(PK2, *stress);
 
-  auto cmatel = CalculateElasticStiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
+  auto cmatel = calculate_elastic_stiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
   *cmat = MAT::PullBackFourTensor<3>(current_iFv, cmatel);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateDeviatoricTrialStresses(
+CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::calculate_deviatoric_trial_stresses(
     const CORE::LINALG::Matrix<6, 1>& Me_trial_Vstress, const double p) const
 {
   // deviatoric trial stress in stress-like Voigt notation
@@ -280,7 +280,8 @@ CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateDeviatoric
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateUpdatedInverseViscousDefgrad(
+CORE::LINALG::Matrix<3, 3>&
+MAT::ViscoPlasticNoYieldSurface::calculate_updated_inverse_viscous_defgrad(
     const CORE::LINALG::Matrix<3, 3>& last_iFv, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
     const CORE::LINALG::Matrix<3, 1>& eigen_values, const double eta) const
 {
@@ -309,7 +310,7 @@ CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateUpdatedInv
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ViscoPlasticNoYieldSurface::CalculateTrialEquivalentStress(
+double MAT::ViscoPlasticNoYieldSurface::calculate_trial_equivalent_stress(
     const CORE::LINALG::Matrix<3, 3>& Me_trial_dev) const
 {
   static CORE::LINALG::Matrix<3, 3> Me_trial_dev_squared;
@@ -328,7 +329,7 @@ double MAT::ViscoPlasticNoYieldSurface::CalculateTrialEquivalentStress(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
+void MAT::ViscoPlasticNoYieldSurface::calculate_trial_elastic_defgrad_eigenvalues_and_eigenvectors(
     const CORE::LINALG::Matrix<3, 3>& Fe_trial, CORE::LINALG::Matrix<3, 1>& eigen_values,
     CORE::LINALG::Matrix<3, 3>& eigen_vectors) const
 {
@@ -355,7 +356,7 @@ void MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticDefgradEigenvaluesAnd
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
-MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
+MAT::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
     const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
     const CORE::LINALG::Matrix<3, 1>& eigen_values) const
 {
@@ -453,7 +454,7 @@ MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CORE::LINALG::Matrix<6, 1>&
-MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotation(
+MAT::ViscoPlasticNoYieldSurface::calculate_log_elastic_strain_in_strain_like_voigt_notation(
     const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
     const CORE::LINALG::Matrix<3, 1>& eigen_values) const
 {
@@ -479,7 +480,7 @@ MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticRotation(
+CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::calculate_trial_elastic_rotation(
     const CORE::LINALG::Matrix<3, 3>& Fe_trial, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
     const CORE::LINALG::Matrix<3, 1>& eigen_values) const
 {
@@ -504,7 +505,8 @@ CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateTrialElast
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateSecondPiolaKirchhoffStresses(
+CORE::LINALG::Matrix<3, 3>&
+MAT::ViscoPlasticNoYieldSurface::calculate_second_piola_kirchhoff_stresses(
     const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>& Re_trial,
     const CORE::LINALG::Matrix<3, 3>& Me) const
 {
@@ -565,7 +567,7 @@ void MAT::ViscoPlasticNoYieldSurface::LocalNewtonLoop(
       FOUR_C_THROW("Local Newton Raphson in ViscoPlasticNoYieldSurface material not converged");
 
     // calculate linearization
-    J = CalculateLinearization(x(0), x(1), terms);
+    J = calculate_linearization(x(0), x(1), terms);
 
     // invert linearization and calculate increment
     iJ.Invert(J);
@@ -584,7 +586,7 @@ CORE::LINALG::Matrix<2, 1>& MAT::ViscoPlasticNoYieldSurface::CalculateResidual(
     const PreCalculatedTerms& terms)
 {
   // viscosity parameters
-  const double m = params_->StrainRateSensitivity();
+  const double m = params_->strain_rate_sensitivity();
   const double a = params_->FlowResExp();
 
   static CORE::LINALG::Matrix<2, 1> residual;
@@ -604,14 +606,14 @@ CORE::LINALG::Matrix<2, 1>& MAT::ViscoPlasticNoYieldSurface::CalculateResidual(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<2, 2>& MAT::ViscoPlasticNoYieldSurface::CalculateLinearization(
+CORE::LINALG::Matrix<2, 2>& MAT::ViscoPlasticNoYieldSurface::calculate_linearization(
     const double equ_tens_stress_np, const double flow_resistance_np,
     const MAT::PreCalculatedTerms& terms)
 {
   static CORE::LINALG::Matrix<2, 2> J;
 
   // viscosity parameters
-  const double m = params_->StrainRateSensitivity();
+  const double m = params_->strain_rate_sensitivity();
   const double a = params_->FlowResExp();
   const double b = params_->FlowResSatExp();
   const double flow_res_sat_fac = params_->FlowResSatFac();
@@ -661,7 +663,7 @@ MAT::PreCalculatedTerms MAT::ViscoPlasticNoYieldSurface::PreCalculateTerms(
   const double A = params_->PreExpFac();
   const double Q = params_->ActivationEnergy();
   const double R = params_->GasConstant();
-  const double m = params_->StrainRateSensitivity();
+  const double m = params_->strain_rate_sensitivity();
   const double H_0 = params_->FlowResPreFac();
   const double flow_res_sat_fac = params_->FlowResSatFac();
   const double b = params_->FlowResSatExp();

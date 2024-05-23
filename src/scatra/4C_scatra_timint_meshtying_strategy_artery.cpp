@@ -38,12 +38,12 @@ SCATRA::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+  init_conv_check_strategy();
 
   const Teuchos::ParameterList& globaltimeparams =
-      GLOBAL::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
+      GLOBAL::Problem::Instance()->poro_multi_phase_scatra_dynamic_params();
   const Teuchos::ParameterList& myscatraparams =
-      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
   if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_zero)
     FOUR_C_THROW("set your velocity field to zero!");
@@ -63,10 +63,10 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   // created and pointers are set.
   // calls Setup() on the scatra time integrator inside.
   art_scatra->ScaTraField()->Setup();
-  GLOBAL::Problem::Instance()->AddFieldTest(art_scatra->CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(art_scatra->create_sca_tra_field_test());
 
   // set the time integrator
-  SetArteryScatraTimeIntegrator(art_scatra->ScaTraField());
+  set_artery_scatra_time_integrator(art_scatra->ScaTraField());
 
   // get the two discretizations
   artscatradis_ = artscatratimint_->Discretization();
@@ -81,7 +81,8 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   }
 
   const bool evaluate_on_lateral_surface = CORE::UTILS::IntegralValue<int>(
-      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+          "ARTERY COUPLING"),
       "LATERAL_SURFACE_COUPLING");
 
   // set coupling condition name
@@ -89,7 +90,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       [&]()
       {
         if (CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-                GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+                GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
                     "ARTERY COUPLING"),
                 "ARTERY_COUPLING_METHOD") ==
             INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
@@ -107,7 +108,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       artscatradis_, scatradis_, myscatraparams.sublist("ARTERY COUPLING"), couplingcondname,
       "COUPLEDDOFS_ARTSCATRA", "COUPLEDDOFS_SCATRA", evaluate_on_lateral_surface);
 
-  InitializeLinearSolver(myscatraparams);
+  initialize_linear_solver(myscatraparams);
 }
 
 /*----------------------------------------------------------------------*
@@ -135,7 +136,7 @@ void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
 /*----------------------------------------------------------------------*
  | initialize the linear solver                        kremheller 07/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
+void SCATRA::MeshtyingStrategyArtery::initialize_linear_solver(
     const Teuchos::ParameterList& scatraparams)
 {
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
@@ -174,13 +175,13 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
   blocksmootherparams1.sublist("Belos Parameters");
   blocksmootherparams1.sublist("MueLu Parameters");
 
-  scatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams1);
+  scatradis_->compute_null_space_if_necessary(blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = Solver().Params().sublist("Inverse2");
   blocksmootherparams2.sublist("Belos Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
 
-  artscatradis_->ComputeNullSpaceIfNecessary(blocksmootherparams2);
+  artscatradis_->compute_null_space_if_necessary(blocksmootherparams2);
 }
 
 /*-----------------------------------------------------------------------*
@@ -212,7 +213,7 @@ const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyArtery::Solver() const
 /*------------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   kremheller 04/18 |
  *------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyArtery::init_conv_check_strategy()
 {
   convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(
       scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
@@ -249,7 +250,7 @@ void SCATRA::MeshtyingStrategyArtery::Solve(
   // extract increments of scatra and artery-scatra field
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> myinc;
-  ExtractSingleFieldVectors(comb_increment_, myinc, artscatrainc);
+  extract_single_field_vectors(comb_increment_, myinc, artscatrainc);
 
   // update the scatra increment, update iter is performed outside
   increment->Update(1.0, *(myinc), 1.0);
@@ -291,7 +292,7 @@ void SCATRA::MeshtyingStrategyArtery::UpdateArtScatraIter(
 {
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> myinc;
-  ExtractSingleFieldVectors(combined_inc, myinc, artscatrainc);
+  extract_single_field_vectors(combined_inc, myinc, artscatrainc);
 
   artscatratimint_->UpdateIter(artscatrainc);
 
@@ -301,11 +302,11 @@ void SCATRA::MeshtyingStrategyArtery::UpdateArtScatraIter(
 /*-------------------------------------------------------------------------*
  | extract single field vectors                           kremheller 10/20 |
  *------------------------------------------------------------------------ */
-void SCATRA::MeshtyingStrategyArtery::ExtractSingleFieldVectors(
+void SCATRA::MeshtyingStrategyArtery::extract_single_field_vectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
     Teuchos::RCP<const Epetra_Vector>& vec_art) const
 {
-  arttoscatracoupling_->ExtractSingleFieldVectors(globalvec, vec_cont, vec_art);
+  arttoscatracoupling_->extract_single_field_vectors(globalvec, vec_cont, vec_art);
 
   return;
 }
@@ -313,7 +314,7 @@ void SCATRA::MeshtyingStrategyArtery::ExtractSingleFieldVectors(
 /*-------------------------------------------------------------------------*
  | set time integrator for scalar transport in arteries   kremheller 04/18 |
  *------------------------------------------------------------------------ */
-void SCATRA::MeshtyingStrategyArtery::SetArteryScatraTimeIntegrator(
+void SCATRA::MeshtyingStrategyArtery::set_artery_scatra_time_integrator(
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint)
 {
   artscatratimint_ = artscatratimint;
@@ -326,7 +327,7 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryScatraTimeIntegrator(
 /*-------------------------------------------------------------------------*
  | set time integrator for artery problems                kremheller 04/18 |
  *------------------------------------------------------------------------ */
-void SCATRA::MeshtyingStrategyArtery::SetArteryTimeIntegrator(
+void SCATRA::MeshtyingStrategyArtery::set_artery_time_integrator(
     Teuchos::RCP<ADAPTER::ArtNet> arttimint)
 {
   arttimint_ = arttimint;

@@ -555,7 +555,7 @@ namespace CORE::FE
     LagrangeBasisTet(const unsigned int degree) : legendre_(degree)
     {
       FillFeketePoints(degree);
-      ComputeVandermondeMatrices(degree);
+      compute_vandermonde_matrices(degree);
     }
 
 
@@ -603,7 +603,7 @@ namespace CORE::FE
 
    private:
     void FillFeketePoints(const unsigned int degree);
-    void ComputeVandermondeMatrices(const unsigned int degree);
+    void compute_vandermonde_matrices(const unsigned int degree);
 
     CORE::LINALG::SerialDenseMatrix vandermonde_;
     mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermonde_factor_;

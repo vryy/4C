@@ -59,7 +59,7 @@ namespace CORE::LINALG
     const Epetra_Map& OperatorRangeMap() const override { return a_->FullRangeMap(); }
 
     /// Setup of preconditioners for individual blocks
-    void SetupBlockPreconditioners();
+    void setup_block_preconditioners();
 
     /// Apply inverse of the preconditioner
     int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
@@ -103,7 +103,7 @@ namespace CORE::LINALG
     BgS2x2Operator operator=(const BgS2x2Operator& old);
 
     /// Richardson iteration on one block using the given flags
-    void LocalBlockRichardson(Teuchos::RCP<Preconditioner> solver, const SparseMatrix& Op,
+    void local_block_richardson(Teuchos::RCP<Preconditioner> solver, const SparseMatrix& Op,
         Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> y,
         Teuchos::RCP<Epetra_MultiVector> tmpx, int iter, double omega) const;
 

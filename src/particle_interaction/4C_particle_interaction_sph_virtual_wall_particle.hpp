@@ -64,7 +64,8 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! get reference to relative positions of virtual particles
-    inline const std::vector<std::vector<double>>& GetRelativePositionsOfVirtualParticles() const
+    inline const std::vector<std::vector<double>>& get_relative_positions_of_virtual_particles()
+        const
     {
       return virtualparticles_;
     };
@@ -73,13 +74,13 @@ namespace PARTICLEINTERACTION
     inline const std::vector<double>& GetWeightedPressure() const { return weightedpressure_; };
 
     //! get reference to weighted fluid particle pressure gradient
-    inline const std::vector<std::vector<double>>& GetWeightedPressureGradient() const
+    inline const std::vector<std::vector<double>>& get_weighted_pressure_gradient() const
     {
       return weightedpressuregradient_;
     };
 
     //! get reference to weighted fluid particle distance vector
-    inline const std::vector<std::vector<double>>& GetWeightedDistanceVector() const
+    inline const std::vector<std::vector<double>>& get_weighted_distance_vector() const
     {
       return weighteddistancevector_;
     };
@@ -91,10 +92,10 @@ namespace PARTICLEINTERACTION
     };
 
     //! init relative positions of virtual particles
-    void InitRelativePositionsOfVirtualParticles(const double maxinteractiondistance);
+    void init_relative_positions_of_virtual_particles(const double maxinteractiondistance);
 
     //! init states at wall contact points
-    void InitStatesAtWallContactPoints(std::vector<double>& gravity);
+    void init_states_at_wall_contact_points(std::vector<double>& gravity);
 
    private:
     //! smoothed particle hydrodynamics specific parameter list

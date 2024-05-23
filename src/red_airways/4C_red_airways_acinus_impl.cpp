@@ -142,7 +142,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 
   // Get control parameters for stabilization and higher-order elements (currently unused)
   // flag for higher order elements
-  // bool higher_order_ele = ele->isHigherOrderElement(distype);
+  // bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 
   // Get control parameters for stabilization and higher-order elements
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
@@ -1006,7 +1006,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
  |  junction                                                            |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
+void DRT::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
@@ -1230,7 +1230,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
+void DRT::ELEMENTS::AcinusImpl<distype>::solve_scatra_bifurcations(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& scatranp, CORE::LINALG::SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material)
@@ -1284,7 +1284,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
     int gid = ele->Id();
     evaluation_data.e2scatranp->ReplaceGlobalValues(1, &scnp, &gid);
   }
-}  // SolveScatraBifurcations
+}  // solve_scatra_bifurcations
 
 
 /*----------------------------------------------------------------------*
@@ -1473,7 +1473,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele,
+void DRT::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
     CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,

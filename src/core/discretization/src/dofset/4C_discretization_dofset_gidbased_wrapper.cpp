@@ -50,7 +50,7 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetGIDBasedWrapper::AssignDegreesOfFreedom(
+int CORE::Dofsets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   NotifyAssigned();
@@ -92,7 +92,7 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::CheckIsAssigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,
-      "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
+      "assign_degrees_of_freedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
   FOUR_C_ASSERT(sourcedofset_ != Teuchos::null, "dofset_ pointer is nullptr");
 

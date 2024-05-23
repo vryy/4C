@@ -103,7 +103,7 @@ namespace CONTACT
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
@@ -115,7 +115,7 @@ namespace CONTACT
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
 
@@ -152,8 +152,8 @@ namespace CONTACT
     void ResetPenalty() override {}
     void ModifyPenalty() override {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
-    void UpdateUzawaAugmentedLagrange() override {}
-    void UpdateConstraintNorm(int uzawaiter = 0) override {}
+    void update_uzawa_augmented_lagrange() override {}
+    void update_constraint_norm(int uzawaiter = 0) override {}
     bool IsPenalty() const override { return false; };
 
     //@}
@@ -204,15 +204,15 @@ namespace CONTACT
      *
      * \todo Is this really the right-hand side vector or the residual?
      */
-    void RunPreApplyJacobianInverse(
+    void run_pre_apply_jacobian_inverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
-    void RunPostApplyJacobianInverse(Epetra_Vector& result) override;
+    void run_post_apply_jacobian_inverse(Epetra_Vector& result) override;
 
     void RunPostComputeX(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
-    void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const override;
+    void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
 
     //!@}
 

@@ -87,7 +87,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -95,10 +95,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -118,7 +118,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
+    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
@@ -137,7 +137,8 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
+    virtual void set_coupling_contributions(
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class
@@ -147,7 +148,7 @@ namespace ADAPTER
      * \param[in] ivel unused in this implementation     *
      *
      */
-    void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> iforce,
+    void apply_interface_values(Teuchos::RCP<Epetra_Vector> iforce,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) override;
 
     /**

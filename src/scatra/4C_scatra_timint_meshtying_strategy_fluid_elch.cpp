@@ -65,12 +65,12 @@ void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyFluidElch::init_conv_check_strategy()
 {
   convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
       scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-}  // SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyFluidElch::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

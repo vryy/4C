@@ -603,7 +603,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
   // flag for higher order elements
-  // bool higher_order_ele = ele->isHigherOrderElement(distype);
+  // bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
@@ -1685,7 +1685,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
  |  junction                                                            |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
+void DRT::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<CORE::MAT::Material> material)
@@ -2000,7 +2000,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
+void DRT::ELEMENTS::AirwayImpl<distype>::solve_scatra_bifurcations(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& scatra_np, CORE::LINALG::SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material)
@@ -2064,7 +2064,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
     }
     // get the juction solution
   }
-}  // SolveScatraBifurcations
+}  // solve_scatra_bifurcations
 
 /*----------------------------------------------------------------------*
  |  calculate element CFL                                   ismail 02/13|
@@ -2401,7 +2401,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele,
+void DRT::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
     CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,

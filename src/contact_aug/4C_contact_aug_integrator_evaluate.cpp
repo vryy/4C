@@ -51,13 +51,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
   CONTACT::INTEGRATOR::GetElementNodalDofs(ele, nodal_dofs);
 
   // evaluate the non-unit slave element normal and the inverse of its length
-  length_n_inv = this->parent_.IntPolicy::UnitSlaveElementNormal(ele, stau, unit_normal);
+  length_n_inv = this->parent_.IntPolicy::unit_slave_element_normal(ele, stau, unit_normal);
 
   /*--------------------------------------------------------------------------*/
   // non-unit normal vector: 1-st order derivative
   // 1-st int: vector index corresponds to the normal component index
   // 2-nd int: paired vector key corresponds to varied dof GID
-  this->parent_.IntPolicy::Deriv1st_NonUnitSlaveElementNormal(
+  this->parent_.IntPolicy::deriv1st_non_unit_slave_element_normal(
       ele, nodal_dofs, sderiv, stau, d_non_unit_normal);
 
   /*--------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       ele, xi, sderiv, stau, nodal_dofs, unit_normal, length_n_inv, d_non_unit_normal);
 
   Deriv2ndMap& deriv2nd_jac = this->parent_.deriv2ndjac_;
-  this->parent_.IntPolicy::Get_Deriv2nd_Jacobian(
+  this->parent_.IntPolicy::get_deriv2nd_jacobian(
       ele, nodal_dofs, sderiv, unit_normal, length_n_inv, d_non_unit_normal, deriv2nd_jac);
 }
 
@@ -274,7 +274,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal_DerivNormal(
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal_deriv_normal(
     MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
     Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
     Deriv2ndVecMap& ddn_unit)
@@ -328,12 +328,12 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
   unit_gp_normal.Scale(length_n_inv);
 
   // calculate the 1-st derivative of the unified smooth gauss point normal
-  IntPolicy::Deriv1st_UnitSlaveElementNormal(
+  IntPolicy::deriv1st_unit_slave_element_normal(
       unit_gp_normal, length_n_inv, dn_non_unit, dn_unit, false);
 
   // calculate the 2-nd order derivative of the unified smooth gauss point normal
 #ifndef SWITCH_2ND_DERIV_NORMAL_OFF
-  IntPolicy::Deriv2nd_UnitSlaveElementNormal(
+  IntPolicy::deriv2nd_unit_slave_element_normal(
       unit_gp_normal, length_n_inv, dn_non_unit, dn_unit, ddn_non_unit, ddn_unit);
 #endif
 }

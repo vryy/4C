@@ -44,16 +44,16 @@ PARTICLERIGIDBODY::RigidBodyHandler::~RigidBodyHandler() = default;
 void PARTICLERIGIDBODY::RigidBodyHandler::Init()
 {
   // init rigid body unique global identifier handler
-  InitRigidBodyUniqueGlobalIdHandler();
+  init_rigid_body_unique_global_id_handler();
 
   // init rigid body data state container
-  InitRigidBodyDataState();
+  init_rigid_body_data_state();
 
   // init rigid body runtime vtp writer
-  InitRigidBodyVtpWriter();
+  init_rigid_body_vtp_writer();
 
   // init affiliation pair handler
-  InitAffiliationPairHandler();
+  init_affiliation_pair_handler();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
@@ -75,7 +75,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
   {
     // get particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-        particleengineinterface_->GetParticleContainerBundle();
+        particleengineinterface_->get_particle_container_bundle();
 
     if (not particlecontainerbundle->GetParticleTypes().count(PARTICLEENGINE::RigidPhase))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
@@ -83,7 +83,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
   }
 
   // short screen output
-  if (particleengineinterface_->HavePeriodicBoundaryConditions() and myrank_ == 0)
+  if (particleengineinterface_->have_periodic_boundary_conditions() and myrank_ == 0)
     IO::cout << "Warning: rigid bodies not transferred over periodic boundary!" << IO::endl;
 }
 
@@ -91,7 +91,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
 {
   // get bin discretization writer
   std::shared_ptr<IO::DiscretizationWriter> binwriter =
-      particleengineinterface_->GetBinDiscretizationWriter();
+      particleengineinterface_->get_bin_discretization_writer();
 
   // write restart of unique global identifier handler
   rigidbodyuniqueglobalidhandler_->WriteRestart(binwriter);
@@ -101,7 +101,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRestart() const
 
   // get packed rigid body state data
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
-  GetPackedRigidBodyStates(*buffer);
+  get_packed_rigid_body_states(*buffer);
 
   // write rigid body state data
   binwriter->WriteCharVector("RigidBodyStateData", buffer);
@@ -120,17 +120,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ReadRestart(
   affiliationpairs_->ReadRestart(reader);
 
   // allocate rigid body states
-  AllocateRigidBodyStates();
+  allocate_rigid_body_states();
 
   // read rigid body state data
   Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
   reader->ReadCharVector(buffer, "RigidBodyStateData");
 
   // extract packed rigid body state data
-  ExtractPackedRigidBodyStates(*buffer);
+  extract_packed_rigid_body_states(*buffer);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
+void PARTICLERIGIDBODY::RigidBodyHandler::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -153,25 +153,25 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::WriteRigidBodyRuntimeOutput(
+void PARTICLERIGIDBODY::RigidBodyHandler::write_rigid_body_runtime_output(
     const int step, const double time) const
 {
-  rigidbodyvtpwriter_->SetRigidBodyPositionsAndStates(ownedrigidbodies_);
+  rigidbodyvtpwriter_->set_rigid_body_positions_and_states(ownedrigidbodies_);
   rigidbodyvtpwriter_->WriteToDisk(time, step);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_initial_affiliation_pair_data()
 {
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
   // loop over particles in container
@@ -197,11 +197,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
 #endif
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_unique_global_ids_for_all_rigid_bodies()
 {
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // maximum global id of rigid bodies on this processor
   int maxglobalid = -1;
@@ -227,7 +227,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   if (myrank_ == 0) requesteduniqueglobalids.reserve(numglobalids);
 
   // draw requested number of global ids
-  rigidbodyuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
+  rigidbodyuniqueglobalidhandler_->draw_requested_number_of_global_ids(requesteduniqueglobalids);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ == 0)
@@ -257,34 +257,34 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
         rigidbodyuniqueglobalidhandler_->InsertFreedGlobalId(requesteduniqueglobalids[i]);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::AllocateRigidBodyStates()
+void PARTICLERIGIDBODY::RigidBodyHandler::allocate_rigid_body_states()
 {
   // number of global ids
   const int numglobalids = rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() + 1;
 
   // allocate stored states
-  rigidbodydatastate_->AllocateStoredStates(numglobalids);
+  rigidbodydatastate_->allocate_stored_states(numglobalids);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InitializeRigidBodyMassQuantitiesAndOrientation()
+void PARTICLERIGIDBODY::RigidBodyHandler::initialize_rigid_body_mass_quantities_and_orientation()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLERIGIDBODY::RigidBodyHandler::InitializeRigidBodyMassQuantitiesAndOrientation");
+      "PARTICLERIGIDBODY::RigidBodyHandler::initialize_rigid_body_mass_quantities_and_orientation");
 
   // compute mass quantities of rigid bodies
-  ComputeRigidBodyMassQuantities();
+  compute_rigid_body_mass_quantities();
 
   // clear orientation of rigid bodies
-  ClearRigidBodyOrientation();
+  clear_rigid_body_orientation();
 
   // broadcast positions of rigid bodies
-  BroadcastRigidBodyPositions();
+  broadcast_rigid_body_positions();
 
   // set relative position of rigid particles in body frame
-  SetRigidParticleRelativePositionInBodyFrame();
+  set_rigid_particle_relative_position_in_body_frame();
 
   // update relative position of rigid particles
-  UpdateRigidParticleRelativePosition();
+  update_rigid_particle_relative_position();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
@@ -292,35 +292,35 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody");
 
   // distribute affiliation pairs
-  affiliationpairs_->DistributeAffiliationPairs();
+  affiliationpairs_->distribute_affiliation_pairs();
 
   // update rigid body ownership
-  UpdateRigidBodyOwnership();
+  update_rigid_body_ownership();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
+void PARTICLERIGIDBODY::RigidBodyHandler::communicate_rigid_body()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::communicate_rigid_body");
 
   // communicate affiliation pairs
-  affiliationpairs_->CommunicateAffiliationPairs();
+  affiliationpairs_->communicate_affiliation_pairs();
 
   // update rigid body ownership
-  UpdateRigidBodyOwnership();
+  update_rigid_body_ownership();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearForcesAndTorques()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_forces_and_torques()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ClearForcesAndTorques");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::clear_forces_and_torques");
 
   // clear force and torque acting on rigid bodies
-  ClearRigidBodyForceAndTorque();
+  clear_rigid_body_force_and_torque();
 
   // clear force acting on rigid particles
-  ClearRigidParticleForce();
+  clear_rigid_particle_force();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::AddGravityAcceleration(std::vector<double>& gravity)
+void PARTICLERIGIDBODY::RigidBodyHandler::add_gravity_acceleration(std::vector<double>& gravity)
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -333,24 +333,24 @@ void PARTICLERIGIDBODY::RigidBodyHandler::AddGravityAcceleration(std::vector<dou
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerations()
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_accelerations()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerations");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::compute_accelerations");
 
   // compute partial force and torque acting on rigid bodies
-  ComputePartialForceAndTorque();
+  compute_partial_force_and_torque();
 
   // gather partial and compute full force and torque acting on rigid bodies
-  GatherPartialAndComputeFullForceAndTorque();
+  gather_partial_and_compute_full_force_and_torque();
 
   // compute accelerations of rigid bodies from force and torque
-  ComputeAccelerationsFromForceAndTorque();
+  compute_accelerations_from_force_and_torque();
 
   // broadcast accelerations of rigid bodies
-  BroadcastRigidBodyAccelerations();
+  broadcast_rigid_body_accelerations();
 
   // set accelerations of rigid particles
-  SetRigidParticleAccelerations();
+  set_rigid_particle_accelerations();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdatePositions(const double timeincrement)
@@ -358,16 +358,16 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdatePositions(const double timeincre
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::UpdatePositions");
 
   // update positions of rigid bodies with given time increment
-  UpdateRigidBodyPositions(timeincrement);
+  update_rigid_body_positions(timeincrement);
 
   // broadcast positions of rigid bodies
-  BroadcastRigidBodyPositions();
+  broadcast_rigid_body_positions();
 
   // update relative position of rigid particles
-  UpdateRigidParticleRelativePosition();
+  update_rigid_particle_relative_position();
 
   // set position of rigid particles
-  SetRigidParticlePosition();
+  set_rigid_particle_position();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdateVelocities(const double timeincrement)
@@ -375,13 +375,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateVelocities(const double timeincr
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::UpdateVelocities");
 
   // update velocities of rigid bodies with given time increment
-  UpdateRigidBodyVelocities(timeincrement);
+  update_rigid_body_velocities(timeincrement);
 
   // broadcast velocities of rigid bodies
-  BroadcastRigidBodyVelocities();
+  broadcast_rigid_body_velocities();
 
   // set velocities of rigid particles
-  SetRigidParticleVelocities();
+  set_rigid_particle_velocities();
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ClearAccelerations()
@@ -389,13 +389,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearAccelerations()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ClearAccelerations");
 
   // clear accelerations of rigid bodies
-  ClearRigidBodyAccelerations();
+  clear_rigid_body_accelerations();
 }
 
-bool PARTICLERIGIDBODY::RigidBodyHandler::HaveRigidBodyPhaseChange(
+bool PARTICLERIGIDBODY::RigidBodyHandler::have_rigid_body_phase_change(
     const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::HaveRigidBodyPhaseChange");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::have_rigid_body_phase_change");
 
   int localhavephasechange = 0;
 
@@ -420,37 +420,38 @@ bool PARTICLERIGIDBODY::RigidBodyHandler::HaveRigidBodyPhaseChange(
   return globalhavephasechange;
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyPhaseChange(
+void PARTICLERIGIDBODY::RigidBodyHandler::evaluate_rigid_body_phase_change(
     const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyPhaseChange");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLERIGIDBODY::RigidBodyHandler::evaluate_rigid_body_phase_change");
 
   // evaluate melting of rigid bodies
-  EvaluateRigidBodyMelting(particlesfromphasetophase);
+  evaluate_rigid_body_melting(particlesfromphasetophase);
 
   // evaluate solidification of rigid bodies
-  EvaluateRigidBodySolidification(particlesfromphasetophase);
+  evaluate_rigid_body_solidification(particlesfromphasetophase);
 
   // update rigid body ownership
-  UpdateRigidBodyOwnership();
+  update_rigid_body_ownership();
 
   // store previous position of rigid bodies
   const std::vector<std::vector<double>> previousposition = rigidbodydatastate_->GetRefPosition();
 
   // initialize rigid body mass quantities and orientation
-  InitializeRigidBodyMassQuantitiesAndOrientation();
+  initialize_rigid_body_mass_quantities_and_orientation();
 
   // set velocities of rigid bodies after phase change
-  SetRigidBodyVelocitiesAfterPhaseChange(previousposition);
+  set_rigid_body_velocities_after_phase_change(previousposition);
 
   // broadcast velocities of rigid bodies
-  BroadcastRigidBodyVelocities();
+  broadcast_rigid_body_velocities();
 
   // set velocities of rigid particles
-  SetRigidParticleVelocities();
+  set_rigid_particle_velocities();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
+void PARTICLERIGIDBODY::RigidBodyHandler::init_rigid_body_unique_global_id_handler()
 {
   // create and init unique global identifier handler
   rigidbodyuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
@@ -458,7 +459,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyUniqueGlobalIdHandler()
   rigidbodyuniqueglobalidhandler_->Init();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyDataState()
+void PARTICLERIGIDBODY::RigidBodyHandler::init_rigid_body_data_state()
 {
   // create rigid body data state container
   rigidbodydatastate_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyDataState>();
@@ -467,7 +468,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyDataState()
   rigidbodydatastate_->Init();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyVtpWriter()
+void PARTICLERIGIDBODY::RigidBodyHandler::init_rigid_body_vtp_writer()
 {
   // construct and init rigid body runtime vtp writer
   rigidbodyvtpwriter_ = std::unique_ptr<PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter>(
@@ -475,7 +476,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitRigidBodyVtpWriter()
   rigidbodyvtpwriter_->Init(rigidbodydatastate_);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
+void PARTICLERIGIDBODY::RigidBodyHandler::init_affiliation_pair_handler()
 {
   // create affiliation pair handler
   affiliationpairs_ = std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs>(
@@ -485,7 +486,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
   affiliationpairs_->Init();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<char>& buffer) const
+void PARTICLERIGIDBODY::RigidBodyHandler::get_packed_rigid_body_states(
+    std::vector<char>& buffer) const
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -496,10 +498,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<c
     const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
     const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
     const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k =
+        rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
     const std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
     const std::vector<double>& angacc_k =
-        rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
     // pack data for sending
     CORE::COMM::PackBuffer data;
@@ -519,7 +522,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<c
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vector<char>& buffer)
+void PARTICLERIGIDBODY::RigidBodyHandler::extract_packed_rigid_body_states(
+    std::vector<char>& buffer)
 {
   std::vector<char>::size_type position = 0;
 
@@ -536,9 +540,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
     std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
     std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
     std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-    std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
     std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
-    std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+    std::vector<double>& angacc_k =
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
     CORE::COMM::ParObject::ExtractfromPack(position, buffer, mass_k);
     for (int i = 0; i < 6; ++i)
@@ -557,22 +562,22 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
     FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
+void PARTICLERIGIDBODY::RigidBodyHandler::update_rigid_body_ownership()
 {
   // store rigid bodies previously owned by this processor
   std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
 
   // determine owned and hosted rigid bodies
-  DetermineOwnedAndHostedRigidBodies();
+  determine_owned_and_hosted_rigid_bodies();
 
   // relate owned rigid bodies to all hosting processors
-  RelateOwnedRigidBodiesToHostingProcs();
+  relate_owned_rigid_bodies_to_hosting_procs();
 
   // communicate rigid body states
-  CommunicateRigidBodyStates(previouslyownedrigidbodies);
+  communicate_rigid_body_states(previouslyownedrigidbodies);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::DetermineOwnedAndHostedRigidBodies()
+void PARTICLERIGIDBODY::RigidBodyHandler::determine_owned_and_hosted_rigid_bodies()
 {
   ownedrigidbodies_.clear();
   hostedrigidbodies_.clear();
@@ -586,7 +591,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DetermineOwnedAndHostedRigidBodies()
       numglobalids, std::make_pair(0, myrank_));
 
   // get number of particle per rigid body on this processor
-  for (const auto& it : affiliationpairs_->GetRefToAffiliationPairData())
+  for (const auto& it : affiliationpairs_->get_ref_to_affiliation_pair_data())
     maxnumberofparticlesperrigidbodyonproc[it.second].first++;
 
   // get global ids of rigid bodies hosted (owned and non-owned) by this processor
@@ -612,7 +617,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DetermineOwnedAndHostedRigidBodies()
     if (ownerofrigidbodies_[rigidbody_k] == myrank_) ownedrigidbodies_.push_back(rigidbody_k);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
+void PARTICLERIGIDBODY::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_procs()
 {
   // number of global ids
   const int numglobalids = rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() + 1;
@@ -667,7 +672,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
+void PARTICLERIGIDBODY::RigidBodyHandler::communicate_rigid_body_states(
     std::vector<int>& previouslyownedrigidbodies)
 {
   // prepare buffer for sending and receiving
@@ -686,10 +691,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
     const std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
     const std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
     const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k =
+        rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
     const std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
     const std::vector<double>& angacc_k =
-        rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
     // communicate states to owning processor
     if (owner_k != myrank_)
@@ -732,9 +738,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
       std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
       std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
       std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-      std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
       std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
-      std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+      std::vector<double>& angacc_k =
+          rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
       CORE::COMM::ParObject::ExtractfromPack(position, rmsg, mass_k);
       for (int i = 0; i < 6; ++i)
@@ -754,13 +761,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities()
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_rigid_body_mass_quantities()
 {
   // clear partial mass quantities of rigid bodies
-  ClearPartialMassQuantities();
+  clear_partial_mass_quantities();
 
   // compute partial mass quantities of rigid bodies
-  ComputePartialMassQuantities();
+  compute_partial_mass_quantities();
 
   // gathered partial mass quantities of rigid bodies from all corresponding processors
   std::unordered_map<int, std::vector<double>> gatheredpartialmass;
@@ -768,13 +775,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities()
   std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialposition;
 
   // gather partial mass quantities of rigid bodies
-  GatherPartialMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
+  gather_partial_mass_quantities(
+      gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
 
   // compute full mass quantities of rigid bodies
-  ComputeFullMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
+  compute_full_mass_quantities(
+      gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_partial_mass_quantities()
 {
   // iterate over hosted rigid bodies
   for (const int rigidbody_k : hostedrigidbodies_)
@@ -791,18 +800,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_partial_mass_quantities()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -895,7 +904,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
+void PARTICLERIGIDBODY::RigidBodyHandler::gather_partial_mass_quantities(
     std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
     std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
     std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition)
@@ -972,7 +981,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_full_mass_quantities(
     std::unordered_map<int, std::vector<double>>& gatheredpartialmass,
     std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialinertia,
     std::unordered_map<int, std::vector<std::vector<double>>>& gatheredpartialposition)
@@ -1057,7 +1066,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyForceAndTorque()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_rigid_body_force_and_torque()
 {
   // iterate over hosted rigid bodies
   for (const int rigidbody_k : hostedrigidbodies_)
@@ -1072,32 +1081,32 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyForceAndTorque()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidParticleForce()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_rigid_particle_force()
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
   // clear force of all particles
   container_i->ClearState(PARTICLEENGINE::Force);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_partial_force_and_torque()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1137,7 +1146,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTorque()
+void PARTICLERIGIDBODY::RigidBodyHandler::gather_partial_and_compute_full_force_and_torque()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -1204,7 +1213,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque()
+void PARTICLERIGIDBODY::RigidBodyHandler::compute_accelerations_from_force_and_torque()
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1216,7 +1225,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
     const double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
     const double* torque_k = rigidbodydatastate_->GetRefTorque()[rigidbody_k].data();
     double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
-    double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
+    double* angacc_k = rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k].data();
 
     // compute acceleration of rigid body k
     PARTICLEINTERACTION::UTILS::VecAddScale(acc_k, 1 / mass_k[0], force_k);
@@ -1261,7 +1270,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyOrientation()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_rigid_body_orientation()
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1274,7 +1283,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyOrientation()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double timeincrement)
+void PARTICLERIGIDBODY::RigidBodyHandler::update_rigid_body_positions(const double timeincrement)
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
@@ -1283,7 +1292,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double 
     double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
     double* rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k].data();
     const double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
-    const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
+    const double* angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k].data();
 
     // update position
     PARTICLEINTERACTION::UTILS::VecAddScale(pos_k, timeincrement, vel_k);
@@ -1304,16 +1313,17 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double 
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyVelocities(const double timeincrement)
+void PARTICLERIGIDBODY::RigidBodyHandler::update_rigid_body_velocities(const double timeincrement)
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
     double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
-    double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
+    double* angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k].data();
     const double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
-    const double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
+    const double* angacc_k =
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k].data();
 
     // update velocities
     PARTICLEINTERACTION::UTILS::VecAddScale(vel_k, timeincrement, acc_k);
@@ -1321,14 +1331,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyVelocities(const double
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyAccelerations()
+void PARTICLERIGIDBODY::RigidBodyHandler::clear_rigid_body_accelerations()
 {
   // iterate over owned rigid bodies
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
     double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
-    double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
+    double* angacc_k = rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k].data();
 
     // clear accelerations of rigid body k
     PARTICLEINTERACTION::UTILS::VecClear(acc_k);
@@ -1336,7 +1346,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyAccelerations()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
+void PARTICLERIGIDBODY::RigidBodyHandler::broadcast_rigid_body_positions()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -1392,7 +1402,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
+void PARTICLERIGIDBODY::RigidBodyHandler::broadcast_rigid_body_velocities()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -1406,7 +1416,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
 
     // get reference to rigid body states
     const std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-    const std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    const std::vector<double>& angvel_k =
+        rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
 
     // pack data for sending
     CORE::COMM::PackBuffer data;
@@ -1437,7 +1448,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
 
       // get reference to rigid body states
       std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
-      std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
       for (int i = 0; i < 3; ++i)
@@ -1449,7 +1460,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
+void PARTICLERIGIDBODY::RigidBodyHandler::broadcast_rigid_body_accelerations()
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -1464,7 +1475,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
     // get reference to rigid body states
     const std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
     const std::vector<double>& angacc_k =
-        rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
     // pack data for sending
     CORE::COMM::PackBuffer data;
@@ -1495,7 +1506,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
 
       // get reference to rigid body states
       std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
-      std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
+      std::vector<double>& angacc_k =
+          rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i) CORE::COMM::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
       for (int i = 0; i < 3; ++i)
@@ -1507,18 +1519,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBodyFrame()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_rigid_particle_relative_position_in_body_frame()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1556,18 +1568,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
+void PARTICLERIGIDBODY::RigidBodyHandler::update_rigid_particle_relative_position()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1605,18 +1617,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_rigid_particle_position()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1655,18 +1667,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_rigid_particle_velocities()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1693,7 +1705,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
 
     // get pointer to rigid body states
     const double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
-    const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
+    const double* angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k].data();
 
     // get pointer to particle states
     const double* relpos_i =
@@ -1708,18 +1720,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_rigid_particle_accelerations()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1745,9 +1757,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
     const int rigidbody_k = it->second;
 
     // get pointer to rigid body states
-    const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
+    const double* angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k].data();
     const double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
-    const double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
+    const double* angacc_k =
+        rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k].data();
 
     // get pointer to particle states
     const double* relpos_i =
@@ -1768,12 +1781,12 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyMelting(
+void PARTICLERIGIDBODY::RigidBodyHandler::evaluate_rigid_body_melting(
     const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // iterate over particle phase change tuples
   for (const auto& particletypetotype : particlesfromphasetophase)
@@ -1798,7 +1811,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyMelting(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
+void PARTICLERIGIDBODY::RigidBodyHandler::evaluate_rigid_body_solidification(
     const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
   // get search radius
@@ -1807,14 +1820,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
 
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
-      affiliationpairs_->GetRefToAffiliationPairData();
+      affiliationpairs_->get_ref_to_affiliation_pair_data();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // get container of owned particles of rigid phase
-  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
+  PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->get_specific_container(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
   // iterate over particle phase change tuples
@@ -1828,7 +1841,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
     {
       // get local index in specific particle container
       PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
-          particleengineinterface_->GetLocalIndexInSpecificContainer(globalid_i);
+          particleengineinterface_->get_local_index_in_specific_container(globalid_i);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not localindextuple)
@@ -1858,7 +1871,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
 
       // get particles within radius
       std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
-      particleengineinterface_->GetParticlesWithinRadius(pos_i, searchradius, neighboringparticles);
+      particleengineinterface_->get_particles_within_radius(
+          pos_i, searchradius, neighboringparticles);
 
       // minimum distance between particles
       double mindist = searchradius;
@@ -1877,7 +1891,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
 
         // get container of particles of current particle type
         PARTICLEENGINE::ParticleContainer* container_j =
-            particlecontainerbundle->GetSpecificContainer(type_j, status_j);
+            particlecontainerbundle->get_specific_container(type_j, status_j);
 
         // get pointer to particle states
         const double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
@@ -1909,7 +1923,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange(
+void PARTICLERIGIDBODY::RigidBodyHandler::set_rigid_body_velocities_after_phase_change(
     const std::vector<std::vector<double>>& previousposition)
 {
   // iterate over owned rigid bodies
@@ -1917,7 +1931,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
   {
     // get pointer to rigid body states
     const double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
-    const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
+    const double* angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k].data();
     double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
 
     const double* prevpos_k = previousposition[rigidbody_k].data();
@@ -1932,7 +1946,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialConditions()
+void PARTICLERIGIDBODY::RigidBodyHandler::set_initial_conditions()
 {
   PARTICLERIGIDBODY::SetInitialFields(params_, ownedrigidbodies_, *rigidbodydatastate_);
 }

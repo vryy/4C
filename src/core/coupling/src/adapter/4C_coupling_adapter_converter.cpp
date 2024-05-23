@@ -56,7 +56,7 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::CouplingMasterConverter::PermDstMa
 
 void CORE::ADAPTER::CouplingMasterConverter::FillSrcToDstMap(std::map<int, int>& rowmap) const
 {
-  coup_.FillMasterToSlaveMap(rowmap);
+  coup_.fill_master_to_slave_map(rowmap);
 }
 
 
@@ -94,7 +94,7 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::CouplingSlaveConverter::PermDstMap
 
 void CORE::ADAPTER::CouplingSlaveConverter::FillSrcToDstMap(std::map<int, int>& rowmap) const
 {
-  coup_.FillSlaveToMasterMap(rowmap);
+  coup_.fill_slave_to_master_map(rowmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

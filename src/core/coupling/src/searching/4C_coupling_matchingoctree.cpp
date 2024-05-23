@@ -116,13 +116,14 @@ int CORE::COUPLING::MatchingOctree::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::vector<double>& x,
-    int& idofclosestpoint, double& distofclosestpoint, bool searchsecond)
+bool CORE::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
+    const std::vector<double>& x, int& idofclosestpoint, double& distofclosestpoint,
+    bool searchsecond)
 {
   // flag
   bool nodeisinbox = false;
 
-  nodeisinbox = octreeroot_->IsPointInBoundingBox(x);
+  nodeisinbox = octreeroot_->is_point_in_bounding_box(x);
 
   if (nodeisinbox)
   {
@@ -138,7 +139,7 @@ bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::ve
 
     while (!octreeele->IsLeaf())
     {
-      octreeele = octreeele->ReturnChildContainingPoint(x);
+      octreeele = octreeele->return_child_containing_point(x);
 
       if (octreeele == Teuchos::null)
       {
@@ -147,7 +148,8 @@ bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::ve
     }
 
     // now get closest point in leaf
-    octreeele->SearchClosestNodeInLeaf(x, idofclosestpoint, distofclosestpoint, tol_, searchsecond);
+    octreeele->search_closest_node_in_leaf(
+        x, idofclosestpoint, distofclosestpoint, tol_, searchsecond);
   }
 
   return nodeisinbox;
@@ -155,7 +157,7 @@ bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
+void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
     const std::vector<int>& slavenodeids, const std::vector<int>& dofsforpbcplane,
     const double rotangle, std::map<int, std::vector<int>>& midtosid)
 {
@@ -278,7 +280,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
       Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
       // check type of ParObject, and return gid
-      const int id = CheckValidEntityType(o);
+      const int id = check_valid_entity_type(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
@@ -354,7 +356,8 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
 
         bool nodeisinbox;
 
-        nodeisinbox = this->SearchClosestEntityOnThisProc(x, idofclosestpoint, distofclosestpoint);
+        nodeisinbox =
+            this->search_closest_entity_on_this_proc(x, idofclosestpoint, distofclosestpoint);
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
@@ -526,7 +529,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
       Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
       // cast ParObject to specific type and return id
-      const int id = CheckValidEntityType(o);
+      const int id = check_valid_entity_type(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
@@ -546,14 +549,14 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
-        if (SearchClosestEntityOnThisProc(x, gid, dist))
+        if (search_closest_entity_on_this_proc(x, gid, dist))
         {
           auto found = coupling.find(gid);
 
           // search for second point with same distance, if found gid is already in coupling
           if (found != coupling.end())
           {
-            if (SearchClosestEntityOnThisProc(x, gid, dist, true))
+            if (search_closest_entity_on_this_proc(x, gid, dist, true))
             {
               found = coupling.find(gid);
             }
@@ -581,7 +584,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
+void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
     const DRT::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
@@ -681,7 +684,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
       // extracted node data
       Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
 
-      const int id = CheckValidEntityType(o);
+      const int id = check_valid_entity_type(o);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
@@ -701,7 +704,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
-        if (SearchClosestEntityOnThisProc(x, gid, dist))
+        if (search_closest_entity_on_this_proc(x, gid, dist))
         {
           auto found = coupling.find(id);
 
@@ -709,7 +712,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
           // if found gid is already in coupling
           if (found != coupling.end())
           {
-            if (SearchClosestEntityOnThisProc(x, gid, dist, true))
+            if (search_closest_entity_on_this_proc(x, gid, dist, true))
             {
               found = coupling.find(id);
             }
@@ -741,7 +744,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
     // we need a new receive buffer
     rblockofnodes.clear();
   }
-}  // MatchingOctree::FillSlaveToMasterGIDMapping
+}  // MatchingOctree::fill_slave_to_master_gid_mapping
 
 
 /*----------------------------------------------------------------------*/
@@ -812,14 +815,15 @@ void CORE::COUPLING::NodeMatchingOctree::UnPackEntity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<CORE::COMM::ParObject> o)
+int CORE::COUPLING::NodeMatchingOctree::check_valid_entity_type(
+    Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to Node
   auto* actnode = dynamic_cast<DRT::Node*>(o.get());
   if (actnode == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   return actnode->Id();
-}  // NodeMatchingOctree::CheckValidEntityType
+}  // NodeMatchingOctree::check_valid_entity_type
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -933,7 +937,7 @@ void CORE::COUPLING::ElementMatchingOctree::UnPackEntity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(
+int CORE::COUPLING::ElementMatchingOctree::check_valid_entity_type(
     Teuchos::RCP<CORE::COMM::ParObject> o)
 {
   // cast ParObject to element
@@ -944,7 +948,7 @@ int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(
   actele->BuildNodalPointers(nodes_);
 
   return actele->Id();
-}  // ElementMatchingOctree::CheckValidEntityType
+}  // ElementMatchingOctree::check_valid_entity_type
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1243,7 +1247,7 @@ int CORE::COUPLING::OctreeElement::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double>& x,
+void CORE::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
     int& idofclosestpoint, double& distofclosestpoint, const double& elesize, bool searchsecond)
 {
   CheckIsInit();
@@ -1289,11 +1293,11 @@ void CORE::COUPLING::OctreeElement::SearchClosestNodeInLeaf(const std::vector<do
     }
   }
 
-}  // OctreeElement::SearchClosestNodeInLeaf
+}  // OctreeElement::search_closest_node_in_leaf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::OctreeElement::IsPointInBoundingBox(const std::vector<double>& x)
+bool CORE::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
 {
   CheckIsInit();
   CheckIsSetup();
@@ -1310,12 +1314,12 @@ bool CORE::COUPLING::OctreeElement::IsPointInBoundingBox(const std::vector<doubl
   }
 
   return nodeinboundingbox;
-}  // OctreeElement::IsPointInBoundingBox
+}  // OctreeElement::is_point_in_bounding_box
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::OctreeElement::ReturnChildContainingPoint(const std::vector<double>& x)
+CORE::COUPLING::OctreeElement::return_child_containing_point(const std::vector<double>& x)
 {
   CheckIsInit();
   CheckIsSetup();
@@ -1327,11 +1331,11 @@ CORE::COUPLING::OctreeElement::ReturnChildContainingPoint(const std::vector<doub
     FOUR_C_THROW("Asked leaf element for further children.");
   }
 
-  if (this->octreechild1_->IsPointInBoundingBox(x))
+  if (this->octreechild1_->is_point_in_bounding_box(x))
   {
     nextelement = this->octreechild1_;
   }
-  else if (this->octreechild2_->IsPointInBoundingBox(x))
+  else if (this->octreechild2_->is_point_in_bounding_box(x))
   {
     nextelement = this->octreechild2_;
   }
@@ -1341,7 +1345,7 @@ CORE::COUPLING::OctreeElement::ReturnChildContainingPoint(const std::vector<doub
   }
 
   return nextelement;
-}  // OctreeElement::ReturnChildContainingPoint
+}  // OctreeElement::return_child_containing_point
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

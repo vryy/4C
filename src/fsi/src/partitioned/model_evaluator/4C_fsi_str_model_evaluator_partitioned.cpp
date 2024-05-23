@@ -48,13 +48,14 @@ void STR::MODELEVALUATOR::PartitionedFSI::Setup()
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::SetupMultiMapExtractor()
+void STR::MODELEVALUATOR::PartitionedFSI::setup_multi_map_extractor()
 {
-  Int().ModelEval().SetupMultiMapExtractor();
+  Int().ModelEval().setup_multi_map_extractor();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::get_block_dof_row_map_ptr()
+    const
 {
   CheckInitSetup();
   return GState().DofRowMap();
@@ -62,7 +63,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::GetBlockDofR
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::get_current_solution_ptr()
+    const
 {
   CheckInit();
   return GState().GetDisNp();
@@ -70,8 +72,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::GetCurren
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::GetLastTimeStepSolutionPtr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+STR::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
 {
   CheckInit();
   return GState().GetDisN();
@@ -105,7 +107,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRelaxationLinear(
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_relaxation_linear(
     Teuchos::RCP<ADAPTER::Structure> structure)
 {
   // print to screen

@@ -51,7 +51,7 @@ namespace DRT
       /*!
         Interface function for supporting methods of the element
        */
-      virtual int EvaluateServiceXWall(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_service_x_wall(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
@@ -120,13 +120,13 @@ namespace DRT
       FluidEleCalcXWall();
 
       //! brief evaluate shape functions and their derivatives at integration point
-      void EvalShapeFuncAndDerivsAtIntPoint(
+      void eval_shape_func_and_derivs_at_int_point(
           const double* gpcoords,  ///< actual integration point (coords)
           double gpweight          ///< actual integration point (weight)
           ) override;
 
       //! brief evaluate shape functions and their derivatives at integration point
-      virtual void EvalStdShapeFuncAndDerivsAtIntPoint(
+      virtual void eval_std_shape_func_and_derivs_at_int_point(
           const double* gpcoords,  ///< actual integration point (coords)
           double gpweight          ///< actual integration point (weight)
       );

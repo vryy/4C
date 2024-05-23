@@ -127,7 +127,7 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::ComputeTransferenceNumber(const double cint) const
+double MAT::Newman::compute_transference_number(const double cint) const
 {
   double trans = 0.0;
 
@@ -145,14 +145,14 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
+double MAT::Newman::compute_first_deriv_trans(const double cint) const
 {
   double firstderiv = 0.0;
 
   if (TransNrCurve() < 0)
-    firstderiv = EvalFirstDerivPreDefinedFunct(TransNrCurve(), cint, TransNrParams());
+    firstderiv = eval_first_deriv_pre_defined_funct(TransNrCurve(), cint, TransNrParams());
   else if (TransNrCurve() == 0)
-    firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
+    firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, TransNrParams());
   else
     firstderiv = GLOBAL::Problem::Instance()
                      ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
@@ -182,12 +182,12 @@ double MAT::Newman::ComputeThermFac(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
+double MAT::Newman::compute_first_deriv_therm_fac(const double cint) const
 {
   double firstderiv = 0.0;
 
   if (ThermFacCurve() < 0)
-    firstderiv = EvalFirstDerivPreDefinedFunct(ThermFacCurve(), cint, ThermFacParams());
+    firstderiv = eval_first_deriv_pre_defined_funct(ThermFacCurve(), cint, ThermFacParams());
   else if (ThermFacCurve() == 0)
     // thermodynamic factor has to be one if not defined
     // -> first derivative = 0.0

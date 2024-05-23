@@ -41,7 +41,7 @@ namespace NOX
           virtual ~Factory() = default;
 
           //! Returns a inner status test set from a parameter list.
-          Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
+          Teuchos::RCP<Generic> build_inner_status_tests(Teuchos::ParameterList& p,
               const ::NOX::Utils& utils,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
@@ -65,7 +65,7 @@ namespace NOX
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
           /// \brief Build volume change test
-          Teuchos::RCP<Generic> BuildVolumeChangeTest(
+          Teuchos::RCP<Generic> build_volume_change_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
           bool CheckAndTagTest(const Teuchos::ParameterList& p, const Teuchos::RCP<Generic>& test,
@@ -81,7 +81,7 @@ namespace NOX
         \relates NOX::NLN::INNER::StatusTest::Factory
 
         */
-        Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
+        Teuchos::RCP<Generic> build_inner_status_tests(Teuchos::ParameterList& p,
             const ::NOX::Utils& utils,
             std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = nullptr);
       }  // namespace StatusTest

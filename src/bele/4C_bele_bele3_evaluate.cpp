@@ -95,7 +95,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
         CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
-        SpatialConfiguration(xscurr, mydisp);
+        spatial_configuration(xscurr, mydisp);
         // call submethod for volume evaluation and store rseult in third systemvector
         double volumeele = ComputeConstrVols(xscurr, NumNode());
         elevec3[0] = volumeele;
@@ -111,7 +111,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
       CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
-      SpatialConfiguration(xscurr, mydisp);
+      spatial_configuration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1 =

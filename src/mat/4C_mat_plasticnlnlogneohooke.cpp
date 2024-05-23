@@ -681,7 +681,7 @@ void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<std::string, int>& names)
 /*---------------------------------------------------------------------*
  | return names of visualization data for direct VTK output            |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::RegisterOutputDataNames(
+void MAT::PlasticNlnLogNeoHooke::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size["accumulated_plastic_strain"] = 1;

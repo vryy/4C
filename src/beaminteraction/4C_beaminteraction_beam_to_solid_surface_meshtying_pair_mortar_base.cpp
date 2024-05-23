@@ -39,19 +39,19 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, su
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
-    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
-                                      visualization_writer,
+    mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
-  base_class::GetPairVisualization(visualization_writer, visualization_params);
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("btssc-mortar");
+      visualization_writer->get_visualization_writer("btssc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("btssc-mortar-continuous");
+      visualization_writer->get_visualization_writer("btssc-mortar-continuous");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_nodal_forces =
-      visualization_writer->GetVisualizationWriter("btssc-nodal-forces");
+      visualization_writer->get_visualization_writer("btssc-nodal-forces");
   if (visualization_discret.is_null() and visualization_continuous.is_null() and
       visualization_nodal_forces.is_null())
     return;
@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
 
   if (visualization_discret != Teuchos::null or visualization_continuous != Teuchos::null or
       visualization_nodal_forces != Teuchos::null)
@@ -103,7 +103,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         beam_tracker->insert(this->Element1()->Id());
 
         // Get the visualization vectors.
-        auto& visualization_data = visualization_discret->GetVisualizationData();
+        auto& visualization_data = visualization_discret->get_visualization_data();
         std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
         std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
         std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
@@ -155,9 +155,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
                   "btssc-output_params_ptr")
-              ->GetMortarLambdaContinuousSegments();
+              ->get_mortar_lambda_continuous_segments();
       double xi;
-      auto& visualization_data = visualization_continuous->GetVisualizationData();
+      auto& visualization_data = visualization_continuous->get_visualization_data();
       std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<double>& displacement = visualization_data.GetPointData<double>(

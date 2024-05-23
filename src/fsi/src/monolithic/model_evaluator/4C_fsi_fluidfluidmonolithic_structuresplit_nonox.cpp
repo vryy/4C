@@ -135,7 +135,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   FSI::MonolithicNoNOX::SetupSystem();
 
   // create combined map
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
@@ -217,7 +217,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 
     // ----------addressing term 2
     rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(), true));
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->extract_interface_veln();
     sig.Apply(*FluidToStruct(fveln), *rhs);
     rhs->Scale(-dt);
 
@@ -326,9 +326,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  const CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+  const CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
@@ -638,7 +638,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(
   // ----------------------
   // process ale unknowns
   Teuchos::RCP<Epetra_Vector> fcxforale = Teuchos::rcp(new Epetra_Vector(*fcx));
-  FluidField()->VelocityToDisplacement(fcxforale);
+  FluidField()->velocity_to_displacement(fcxforale);
   Teuchos::RCP<Epetra_Vector> acx = FluidToStruct(fcxforale);
   acx = StructToAle(acx);
 
@@ -706,10 +706,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Output()
   FluidField()->Output();
   AleField()->Output();
 
-  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  if (StructureField()->get_constraint_manager()->HaveMonitor())
   {
-    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
-    if (Comm().MyPID() == 0) StructureField()->GetConstraintManager()->PrintMonitorValues();
+    StructureField()->get_constraint_manager()->compute_monitor_values(StructureField()->Dispnp());
+    if (Comm().MyPID() == 0) StructureField()->get_constraint_manager()->PrintMonitorValues();
   }
 }
 
@@ -736,7 +736,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplitNoNOX::CreateCombinedDofRowMap()
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::create_combined_dof_row_map()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupNewSystem()");
 
@@ -754,9 +754,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::CreateCombinedDofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildConvergenceNorms()
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::build_convergence_norms()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "FSI::FluidFluidMonolithicStructureSplitNoNOX::build_covergence_norms()");
   //----------------------------
   // build residual norms
   rhs_->Norm2(&normrhs_);
@@ -836,10 +837,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildConvergenceNorms()
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface                     */
 /*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplitNoNOX::RecoverLagrangeMultiplier()
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "FSI::FluidFluidMonolithicStructureSplitNoNOX::RecoverLagrangeMultiplier");
+      "FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier");
 
   // get time integration parameters of structural time integrator
   // to enable consistent time integration among the fields
@@ -917,7 +918,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::RecoverLagrangeMultiplier()
   if (firstcall_)
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
-    sggprev_->Apply(*FluidToStruct(FluidField()->ExtractInterfaceVeln()),*auxvec);
+    sggprev_->Apply(*FluidToStruct(FluidField()->extract_interface_veln()),*auxvec);
     tmpvec->Update(Dt(),*auxvec,1.0);
   }
   // ---------End of term (6)
@@ -961,7 +962,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::RecoverLagrangeMultiplier()
   return;
 }
 
-void FSI::FluidFluidMonolithicStructureSplitNoNOX::HandleFluidDofMapChangeInNewton()
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_in_newton()
 {
   if (Comm().MyPID() == 0) IO::cout << " New Map!! " << IO::endl;
 
@@ -974,7 +975,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::HandleFluidDofMapChangeInNewt
   ax_n = Extractor().ExtractVector(x_sum_n, 2);
 
   // rebuild combined dof-map
-  CreateCombinedDofRowMap();
+  create_combined_dof_row_map();
   // re-initialize systemmatrix_
   systemmatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -994,7 +995,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::HandleFluidDofMapChangeInNewt
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::FluidFluidMonolithicStructureSplitNoNOX::HasFluidDofMapChanged(
+bool FSI::FluidFluidMonolithicStructureSplitNoNOX::has_fluid_dof_map_changed(
     const Epetra_BlockMap& fluidincrementmap)
 {
   return !FluidField()->DofRowMap()->SameAs(fluidincrementmap);

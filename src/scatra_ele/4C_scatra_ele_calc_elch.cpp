@@ -55,8 +55,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* e
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  if (elchparams_->BoundaryFluxCoupling())
-    CorrectionForFluxAcrossDC(discretization, la[0].lm_, elemat1_epetra, elevec1_epetra);
+  if (elchparams_->boundary_flux_coupling())
+    correction_for_flux_across_dc(discretization, la[0].lm_, elemat1_epetra, elevec1_epetra);
 
   return 0;
 }
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
-  const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
+  const double vol = my::eval_shape_func_and_derivs_at_ele_center();
 
   //-----------------------------------------------------------------------------------------------
   // calculate material and stabilization parameters (one per transported scalar) at element center
@@ -99,12 +99,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
   if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {
     // set internal variables at element center
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     // material parameters at element center
     GetMaterialParams(ele, densn, densnp, densam, visc);
 
-    if (not my::scatrapara_->TauGP()) PrepareStabilization(tau, tauderpot, densnp, vol);
+    if (not my::scatrapara_->TauGP()) prepare_stabilization(tau, tauderpot, densnp, vol);
   }
 
   //----------------------------------------------------------------------
@@ -116,9 +116,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     //-------------------------------------------------------------------------------------
     // calculate stabilization parameters (one per transported scalar) at integration point
     //-------------------------------------------------------------------------------------
-    if (my::scatrapara_->TauGP()) PrepareStabilization(tau, tauderpot, densnp, vol);
+    if (my::scatrapara_->TauGP()) prepare_stabilization(tau, tauderpot, densnp, vol);
 
     //-----------------------------------------------------------------------------------
     // calculate contributions to element matrix and right-hand side at integration point
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     }  // end loop over scalar
 
     // Compute element matrix and rhs
-    CalcMatAndRhsOutsideScalarLoop(emat, erhs, fac, timefacfac, rhsfac);
+    calc_mat_and_rhs_outside_scalar_loop(emat, erhs, fac, timefacfac, rhsfac);
   }
 }
 

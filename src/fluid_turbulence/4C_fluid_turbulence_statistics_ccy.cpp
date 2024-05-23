@@ -117,7 +117,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
     std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
     Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
@@ -177,7 +177,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       int patchid = 0;
 
       std::vector<int> ele_cart_id(3);
-      knots->ConvertEleGidToKnotIds(gid, patchid, ele_cart_id);
+      knots->convert_ele_gid_to_knot_ids(gid, patchid, ele_cart_id);
 
       // access elements knot span
       std::vector<CORE::LINALG::SerialDenseVector> knots(3);
@@ -498,7 +498,7 @@ void FLD::TurbulenceStatisticsCcy::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
-  this->EvaluatePointwiseMeanValuesInPlanes();
+  this->evaluate_pointwise_mean_values_in_planes();
 
   return;
 }  // TurbulenceStatisticsCcy::DoTimeSample
@@ -509,7 +509,7 @@ void FLD::TurbulenceStatisticsCcy::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
           Compute in plane means of u,u^2 etc. (nodal quantities)
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
+void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 {
   const int numsubdivisions = 5;
 
@@ -603,7 +603,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
 
   // get nurbs dis' element numbers
-  std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+  std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
   Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
@@ -639,7 +639,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     int patchid = 0;
 
     std::vector<int> ele_cart_id(3);
-    knots->ConvertEleGidToKnotIds(gid, patchid, ele_cart_id);
+    knots->convert_ele_gid_to_knot_ids(gid, patchid, ele_cart_id);
 
     // access elements knot span
     std::vector<CORE::LINALG::SerialDenseVector> knots(3);
@@ -1321,7 +1321,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   }  // if(withscatra)
 
   return;
-}  // TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
+}  // TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
 
 /*----------------------------------------------------------------------*
@@ -1330,7 +1330,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
           since the last output. Dump the result to file.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int step)
+void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(int step)
 {
   if (numsamp_ == 0)
   {
@@ -1422,7 +1422,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
 
   return;
 
-}  // TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics
+}  // TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics
 
 
 /*----------------------------------------------------------------------*

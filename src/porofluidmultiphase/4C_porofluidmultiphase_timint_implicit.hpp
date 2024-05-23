@@ -96,7 +96,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! add global state vectors specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors() = 0;
+    virtual void add_time_integration_specific_vectors() = 0;
 
     //! prepare time loop
     void PrepareTimeLoop() override;
@@ -105,10 +105,10 @@ namespace POROFLUIDMULTIPHASE
     void PrepareTimeStep() override;
 
     //! initialization procedure prior to evaluation of first time step
-    virtual void PrepareFirstTimeStep();
+    virtual void prepare_first_time_step();
 
     //! initialization procedure prior to evaluation of first time step
-    virtual void CalcInitialTimeDerivative();
+    virtual void calc_initial_time_derivative();
 
     //! read restart data
     void ReadRestart(int step) override;
@@ -131,10 +131,10 @@ namespace POROFLUIDMULTIPHASE
     void Update() override;
 
     ///  compute time derivative
-    virtual void ComputeTimeDerivative() = 0;
+    virtual void compute_time_derivative() = 0;
 
     ///  compute intermediate values if necessary
-    virtual void ComputeIntermediateValues() = 0;
+    virtual void compute_intermediate_values() = 0;
 
     //! apply moving mesh data
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
@@ -150,7 +150,7 @@ namespace POROFLUIDMULTIPHASE
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
 
     //! calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol() override;
+    void evaluate_error_compared_to_analytical_sol() override;
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -165,7 +165,7 @@ namespace POROFLUIDMULTIPHASE
     void Evaluate() override;
 
     //! apply Dirichlet Boundary Condition
-    void PrepareSystemForNewtonSolve();
+    void prepare_system_for_newton_solve();
 
     //! direct access to system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
@@ -195,7 +195,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     //! direct access to block system matrix of artery poro problem
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const override;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! output solution and restart data to file
     void Output() override;
@@ -284,16 +284,16 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_MultiVector> PhaseVelocity() const { return phase_velocities_; }
 
     //! return number of dof set associated with solid pressure
-    int GetDofSetNumberOfSolidPressure() const override { return nds_solidpressure_; };
+    int get_dof_set_number_of_solid_pressure() const override { return nds_solidpressure_; };
 
     //! return valid volume fraction species
-    Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const override
+    Teuchos::RCP<const Epetra_Vector> valid_vol_frac_spec_dofs() const override
     {
       return valid_volfracspec_dofs_;
     }
 
     //! return number of domain integral functions
-    int NumDomainIntFunctions() const { return num_domainint_funct_; }
+    int num_domain_int_functions() const { return num_domainint_funct_; }
 
     //! return the values of the domain integrals
     Teuchos::RCP<const CORE::LINALG::SerialDenseVector> DomainIntValues() const
@@ -320,13 +320,13 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! Set element time step parameters (varying every time step)
-    virtual void SetElementTimeStepParameter() const = 0;
+    virtual void set_element_time_step_parameter() const = 0;
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
+    virtual void set_time_for_neumann_evaluation(Teuchos::ParameterList& params) = 0;
 
     //! Set general element parameters
-    void SetElementGeneralParameters() const;
+    void set_element_general_parameters() const;
 
     /*========================================================================*/
     //! @name general framework
@@ -335,7 +335,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! Set the part of the righthandside belonging to the last timestep.
-    virtual void SetOldPartOfRighthandside() = 0;
+    virtual void set_old_part_of_righthandside() = 0;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -349,7 +349,7 @@ namespace POROFLUIDMULTIPHASE
     void ScalingAndNeumann();
 
     //! add actual Neumann loads multipl. with time factor to the residual
-    virtual void AddNeumannToResidual() = 0;
+    virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
     void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
@@ -359,19 +359,21 @@ namespace POROFLUIDMULTIPHASE
     virtual void AssembleMatAndRHS();
 
     //! call elements to find the valid volume frac pressures and species
-    virtual void EvaluateValidVolumeFracPressAndSpec();
+    virtual void evaluate_valid_volume_frac_press_and_spec();
 
     //! apply the additional volume fraction pressures as DBC
-    virtual void ApplyAdditionalDBCForVolFracPress();
+    virtual void apply_additional_dbc_for_vol_frac_press();
 
     //! apply the starting Dirichlet boundary condition
     virtual void ApplyStartingDBC();
 
     //! call elements to calculate fluid coupling matrix with structure and assemble
-    void AssembleFluidStructCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
+    void assemble_fluid_struct_coupling_mat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
 
     //! call elements to calculate fluid coupling matrix with scatra and assemble
-    void AssembleFluidScatraCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
+    void assemble_fluid_scatra_coupling_mat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
 
     //! return the right time-scaling-factor for the true residual
     virtual double ResidualScaling() const = 0;
@@ -390,22 +392,22 @@ namespace POROFLUIDMULTIPHASE
     virtual void LinearSolve(bool isadapttol, double actresidual, double adaptolbetter);
 
     //! reconstruct pressures and saturation from current solution
-    void ReconstructPressuresAndSaturations() override;
+    void reconstruct_pressures_and_saturations() override;
 
     //! reconstruct solid pressures from current solution
-    void ReconstructSolidPressures();
+    void reconstruct_solid_pressures();
 
     //! reconstruct fluxes from current solution
     void ReconstructFlux() override;
 
     //! calculate phase velocities from current solution
-    void CalculatePhaseVelocities() override;
+    void calculate_phase_velocities() override;
 
     //! reconstruct porosity from current solution
     void ReconstructPorosity();
 
     //! evaluate domain integrals
-    void EvaluateDomainIntegrals();
+    void evaluate_domain_integrals();
 
     /*--- query and output ---------------------------------------------------*/
 
@@ -416,10 +418,10 @@ namespace POROFLUIDMULTIPHASE
     virtual void OutputState();
 
     //! print header of convergence table to screen
-    virtual void PrintConvergenceHeader();
+    virtual void print_convergence_header();
 
     //! print first line of convergence table to screen
-    virtual void PrintConvergenceValuesFirstIter(
+    virtual void print_convergence_values_first_iter(
         const int& itnum,                      //!< current Newton-Raphson iteration step
         const int& itemax,                     //!< maximum number of Newton-Raphson iteration steps
         const double& ittol,                   //!< relative tolerance for Newton-Raphson scheme
@@ -427,7 +429,7 @@ namespace POROFLUIDMULTIPHASE
     );
 
     //! print current line of convergence table to screen
-    virtual void PrintConvergenceValues(
+    virtual void print_convergence_values(
         const int& itnum,     //!< current Newton-Raphson iteration step
         const int& itemax,    //!< maximum number of Newton-Raphson iteration steps
         const double& ittol,  //!< relative tolerance for Newton-Raphson scheme
@@ -437,7 +439,7 @@ namespace POROFLUIDMULTIPHASE
     );
 
     //! print finish line of convergence table to screen
-    virtual void PrintConvergenceFinishLine();
+    virtual void print_convergence_finish_line();
 
     // return arterial network time integrator
     Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() override;
@@ -449,7 +451,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! increment time and step value
-    void IncrementTimeAndStep();
+    void increment_time_and_step();
 
     /*========================================================================*/
     //! @name general framework variables

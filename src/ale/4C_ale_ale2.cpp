@@ -60,7 +60,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(const int id, const i
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Type::NodalBlockInformation(
+void DRT::ELEMENTS::Ale2Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
@@ -78,7 +78,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Ale2Type::ComputeNullSpace(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Type::SetupElementDefinition(
+void DRT::ELEMENTS::Ale2Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["ALE2"];

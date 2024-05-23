@@ -74,7 +74,7 @@ namespace CONTACT
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::Element* cele,
+    bool check_nitsche_contact_state(CONTACT::Element* cele,
         const CORE::LINALG::Matrix<2, 1>& xsi,  ///< local coord on the ele element
         const double& full_fsi_traction,        ///< stressfluid + penalty
         double& gap                             ///< gap
@@ -95,7 +95,7 @@ namespace CONTACT
   {
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
-    bool CheckNitscheContactState(CONTACT::Interface& contactinterface,  ///< Contact interface
+    bool check_nitsche_contact_state(CONTACT::Interface& contactinterface,  ///< Contact interface
         const double& pen_n,                         ///< Nitsche normal penalty parameter
         INPAR::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
         CONTACT::Element* cele,                      ///< the contact element

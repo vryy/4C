@@ -52,12 +52,12 @@ namespace SCATRA
     void EvaluateMeshtying() override;
 
     //! include Dirichlet conditions into condensation
-    void IncludeDirichletInCondensation() const override;
+    void include_dirichlet_in_condensation() const override;
 
     //! initialize meshtying objects
     void InitMeshtying() override;
 
-    bool SystemMatrixInitializationNeeded() const override { return true; }
+    bool system_matrix_initialization_needed() const override { return true; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
 
@@ -84,7 +84,7 @@ namespace SCATRA
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
 
     //! fluid-fluid meshtying algorithm for internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;

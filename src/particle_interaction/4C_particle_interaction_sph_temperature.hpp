@@ -84,7 +84,7 @@ namespace PARTICLEINTERACTION
     void SetCurrentStepSize(const double currentstepsize);
 
     //! insert temperature evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
@@ -93,10 +93,10 @@ namespace PARTICLEINTERACTION
 
    private:
     //! init heat source handler
-    void InitHeatSourceHandler();
+    void init_heat_source_handler();
 
     //! init evaporation induced heat loss handler
-    void InitHeatLossEvaporationHandler();
+    void init_heat_loss_evaporation_handler();
 
     //! evaluate energy equation
     void EnergyEquation() const;

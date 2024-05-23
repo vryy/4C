@@ -193,7 +193,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     // -------------------------------------------------
     // reduce step length
     // -------------------------------------------------
-    prePostOperatorPtr_->runPreModifyStepLength(s, *this);
+    prePostOperatorPtr_->run_pre_modify_step_length(s, *this);
     step *= reduction_factor_;
 
     // -------------------------------------------------

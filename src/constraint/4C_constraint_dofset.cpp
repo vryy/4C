@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-int CONSTRAINTS::ConstraintDofSet::AssignDegreesOfFreedom(
+int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.

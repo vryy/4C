@@ -94,7 +94,7 @@ void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
@@ -105,9 +105,9 @@ void DRT::ELEMENTS::Beam3Base::SetParamsInterfacePtr(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::SetBrownianDynParamsInterfacePtr()
+void DRT::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 {
-  browndyn_interface_ptr_ = interface_ptr_->GetBrownianDynParamInterface();
+  browndyn_interface_ptr_ = interface_ptr_->get_brownian_dyn_param_interface();
 
   return;
 }
@@ -121,8 +121,8 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsInt
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BROWNIANDYN::ParamsInterface> DRT::ELEMENTS::Beam3Base::BrownianDynParamsInterfacePtr()
-    const
+Teuchos::RCP<BROWNIANDYN::ParamsInterface>
+DRT::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 {
   return browndyn_interface_ptr_;
 }
@@ -138,8 +138,8 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
   // first collect all DoF indices
   this->PositionDofIndices(dofindices, node);
   this->TangentDofIndices(dofindices, node);
-  this->Rotation1DDofIndices(dofindices, node);
-  this->TangentLengthDofIndices(dofindices, node);
+  this->rotation1_d_dof_indices(dofindices, node);
+  this->tangent_length_dof_indices(dofindices, node);
 
   // now ask for the GIDs of the DoFs with collected local indices
   dofgids.reserve(dofindices.size());
@@ -158,7 +158,7 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
   std::vector<int> dofindices;
 
   // first collect all DoF indices
-  this->RotationVecDofIndices(dofindices, node);
+  this->rotation_vec_dof_indices(dofindices, node);
 
   // now ask for the GIDs of the DoFs with collected local indices
   dofgids.reserve(dofindices.size());
@@ -170,9 +170,9 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Beam3Base::GetCircularCrossSectionRadiusForInteractions() const
+double DRT::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_interactions() const
 {
-  return GetBeamMaterial().GetInteractionRadius();
+  return GetBeamMaterial().get_interaction_radius();
 }
 
 /*----------------------------------------------------------------------*
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(
     CORE::LINALG::Matrix<3, 1>& refpos, const double& xi) const
 {
   const int numclnodes = this->NumCenterlineNodes();
-  const int numnodalvalues = this->HermiteCenterlineInterpolation() ? 2 : 1;
+  const int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
 
   std::vector<double> zerovec;
   zerovec.resize(3 * numnodalvalues * numclnodes);
@@ -206,7 +206,7 @@ MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial() const
+MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::get_templated_beam_material() const
 {
   return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
 };
@@ -215,36 +215,36 @@ MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMateria
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
+void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices(
     CORE::LINALG::Matrix<3, 3, T>& CN, CORE::LINALG::Matrix<3, 3, T>& CM) const
 {
-  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
-  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
+  get_templated_beam_material<T>().get_constitutive_matrix_of_forces_material_frame(CN);
+  get_templated_beam_material<T>().get_constitutive_matrix_of_moments_material_frame(CM);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor(
+void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor(
     double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const
 {
-  GetTranslationalMassInertiaFactor(mass_inertia_translational);
-  GetBeamMaterial().GetMassMomentOfInertiaTensorMaterialFrame(J);
+  get_translational_mass_inertia_factor(mass_inertia_translational);
+  GetBeamMaterial().get_mass_moment_of_inertia_tensor_material_frame(J);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetTranslationalMassInertiaFactor(
+void DRT::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
     double& mass_inertia_translational) const
 {
-  mass_inertia_translational = GetBeamMaterial().GetTranslationalMassInertiaFactor();
+  mass_inertia_translational = GetBeamMaterial().get_translational_mass_inertia_factor();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>& gamma) const
+void DRT::ELEMENTS::Beam3Base::get_damping_coefficients(CORE::LINALG::Matrix<3, 1>& gamma) const
 {
-  switch (BrownianDynParamsInterface().HowBeamDampingCoefficientsAreSpecified())
+  switch (brownian_dyn_params_interface().how_beam_damping_coefficients_are_specified())
   {
     case INPAR::BROWNIANDYN::cylinder_geometry_approx:
     {
@@ -254,11 +254,11 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>
        * (1) damping of translation orthogonal to axis,
        * (2) damping of rotation around its own axis */
 
-      gamma(0) = 2.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(1) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity();
-      gamma(2) = 4.0 * M_PI * BrownianDynParamsInterface().GetViscosity() *
-                 GetCircularCrossSectionRadiusForInteractions() *
-                 GetCircularCrossSectionRadiusForInteractions();
+      gamma(0) = 2.0 * M_PI * brownian_dyn_params_interface().GetViscosity();
+      gamma(1) = 4.0 * M_PI * brownian_dyn_params_interface().GetViscosity();
+      gamma(2) = 4.0 * M_PI * brownian_dyn_params_interface().GetViscosity() *
+                 get_circular_cross_section_radius_for_interactions() *
+                 get_circular_cross_section_radius_for_interactions();
 
       // huge improvement in convergence of non-linear solver in case of artificial factor 4000
       //      gamma(2) *= 4000.0;
@@ -268,15 +268,15 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>
 
     case INPAR::BROWNIANDYN::input_file:
     {
-      gamma(0) =
-          BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[0] *
-          BrownianDynParamsInterface().GetViscosity();
-      gamma(1) =
-          BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[1] *
-          BrownianDynParamsInterface().GetViscosity();
-      gamma(2) =
-          BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[2] *
-          BrownianDynParamsInterface().GetViscosity();
+      gamma(0) = brownian_dyn_params_interface()
+                     .get_beam_damping_coefficient_prefactors_from_input_file()[0] *
+                 brownian_dyn_params_interface().GetViscosity();
+      gamma(1) = brownian_dyn_params_interface()
+                     .get_beam_damping_coefficient_prefactors_from_input_file()[1] *
+                 brownian_dyn_params_interface().GetViscosity();
+      gamma(2) = brownian_dyn_params_interface()
+                     .get_beam_damping_coefficient_prefactors_from_input_file()[2] *
+                 brownian_dyn_params_interface().GetViscosity();
 
       break;
     }
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <unsigned int ndim, typename T>
-void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
+void DRT::ELEMENTS::Beam3Base::get_background_velocity(
     Teuchos::ParameterList& params,  //!< parameter list
     const CORE::LINALG::Matrix<ndim, 1, T>&
         evaluationpoint,                              //!< point at which background velocity and
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
+void DRT::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& disp,
     CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
     std::vector<bool>& shift_in_dim) const
 {
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
       X(dim) = Nodes()[i]->X()[dim];
     }
 
-    periodic_boundingbox.CheckIfShiftBetweenPoints(d, ref, shift_in_dim, X);
+    periodic_boundingbox.check_if_shift_between_points(d, ref, shift_in_dim, X);
 
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
@@ -412,7 +412,7 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(CORE::LINALG::Matrix<3, 1>& p
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(CORE::LINALG::Matrix<3, 3>& triad,
+void DRT::ELEMENTS::Beam3Base::get_triad_of_binding_spot(CORE::LINALG::Matrix<3, 3>& triad,
     std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     int bspotlocn) const
 {
@@ -446,8 +446,8 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
   }
 
   // Add the radius times a safety factor.
-  const double safety_factor = params.GetBeamBoundingVolumeScaling();
-  const double radius = GetCircularCrossSectionRadiusForInteractions();
+  const double safety_factor = params.get_beam_bounding_volume_scaling();
+  const double radius = get_circular_cross_section_radius_for_interactions();
   bounding_volume.ExtendBoundaries(radius * safety_factor);
 
   return bounding_volume;
@@ -456,29 +456,30 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
 /*--------------------------------------------------------------------------------------------*
  | explicit template instantiations                                                           |
  *--------------------------------------------------------------------------------------------*/
-template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
+template void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices<double>(
     CORE::LINALG::Matrix<3, 3, double>& CN, CORE::LINALG::Matrix<3, 3, double>& CM) const;
-template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<Sacado::Fad::DFad<double>>(
+template void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices<Sacado::Fad::DFad<double>>(
     CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
     CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
 
-template void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<double>(
-    double&, CORE::LINALG::Matrix<3, 3, double>&) const;
 template void
-DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<Sacado::Fad::DFad<double>>(
+DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<double>(
+    double&, CORE::LINALG::Matrix<3, 3, double>&) const;
+template void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<
+    Sacado::Fad::DFad<double>>(
     double&, CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, double>(Teuchos::ParameterList&,
+template void DRT::ELEMENTS::Beam3Base::get_background_velocity<3, double>(Teuchos::ParameterList&,
     const CORE::LINALG::Matrix<3, 1, double>&, CORE::LINALG::Matrix<3, 1, double>&,
     CORE::LINALG::Matrix<3, 3, double>&) const;
-template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DFad<double>>(
+template void DRT::ELEMENTS::Beam3Base::get_background_velocity<3, Sacado::Fad::DFad<double>>(
     Teuchos::ParameterList&, const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template MAT::BeamMaterialTemplated<double>&
-DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
+DRT::ELEMENTS::Beam3Base::get_templated_beam_material<double>() const;
 template MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
-DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;
+DRT::ELEMENTS::Beam3Base::get_templated_beam_material<Sacado::Fad::DFad<double>>() const;
 
 FOUR_C_NAMESPACE_CLOSE

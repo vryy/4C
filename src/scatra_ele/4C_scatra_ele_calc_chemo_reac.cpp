@@ -79,7 +79,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
   // time
-  chemo::ClearChemotaxisTerms();
+  chemo::clear_chemotaxis_terms();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -110,7 +110,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
       // Note: order is important here!!
       advreac::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
 
-      advreac::SetAdvancedReactionTerms(
+      advreac::set_advanced_reaction_terms(
           k, actmat, advreac::GetGpCoord());  // every reaction calculation stuff happens in here!!
     }
   }
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
         Teuchos::rcp_dynamic_cast<MAT::MatListChemotaxis>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
-    chemo::GetChemotaxisCoefficients(
+    chemo::get_chemotaxis_coefficients(
         material);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
-    chemo::GetChemotaxisCoefficients(
+    chemo::get_chemotaxis_coefficients(
         material);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
 
       // Note: order is important here!!
       my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
-      advreac::SetAdvancedReactionTerms(
+      advreac::set_advanced_reaction_terms(
           k, actmat, advreac::GetGpCoord());  // every reaction calculation stuff happens in here!!
     }
   }

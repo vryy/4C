@@ -141,7 +141,7 @@ int CORE::LINALG::SparseMatrixBase::Scale(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::SparseMatrixBase::ReplaceDiagonalValues(const Epetra_Vector& Diagonal)
+int CORE::LINALG::SparseMatrixBase::replace_diagonal_values(const Epetra_Vector& Diagonal)
 {
   return sysmat_->ReplaceDiagonalValues(Diagonal);
 }

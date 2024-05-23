@@ -72,12 +72,12 @@ namespace STI
     void PrepareTimeStep() override;
 
     //! pass scatra degrees of freedom to thermo discretization
-    void TransferScatraToThermo(
+    void transfer_scatra_to_thermo(
         const Teuchos::RCP<const Epetra_Vector> scatra  //!< scatra state vector
     ) const;
 
     //! pass thermo degrees of freedom to scatra discretization
-    void TransferThermoToScatra(
+    void transfer_thermo_to_scatra(
         const Teuchos::RCP<const Epetra_Vector> thermo  //!< thermo state vector
     ) const;
 
@@ -117,7 +117,7 @@ namespace STI
 
    private:
     //! modify field parameters for thermo field
-    void ModifyFieldParametersForThermoField();
+    void modify_field_parameters_for_thermo_field();
 
     //! output solution to screen and files
     void Output() override;

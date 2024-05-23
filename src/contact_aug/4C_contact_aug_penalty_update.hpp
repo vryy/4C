@@ -141,7 +141,7 @@ namespace CONTACT
 
      protected:
       /// access the structural stiffness matrix
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetStructuralStiffnessMatrix(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_structural_stiffness_matrix(
           const CONTACT::ParamsInterface& cparams) const;
 
       /// access the right hand side vector of the entire problem
@@ -167,7 +167,7 @@ namespace CONTACT
       void Reset();
 
       /// Throw if Init() has not been called
-      void ThrowIfNotInitialized() const;
+      void throw_if_not_initialized() const;
 
       /// access the surrounding strategy
       AUG::Strategy& Strategy() { return *strategy_ptr_; };
@@ -197,7 +197,7 @@ namespace CONTACT
        *              \Delta \underline{d}_{\mathcal{S}\!\mathcal{M}}
        *  \f]
        */
-      Teuchos::RCP<const Epetra_Vector> Get_inconsistent_DGapN(
+      Teuchos::RCP<const Epetra_Vector> get_inconsistent_d_gap_n(
           const Epetra_Vector& dincr_slma) const;
 
       /// access the state container
@@ -234,16 +234,16 @@ namespace CONTACT
         const Epetra_Vector& GetDirection() const;
 
         /// access previously accepted state
-        const Epetra_Vector& GetPreviouslyAcceptedState() const;
+        const Epetra_Vector& get_previously_accepted_state() const;
 
         /// access weighted gap vector
         const Epetra_Vector& GetWGap() const;
 
         /// access tributary area vector (active nodes)
-        const Epetra_Vector& GetActiveTributaryArea() const;
+        const Epetra_Vector& get_active_tributary_area() const;
 
         /// access tributary area vector (inactive nodes)
-        const Epetra_Vector& GetInactiveTributaryArea() const;
+        const Epetra_Vector& get_inactive_tributary_area() const;
 
         /// reset the state variables
         void Reset();

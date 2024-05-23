@@ -100,7 +100,7 @@ void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int
 /*----------------------------------------------------------------------*
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const double dta,
+void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
     const double time, Teuchos::RCP<Epetra_Vector>& residual,
     Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat)
 {
@@ -111,7 +111,7 @@ void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const 
     // calc flux
     mapiter->second->FluidImpedanceBc::FlowRateCalculation(mapiter->first);
     // calc pressure and traction vector and appliy to fluid residual and sysmat
-    mapiter->second->FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
+    mapiter->second->FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
         residual, sysmat, dta, time, mapiter->first);
   }
   return;
@@ -120,7 +120,7 @@ void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const 
 /*----------------------------------------------------------------------*
  |  Wrap for time update of impedance conditions             Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time)
+void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -324,7 +324,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
 /*----------------------------------------------------------------------*
  |  Apply Impedance to outflow boundary                      Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
+void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
     Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
     const double dta, const double time, const int condid)
 {

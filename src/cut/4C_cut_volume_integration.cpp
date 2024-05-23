@@ -75,25 +75,25 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
   {
     case CORE::FE::CellType::hex8:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::hex8>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::hex8>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
     case CORE::FE::CellType::tet4:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::tet4>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::tet4>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
     case CORE::FE::CellType::wedge6:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::wedge6>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::wedge6>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
     case CORE::FE::CellType::pyramid5:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<3, CORE::FE::CellType::pyramid5>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::pyramid5>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
@@ -113,7 +113,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
     numeach should be more than 1
     uses ray tracing method
 *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
+bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
 {
   Teuchos::RCP<BoundingBox> box1 = Teuchos::rcp(BoundingBox::Create(*volcell_, elem1_));
   double minn[3], maxx[3];
@@ -756,7 +756,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
   while (1)
   {
     gaus_pts_.clear();
-    wei = compute_Gaussian_points(numeach);
+    wei = compute_gaussian_points(numeach);
 
     if (wei)
     {
@@ -839,11 +839,11 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
 // Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
 void CORE::GEO::CUT::VolumeIntegration::GaussPointGmsh()
 {
-  volcell_->DumpGmshGaussPointsMomFit(gaus_pts_);
+  volcell_->dump_gmsh_gauss_points_mom_fit(gaus_pts_);
 }
 
 // compute integration of x+y,y+z and x+z values from the integration of x, y and z values
-void CORE::GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::first_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -864,7 +864,7 @@ void CORE::GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(
 }
 
 // integration of linear combination of second order terms like x^2+xy+y^2+yz
-void CORE::GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::second_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -883,7 +883,7 @@ void CORE::GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(
 }
 
 // integration of linear combination of third order terms x^3+xyz
-void CORE::GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::third_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -901,7 +901,7 @@ void CORE::GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::fourth_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -920,7 +920,7 @@ void CORE::GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::fifth_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -938,7 +938,7 @@ void CORE::GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(
+void CORE::GEO::CUT::VolumeIntegration::sixth_order_additional_terms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
@@ -958,7 +958,7 @@ void CORE::GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(
 
 /*  Computes the error introduced by the generated integration rule for integrating some specific
    functions Used only in post-processing    */
-void CORE::GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(
+void CORE::GEO::CUT::VolumeIntegration::error_for_specific_function(
     CORE::LINALG::SerialDenseVector rhs_moment, CORE::LINALG::SerialDenseVector weights,
     int numeach)
 {

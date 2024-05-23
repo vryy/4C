@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
       if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {
         const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(Element1());
-        if (ele->HermiteCenterlineInterpolation())
+        if (ele->hermite_centerline_interpolation())
           tan = ele->Tref()[n];
         else
           FOUR_C_THROW(
@@ -117,11 +117,11 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
  *
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::SetRestartDisplacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::
+    set_restart_displacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
-  BeamContactPair::SetRestartDisplacement(centerline_restart_vec_);
+  BeamContactPair::set_restart_displacement(centerline_restart_vec_);
 }
 
 /**
@@ -149,7 +149,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+    solid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   CheckInitSetup();
 
@@ -167,7 +167,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     out << "eta in [" << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
         << ", " << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB())
         << "]";
-    out << ", Gauss points = " << line_to_3D_segments_[index_segment].GetNumberOfProjectionPoints();
+    out << ", Gauss points = "
+        << line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";
   }
 }
@@ -177,8 +178,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
-                                           integration_point,
+    solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+                                              integration_point,
     CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)

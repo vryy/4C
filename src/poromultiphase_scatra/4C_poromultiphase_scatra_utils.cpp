@@ -200,7 +200,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
     Teuchos::RCP<CORE::Dofsets::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
 
     // get MAXNUMSEGPERARTELE
-    const int maxnumsegperele = problem->PoroFluidMultiPhaseDynamicParams()
+    const int maxnumsegperele = problem->poro_fluid_multi_phase_dynamic_params()
                                     .sublist("ARTERY COUPLING")
                                     .get<int>("MAXNUMSEGPERARTELE");
 
@@ -227,10 +227,10 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(const std::string& struct_disname,
+void POROMULTIPHASESCATRA::UTILS::assign_material_pointers(const std::string& struct_disname,
     const std::string& fluid_disname, const std::string& scatra_disname, const bool artery_coupl)
 {
-  POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname, fluid_disname);
+  POROMULTIPHASE::UTILS::assign_material_pointers(struct_disname, fluid_disname);
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 

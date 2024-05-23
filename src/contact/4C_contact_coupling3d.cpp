@@ -71,7 +71,7 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter, Auxn());
+  Lauxn() = SlaveIntElement().compute_unit_normal_at_xi(loccenter, Auxn());
 
   // THIS IS CONTACT-SPECIFIC!
   // also compute linearization of the unit normal vector
@@ -143,7 +143,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // *******************************************************************
     if (!Quad())
     {
-      integrator->IntegrateDerivCell3DAuxPlane(
+      integrator->integrate_deriv_cell3_d_aux_plane(
           SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm(), mparams_ptr);
     }
     // *******************************************************************
@@ -167,7 +167,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(
+      integrator->integrate_deriv_cell3_d_aux_plane_quad(
           SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
@@ -188,7 +188,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(
+      integrator->integrate_deriv_cell3_d_aux_plane_quad(
           SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
@@ -238,10 +238,10 @@ bool CONTACT::Coupling3d::VertexLinearization(
                   3, 3 * SlaveElement().NumNode() + 3 * MasterElement().NumNode()));
 
   // compute slave linearizations (nsrows)
-  SlaveVertexLinearization(linsnodes);
+  slave_vertex_linearization(linsnodes);
 
   // compute master linearizations (nmrows)
-  MasterVertexLinearization(linmnodes);
+  master_vertex_linearization(linmnodes);
 
   //**********************************************************************
   // Clip polygon vertex linearization
@@ -323,7 +323,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
       MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
 
       // do lineclip vertex linearization
-      LineclipVertexLinearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
+      lineclip_vertex_linearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
     }
 
     else
@@ -336,7 +336,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::SlaveVertexLinearization(
+bool CONTACT::Coupling3d::slave_vertex_linearization(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
@@ -357,7 +357,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    FOUR_C_THROW("SlaveVertexLinearization called for unknown element type");
+    FOUR_C_THROW("slave_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SlaveIntElement().NumNode();
@@ -372,7 +372,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) FOUR_C_THROW("SlaveVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("slave_vertex_linearization: Null pointer!");
   }
 
   // linearization of the IntEle spatial coords
@@ -475,7 +475,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::MasterVertexLinearization(
+bool CONTACT::Coupling3d::master_vertex_linearization(
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
@@ -496,7 +496,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    FOUR_C_THROW("MasterVertexLinearization called for unknown element type");
+    FOUR_C_THROW("master_vertex_linearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveIntElement().NumNode();
@@ -511,7 +511,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) FOUR_C_THROW("MasterVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("master_vertex_linearization: Null pointer!");
   }
 
   // linearization of the SlaveIntEle spatial coords
@@ -636,7 +636,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
+bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
     std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
     MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
     std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
@@ -1143,7 +1143,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
       // assemble m-matrix for this slave/master pair
       if (algo == INPAR::MORTAR::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement())
-            .AssembleMderivToNodes(Coupling()[i]->MasterElement());
+            .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
     }
   }
 
@@ -1163,7 +1163,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
       /* find all feasible master elements (this check is inherent in the
        * segment based integration)                    hiermeier 04/16 */
       std::vector<MORTAR::Element*> feasible_ma_eles(MasterElements().size());
-      FindFeasibleMasterElements(feasible_ma_eles);
+      find_feasible_master_elements(feasible_ma_eles);
 
       // create an integrator instance with correct NumGP and Dim
       Teuchos::RCP<CONTACT::Integrator> integrator =
@@ -1208,7 +1208,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
             // assemble m-matrix for this slave/master pair
             if (algo == INPAR::MORTAR::algorithm_mortar)
               dynamic_cast<CONTACT::Element&>(SlaveElement())
-                  .AssembleMderivToNodes(Coupling()[i]->MasterElement());
+                  .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
           }
         }
       }
@@ -1237,7 +1237,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
   {
     bool dual = (ShapeFcn() == INPAR::MORTAR::shape_dual) ||
                 (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin);
-    dynamic_cast<CONTACT::Element&>(SlaveElement()).AssembleDderivToNodes(dual);
+    dynamic_cast<CONTACT::Element&>(SlaveElement()).assemble_dderiv_to_nodes(dual);
   }
   return;
 }
@@ -1267,7 +1267,7 @@ bool CONTACT::Coupling3dManager::EvaluateCoupling(
 
   // interpolate temperatures in TSI case
   if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
-    NTS::Interpolator(imortar_, dim_).InterpolateMasterTemp3D(SlaveElement(), MasterElements());
+    NTS::Interpolator(imortar_, dim_).interpolate_master_temp3_d(SlaveElement(), MasterElements());
 
   return true;
 }
@@ -1339,7 +1339,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
 
       if (algo == INPAR::MORTAR::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement())
-            .AssembleMderivToNodes(Coupling()[i]->MasterElement());
+            .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
     }
   }
 
@@ -1417,7 +1417,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
           Coupling()[i]->IntegrateCells(mparams_ptr);
           if (algo == INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::Element&>(SlaveElement())
-                .AssembleMderivToNodes(Coupling()[i]->MasterElement());
+                .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
         }
       }
     }
@@ -1436,8 +1436,8 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
 
   if (algo == INPAR::MORTAR::algorithm_mortar)
     dynamic_cast<CONTACT::Element&>(SlaveElement())
-        .AssembleDderivToNodes((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-                                ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
+        .assemble_dderiv_to_nodes((ShapeFcn() == INPAR::MORTAR::shape_dual ||
+                                   ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
 
   return;
 }
@@ -1761,7 +1761,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
         MORTAR::Projector::Impl(Coupling()[m]->SlaveIntElement())
-            ->ProjectGaussPointAuxn3D(
+            ->project_gauss_point_auxn3_d(
                 globgp, Coupling()[m]->Auxn(), Coupling()[m]->SlaveIntElement(), sxi, sprojalpha);
 
         // project Gauss point onto slave (parent) element
@@ -1773,7 +1773,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) FOUR_C_THROW("nullptr pointer");
           MORTAR::Projector::Impl(SlaveElement())
-              ->ProjectGaussPointAuxn3D(
+              ->project_gauss_point_auxn3_d(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
           // ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp
           // 05/2016)
@@ -1787,7 +1787,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
         // evaluate trace space shape functions at Gauss point
         if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
-          SlaveElement().EvaluateShapeLagMultLin(
+          SlaveElement().evaluate_shape_lag_mult_lin(
               INPAR::MORTAR::shape_standard, psxi, sval, sderiv, nnodes);
         else
           SlaveElement().EvaluateShape(psxi, sval, sderiv, nnodes);
@@ -1962,7 +1962,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3dManager::FindFeasibleMasterElements(
+void CONTACT::Coupling3dManager::find_feasible_master_elements(
     std::vector<MORTAR::Element*>& feasible_ma_eles) const
 {
   // feasibility counter

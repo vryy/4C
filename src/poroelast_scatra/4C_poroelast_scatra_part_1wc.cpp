@@ -75,7 +75,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::Update()
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +87,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::Output()
   //                         output of solution
   // -------------------------------------------------------------------
   PoroField()->Output();
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -127,7 +127,7 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   if (printheader) PrintHeader();
 
   PoroField()->PrepareTimeStep();
@@ -214,7 +214,7 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Timeloop()
 /*----------------------------------------------------------------------*/
 void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
 {
-  IncrementTimeAndStep();
+  increment_time_and_step();
   if (printheader) PrintHeader();
 
   ScaTraField()->PrepareTimeStep();

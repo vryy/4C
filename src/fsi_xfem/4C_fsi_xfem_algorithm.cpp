@@ -44,7 +44,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 {
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const Teuchos::ParameterList& xfdyn = GLOBAL::Problem::Instance()->XFluidDynamicParams();
   bool ale = CORE::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
@@ -71,7 +71,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 
     GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     const Teuchos::ParameterList& poroelastdyn =
-        problem->PoroelastDynamicParams();  // access the problem-specific parameter list
+        problem->poroelast_dynamic_params();  // access the problem-specific parameter list
     Teuchos::RCP<POROELAST::Monolithic> poro = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(
         POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm, false));
     if (poro == Teuchos::null)  // safety check

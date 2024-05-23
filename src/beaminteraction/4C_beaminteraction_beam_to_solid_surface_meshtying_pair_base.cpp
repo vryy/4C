@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   if (!meshtying_is_evaluated_)
   {
     CastGeometryPair()->PreEvaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
+        this->face_element_->get_face_reference_element_data(), this->line_to_3D_segments_);
   }
 }
 
@@ -70,35 +70,35 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
-                                       visualization_writer,
+    surface>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
-  base_class::GetPairVisualization(visualization_writer, visualization_params);
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->GetVisualizationWriter("btssc-segmentation");
+      visualization_writer->get_visualization_writer("btssc-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
     for (const auto& segment : this->line_to_3D_segments_)
       for (const auto& segmentation_point : {segment.GetStartPoint(), segment.GetEndPoint()})
         points.push_back(segmentation_point);
-    AddVisualizationIntegrationPoints(visualization_segmentation, points, visualization_params);
+    add_visualization_integration_points(visualization_segmentation, points, visualization_params);
   }
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->GetVisualizationWriter("btssc-integration-points");
+          visualization_writer->get_visualization_writer("btssc-integration-points");
   if (visualization_integration_points != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
     for (const auto& segment : this->line_to_3D_segments_)
       for (const auto& segmentation_point : (segment.GetProjectionPoints()))
         points.push_back(segmentation_point);
-    AddVisualizationIntegrationPoints(
+    add_visualization_integration_points(
         visualization_integration_points, points, visualization_params);
   }
 }
@@ -108,13 +108,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::
-    AddVisualizationIntegrationPoints(
+    add_visualization_integration_points(
         const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
             visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const
 {
-  auto& visualization_data = visualization_writer->GetVisualizationData();
+  auto& visualization_data = visualization_writer->get_visualization_data();
 
   // Setup variables.
   CORE::LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
@@ -128,7 +128,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
   std::vector<double>* pair_beam_id = nullptr;
   std::vector<double>* pair_solid_id = nullptr;
   if (write_unique_ids)
@@ -188,7 +188,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
           face_element, true);
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
-  face_element_->SetNumberOfDofOtherElement(
+  face_element_->set_number_of_dof_other_element(
       UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
 
   // The second element in the pair has to be the face element.
@@ -221,7 +221,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
   CORE::LINALG::Matrix<3, 1, scalar_type> r_surface(true);
 
   const BeamToSolidSurfaceCoupling coupling_type =
-      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
+      this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType();
   switch (coupling_type)
   {
     case BeamToSolidSurfaceCoupling::displacement:
@@ -235,7 +235,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
         beam_dof.element_position_(i_dof_beam) -= this->ele1posref_.element_position_(i_dof_beam);
       for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
         surface_dof.element_position_(i_dof_surface) -=
-            this->face_element_->GetFaceReferenceElementData().element_position_(i_dof_surface);
+            this->face_element_->get_face_reference_element_data().element_position_(i_dof_surface);
 
       GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), beam_dof, r_beam);
       GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(), surface_dof, r_surface);

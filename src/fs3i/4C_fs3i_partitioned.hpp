@@ -88,10 +88,10 @@ namespace FS3I
     void ReadRestart() override;
 
     /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
-    void RedistributeInterface() override { return; };
+    void redistribute_interface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
+    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> create_vol_mortar_object(
         Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
@@ -104,11 +104,11 @@ namespace FS3I
     void SetFSISolution();
 
     /// set scatra solution on structure field
-    void SetStructScatraSolution() const;
+    void set_struct_scatra_solution() const;
 
     //! check convergence of monolithic ScaTra problem (depends on which
     // coupling is considered)
-    virtual bool ScatraConvergenceCheck(int itnum) = 0;
+    virtual bool scatra_convergence_check(int itnum) = 0;
 
     //! return communicator
     const Epetra_Comm& Comm() const { return comm_; }
@@ -126,12 +126,12 @@ namespace FS3I
     void SetMeshDisp() const;
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
-    virtual void SetWallShearStresses() const;
+    virtual void set_wall_shear_stresses() const;
 
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const;
 
-    Teuchos::ParameterList& ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn) const;
+    Teuchos::ParameterList& manipulate_fsi_time_params(const Teuchos::ParameterList& fs3idyn) const;
 
     //@}
 
@@ -144,20 +144,20 @@ namespace FS3I
         const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
+    Teuchos::RCP<const Epetra_Vector> structure_to_structure_scalar(
         const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
+    Teuchos::RCP<const Epetra_Vector> structure_scalar_to_structure(
         const Teuchos::RCP<const Epetra_Vector> structurescalavector) const;
 
    private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
+    Teuchos::RCP<const Epetra_Vector> vol_mortar_master_to_slavei(
         const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
+    Teuchos::RCP<const Epetra_Vector> vol_mortar_slave_to_masteri(
         const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const;
 
    protected:

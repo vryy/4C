@@ -65,12 +65,15 @@ namespace CORE::GEO
 
       void SetFindPositions(bool positions) { positions_ = positions; }
 
-      void SetNodalDofSetStrategy(INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy)
+      void set_nodal_dof_set_strategy(INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy)
       {
         nodal_dofset_strategy_ = nodal_dofset_strategy;
       }
 
-      INPAR::CUT::NodalDofSetStrategy GetNodalDofSetStrategy() { return nodal_dofset_strategy_; }
+      INPAR::CUT::NodalDofSetStrategy get_nodal_dof_set_strategy()
+      {
+        return nodal_dofset_strategy_;
+      }
 
       bool FindPositions() const { return positions_; }
 
@@ -81,30 +84,30 @@ namespace CORE::GEO
       /** \brief Set the position for the boundary cell creation
        *
        *  \author hiermeier \date 01/17 */
-      void SetGenBoundaryCellPosition(INPAR::CUT::BoundaryCellPosition gen_bcell_position)
+      void set_gen_boundary_cell_position(INPAR::CUT::BoundaryCellPosition gen_bcell_position)
       {
         gen_bcell_position_ = gen_bcell_position;
       };
 
       /** \brief Float_type for geometric intersection computation */
-      enum INPAR::CUT::CutFloattype GeomIntersect_Floattype() const
+      enum INPAR::CUT::CutFloattype geom_intersect_floattype() const
       {
         return geomintersect_floattype_;
       }
 
       /** \brief Float_type for geometric distance computation */
-      enum INPAR::CUT::CutFloattype GeomDistance_Floattype() const
+      enum INPAR::CUT::CutFloattype geom_distance_floattype() const
       {
         return geomdistance_floattype_;
       }
 
       /** \brief Which Referenceplanes are used in DirectDivergence */
-      enum INPAR::CUT::CutDirectDivergenceRefplane Direct_Divergence_Refplane() const
+      enum INPAR::CUT::CutDirectDivergenceRefplane direct_divergence_refplane() const
       {
         return direct_divergence_refplane_;
       }
 
-      enum INPAR::CUT::BoundaryCellPosition GenBoundaryCellPosition() const
+      enum INPAR::CUT::BoundaryCellPosition gen_boundary_cell_position() const
       {
         return gen_bcell_position_;
       }
@@ -135,11 +138,11 @@ namespace CORE::GEO
       bool Do_SelfCut() { return do_selfcut_; }
 
       /** \brief perform the mesh correction in the selfcut algorithm*/
-      bool SelfCut_Do_MeshCorrection() { return selfcut_do_meshcorrection_; }
+      bool self_cut_do_mesh_correction() { return selfcut_do_meshcorrection_; }
 
       /** \brief multiplicator of the solid element size to specify the maximal size of an island in
        * the selfcut*/
-      int SelfCut_IslandGeomMultiplicator() { return selfcut_island_geom_multiplicator_; }
+      int self_cut_island_geom_multiplicator() { return selfcut_island_geom_multiplicator_; }
 
      private:
       /** \brief Float_type for geometric intersection computation */

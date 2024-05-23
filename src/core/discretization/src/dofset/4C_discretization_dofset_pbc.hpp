@@ -3,7 +3,7 @@
 
 \brief A modified set of degrees of freedom for periodic boundary
        conditions. This class is inherited from dofset and replaces the
-       method AssignDegreesOfFreedom by a version which uses a map
+       method assign_degrees_of_freedom by a version which uses a map
        of coupled nodes provided by the periodic boundary conditions to
        assign the same degrees of freedom to coupled pairs of master and
        slavenodes. It is absolutely mandatory that for each slave node
@@ -78,7 +78,7 @@ namespace CORE::Dofsets
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new PBCDofSet(*this)); }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(
+    int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
@@ -88,7 +88,7 @@ namespace CORE::Dofsets
     std::map<int, std::vector<int>>* GetCoupledNodes() { return perbndcouples_.get(); }
 
     /// Get connectivity map between slave node and its master node
-    virtual Teuchos::RCP<std::map<int, int>> GetSlaveToMasterNodeConnectivity()
+    virtual Teuchos::RCP<std::map<int, int>> get_slave_to_master_node_connectivity()
     {
       return perbnd_slavetomaster_;
     };
@@ -115,7 +115,7 @@ namespace CORE::Dofsets
 
    private:
     /// Build the connectivity between slave node and its master node
-    void BuildSlaveToMasterNodeConnectivity();
+    void build_slave_to_master_node_connectivity();
 
     Teuchos::RCP<std::set<int>> slavenodeids_;
 

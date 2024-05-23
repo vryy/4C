@@ -52,20 +52,20 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! create result test for micro field
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateMicroFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> create_micro_field_test();
 
     //! get time integration of micro problem
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> MicroScaTraField();
 
     void NonlinearSolve() override;
 
-    void CheckAndWriteOutputAndRestart() override;
+    void check_and_write_output_and_restart() override;
 
     void PrepareTimeLoop() override;
 
     void PrepareTimeStep() override;
 
-    void ReadRestartProblemSpecific(int step, IO::DiscretizationReader& reader) override;
+    void read_restart_problem_specific(int step, IO::DiscretizationReader& reader) override;
 
     void Setup() override;
 
@@ -74,24 +74,24 @@ namespace SCATRA
     void Update() override;
 
    protected:
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
+    void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;
 
-    void CalcInitialPotentialField() override;
+    void calc_initial_potential_field() override;
 
-    void CreateMeshtyingStrategy() override;
+    void create_meshtying_strategy() override;
 
    private:
     //! assemble micro and macro and apply mesh tying between micro and macro model
-    void AssembleAndApplyMeshTying();
+    void assemble_and_apply_mesh_tying();
 
     //! stop Netwon loop on convergence and print L2-Norm of increments and residuals
-    bool BreakNewtonLoopAndPrintConvergence();
+    bool break_newton_loop_and_print_convergence();
 
     //! copy solution from coupling nodes from macro discretization to micro discretization
-    void CopySolutionToMicroField();
+    void copy_solution_to_micro_field();
 
     //! redistribute micro discretization to minimize processor interfaces
-    void RedistributeMicroDiscretization();
+    void redistribute_micro_discretization();
 
     //! scale micro problem with associated area of macro field
     void ScaleMicroProblem();
@@ -100,7 +100,7 @@ namespace SCATRA
     void SetupCoupling();
 
     //! update increments in micro and macro field
-    void UpdateIterMicroMacro();
+    void update_iter_micro_macro();
 
     //! write coupled nodes and node coordinates to csv file
     //! \param glob_micro_macro_coupled_node_gids      coupled micro macro nodes of all procs

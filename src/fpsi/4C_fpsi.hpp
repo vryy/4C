@@ -40,7 +40,7 @@ namespace FPSI
     void ReadRestart(int restartstep) override = 0;
 
     /// redistribute FPSI interface if running on parallel
-    void RedistributeInterface();
+    void redistribute_interface();
   };
 }  // namespace FPSI
 

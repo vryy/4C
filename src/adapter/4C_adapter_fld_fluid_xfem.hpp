@@ -43,7 +43,7 @@ namespace ADAPTER
     Teuchos::RCP<DRT::Discretization> Discretization() override;
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
+    Teuchos::RCP<DRT::Discretization> boundary_discretization();
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
@@ -90,7 +90,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -98,10 +98,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -124,7 +124,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
+    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
     Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;

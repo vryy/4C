@@ -40,8 +40,8 @@ void electromagnetics_drt()
   // declare abbreviation
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
-  // The function NumDofPerElementAuxiliary() of the electromagnetic elements return nsd_*2. This
-  // does not assure that the code will work in any case (more spatial dimensions might give
+  // The function num_dof_per_element_auxiliary() of the electromagnetic elements return nsd_*2.
+  // This does not assure that the code will work in any case (more spatial dimensions might give
   // problems)
   if (problem->NDim() != 3)
   {
@@ -51,7 +51,7 @@ void electromagnetics_drt()
   }
 
   // declare problem-specific parameter list for electromagnetics
-  const Teuchos::ParameterList& elemagparams = problem->ElectromagneticParams();
+  const Teuchos::ParameterList& elemagparams = problem->electromagnetic_params();
 
   // declare discretization and check their existence
   Teuchos::RCP<DRT::DiscretizationHDG> elemagdishdg =
@@ -80,7 +80,7 @@ void electromagnetics_drt()
   // Asking the discretization how many internal DOF the elements have and creating the additional
   // DofSet
   int eledofs = dynamic_cast<DRT::ELEMENTS::Elemag*>(elemagdishdg->lColElement(0))
-                    ->NumDofPerElementAuxiliary();
+                    ->num_dof_per_element_auxiliary();
   Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   elemagdishdg->AddDofSet(dofsetaux);
@@ -209,12 +209,12 @@ void electromagnetics_drt()
 
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
-        // DRT::UTILS::DbcHDG::DoDirichletCondition.
+        // DRT::UTILS::DbcHDG::do_dirichlet_condition.
         problem->SetProblemType(GLOBAL::ProblemType::scatra);
 
         // access the problem-specific parameter list
         const Teuchos::ParameterList& scatradyn =
-            GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
+            GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
 
         // do the scatra
         const INPAR::SCATRA::VelocityField veltype =
@@ -241,7 +241,7 @@ void electromagnetics_drt()
             // access the problem-specific parameter list
             Teuchos::RCP<Teuchos::ParameterList> scatraparams =
                 Teuchos::rcp(new Teuchos::ParameterList(
-                    GLOBAL::Problem::Instance()->ScalarTransportDynamicParams()));
+                    GLOBAL::Problem::Instance()->scalar_transport_dynamic_params()));
 
             // TODO (berardocco) Might want to add the scatra section in the input file to avoid
             // adding params to the elemag or using existing ones for scatra purposes
@@ -308,12 +308,12 @@ void electromagnetics_drt()
             // scatraparams->print(std::cout);
 
             scatraalgo->Init();
-            scatraalgo->SetNumberOfDofSetVelocity(1);
+            scatraalgo->set_number_of_dof_set_velocity(1);
             scatraalgo->Setup();
             scatraalgo->SetVelocityField();
             scatraalgo->TimeLoop();
 
-            // scatraalgo->ComputeInteriorValues();
+            // scatraalgo->compute_interior_values();
 
             // Create a vector that is going to be filled differently depending on the
             // discretization. If HDG we already have the information about the gradient, otherwise
@@ -330,10 +330,10 @@ void electromagnetics_drt()
 
             // This is a shortcut for output reason
             // TODO (berardocco) Fix the output
-            output->CreateNewResultAndMeshFile();
+            output->create_new_result_and_mesh_file();
 
             // Given the results of the scatra solver obtain the initial value of the electric field
-            elemagalgo->SetInitialElectricField(phi, scatradis);
+            elemagalgo->set_initial_electric_field(phi, scatradis);
 
             // Once work is done change back to problem elemag
             problem->SetProblemType(GLOBAL::ProblemType::elemag);
@@ -358,7 +358,7 @@ void electromagnetics_drt()
   }
 
   // print information to screen
-  elemagalgo->PrintInformationToScreen();
+  elemagalgo->print_information_to_screen();
 
   elemagalgo->Integrate();
 

@@ -102,7 +102,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
     // ***********************************************************
     //                   Integrate stuff !!!                    //
     // ***********************************************************
-    integrator->IntegrateDerivSegment2D(
+    integrator->integrate_deriv_segment2_d(
         SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm(), mparams_ptr);
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
@@ -506,11 +506,11 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
 
     // evaluate trace space shape functions
     if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
-      SlaveElement().EvaluateShapeLagMultLin(
+      SlaveElement().evaluate_shape_lag_mult_lin(
           INPAR::MORTAR::shape_standard, sxi, sval, sderiv, nnodes);
     else
       SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
-    SlaveElement().Evaluate2ndDerivShape(sxi, ssecderiv, nnodes);
+    SlaveElement().evaluate2nd_deriv_shape(sxi, ssecderiv, nnodes);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = SlaveElement().Jacobian(sxi);

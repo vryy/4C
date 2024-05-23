@@ -158,35 +158,35 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
     // only 3D elements
     case CORE::FE::CellType::hex8:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::hex8>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::hex8>(problem);
     }
     case CORE::FE::CellType::hex20:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::hex20>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::hex20>(problem);
     }
     case CORE::FE::CellType::hex27:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::hex27>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::hex27>(problem);
     }
     case CORE::FE::CellType::tet4:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::tet4>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::tet4>(problem);
     }
     case CORE::FE::CellType::tet10:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::tet10>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::tet10>(problem);
     }
     case CORE::FE::CellType::wedge6:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::wedge6>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::wedge6>(problem);
     }
     case CORE::FE::CellType::wedge15:
     {
-      return DefineProblemTypeXFEM<CORE::FE::CellType::wedge15>(problem);
+      return define_problem_type_xfem<CORE::FE::CellType::wedge15>(problem);
     }
       //    case CORE::FE::CellType::pyramid5:
       //    {
-      //      return DefineProblemTypeXFEM<CORE::FE::CellType::pyramid5>(problem);
+      //      return define_problem_type_xfem<CORE::FE::CellType::pyramid5>(problem);
       //    }
     default:
       FOUR_C_THROW("Element shape %s not activated for XFEM problems. Just do it.",
@@ -201,7 +201,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::define_problem_type_xfem(
     std::string problem)
 {
   if (problem == "xfem")

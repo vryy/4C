@@ -39,9 +39,9 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20> elemat2(elemat2_epetra.values(), true);
@@ -339,7 +339,7 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
       }
 
       // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+      update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
       if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -428,7 +428,7 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -1096,7 +1096,8 @@ void DRT::ELEMENTS::SoHex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locati
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex20>(shapefcts[gp], params);
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::hex20>(
+        shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1478,7 +1479,7 @@ void DRT::ELEMENTS::SoHex20::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoHex20::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =

@@ -77,7 +77,7 @@ namespace NOX
           virtual bool IsCondensedSystem() const = 0;
 
           //! Get necessary maps for the preconditioner.
-          virtual void FillMapsForPreconditioner(
+          virtual void fill_maps_for_preconditioner(
               std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
 
           //! Get the corresponding linear solver (optional)

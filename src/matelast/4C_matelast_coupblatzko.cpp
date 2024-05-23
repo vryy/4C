@@ -50,7 +50,7 @@ void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi,
     psi += psiadd;
 }
 
-void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+void MAT::ELASTIC::CoupBlatzKo::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
@@ -76,7 +76,7 @@ void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 
   ddPII(3) -= (1. - f) * 0.5 * mue / prinv(2) / prinv(2);
 }
 
-void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(
+void MAT::ELASTIC::CoupBlatzKo::add_third_derivatives_principal_iso(
     CORE::LINALG::Matrix<10, 1>& dddPIII_iso, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {

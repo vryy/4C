@@ -120,7 +120,7 @@ namespace BEAMINTERACTION
     }
 
     // get current length of linker
-    virtual double GetCurrentLinkerLength() const = 0;
+    virtual double get_current_linker_length() const = 0;
 
     //@}
 

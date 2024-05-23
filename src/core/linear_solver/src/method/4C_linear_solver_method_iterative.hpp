@@ -75,9 +75,9 @@ namespace CORE::LINEAR_SOLVER
      * @return Boolean flag to indicate whether preconditioner is reused (\c true) or has to be
      * re-computed (\c false)
      *
-     * \sa CheckReuseStatusOfActiveSet()
+     * \sa check_reuse_status_of_active_set()
      */
-    bool AllowReusePreconditioner(const int reuse, const bool reset);
+    bool allow_reuse_preconditioner(const int reuse, const bool reset);
 
     /*! \brief Function for creating preconditioner object
      *
@@ -85,7 +85,7 @@ namespace CORE::LINEAR_SOLVER
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> CreatePreconditioner(
+    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> create_preconditioner(
         Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
@@ -130,7 +130,7 @@ namespace CORE::LINEAR_SOLVER
      * (false) of the preconditioner
      * \param[in] linSysParams Parameter list with some linear system information
      */
-    bool CheckReuseStatusOfActiveSet(const Teuchos::ParameterList& linSysParams);
+    bool check_reuse_status_of_active_set(const Teuchos::ParameterList& linSysParams);
 
     /*! \brief Map of active DOFs in structural contact simulations.
      *
@@ -141,7 +141,7 @@ namespace CORE::LINEAR_SOLVER
      * "contact activeDofMap" parameter in the "Linear System properties"
      * parameter list set.
      *
-     * \sa CheckReuseStatusOfActiveSet()
+     * \sa check_reuse_status_of_active_set()
      */
     Teuchos::RCP<Epetra_Map> active_dof_map_;
 

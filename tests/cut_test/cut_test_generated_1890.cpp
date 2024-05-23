@@ -3800,8 +3800,8 @@ void test_generated_1890()
     intersection.AddElement(1990, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
-  intersection.CutMesh().CreateSideIds_CutTest();
-  intersection.NormalMesh().CreateSideIdsAll_CutTest();
+  intersection.CutMesh().create_side_ids_cut_test();
+  intersection.NormalMesh().create_side_ids_all_cut_test();
 
   intersection.CutTest_Cut(
       true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);

@@ -131,7 +131,7 @@ namespace CORE::Dofsets
     virtual void AddDofSettoList() = 0;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    virtual void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset) = 0;
+    virtual void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) = 0;
 
     /// Get Number of Global Elements of degree of freedom row map
     virtual int NumGlobalElements() const = 0;
@@ -162,7 +162,7 @@ namespace CORE::Dofsets
     //! @name Setup and Initialization
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
+    virtual int assign_degrees_of_freedom(
         const DRT::Discretization& dis, const unsigned dspos, const int start) = 0;
 
     /// reset all internal variables

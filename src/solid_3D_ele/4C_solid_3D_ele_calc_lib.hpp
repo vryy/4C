@@ -694,8 +694,8 @@ namespace DRT::ELEMENTS
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
   template <CORE::FE::CellType celltype>
-  void AddInternalForceVector(const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
-                                  DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
+  void add_internal_force_vector(const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+                                     DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
       const Stress<celltype>& stress, const double integration_fac,
       CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
           force_vector)

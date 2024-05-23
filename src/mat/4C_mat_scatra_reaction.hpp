@@ -377,12 +377,12 @@ namespace MAT
         const double scale                 //!< scaling factor for reference concentrations
     ) const;
 
-    void CalcPermInfluenceDeriv(const int k,  //!< current scalar id
-        std::vector<double>& derivs,          //!< vector with derivatives (to be filled)
-        const std::vector<double>& phinp,     //!< scalar values at t_(n+1)
-        const double time,                    //!< current time
-        const double* gpcoord,                //!< Gauss-point coordinates
-        const double scale                    //!< scaling factor for reference concentrations
+    void calc_perm_influence_deriv(const int k,  //!< current scalar id
+        std::vector<double>& derivs,             //!< vector with derivatives (to be filled)
+        const std::vector<double>& phinp,        //!< scalar values at t_(n+1)
+        const double time,                       //!< current time
+        const double* gpcoord,                   //!< Gauss-point coordinates
+        const double scale                       //!< scaling factor for reference concentrations
     ) const;
 
    protected:
@@ -420,14 +420,14 @@ namespace MAT
     bool IsReacStart() const { return params_->isreacstart_; }
 
     /// return flag if there is a spatial distribution function for the reaction coefficient
-    bool GetIsDistrFunctReacCoeff() const { return params_->isdistrfunctreaccoeff_; }
+    bool get_is_distr_funct_reac_coeff() const { return params_->isdistrfunctreaccoeff_; }
 
     /// Return quick accessible material parameter data
     CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// calculate advanced reaction terms
-    double CalcReaBodyForceTerm(const int k,  //!< current scalar id
-        const std::vector<double>& phinp,     //!< scalar values at t_(n+1)
+    double calc_rea_body_force_term(const int k,  //!< current scalar id
+        const std::vector<double>& phinp,         //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string, double>>&
             constants,  //!< vector containing values which are independent of the scalars
         const double
@@ -435,9 +435,9 @@ namespace MAT
     ) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrix(const int k,  //!< current scalar id
-        std::vector<double>& derivs,               //!< vector with derivatives (to be filled)
-        const std::vector<double>& phinp,          //!< scalar values at t_(n+1)
+    void calc_rea_body_force_deriv_matrix(const int k,  //!< current scalar id
+        std::vector<double>& derivs,                    //!< vector with derivatives (to be filled)
+        const std::vector<double>& phinp,               //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string, double>>&
             constants,  //!< vector containing values which are independent of the scalars
         const double
@@ -446,7 +446,7 @@ namespace MAT
 
     /// calculate advanced reaction term derivatives after additional variables of the specified
     /// function
-    void CalcReaBodyForceDerivMatrixAddVariables(const int k,  //!< current scalar id
+    void calc_rea_body_force_deriv_matrix_add_variables(const int k,  //!< current scalar id
         std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
         const std::vector<std::pair<std::string, double>>& variables,  //!< variables
         const std::vector<std::pair<std::string, double>>&
@@ -455,14 +455,14 @@ namespace MAT
     ) const;
 
     /// add variables to the by-function reaction
-    void AddAdditionalVariables(const int k,                          //!< current scalar id
+    void add_additional_variables(const int k,                        //!< current scalar id
         const std::vector<std::pair<std::string, double>>& variables  //!< variables
     ) const;
 
    protected:
     /// helper for calculating advanced reaction terms
-    double CalcReaBodyForceTerm(int k,     //!< current scalar id
-        const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
+    double calc_rea_body_force_term(int k,  //!< current scalar id
+        const std::vector<double>& phinp,   //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string, double>>&
             constants,      //!< vector containing values which are independent of the scalars
         double scale_reac,  //!< scaling factor for reaction term (= reaction coefficient *
@@ -471,7 +471,7 @@ namespace MAT
     ) const;
 
     /// helper for calculating advanced reaction term derivatives
-    void CalcReaBodyForceDeriv(int k,      //!< current scalar id
+    void calc_rea_body_force_deriv(int k,  //!< current scalar id
         std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string, double>>&
@@ -482,8 +482,8 @@ namespace MAT
     ) const;
 
     /// helper for calculating advanced reaction term derivatives
-    void CalcReaBodyForceDerivAddVariables(int k,  //!< current scalar id
-        std::vector<double>& derivs,               //!< vector with derivatives (to be filled)
+    void calc_rea_body_force_deriv_add_variables(int k,  //!< current scalar id
+        std::vector<double>& derivs,                     //!< vector with derivatives (to be filled)
         const std::vector<std::pair<std::string, double>>& variables,  //!< variables
         const std::vector<std::pair<std::string, double>>&
             constants,      //!< constants (including the scalar values phinp)

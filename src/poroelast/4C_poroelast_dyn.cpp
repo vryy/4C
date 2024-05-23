@@ -33,7 +33,7 @@ void poroelast_drt()
   POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   // choose algorithm depending on solution type
   Teuchos::RCP<POROELAST::PoroBase> poroalgo =

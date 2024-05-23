@@ -121,12 +121,12 @@ namespace STR
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! Predict constant displacements, consistent velocities and accelerations [derived] */
-      void PredictConstDisConsistVelAcc(
+      void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant velocities
        *  and consistent accelerations [derived] */
-      bool PredictConstVelConsistAcc(
+      bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
       /*! Predict displacements based on constant accelerations
@@ -149,7 +149,7 @@ namespace STR
        *  \f]
        *     * Remark: In the case of a Lie group Gen-Alpha time integration scheme,
        *               all forces are evaluated at the end point n+1. */
-      void AddViscoMassContributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Epetra_Vector& f) const override;
 
       /*! \brief Calculate the structural stiffness block at \f$ t_{n+1} \f$  [derived]
        *
@@ -159,7 +159,7 @@ namespace STR
        *                                + \frac{\gamma}{\beta \Delta t} \boldsymbol{C}
        *                                + \boldsymbol{K}_{T}
        *  \f] */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme for Lie group extensions:
@@ -189,7 +189,7 @@ namespace STR
        * \note: For more information see e.g. the dissertation of Christoph Meier: "Geometrically
        * exact finite element formulations for slender beams and their contact interaction"
        * */
-      void UpdateConstantStateContributions() override;
+      void update_constant_state_contributions() override;
 
      private:
       /*! @name New vectors for internal use only

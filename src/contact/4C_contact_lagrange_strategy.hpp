@@ -62,7 +62,7 @@ namespace CONTACT
     this case and activesetssconv_ is meaningless.
 
     */
-    bool ActiveSetSemiSmoothConverged() const override
+    bool active_set_semi_smooth_converged() const override
     {
       bool semismooth = CORE::UTILS::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (semismooth)
@@ -144,7 +144,7 @@ namespace CONTACT
      * @param kteff Jacobian matrix
      * @param rhs ?? Right-hand side of linear system or residual?
      */
-    void RunPreApplyJacobianInverse(
+    void run_pre_apply_jacobian_inverse(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
     /*! \brief Perform condensation of frictionless contact
@@ -154,7 +154,7 @@ namespace CONTACT
      * @param kteff Jacobian matrix
      * @param rhs ?? Right-hand side of linear system or residual?
      */
-    virtual void CondenseFrictionless(
+    virtual void condense_frictionless(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
     /*! \brief Perform condensation of frictional contact
@@ -177,7 +177,7 @@ namespace CONTACT
      * @param xold ??
      * @param grp ??
      */
-    void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+    void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
         const NOX::NLN::Group& grp) override;
 
@@ -188,13 +188,13 @@ namespace CONTACT
     virtual void AssembleContactRHS();
 
     //! Assemble all contact contributions
-    virtual void AssembleAllContactTerms();
+    virtual void assemble_all_contact_terms();
 
     //! Assemble all contact contributions (frictionless contact)
-    virtual void AssembleAllContactTermsFrictionless();
+    virtual void assemble_all_contact_terms_frictionless();
 
     //! Assemble all contact contributions (frictional contact)
-    virtual void AssembleAllContactTermsFriction();
+    virtual void assemble_all_contact_terms_friction();
 
     const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
     {
@@ -205,7 +205,7 @@ namespace CONTACT
     }
 
     //! Get the active node row map of the previous Newton step
-    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override
+    Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override
     {
       return gOldActiveSlaveNodes_;
     };
@@ -256,11 +256,11 @@ namespace CONTACT
     data container directly.
     \todo Argument \c numiter not used. Can it be removed?
 
-    \sa UpdateDisplacementsAndLMincrements
+    \sa update_displacements_and_l_mincrements
 
     \author Tobias Wiesner \date 11/2014
     */
-    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
@@ -277,17 +277,17 @@ namespace CONTACT
     (used to perform contact evaluations).
 
     \note More details on handling of maps w/ and w/o parallel redistribution are given in
-    BuildSaddlePointSystem().
+    build_saddle_point_system().
 
     \param[out] sold Displacement dof solution increment (associated with displacement dofs)
     \param[in] blocksol Merged solution vector (containing the new solution vector of the full
                     merged linear system, i.e. displacement and Lagrange multiplier DOFs)
 
-    \sa BuildSaddlePointSystem
+    \sa build_saddle_point_system
 
     \author Tobias Wiesner \date 11/2014
     */
-    void UpdateDisplacementsAndLMincrements(
+    void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
@@ -317,7 +317,7 @@ namespace CONTACT
 
     /*! \brief This is a postprocessing functionality for nonsmooth contact
      */
-    void ComputeContactStresses() final;
+    void compute_contact_stresses() final;
 
     /*!
     \brief Recovery method
@@ -336,7 +336,7 @@ namespace CONTACT
      *                      integration
      * \param xnew    (in): new solution vector of the NOX solver
      */
-    void ResetLagrangeMultipliers(
+    void reset_lagrange_multipliers(
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
     /*! \brief Compute force terms
@@ -383,7 +383,7 @@ namespace CONTACT
 
     \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
+    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
 
     /*!
     \brief Reset active set status for next time step
@@ -411,13 +411,13 @@ namespace CONTACT
     \brief Check linear and angular momentum conservation
 
     */
-    void CheckConservationLaws(const Epetra_Vector& fs, const Epetra_Vector& fm);
+    void check_conservation_laws(const Epetra_Vector& fs, const Epetra_Vector& fm);
 
     /*!
     \brief do additional matrix manipulations for regularization scaling
 
     */
-    void DoRegularizationScaling(bool aset, bool iset,
+    void do_regularization_scaling(bool aset, bool iset,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& invda,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& kan,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& kam,
@@ -429,7 +429,7 @@ namespace CONTACT
     \brief calculate regularization scaling and apply it to matrixes
 
     */
-    void EvaluateRegularizationScaling(Teuchos::RCP<Epetra_Vector> gact);
+    void evaluate_regularization_scaling(Teuchos::RCP<Epetra_Vector> gact);
 
     /*!
     \brief Saving reference state is required for penalty support (LTL)
@@ -448,7 +448,7 @@ namespace CONTACT
 
     */
     double ConstraintNorm() const override { return 0.0; }
-    void EvaluateRelMovPredict() override {}
+    void evaluate_rel_mov_predict() override {}
     double InitialPenalty() override { return 0.0; }
     void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
@@ -456,8 +456,8 @@ namespace CONTACT
     }
     void ResetPenalty() override {}
     void ModifyPenalty() override {}
-    void UpdateUzawaAugmentedLagrange() override {}
-    void UpdateConstraintNorm(int uzawaiter = 0) override {}
+    void update_uzawa_augmented_lagrange() override {}
+    void update_constraint_norm(int uzawaiter = 0) override {}
     bool IsPenalty() const override { return false; };
 
    protected:
@@ -506,21 +506,21 @@ namespace CONTACT
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void add_line_to_lin_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for master contact
 
     */
-    void AddMasterContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void add_master_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributionsFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void add_line_to_lin_contributions_friction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
@@ -528,7 +528,7 @@ namespace CONTACT
     LagrangeStrategy(const LagrangeStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
-    virtual void SaveCouplingMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
+    virtual void save_coupling_matrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> mhataam,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> invda)
     {

@@ -51,7 +51,7 @@ namespace FLD
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    void GenAlphaIntermediateValues() override;
+    void gen_alpha_intermediate_values() override;
 
    private:
   };

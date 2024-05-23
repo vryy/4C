@@ -35,7 +35,7 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
@@ -201,7 +201,7 @@ namespace DRT
 
       \param x  (out)  : nodal coords in material frame
       */
-      inline void MaterialConfiguration(CORE::LINALG::SerialDenseMatrix& x) const
+      inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)

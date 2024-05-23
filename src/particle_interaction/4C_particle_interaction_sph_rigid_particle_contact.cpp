@@ -55,7 +55,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set interface to particle wall hander
   particlewallinterface_ = particlewallinterface;
@@ -64,7 +64,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
   particleinteractionwriter_ = particleinteractionwriter;
 
   // setup particle interaction writer
-  SetupParticleInteractionWriter();
+  setup_particle_interaction_writer();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -80,11 +80,12 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
     FOUR_C_THROW("no rigid particles defined but a rigid particle contact formulation is set!");
 }
 
-void PARTICLEINTERACTION::SPHRigidParticleContactBase::SetupParticleInteractionWriter()
+void PARTICLEINTERACTION::SPHRigidParticleContactBase::setup_particle_interaction_writer()
 {
   // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("rigidparticle-wall-contact");
+    particleinteractionwriter_->register_specific_runtime_output_writer(
+        "rigidparticle-wall-contact");
 }
 
 PARTICLEINTERACTION::SPHRigidParticleContactElastic::SPHRigidParticleContactElastic(
@@ -111,35 +112,36 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::Setup(
   if (damp_ < 0.0) FOUR_C_THROW("rigid particle contact damping parameter not positive or zero!");
 }
 
-void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
+void PARTICLEINTERACTION::SPHRigidParticleContactElastic::add_force_contribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution");
+      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::add_force_contribution");
 
   // elastic contact (particle contribution)
-  ElasticContactParticleContribution();
+  elastic_contact_particle_contribution();
 
   // elastic contact (particle-wall contribution)
-  if (particlewallinterface_) ElasticContactParticleWallContribution();
+  if (particlewallinterface_) elastic_contact_particle_wall_contribution();
 }
 
-void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleContribution()
+void PARTICLEINTERACTION::SPHRigidParticleContactElastic::elastic_contact_particle_contribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleContribution");
+      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::elastic_contact_particle_contribution");
 
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
 
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(boundarytypes_, relindices);
+  neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(
+      boundarytypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // evaluate contact condition
     if (not(particlepair.absdist_ < initialparticlespacing)) continue;
@@ -157,10 +159,10 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
@@ -187,11 +189,12 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
   }
 }
 
-void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleWallContribution()
+void PARTICLEINTERACTION::SPHRigidParticleContactElastic::
+    elastic_contact_particle_wall_contribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEINTERACTION::SPHRigidParticleContactElastic::"
-      "ElasticContactParticleWallContribution");
+      "elastic_contact_particle_wall_contribution");
 
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
@@ -202,14 +205,14 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
 
   // get reference to particle-wall pair data
   const SPHParticleWallPairData& particlewallpairdata =
-      neighborpairs_->GetRefToParticleWallPairData();
+      neighborpairs_->get_ref_to_particle_wall_pair_data();
 
   // get number of particle-wall pairs
   const int numparticlewallpairs = particlewallpairdata.size();
 
   // write interaction output
   const bool writeinteractionoutput =
-      particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
+      particleinteractionwriter_->get_current_write_result_flag() and writeparticlewallinteraction_;
 
   // init storage for interaction output
   std::vector<double> attackpoints;
@@ -226,7 +229,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticleWallPairIndices({PARTICLEENGINE::RigidPhase}, relindices);
+  neighborpairs_->get_relevant_particle_wall_pair_indices({PARTICLEENGINE::RigidPhase}, relindices);
 
   // iterate over relevant particle-wall pairs
   for (const int particlewallpairindex : relindices)
@@ -244,7 +247,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
 
     // get corresponding particle container
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
     const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
@@ -273,7 +276,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       ele->LocationVector(
-          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+          *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // velocity of wall contact point j
@@ -344,8 +347,9 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
   {
     // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("rigidparticle-wall-contact");
-    auto& visualization_data = visualization_manager->GetVisualizationData();
+        particleinteractionwriter_->get_specific_runtime_output_writer(
+            "rigidparticle-wall-contact");
+    auto& visualization_data = visualization_manager->get_visualization_data();
 
     // set wall attack points
     visualization_data.GetPointCoordinates() = attackpoints;

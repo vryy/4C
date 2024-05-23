@@ -33,7 +33,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
 }
 
 template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::EvaluateNonlinearForceStiffness(
+void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
     const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
     const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::EvaluateNonlinearFo
             ComputeFluidMultiPhasePrimaryVariablesAtGP<celltype>(
                 fluidmultiphase_ephi, nummultifluiddofpernode, shape_functions);
 
-        double solidpressure = ComputeSolPressureAtGP<celltype>(
+        double solidpressure = compute_sol_pressure_at_gp<celltype>(
             nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
         // derivative of press w.r.t. displacements (only in case of volfracs)
         CORE::LINALG::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(true);
@@ -106,15 +106,15 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::EvaluateNonlinearFo
           CORE::LINALG::Matrix<1, num_dof_per_ele_> dPorosity_dDisp;
           double porosity = 0.0;
 
-          ComputePorosityAndLinearization<celltype>(porostructmat, params, solidpressure, gp,
+          compute_porosity_and_linearization<celltype>(porostructmat, params, solidpressure, gp,
               volchange, porosity, dDetDefGrad_dDisp, dPorosity_dDisp);
 
           // save the pressure coming from the fluid S_i*p_i (old solidpressure, without accounting
           // for volfracs)
           const double fluidpress = solidpressure;
 
-          solidpressure = RecalculateSolPressureAtGP(fluidpress, porosity, nummultifluiddofpernode,
-              numfluidphases, numvolfrac, fluidmultiphase_phiAtGP);
+          solidpressure = recalculate_sol_pressure_at_gp(fluidpress, porosity,
+              nummultifluiddofpernode, numfluidphases, numvolfrac, fluidmultiphase_phiAtGP);
 
           RecalculateLinearizationOfSolPressWrtDisp<celltype>(fluidpress, porosity,
               nummultifluiddofpernode, numfluidphases, numvolfrac, fluidmultiphase_phiAtGP,
@@ -205,13 +205,13 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingPoroelast(
 
         if (hasvolfracs)
         {
-          double solidpressure = ComputeSolPressureAtGP<celltype>(
+          double solidpressure = compute_sol_pressure_at_gp<celltype>(
               nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
 
           double porosity =
               ComputePorosity<celltype>(porostructmat, params, solidpressure, volchange, gp);
 
-          RecalculateSolPressureDeriv(fluidmultiphase_phiAtGP, nummultifluiddofpernode,
+          recalculate_sol_pressure_deriv(fluidmultiphase_phiAtGP, nummultifluiddofpernode,
               numfluidphases, numvolfrac, solidpressure, porosity, solidpressurederiv);
         }
 

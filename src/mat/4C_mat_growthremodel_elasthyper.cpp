@@ -156,7 +156,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
         Teuchos::rcp_static_cast<MAT::ELASTIC::RemodelFiber>(MAT::ELASTIC::Summand::Factory(matid));
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumrf_.push_back(sum);
-    sum->RegisterAnisotropyExtensions(anisotropy_);
+    sum->register_anisotropy_extensions(anisotropy_);
   }
 
   // 2d Elastin matrix
@@ -171,7 +171,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
           "prestretching algorithm needs it. "
           "The prestretching algorithm can easily be expanded to other materials!");
     potsumelmem_.push_back(sum);
-    sum->RegisterAnisotropyExtensions(anisotropy_);
+    sum->register_anisotropy_extensions(anisotropy_);
   }
 
   if (params_->membrane_ != 1)
@@ -188,7 +188,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
             "prestretching algorithm needs it"
             "The prestretching algorithm can easily be expanded to other materials!");
       potsumeliso_.push_back(sum);
-      sum->RegisterAnisotropyExtensions(anisotropy_);
+      sum->register_anisotropy_extensions(anisotropy_);
     }
 
     // VolPenalty
@@ -201,7 +201,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
           "prestretching algorithm needs it. "
           "This can easily be expanded to other materials!");
     potsumelpenalty_ = sum;
-    sum->RegisterAnisotropyExtensions(anisotropy_);
+    sum->register_anisotropy_extensions(anisotropy_);
   }
 
   // initialize total simulation time
@@ -338,7 +338,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     for (auto& p : potsumrf_)
     {
       p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(anisotropy_);
+      p->register_anisotropy_extensions(anisotropy_);
     }
 
     // 2D Elastin matrix
@@ -358,7 +358,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     for (auto& p : potsumelmem_)
     {
       p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(anisotropy_);
+      p->register_anisotropy_extensions(anisotropy_);
     }
 
     if (params_->membrane_ != 1)
@@ -380,7 +380,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       for (auto& p : potsumeliso_)
       {
         p->UnpackSummand(data, position);
-        p->RegisterAnisotropyExtensions(anisotropy_);
+        p->register_anisotropy_extensions(anisotropy_);
       }
 
       // VolPenalty
@@ -409,8 +409,8 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
 void MAT::GrowthRemodelElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // read anisotropy
-  anisotropy_.SetNumberOfGaussPoints(numgp);
-  anisotropy_.ReadAnisotropyFromElement(linedef);
+  anisotropy_.set_number_of_gauss_points(numgp);
+  anisotropy_.read_anisotropy_from_element(linedef);
 
   // Initialize some variables
   v_.resize(numgp, 1.0);
@@ -444,10 +444,10 @@ void MAT::GrowthRemodelElastHyper::Setup(int numgp, INPUT::LineDefinition* lined
   }
 
   // Setup circumferential, radial and axial structural tensor
-  SetupAxiCirRadStructuralTensor(linedef);
+  setup_axi_cir_rad_structural_tensor(linedef);
 
   // Setup growth tensors in the case of anisotropic growth (--> growth in thickness direction)
-  if (params_->growthtype_ == 1) SetupAnisoGrowthTensors();
+  if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
 
   // variable which is multiplied with the material parameter of the elastin sheets
   mue_frac_.resize(numgp, 1.0);
@@ -458,12 +458,13 @@ void MAT::GrowthRemodelElastHyper::Setup(int numgp, INPUT::LineDefinition* lined
 
 void MAT::GrowthRemodelElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
-  anisotropy_.ReadAnisotropyFromParameterList(params);
+  anisotropy_.read_anisotropy_from_parameter_list(params);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SetupAxiCirRadStructuralTensor(INPUT::LineDefinition* linedef)
+void MAT::GrowthRemodelElastHyper::setup_axi_cir_rad_structural_tensor(
+    INPUT::LineDefinition* linedef)
 {
   // CIR-AXI-RAD nomenclature
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
@@ -510,7 +511,7 @@ void MAT::GrowthRemodelElastHyper::SetupAxiCirRadStructuralTensor(INPUT::LineDef
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SetupAnisoGrowthTensors()
+void MAT::GrowthRemodelElastHyper::setup_aniso_growth_tensors()
 {
   ag_m_.Update(1.0, arad_m_, 0.0);
 
@@ -545,7 +546,7 @@ void MAT::GrowthRemodelElastHyper::ReadDir(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SetupAxiCirRadCylinder(
+void MAT::GrowthRemodelElastHyper::setup_axi_cir_rad_cylinder(
     CORE::LINALG::Matrix<3, 1> elecenter, double const dt)
 {
   // Clear dummy directions
@@ -582,7 +583,7 @@ void MAT::GrowthRemodelElastHyper::Update(CORE::LINALG::Matrix<3, 3> const& defg
 {
   // Update individual volume of elastin
   static double dt_pre = params.get<double>("delta time");
-  if (params_->damage_ == 1) EvaluateElastinDamage(dt_pre);
+  if (params_->damage_ == 1) evaluate_elastin_damage(dt_pre);
 
   // loop map of associated potential summands
   // remodelfiber
@@ -606,7 +607,7 @@ void MAT::GrowthRemodelElastHyper::Update(CORE::LINALG::Matrix<3, 3> const& defg
   CORE::LINALG::Matrix<3, 3> iFgM(true);
   CORE::LINALG::Matrix<3, 3> dFgdrhoM(true);
   CORE::LINALG::Matrix<3, 3> diFgdrhoM(true);
-  EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+  evaluate_growth_def_grad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
 
   // time step size
   double dt = params.get<double>("delta time");
@@ -614,7 +615,8 @@ void MAT::GrowthRemodelElastHyper::Update(CORE::LINALG::Matrix<3, 3> const& defg
   switch (params_->loctimeint_)
   {
     case 0:
-      for (auto& p : potsumrf_) p->EvaluateGrowthAndRemodelingExpl(defgrd, dt, iFgM, gp, eleGID);
+      for (auto& p : potsumrf_)
+        p->evaluate_growth_and_remodeling_expl(defgrd, dt, iFgM, gp, eleGID);
       break;
     case 1:  // do nothing
       break;
@@ -708,7 +710,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
   for (auto& p : potsumrf_)
   {
-    p->EvaluateAnisotropicStressCmat(CM, id, cmataniso, stressaniso, gp, 1.0, eleGID);
+    p->evaluate_anisotropic_stress_cmat(CM, id, cmataniso, stressaniso, gp, 1.0, eleGID);
     sig += stressaniso.Dot(Acir_strain);
   }
 
@@ -716,7 +718,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
   CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stressiso(true);
   CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso(true);
   CORE::LINALG::Matrix<NUM_STRESS_3D, 9> dSdiFgiso(true);
-  EvaluateStressCmatIso(defgrd, gm_[gp], stressiso, cmatiso, dSdiFgiso, gp, eleGID);
+  evaluate_stress_cmat_iso(defgrd, gm_[gp], stressiso, cmatiso, dSdiFgiso, gp, eleGID);
   sig += stressiso.Dot(Acir_strain);
 
   // residual stress
@@ -731,7 +733,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
   CORE::LINALG::Matrix<6, 1> stressmem(true);
   CORE::LINALG::Matrix<6, 6> cmatmem(true);
   CORE::LINALG::Matrix<NUM_STRESS_3D, 9> dSdiFgmem(true);
-  EvaluateStressCmatMembrane(CM, id, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
+  evaluate_stress_cmat_membrane(CM, id, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
 
   mue_frac_[gp] = sig_res / stressmem.Dot(Acir_strain);
 }
@@ -751,8 +753,8 @@ void MAT::GrowthRemodelElastHyper::SetupGR3D(CORE::LINALG::Matrix<3, 3> const* c
   {
     const auto& ele_center_reference_coordinates =
         params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
-    SetupAxiCirRadCylinder(ele_center_reference_coordinates, dt);
-    if (params_->growthtype_ == 1) SetupAnisoGrowthTensors();
+    setup_axi_cir_rad_cylinder(ele_center_reference_coordinates, dt);
+    if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
     for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
@@ -819,7 +821,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   static CORE::LINALG::Matrix<3, 3> iFgM(true);
   static CORE::LINALG::Matrix<3, 3> dFgdrhoM(true);
   static CORE::LINALG::Matrix<3, 3> diFgdrhoM(true);
-  EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+  evaluate_growth_def_grad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
 
   // some initialization
   // only do at first time step
@@ -828,19 +830,19 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
     // evaluate anisotropic remodel fibers
     for (auto& p : potsumrf_)
     {
-      p->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
+      p->evaluate_anisotropic_stress_cmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
       stress->Update(1.0, stressaniso, 1.0);
       cmat->Update(1.0, cmataniso, 1.0);
     }
 
     // build stress response and elasticity tensor of 3D material
     iFinM.MultiplyNN(1.0, iFgM, gm_[gp], 0.0);
-    EvaluateStressCmatIso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
+    evaluate_stress_cmat_iso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
     stress->Update(1.0, stressiso, 1.0);
     cmat->Update(1.0, cmatiso, 1.0);
 
     // build stress response and elasticity tensor of membrane material
-    EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
+    evaluate_stress_cmat_membrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
     stress->Update(1.0, stressmem, 1.0);
     cmat->Update(1.0, cmatmem, 1.0);
 
@@ -856,19 +858,19 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
         // evaluate anisotropic remodel fibers
         for (auto& p : potsumrf_)
         {
-          p->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
+          p->evaluate_anisotropic_stress_cmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
           stress->Update(1.0, stressaniso, 1.0);
           cmat->Update(1.0, cmataniso, 1.0);
         }
 
         // build stress response and elasticity tensor of 3D material
         iFinM.MultiplyNN(1.0, iFgM, gm_[gp], 0.0);
-        EvaluateStressCmatIso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
+        evaluate_stress_cmat_iso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
         stress->Update(1.0, stressiso, 1.0);
         cmat->Update(1.0, cmatiso, 1.0);
 
         // build stress response and elasticity tensor of membrane material
-        EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
+        evaluate_stress_cmat_membrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
         stress->Update(1.0, stressmem, 1.0);
         cmat->Update(1.0, cmatmem, 1.0);
 
@@ -885,16 +887,16 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
         static std::vector<CORE::LINALG::Matrix<1, 6>> dlambrdC(
             nr_rf_tot_, CORE::LINALG::Matrix<1, 6>(true));
         static CORE::LINALG::Matrix<1, 6> sum_drhodC(true);
-        SolveFordrhodCdlambrdC(drhodC, dlambrdC, sum_drhodC, K_T, iFgM, defgrd, dt, gp, eleGID);
+        solve_fordrhod_cdlambrd_c(drhodC, dlambrdC, sum_drhodC, K_T, iFgM, defgrd, dt, gp, eleGID);
 
         // Evaluate anisotropic remodel fibers
         int nr_grf_proc = 0;
         for (auto& p : potsumrf_)
         {
-          p->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
+          p->evaluate_anisotropic_stress_cmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
           stress->Update(1.0, stressaniso, 1.0);
           cmat->Update(1.0, cmataniso, 1.0);
-          p->EvaluateAdditionalGrowthRemodelCmat(
+          p->evaluate_additional_growth_remodel_cmat(
               defgrd, nr_grf_proc, iFgM, diFgdrhoM, drhodC, dlambrdC, cmatanisoadd, gp, eleGID);
           cmat->Update(1.0, cmatanisoadd, 1.0);
           nr_grf_proc += p->GetNumFibers();
@@ -902,12 +904,12 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
 
         // Evaluate 3D elastin material
         iFinM.MultiplyNN(1.0, iFgM, gm_[gp], 0.0);
-        EvaluateStressCmatIso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
+        evaluate_stress_cmat_iso(defgrd, iFinM, stressiso, cmatiso, dSdiFgiso, gp, eleGID);
         stress->Update(1.0, stressiso, 1.0);
         cmat->Update(1.0, cmatiso, 1.0);
 
         // Build stress response and elasticity tensor of membrane material
-        EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
+        evaluate_stress_cmat_membrane(CM, iFgM, stressmem, cmatmem, dSdiFgmem, gp, eleGID);
         stress->Update(1.0, stressmem, 1.0);
         cmat->Update(1.0, cmatmem, 1.0);
 
@@ -915,7 +917,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
         static CORE::LINALG::Matrix<6, 9> dSdiFg_sum(true);
         dSdiFg_sum.Update(1.0, dSdiFgiso, 0.0);
         dSdiFg_sum.Update(1.0, dSdiFgmem, 1.0);
-        EvaluateAdditionalCmat(cmatadd, diFgdrhoM, sum_drhodC, dSdiFg_sum, gp);
+        evaluate_additional_cmat(cmatadd, diFgdrhoM, sum_drhodC, dSdiFg_sum, gp);
         cmat->Update(1.0, cmatadd, 1.0);
 
         break;
@@ -974,19 +976,19 @@ void MAT::GrowthRemodelElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMat
         for (unsigned k = 0; k < p->GetNumFibers(); ++k)
         {
           // update inelastic fiber stretch and current mass density
-          p->UpdateGrowthRemodelParameter(dsol(l, 0), dsol(nr_rf_tot_ + l, 0), k, gp);
+          p->update_growth_remodel_parameter(dsol(l, 0), dsol(nr_rf_tot_ + l, 0), k, gp);
           ++l;
         }
       }
     }
     // Update growth deformation gradient
-    EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+    evaluate_growth_def_grad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
 
     // global number of fibers which were already processed
     nr_grf_proc = 0;
     for (auto& p : potsumrf_)
     {
-      p->EvaluateDerivativesInternalNewton(defgrd, nr_grf_proc, nr_rf_tot_, gp, dt, eleGID, iFgM,
+      p->evaluate_derivatives_internal_newton(defgrd, nr_grf_proc, nr_rf_tot_, gp, dt, eleGID, iFgM,
           dFgdrhoM, diFgdrhoM, dWdrho, dWdlambr, W, dEdrho, dEdlambr, E);
       nr_grf_proc += p->GetNumFibers();
     }
@@ -1024,7 +1026,7 @@ void MAT::GrowthRemodelElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::SolveFordrhodCdlambrdC(
+void MAT::GrowthRemodelElastHyper::solve_fordrhod_cdlambrd_c(
     std::vector<CORE::LINALG::Matrix<1, 6>>& drhodC,
     std::vector<CORE::LINALG::Matrix<1, 6>>& dlambrdC, CORE::LINALG::Matrix<1, 6>& sum_drhodC,
     CORE::LINALG::SerialDenseMatrix& K_T, CORE::LINALG::Matrix<3, 3> const& iFgM,
@@ -1036,7 +1038,7 @@ void MAT::GrowthRemodelElastHyper::SolveFordrhodCdlambrdC(
   int nr_grf_proc = 0;
   for (const auto& p : potsumrf_)
   {
-    p->EvaluateDerivativesCauchyGreen(defgrd, nr_grf_proc, gp, dt, iFgM, dWdC, dEdC, eleGID);
+    p->evaluate_derivatives_cauchy_green(defgrd, nr_grf_proc, gp, dt, iFgM, dWdC, dEdC, eleGID);
     nr_grf_proc += p->GetNumFibers();
   }
 
@@ -1078,7 +1080,7 @@ void MAT::GrowthRemodelElastHyper::SolveFordrhodCdlambrdC(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateStressCmatIso(
+void MAT::GrowthRemodelElastHyper::evaluate_stress_cmat_iso(
     CORE::LINALG::Matrix<3, 3> const* const defgrd, CORE::LINALG::Matrix<3, 3> const& iFinM,
     CORE::LINALG::Matrix<6, 1>& stressiso, CORE::LINALG::Matrix<6, 6>& cmatiso,
     CORE::LINALG::Matrix<6, 9>& dSdiFg, int const gp, int const eleGID) const
@@ -1100,12 +1102,12 @@ void MAT::GrowthRemodelElastHyper::EvaluateStressCmatIso(
   CORE::LINALG::Matrix<9, 1> CiFinCe9x1(true);
   CORE::LINALG::Matrix<9, 1> CiFiniCe9x1(true);
 
-  EvaluateKinQuantElast(defgrd, iFinM, iCinv, iCinCiCinv, iCv, iCinCM, iFinCeM, CiFin9x1,
+  evaluate_kin_quant_elast(defgrd, iFinM, iCinv, iCinCiCinv, iCv, iCinCM, iFinCeM, CiFin9x1,
       CiFinCe9x1, CiFiniCe9x1, prinv, gp);
 
   CORE::LINALG::Matrix<3, 1> dPIe(true);
   CORE::LINALG::Matrix<6, 1> ddPIIe(true);
-  EvaluateInvariantDerivatives(prinv, dPIe, ddPIIe, gp, eleGID);
+  evaluate_invariant_derivatives(prinv, dPIe, ddPIIe, gp, eleGID);
 
   // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
   static CORE::LINALG::Matrix<3, 1> gamma(true);
@@ -1115,7 +1117,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateStressCmatIso(
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
 
-  EvaluateIsotropicPrincElast(stressiso, cmatiso, iCinv, iCinCiCinv, iCv, gamma, delta);
+  evaluate_isotropic_princ_elast(stressiso, cmatiso, iCinv, iCinCiCinv, iCv, gamma, delta);
 
   EvaluatedSdiFg(dSdiFg, gamma, delta, iFinM, iCinCM, iCinv, CiFin9x1, CiFinCe9x1, iCinCiCinv,
       CiFiniCe9x1, iCv, iFinCeM, gp);
@@ -1124,7 +1126,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateStressCmatIso(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateKinQuantElast(
+void MAT::GrowthRemodelElastHyper::evaluate_kin_quant_elast(
     CORE::LINALG::Matrix<3, 3> const* const defgrd, CORE::LINALG::Matrix<3, 3> const& iFinM,
     CORE::LINALG::Matrix<6, 1>& iCinv, CORE::LINALG::Matrix<6, 1>& iCinCiCinv,
     CORE::LINALG::Matrix<6, 1>& iCv, CORE::LINALG::Matrix<3, 3>& iCinCM,
@@ -1192,7 +1194,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateKinQuantElast(
  * Reads derivatives with respect to invariants and modified invariants
  * from all materials of the elasthyper-toolbox                         */
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateInvariantDerivatives(
+void MAT::GrowthRemodelElastHyper::evaluate_invariant_derivatives(
     CORE::LINALG::Matrix<3, 1> const& prinv, CORE::LINALG::Matrix<3, 1>& dPIw,
     CORE::LINALG::Matrix<6, 1>& ddPIIw, int const gp, int const eleGID) const
 {
@@ -1206,7 +1208,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateInvariantDerivatives(
   {
     dPgrowthI.Clear();
     ddPgrowthII.Clear();
-    p->AddDerivativesPrincipal(dPgrowthI, ddPgrowthII, prinv, gp, eleGID);
+    p->add_derivatives_principal(dPgrowthI, ddPgrowthII, prinv, gp, eleGID);
     dPIw.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPIIw.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
@@ -1221,7 +1223,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateInvariantDerivatives(
   {
     dPgrowthI.Clear();
     ddPgrowthII.Clear();
-    p->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
+    p->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
     dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
     ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
   }
@@ -1229,7 +1231,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateInvariantDerivatives(
   // volpenalty
   dPgrowthI.Clear();
   ddPgrowthII.Clear();
-  potsumelpenalty_->AddDerivativesModified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
+  potsumelpenalty_->add_derivatives_modified(dPgrowthI, ddPgrowthII, modinv, gp, eleGID);
   dPmodI.Update(cur_rho_el_[gp], dPgrowthI, 1.0);
   ddPmodII.Update(cur_rho_el_[gp], ddPgrowthII, 1.0);
 
@@ -1293,7 +1295,7 @@ void MAT::GrowthRemodelElastHyper::ConvertModToPrinc(CORE::LINALG::Matrix<3, 1> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateIsotropicPrincElast(
+void MAT::GrowthRemodelElastHyper::evaluate_isotropic_princ_elast(
     CORE::LINALG::Matrix<6, 1>& stressisoprinc, CORE::LINALG::Matrix<6, 6>& cmatisoprinc,
     CORE::LINALG::Matrix<6, 1> const& iCinv, CORE::LINALG::Matrix<6, 1> const& iCinCiCinv,
     CORE::LINALG::Matrix<6, 1> const& iCv, CORE::LINALG::Matrix<3, 1> const& gamma,
@@ -1362,7 +1364,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatedSdiFg(CORE::LINALG::Matrix<6, 9>& dS
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateAdditionalCmat(CORE::LINALG::Matrix<6, 6>& cmatadd,
+void MAT::GrowthRemodelElastHyper::evaluate_additional_cmat(CORE::LINALG::Matrix<6, 6>& cmatadd,
     CORE::LINALG::Matrix<3, 3> const& diFgdrhoM, CORE::LINALG::Matrix<1, 6> const& sum_drhodC,
     CORE::LINALG::Matrix<6, 9> const& dSdiFg, int const gp) const
 {
@@ -1382,10 +1384,10 @@ void MAT::GrowthRemodelElastHyper::EvaluateAdditionalCmat(CORE::LINALG::Matrix<6
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateStressCmatMembrane(CORE::LINALG::Matrix<3, 3> const& CM,
-    CORE::LINALG::Matrix<3, 3> const& iFgM, CORE::LINALG::Matrix<6, 1>& stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 9>& dSdiFg, const int gp,
-    const int eleGID) const
+void MAT::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
+    CORE::LINALG::Matrix<3, 3> const& CM, CORE::LINALG::Matrix<3, 3> const& iFgM,
+    CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 9>& dSdiFg, const int gp, const int eleGID) const
 {
   // clear some variables
   stress.Clear();
@@ -1500,7 +1502,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateStressCmatMembrane(CORE::LINALG::Matr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateElastinDamage(double const& dt_pre)
+void MAT::GrowthRemodelElastHyper::evaluate_elastin_damage(double const& dt_pre)
 {
   double T_el = 101 * 365.25;  // in days
   double t_dam = 40.0;
@@ -1517,7 +1519,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateElastinDamage(double const& dt_pre)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::GrowthRemodelElastHyper::EvaluateGrowthDefGrad(CORE::LINALG::Matrix<3, 3>& FgM,
+void MAT::GrowthRemodelElastHyper::evaluate_growth_def_grad(CORE::LINALG::Matrix<3, 3>& FgM,
     CORE::LINALG::Matrix<3, 3>& iFgM, CORE::LINALG::Matrix<3, 3>& dFgdrhoM,
     CORE::LINALG::Matrix<3, 3>& diFgdrhoM, const int gp)
 {
@@ -1580,8 +1582,8 @@ void MAT::GrowthRemodelElastHyper::SetupGR2D(
   {
     const auto& element_center_reference_coordinates =
         params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
-    SetupAxiCirRadCylinder(element_center_reference_coordinates, dt);
-    if (params_->growthtype_ == 1) SetupAnisoGrowthTensors();
+    setup_axi_cir_rad_cylinder(element_center_reference_coordinates, dt);
+    if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
     for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
@@ -1615,7 +1617,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateMembrane(CORE::LINALG::Matrix<3, 3> c
   CORE::LINALG::Matrix<3, 3> iFgM(true);
   CORE::LINALG::Matrix<3, 3> dFgdrhoM(true);
   CORE::LINALG::Matrix<3, 3> diFgdrhoM(true);
-  EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+  evaluate_growth_def_grad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
 
   // Elastic deformation gradient
   CORE::LINALG::Matrix<3, 3> CM(true);
@@ -1628,7 +1630,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateMembrane(CORE::LINALG::Matrix<3, 3> c
   static CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmataniso(true);
   for (auto& p : potsumrf_)
   {
-    p->EvaluateAnisotropicStressCmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
+    p->evaluate_anisotropic_stress_cmat(CM, iFgM, cmataniso, stressaniso, gp, dt, eleGID);
     pk2v_glob.Update(1.0, stressaniso, 1.0);
     cmat_glob.Update(1.0, cmataniso, 1.0);
   }
@@ -1637,14 +1639,14 @@ void MAT::GrowthRemodelElastHyper::EvaluateMembrane(CORE::LINALG::Matrix<3, 3> c
   static CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stressmem(true);
   static CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatmem(true);
   static CORE::LINALG::Matrix<6, 9> dummy(true);
-  EvaluateStressCmatMembrane(CM, iFgM, stressmem, cmatmem, dummy, gp, eleGID);
+  evaluate_stress_cmat_membrane(CM, iFgM, stressmem, cmatmem, dummy, gp, eleGID);
   pk2v_glob.Update(1.0, stressmem, 1.0);
   cmat_glob.Update(1.0, cmatmem, 1.0);
   CORE::LINALG::VOIGT::Stresses::VectorToMatrix(pk2v_glob, pk2M_glob);
 }
 
 
-double MAT::GrowthRemodelElastHyper::EvaluateMembraneThicknessStretch(
+double MAT::GrowthRemodelElastHyper::evaluate_membrane_thickness_stretch(
     CORE::LINALG::Matrix<3, 3> const& defgrd_glob, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
@@ -1666,7 +1668,7 @@ double MAT::GrowthRemodelElastHyper::EvaluateMembraneThicknessStretch(
   CORE::LINALG::Matrix<3, 3> iFgM(true);
   CORE::LINALG::Matrix<3, 3> dFgdrhoM(true);
   CORE::LINALG::Matrix<3, 3> diFgdrhoM(true);
-  EvaluateGrowthDefGrad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
+  evaluate_growth_def_grad(FgM, iFgM, dFgdrhoM, diFgdrhoM, gp);
 
   // Elastic deformation gradient
   CORE::LINALG::Matrix<3, 3> CM(true);

@@ -46,7 +46,7 @@ namespace
       testdis_->AddElement(testele_);
       testdis_->FillComplete(false, false, false);
 
-      testele_->SetUpReferenceGeometry(xrefe_full);
+      testele_->set_up_reference_geometry(xrefe_full);
     }
 
    protected:
@@ -93,7 +93,7 @@ namespace
       const auto node = testele_->Nodes()[0];
       int numdof, dimnsp, nv, np;
 
-      testele_->ElementType().NodalBlockInformation(node->Elements()[0], numdof, dimnsp, nv, np);
+      testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
       CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{0.0, 0.0, 0.0}.data(), numdof, dimnsp);
 
@@ -116,7 +116,7 @@ namespace
       const auto node = testele_->Nodes()[0];
       int numdof, dimnsp, nv, np;
 
-      testele_->ElementType().NodalBlockInformation(node->Elements()[0], numdof, dimnsp, nv, np);
+      testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
       CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{-0.05, 0.05, 0.3}.data(), numdof, dimnsp);
 

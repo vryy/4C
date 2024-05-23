@@ -98,29 +98,29 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
   AmGnxnInterface myInterface(params_, NumBlocks);
 
   // Create the Operator
-  if (myInterface.GetPreconditionerType() == "AMG(BlockSmoother)")
+  if (myInterface.get_preconditioner_type() == "AMG(BlockSmoother)")
   {
     p_ = Teuchos::rcp(
         new AmGnxnOperator(a_, myInterface.GetNumPdes(), myInterface.GetNullSpacesDim(),
-            myInterface.GetNullSpacesData(), myInterface.GetPreconditionerParams(),
+            myInterface.GetNullSpacesData(), myInterface.get_preconditioner_params(),
             myInterface.GetSmoothersParams(), myInterface.GetSmoothersParams()));
   }
-  else if (myInterface.GetPreconditionerType() == "BlockSmoother(X)")
+  else if (myInterface.get_preconditioner_type() == "BlockSmoother(X)")
   {
     p_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.GetNumPdes(),
         myInterface.GetNullSpacesDim(), myInterface.GetNullSpacesData(),
-        myInterface.GetPreconditionerParams(), myInterface.GetSmoothersParams()));
+        myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
   }
-  else if (myInterface.GetPreconditionerType() == "Merge_and_Ifpack")
+  else if (myInterface.get_preconditioner_type() == "Merge_and_Ifpack")
   {
     p_ = Teuchos::rcp(new MergedOperator(
-        a_, myInterface.GetPreconditionerParams(), myInterface.GetSmoothersParams()));
+        a_, myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
   }
   else
-    FOUR_C_THROW("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
+    FOUR_C_THROW("Unknown preconditioner type: %s", myInterface.get_preconditioner_type().c_str());
 
   double elaptime = timer.totalElapsedTime(true);
-  if (myInterface.GetPreconditionerParams().get<std::string>("verbosity", "off") == "on" and
+  if (myInterface.get_preconditioner_params().get<std::string>("verbosity", "off") == "on" and
       A->Comm().MyPID() == 0)
     std::cout << "       Calling CORE::LINALG::SOLVER::AMGnxn_Preconditioner::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
@@ -1067,7 +1067,7 @@ void CORE::LINEAR_SOLVER::BlockSmootherOperator::Setup()
   mySmootherCreator.SetBlocks(blocks);
   mySmootherCreator.SetSmootherName(smother_name);
   mySmootherCreator.SetVerbosity(verbosity);
-  mySmootherCreator.SetNullSpaceAllBlocks(null_space_blocks);
+  mySmootherCreator.set_null_space_all_blocks(null_space_blocks);
 
   // Create smoother
   sbase_ = mySmootherCreator.Create();

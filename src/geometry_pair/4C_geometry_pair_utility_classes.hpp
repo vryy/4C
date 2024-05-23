@@ -95,13 +95,14 @@ namespace GEOMETRYPAIR
      * @param point_double Projection point with scalar type double.
      */
     template <typename scalar_type_other>
-    inline void SetFromOtherPointDouble(const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
+    inline void set_from_other_point_double(
+        const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
     {
       eta_ = CORE::FADUTILS::CastToDouble(point_other.GetEta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         xi_(i_dim) = CORE::FADUTILS::CastToDouble(point_other.GetXi()(i_dim));
       projection_result_ = point_other.GetProjectionResult();
-      gauss_weight_ = point_other.GetGaussWeightNoCheck();
+      gauss_weight_ = point_other.get_gauss_weight_no_check();
       intersection_face_ = point_other.GetIntersectionFace();
     }
 
@@ -192,7 +193,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the Gauss weight for this point.
      */
-    inline double GetGaussWeightNoCheck() const { return gauss_weight_; }
+    inline double get_gauss_weight_no_check() const { return gauss_weight_; }
 
     /**
      * \brief Set the index of the intersection face.
@@ -341,7 +342,7 @@ namespace GEOMETRYPAIR
      * \brief Return the number of projection points in this segment.
      * @return Number of projection points.
      */
-    inline unsigned int GetNumberOfProjectionPoints() const
+    inline unsigned int get_number_of_projection_points() const
     {
       return segment_projection_points_.size();
     }

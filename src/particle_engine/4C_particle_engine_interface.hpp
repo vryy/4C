@@ -73,7 +73,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestogetuniquegids particles to get unique global ids
      */
-    virtual void GetUniqueGlobalIdsForAllParticles(
+    virtual void get_unique_global_ids_for_all_particles(
         std::vector<ParticleObjShrdPtr>& particlestogetuniquegids) = 0;
 
     /*!
@@ -84,7 +84,7 @@ namespace PARTICLEENGINE
      * \param[in] particlestatestotypes particle types and corresponding particle states to be
      *                                  refreshed
      */
-    virtual void RefreshParticlesOfSpecificStatesAndTypes(
+    virtual void refresh_particles_of_specific_states_and_types(
         const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
     /*!
@@ -94,7 +94,8 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoremove particles to be removed from containers on this processor
      */
-    virtual void HandOverParticlesToBeRemoved(std::vector<std::set<int>>& particlestoremove) = 0;
+    virtual void hand_over_particles_to_be_removed(
+        std::vector<std::set<int>>& particlestoremove) = 0;
 
     /*!
      * \brief hand over particles to be inserted
@@ -103,7 +104,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestoinsert particles to be inserted into containers on this processor
      */
-    virtual void HandOverParticlesToBeInserted(
+    virtual void hand_over_particles_to_be_inserted(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
 
     /*!
@@ -113,7 +114,7 @@ namespace PARTICLEENGINE
      *
      * \return particle container bundle
      */
-    virtual ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
+    virtual ParticleContainerBundleShrdPtr get_particle_container_bundle() const = 0;
 
     /*!
      * \brief get reference to potential particle neighbors
@@ -122,7 +123,7 @@ namespace PARTICLEENGINE
      *
      * \return potential particle neighbor pairs
      */
-    virtual const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const = 0;
+    virtual const PotentialParticleNeighbors& get_potential_particle_neighbors() const = 0;
 
     /*!
      * \brief get reference to particles being communicated to target processors
@@ -131,7 +132,7 @@ namespace PARTICLEENGINE
      *
      * \return particles being communicated to target processors
      */
-    virtual const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const = 0;
+    virtual const std::vector<std::vector<int>>& get_communicated_particle_targets() const = 0;
 
     /*!
      * \brief get local index in specific particle container
@@ -142,7 +143,7 @@ namespace PARTICLEENGINE
      *
      * \return local index tuple of particle
      */
-    virtual LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
+    virtual LocalIndexTupleShrdPtr get_local_index_in_specific_container(int globalid) const = 0;
 
     /*!
      * \brief get bin discretization writer
@@ -151,7 +152,7 @@ namespace PARTICLEENGINE
      *
      * \return bin discretization writer
      */
-    virtual std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const = 0;
+    virtual std::shared_ptr<IO::DiscretizationWriter> get_bin_discretization_writer() const = 0;
 
     /*!
      * \brief relate all particles to all processors
@@ -160,7 +161,7 @@ namespace PARTICLEENGINE
      *
      * \param[out] particlestoproc relate global id of particles to global id of processor
      */
-    virtual void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const = 0;
+    virtual void relate_all_particles_to_all_procs(std::vector<int>& particlestoproc) const = 0;
 
     /*!
      * \brief get particles within radius
@@ -171,7 +172,7 @@ namespace PARTICLEENGINE
      * \param[in]  radius               search radius around search point
      * \param[out] neighboringparticles particles within search radius
      */
-    virtual void GetParticlesWithinRadius(const double* position, const double radius,
+    virtual void get_particles_within_radius(const double* position, const double radius,
         std::vector<LocalIndexTuple>& neighboringparticles) const = 0;
 
     //! \name get information regarding underlying bin discretization
@@ -202,7 +203,7 @@ namespace PARTICLEENGINE
      *
      * \return flag indicating periodic boundary conditions
      */
-    virtual bool HavePeriodicBoundaryConditions() const = 0;
+    virtual bool have_periodic_boundary_conditions() const = 0;
 
     /*!
      * \brief get flag indicating periodic boundary conditions in spatial direction
@@ -213,7 +214,7 @@ namespace PARTICLEENGINE
      *
      * \return flag indicating periodic boundary conditions in spatial direction
      */
-    virtual bool HavePeriodicBoundaryConditionsInSpatialDirection(const int dim) const = 0;
+    virtual bool have_periodic_boundary_conditions_in_spatial_direction(const int dim) const = 0;
 
     /*!
      * \brief get length of binning domain in a spatial direction
@@ -224,7 +225,7 @@ namespace PARTICLEENGINE
      *
      * \return length of binning domain in a spatial direction
      */
-    virtual double LengthOfBinningDomainInASpatialDirection(const int dim) const = 0;
+    virtual double length_of_binning_domain_in_a_spatial_direction(const int dim) const = 0;
 
     /*!
      * \brief get bounding box dimensions
@@ -233,7 +234,7 @@ namespace PARTICLEENGINE
      *
      * \return bounding box dimensions
      */
-    virtual CORE::LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const = 0;
+    virtual CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions() const = 0;
 
     //! @}
 
@@ -246,7 +247,7 @@ namespace PARTICLEENGINE
      * \param[in]  pos_j pointer to position of particle j
      * \param[out] r_ji  vector from particle i to j
      */
-    virtual void DistanceBetweenParticles(
+    virtual void distance_between_particles(
         const double* pos_i, const double* pos_j, double* r_ji) const = 0;
 
     /*!
@@ -256,7 +257,7 @@ namespace PARTICLEENGINE
      *
      * \return number of particles on this processors
      */
-    virtual int GetNumberOfParticles() const = 0;
+    virtual int get_number_of_particles() const = 0;
 
     /*!
      * \brief get number of particles on this processor of specific type
@@ -267,7 +268,7 @@ namespace PARTICLEENGINE
      *
      * \return number of particles on this processors
      */
-    virtual int GetNumberOfParticlesOfSpecificType(const ParticleType type) const = 0;
+    virtual int get_number_of_particles_of_specific_type(const ParticleType type) const = 0;
   };
 
 }  // namespace PARTICLEENGINE

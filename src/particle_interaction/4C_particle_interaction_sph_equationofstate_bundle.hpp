@@ -50,7 +50,7 @@ namespace PARTICLEINTERACTION
     void Setup();
 
     //! return pointer to specific equation of state
-    inline const PARTICLEINTERACTION::SPHEquationOfStateBase* GetPtrToSpecificEquationOfState(
+    inline const PARTICLEINTERACTION::SPHEquationOfStateBase* get_ptr_to_specific_equation_of_state(
         PARTICLEENGINE::TypeEnum type_i) const
     {
       return phasetypetoequationofstate_[type_i].get();

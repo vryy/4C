@@ -87,7 +87,8 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
 
   // Create the beam contact pair.
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = CreateContactPairInternal(ele_ptrs);
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
+      create_contact_pair_internal(ele_ptrs);
 
   if (contact_pair != Teuchos::null)
   {
@@ -110,10 +111,10 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
  *
  */
 Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
-BEAMINTERACTION::BeamToSolidCondition::CreateIndirectAssemblyManager(
+BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     const Teuchos::RCP<const DRT::Discretization>& discret)
 {
-  if (beam_to_solid_params_->GetContactDiscretization() ==
+  if (beam_to_solid_params_->get_contact_discretization() ==
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
     return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
         condition_contact_pairs_, discret, beam_to_solid_params_));
@@ -132,7 +133,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
-      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID VOLUME MESHTYING");
 
   // Create the geometry evaluation data for this condition.
@@ -259,7 +260,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
+BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_internal(
     const std::vector<DRT::Element const*>& ele_ptrs)
 {
   const CORE::FE::CellType shape = ele_ptrs[1]->Shape();
@@ -267,7 +268,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
       Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_, true);
   const INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization =
-      beam_to_volume_params->GetContactDiscretization();
+      beam_to_volume_params->get_contact_discretization();
 
   if (contact_discretization ==
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_to_segment)
@@ -278,9 +279,9 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
   else if (contact_discretization == INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar)
   {
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function =
-        beam_to_volume_params->GetMortarShapeFunctionType();
+        beam_to_volume_params->get_mortar_shape_function_type();
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_rotation =
-        beam_to_volume_params->GetMortarShapeFunctionRotationType();
+        beam_to_volume_params->get_mortar_shape_function_rotation_type();
 
     if (mortar_shape_function_rotation == INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
     {
@@ -333,7 +334,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
     condition_name = "BEAM TO SOLID SURFACE CONTACT";
 
   const Teuchos::ParameterList& input_parameter_list =
-      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(condition_name);
+      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(condition_name);
 
   // Create the geometry evaluation data for this condition.
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
@@ -390,13 +391,17 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
   {
     if (IsMeshTying())
     {
-      fad_order =
-          condition_contact_pairs_[0]->Params()->BeamToSolidSurfaceMeshtyingParams()->GetFADOrder();
+      fad_order = condition_contact_pairs_[0]
+                      ->Params()
+                      ->beam_to_solid_surface_meshtying_params()
+                      ->GetFADOrder();
     }
     else
     {
-      fad_order =
-          condition_contact_pairs_[0]->Params()->BeamToSolidSurfaceContactParams()->GetFADOrder();
+      fad_order = condition_contact_pairs_[0]
+                      ->Params()
+                      ->beam_to_solid_surface_contact_params()
+                      ->GetFADOrder();
     }
   }
 
@@ -416,7 +421,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
         // The face element has to be created and added to the contact pair.
         Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element =
             GEOMETRYPAIR::FaceElementFactory(find_in_condition->second, fad_order,
-                line_to_surface_evaluation_data->GetSurfaceNormalStrategy());
+                line_to_surface_evaluation_data->get_surface_normal_strategy());
         new_face_element->SetPartOfPair(true);
         pair_face_elemets[solid_id] = new_face_element;
         pair->SetFaceElement(new_face_element);
@@ -460,7 +465,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
             // It is not already in the needed faces -> add it.
             face_elements_needed[element_id] =
                 GEOMETRYPAIR::FaceElementFactory(find_in_condition->second, fad_order,
-                    line_to_surface_evaluation_data->GetSurfaceNormalStrategy());
+                    line_to_surface_evaluation_data->get_surface_normal_strategy());
           }
         }
         else
@@ -509,13 +514,13 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
+BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
     const std::vector<DRT::Element const*>& ele_ptrs)
 {
   using namespace GEOMETRYPAIR;
 
   const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
-  const bool beam_is_hermite = beam_element->HermiteCenterlineInterpolation();
+  const bool beam_is_hermite = beam_element->hermite_centerline_interpolation();
 
   const Teuchos::RCP<const DRT::FaceElement>& face_element = surface_ids_[ele_ptrs[1]->Id()];
   const CORE::FE::CellType shape = face_element->Shape();
@@ -525,7 +530,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
           geometry_evaluation_data_, false);
   if (line_to_surface_evaluation_data == Teuchos::null)
     FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
-  auto surface_normal_strategy = line_to_surface_evaluation_data->GetSurfaceNormalStrategy();
+  auto surface_normal_strategy = line_to_surface_evaluation_data->get_surface_normal_strategy();
 
   if (IsMeshTying())
   {
@@ -538,9 +543,9 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
         beam_to_surface_params->GetCouplingType();
 
     INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization coupling_discretization =
-        beam_to_surface_params->GetContactDiscretization();
+        beam_to_surface_params->get_contact_discretization();
 
-    bool rotational_coupling = beam_to_surface_params->GetIsRotationalCoupling();
+    bool rotational_coupling = beam_to_surface_params->get_is_rotational_coupling();
 
     switch (coupling_discretization)
     {
@@ -649,7 +654,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
       case INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar:
       {
         INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction =
-            beam_to_surface_params->GetMortarShapeFunctionType();
+            beam_to_surface_params->get_mortar_shape_function_type();
 
         switch (coupling_type)
         {
@@ -680,7 +685,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
             beam_to_solid_params_, true);
 
     INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization =
-        beam_to_surface_contact_params->GetContactDiscretization();
+        beam_to_surface_contact_params->get_contact_discretization();
 
     if (beam_is_hermite)
     {

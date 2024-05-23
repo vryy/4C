@@ -104,7 +104,7 @@ namespace NOX
 
        private:
         //! check status in first nonlinear iteration step
-        virtual ::NOX::StatusTest::StatusType checkStatusFirstIter();
+        virtual ::NOX::StatusTest::StatusType check_status_first_iter();
 
         //! throws an NOX error
         void throwError(const std::string& functionName, const std::string& errorMsg) const;
@@ -205,7 +205,7 @@ namespace NOX
 
        private:
         //! check status in first nonlinear iteration step
-        ::NOX::StatusTest::StatusType checkStatusFirstIter() override;
+        ::NOX::StatusTest::StatusType check_status_first_iter() override;
       };  // class NormUpdateSkipFirstIter
     }     // namespace StatusTest
   }       // namespace NLN

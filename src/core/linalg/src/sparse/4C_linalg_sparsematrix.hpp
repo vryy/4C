@@ -297,14 +297,14 @@ namespace CORE::LINALG
     /// is needed to treat efficiently Dirichlet BCs with local co-ordinate systems.
     /// The transformation matrix #trafo basically holds rotation matrices
     /// for the DOFs of the nodes.
-    void ApplyDirichletWithTrafo(const CORE::LINALG::SparseMatrix& trafo,
+    void apply_dirichlet_with_trafo(const CORE::LINALG::SparseMatrix& trafo,
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Epetra_Map& dbctoggle);
+    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Epetra_Map& dbctoggle);
 
     //@}
 

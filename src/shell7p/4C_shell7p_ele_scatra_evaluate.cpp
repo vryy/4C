@@ -85,7 +85,7 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
 
 {
   // get params interface pointer
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const ELEMENTS::ActionType action = std::invoke(
       [&]()
@@ -105,20 +105,20 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness and internal force vector
     case ELEMENTS::struct_calc_nlnstiff:
     {
-      shell_interface_->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
-          nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, nullptr);
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+          discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, nullptr);
     }
     break;
     case ELEMENTS::struct_calc_linstiff:
     {
-      shell_interface_->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
-          nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+          discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
     }
     break;
     case ELEMENTS::struct_calc_internalforce:
     {
-      shell_interface_->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
-          nodal_directors_, la[0].lm_, params, &elevec1, nullptr, nullptr);
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+          discretization, nodal_directors_, la[0].lm_, params, &elevec1, nullptr, nullptr);
     }
     break;
     case ELEMENTS::struct_calc_linstiffmass:
@@ -128,8 +128,8 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_nlnstiffmass:   // do mass, stiffness and internal forces
     case ELEMENTS::struct_calc_nlnstifflmass:  // do lump mass, stiffness and internal forces
     {
-      shell_interface_->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
-          nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+          discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
       if (action == ELEMENTS::struct_calc_nlnstifflmass) STR::UTILS::SHELL::LumpMassMatrix(elemat2);
     }
     break;
@@ -140,7 +140,7 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::struct_calc_stress:
     {
-      shell_interface_->CalculateStressesStrains(*this, *SolidMaterial(),
+      shell_interface_->calculate_stresses_strains(*this, *SolidMaterial(),
           ShellStressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
           ShellStrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
           discretization, nodal_directors_, la[0].lm_, params);
@@ -148,13 +148,13 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     break;
     case DRT::ELEMENTS::struct_calc_energy:
     {
-      double int_energy = shell_interface_->CalculateInternalEnergy(
+      double int_energy = shell_interface_->calculate_internal_energy(
           *this, *SolidMaterial(), discretization, nodal_directors_, la[0].lm_, params);
 
       if (IsParamsInterface())
       {
         // new structural time integration
-        StrParamsInterface().AddContributionToEnergyType(int_energy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
       }
       else
       {
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::Shell7pScatra::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
-      shell_interface_->ResetToLastConverged(*this, *SolidMaterial());
+      shell_interface_->reset_to_last_converged(*this, *SolidMaterial());
     }
     break;
     case ELEMENTS::struct_calc_predict:
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::Shell7pScatra::EvaluateNeumann(Teuchos::ParameterList& params
     std::vector<int>& la, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
 
   const double time = std::invoke(
       [&]()

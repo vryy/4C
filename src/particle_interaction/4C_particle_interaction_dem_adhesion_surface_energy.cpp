@@ -65,7 +65,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
 }
 
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
-    AdjustSurfaceEnergyToAllowedBounds(
+    adjust_surface_energy_to_allowed_bounds(
         const double& mean_surface_energy, double& surface_energy) const
 {
   const double adhesion_surface_energy_min =
@@ -85,7 +85,7 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSurfaceEnergy(
+void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::adhesion_surface_energy(
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
@@ -95,7 +95,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSu
   surface_energy = GLOBAL::Problem::Instance()->Random()->Normal();
 
   // adjust surface energy to allowed bounds
-  AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
+  adjust_surface_energy_to_allowed_bounds(mean_surface_energy, surface_energy);
 }
 
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
@@ -105,7 +105,7 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::AdhesionSurfaceEnergy(
+void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::adhesion_surface_energy(
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
@@ -115,7 +115,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::Adhesio
   surface_energy = std::exp(GLOBAL::Problem::Instance()->Random()->Normal());
 
   // adjust surface energy to allowed bounds
-  AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
+  adjust_surface_energy_to_allowed_bounds(mean_surface_energy, surface_energy);
 }
 
 FOUR_C_NAMESPACE_CLOSE

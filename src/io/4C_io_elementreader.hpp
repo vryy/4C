@@ -146,10 +146,10 @@ namespace IO
 
    private:
     /// Get the overall number of elements and their corresponding global IDs
-    std::pair<int, std::vector<int>> GetElementSizeAndIDs() const;
+    std::pair<int, std::vector<int>> get_element_size_and_i_ds() const;
 
     /// Read the file and get element information, distribute them to each processor
-    void GetAndDistributeElements(const int nblock, const int bsize);
+    void get_and_distribute_elements(const int nblock, const int bsize);
 
     /// discretization name
     std::string name_;

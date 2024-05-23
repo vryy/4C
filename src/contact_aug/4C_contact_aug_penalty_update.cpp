@@ -92,7 +92,7 @@ void CONTACT::AUG::PenaltyUpdate::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::ThrowIfNotInitialized() const
+void CONTACT::AUG::PenaltyUpdate::throw_if_not_initialized() const
 {
   if (not isinit_) FOUR_C_THROW("Call Init() first!");
 }
@@ -102,7 +102,7 @@ void CONTACT::AUG::PenaltyUpdate::ThrowIfNotInitialized() const
 void CONTACT::AUG::PenaltyUpdate::SetState(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
-  ThrowIfNotInitialized();
+  throw_if_not_initialized();
 
   IO::cout(IO::debug) << std::string(40, '*') << IO::endl;
   IO::cout(IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << IO::endl;
@@ -203,7 +203,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetPreviouslyAcceptedState() const
+const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_previously_accepted_state() const
 {
   if (xold_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -221,7 +221,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetWGap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetActiveTributaryArea() const
+const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_active_tributary_area() const
 {
   if (tributary_area_active_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -230,7 +230,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetActiveTributaryArea(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetInactiveTributaryArea() const
+const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_inactive_tributary_area() const
 {
   if (tributary_area_inactive_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -284,16 +284,16 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::Get_DGapN(
     const Epetra_Vector& dincr_slma) const
 {
   Teuchos::RCP<Epetra_Vector> dgapn_ptr =
-      Teuchos::rcp(new Epetra_Vector(Data().DLmNWGapLinMatrixPtr()->RangeMap(), true));
+      Teuchos::rcp(new Epetra_Vector(Data().d_lm_nw_gap_lin_matrix_ptr()->RangeMap(), true));
 
-  CATCH_EPETRA_ERROR(Data().DLmNWGapLinMatrixPtr()->Multiply(false, dincr_slma, *dgapn_ptr));
+  CATCH_EPETRA_ERROR(Data().d_lm_nw_gap_lin_matrix_ptr()->Multiply(false, dincr_slma, *dgapn_ptr));
 
   return dgapn_ptr.getConst();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::Get_inconsistent_DGapN(
+Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_inconsistent_d_gap_n(
     const Epetra_Vector& dincr_slma) const
 {
   Teuchos::RCP<Epetra_Vector> dgapn_ptr =
@@ -314,13 +314,13 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::GetProblemRhs(
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
-  return cmodel.AssembleForceOfModels(without_these_models, true).getConst();
+  return cmodel.assemble_force_of_models(without_these_models, true).getConst();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const CORE::LINALG::SparseMatrix>
-CONTACT::AUG::PenaltyUpdate::GetStructuralStiffnessMatrix(
+CONTACT::AUG::PenaltyUpdate::get_structural_stiffness_matrix(
     const CONTACT::ParamsInterface& cparams) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
@@ -345,8 +345,9 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
      << "Update of the regularization parameter\n"
      << std::string(80, '=') << "\n";
   os << "Type   = " << INPAR::CONTACT::PenaltyUpdate2String(Type()) << "\n"
-     << "Increase Parameter = " << Data().SaData().GetPenaltyCorrectionParameter() << "\n"
-     << "Decrease Parameter = " << Data().SaData().GetPenaltyDecreaseCorrectionParameter() << "\n"
+     << "Increase Parameter = " << Data().SaData().get_penalty_correction_parameter() << "\n"
+     << "Decrease Parameter = " << Data().SaData().get_penalty_decrease_correction_parameter()
+     << "\n"
      << "Status = " << Status2String(status_) << "\n"
      << "Ratio (cN_new / cn_old) = " << std::setw(10) << std::setprecision(4) << std::scientific
      << Ratio() << "\n"
@@ -429,14 +430,14 @@ CONTACT::AUG::PenaltyUpdateSufficientLinReduction::ExecuteDecrease(
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaTheta() const
 {
-  return Data().SaData().GetPenaltyCorrectionParameter();
+  return Data().SaData().get_penalty_correction_parameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaThetaDecrease() const
 {
-  return Data().SaData().GetPenaltyDecreaseCorrectionParameter();
+  return Data().SaData().get_penalty_decrease_correction_parameter();
 }
 
 /*----------------------------------------------------------------------------*
@@ -462,7 +463,7 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
   // split the previously accepted state into its different parts
   Teuchos::RCP<Epetra_Vector> displ_slma, zn_active, zn_inactive;
   Strategy().SplitStateVector(
-      GetState().GetPreviouslyAcceptedState(), displ_slma, zn_active, zn_inactive);
+      GetState().get_previously_accepted_state(), displ_slma, zn_active, zn_inactive);
 
   // split the direction into its different parts
   Teuchos::RCP<Epetra_Vector> dincr_slma, znincr_active, znincr_inactive;
@@ -479,7 +480,8 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
 
   const std::vector<INPAR::STR::ModelType> without_contact(1, cmodel.Type());
-  Teuchos::RCP<Epetra_Vector> str_gradient = cmodel.AssembleForceOfModels(&without_contact, true);
+  Teuchos::RCP<Epetra_Vector> str_gradient =
+      cmodel.assemble_force_of_models(&without_contact, true);
 
   Epetra_Vector dincr_str(str_gradient->Map());
   CORE::LINALG::ExtractMyVector(dir, dincr_str);
@@ -488,8 +490,8 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
   CATCH_EPETRA_ERROR(str_gradient->Dot(dincr_str, &dstr_grad));
 
   // directional derivative of the active constraint gradient
-  Teuchos::RCP<const Epetra_Vector> dgapn_ptr = Get_inconsistent_DGapN(*dincr_slma);
-  Epetra_Vector dgapn_active(*Data().GActiveNDofRowMapPtr());
+  Teuchos::RCP<const Epetra_Vector> dgapn_ptr = get_inconsistent_d_gap_n(*dincr_slma);
+  Epetra_Vector dgapn_active(*Data().g_active_n_dof_row_map_ptr());
   CORE::LINALG::ExtractMyVector(*dgapn_ptr, dgapn_active);
 
   double dgapn_zn = 0.0;
@@ -497,14 +499,14 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
 
   Epetra_Vector sc_dgapn(dgapn_active);
   MultiplyElementwise(
-      GetState().GetActiveTributaryArea(), Data().GActiveNodeRowMap(), sc_dgapn, true);
+      GetState().get_active_tributary_area(), Data().GActiveNodeRowMap(), sc_dgapn, true);
 
   double sc_dgapn_dgapn = 0.0;
   CATCH_EPETRA_ERROR(sc_dgapn.Dot(dgapn_active, &sc_dgapn_dgapn));
 
   Epetra_Vector awgapn(*GetState().wgap_);
   MultiplyElementwise(
-      GetState().GetActiveTributaryArea(), Data().GActiveNodeRowMap(), awgapn, true);
+      GetState().get_active_tributary_area(), Data().GActiveNodeRowMap(), awgapn, true);
 
   double awgapn_nrm2 = 0.0;
   awgapn.Norm2(&awgapn_nrm2);
@@ -541,7 +543,7 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientAn
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::PenaltyUpdateSufficientAngle::BetaAngle() const
 {
-  return Data().SaData().GetPenaltyCorrectionParameter();
+  return Data().SaData().get_penalty_correction_parameter();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -93,12 +93,12 @@ namespace THR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    void PreparePartitionStep() override;
+    void prepare_partition_step() override;
 
     //! Predict constant temperature, temperature rate,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs
-    void PredictConstTempRate();
+    void predict_const_temp_rate();
 
     //! Predict constant temperature, however the rate
     //! is consistent to the time integration
@@ -106,13 +106,13 @@ namespace THR
     //! solution.
     //! This method has to be implemented by the individual time
     //! integrator.
-    virtual void PredictConstTempConsistRate() = 0;
+    virtual void predict_const_temp_consist_rate() = 0;
 
     //! Predict temperature which satisfy exactly the Dirichlet BCs
     //! and the linearised system at the previously converged state.
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
-    void PredictTangTempConsistRate();
+    void predict_tang_temp_consist_rate();
 
     //! prepare time step
     void PrepareTimeStep() override;
@@ -135,7 +135,7 @@ namespace THR
     //! The residual #fres_ is expected to follow the <i>same</i> sign
     //! convention like its tangent #tang_, i.e. to use
     //! Newton--Raphson's method the residual will be scaled by -1.
-    virtual void EvaluateRhsTangResidual() = 0;
+    virtual void evaluate_rhs_tang_residual() = 0;
 
     //@}
 
@@ -145,7 +145,7 @@ namespace THR
     //! determine characteristic norms for relative
     //! error checks of residual temperatures
     //! \author lw  \date 12/07
-    virtual double CalcRefNormTemperature() = 0;
+    virtual double calc_ref_norm_temperature() = 0;
 
     //! determine characteristic norms for relative
     //! error checks of residual forces
@@ -170,10 +170,10 @@ namespace THR
 
     //! Blank Dirichlet dofs form residual and reactions
     //! calculate norms for convergence checks
-    void BlankDirichletAndCalcNorms();
+    void blank_dirichlet_and_calc_norms();
 
     // check for success of nonlinear solve
-    INPAR::THR::ConvergenceStatus NewtonFullErrorCheck();
+    INPAR::THR::ConvergenceStatus newton_full_error_check();
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -185,7 +185,7 @@ namespace THR
     //! - negative residual
     //! - blank residual on Dirichlet DOFs
     //! - apply Dirichlet boundary conditions on system
-    void PrepareSystemForNewtonSolve();
+    void prepare_system_for_newton_solve();
 
     //@}
 
@@ -206,12 +206,12 @@ namespace THR
     //! from scratch by using the newly updated #tempn_. The method
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors
-    //! (like #PredictConstTempConsistRate)
-    virtual void UpdateIterIncrementally() = 0;
+    //! (like #predict_const_temp_consist_rate)
+    virtual void update_iter_incrementally() = 0;
 
     //! Update iteration incrementally with prescribed residual
     //! temperatures
-    void UpdateIterIncrementally(
+    void update_iter_incrementally(
         const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
     );
 
@@ -222,7 +222,7 @@ namespace THR
     //! temperatures #tempi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual temperatures #tempi_ are blanked at these DOFs.
-    virtual void UpdateIterIteratively() = 0;
+    virtual void update_iter_iteratively() = 0;
 
     //! Update configuration after time step
     //!
@@ -263,7 +263,7 @@ namespace THR
 
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
@@ -292,7 +292,7 @@ namespace THR
     int MethodSteps() override = 0;
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() override = 0;
+    int method_order_of_accuracy() override = 0;
 
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff() override = 0;
@@ -354,7 +354,7 @@ namespace THR
     // called when unconverged AND dicvont_halve_step
     void HalveTimeStep();
 
-    void CheckForTimeStepIncrease();
+    void check_for_time_step_increase();
 
     //! @name General purpose algorithm parameters
     //@{

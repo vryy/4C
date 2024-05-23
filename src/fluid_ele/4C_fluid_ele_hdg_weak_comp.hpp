@@ -45,12 +45,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+      void nodal_block_information(
+          Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
@@ -136,7 +137,7 @@ namespace DRT
       /*!
       \brief Returns the number of dofs per node for the ALE displacements
        */
-      int NumDofPerNodeAuxiliary() const override
+      int num_dof_per_node_auxiliary() const override
       {
         return (CORE::FE::getDimension(distype_) + 0);
         // maybe + 1 to mimic the standard fluid dofset with velocity + pressure
@@ -170,7 +171,7 @@ namespace DRT
       /*!
       \brief Returns the number of dofs per element for the interior variables
        */
-      int NumDofPerElementAuxiliary() const override
+      int num_dof_per_element_auxiliary() const override
       {
         const int nsd_ = CORE::FE::getDimension(distype_);
         const int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
@@ -185,7 +186,7 @@ namespace DRT
       /*!
        \brief Returns the degree of the element
        */
-      int UsesCompletePolynomialSpace() const { return completepol_; }
+      int uses_complete_polynomial_space() const { return completepol_; }
 
       //@}
 

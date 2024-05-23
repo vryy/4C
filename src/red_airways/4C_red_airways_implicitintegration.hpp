@@ -176,13 +176,13 @@ namespace AIRWAY
     \brief Adjust acini_volume with prestress
 
     */
-    void ComputeVol0ForPreStress();
+    void compute_vol0_for_pre_stress();
 
     /*!
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void ComputeNearestAcinus(Teuchos::RCP<DRT::Discretization const> search_discret,
+    void compute_nearest_acinus(Teuchos::RCP<DRT::Discretization const> search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
         Teuchos::RCP<Epetra_Vector> airway_acinus_dep);
 
@@ -275,7 +275,7 @@ namespace AIRWAY
     //! @name methods related to coupling with 3D tissue models
 
     void SetupForCoupling();
-    void SetAirwayFluxFromTissue(Teuchos::RCP<Epetra_Vector> coupflux);
+    void set_airway_flux_from_tissue(Teuchos::RCP<Epetra_Vector> coupflux);
     void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
     /// Hand over outputwriter to redairway_tissue

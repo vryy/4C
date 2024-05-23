@@ -77,11 +77,11 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
   }
 
   // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
-  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->structural_dynamic_params();
   double porotimefac =
       1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
   input.set<double>("porotimefac", porotimefac);
-  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
   input.set<bool>("CONTACTNOPEN",
       CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   if (!CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
@@ -157,7 +157,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       mastertype_ = 0;
     }
 
-    cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
 
     if (isnurbs)
     {
@@ -171,7 +171,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       Teuchos::RCP<DRT::FaceElement> faceele =
           Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
       double normalfac = 0.0;
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
       // store nurbs specific data to node
@@ -224,7 +224,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       cele->PhysType() = MORTAR::Element::structure;
       slavetype_ = 0;
     }
-    cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
 
     if (isnurbs)
     {
@@ -238,7 +238,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
       Teuchos::RCP<DRT::FaceElement> faceele =
           Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
       double normalfac = 0.0;
-      bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+      bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
           faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
       // store nurbs specific data to node
@@ -331,7 +331,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
     }
   }
 
-  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->structural_dynamic_params();
   double theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
   // what if problem is static ? there should be an error for previous line called in a dyna_statics
   // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded
@@ -373,7 +373,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   int maxdof = masterdis->DofRowMap()->MaxAllGID();
   interface->FillComplete(true, maxdof);
 
-  // interface->CreateVolumeGhosting(*masterdis);
+  // interface->create_volume_ghosting(*masterdis);
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
@@ -381,7 +381,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
 
   // print parallel distribution
-  interface->PrintParallelDistribution();
+  interface->print_parallel_distribution();
 
   // TODO: is this possible?
   //**********************************************************************
@@ -396,7 +396,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   //    interface->FillComplete();
   //
   //    // print parallel distribution again
-  //    interface->PrintParallelDistribution();
+  //    interface->print_parallel_distribution();
   //  }
 
   // store interface
@@ -438,12 +438,12 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
   // integrator
   interface_->Evaluate();
 
-  porolagstrategy_->PoroMtPrepareFluidCoupling();
+  porolagstrategy_->poro_mt_prepare_fluid_coupling();
   porolagstrategy_->PoroInitialize(coupfs, fdofrowmap, firstinit_);
   if (firstinit_) firstinit_ = false;
 
   // do system matrix manipulations
-  porolagstrategy_->EvaluatePoroNoPenContact(k_fs, f, frhs);
+  porolagstrategy_->evaluate_poro_no_pen_contact(k_fs, f, frhs);
   return;
 }  // ADAPTER::CouplingNonLinMortar::EvaluatePoroMt()
 
@@ -463,7 +463,7 @@ void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
 /*----------------------------------------------------------------------*
  |  recover fluid coupling lagrange multiplier            ager 10/15    |
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingPoroMortar::RecoverFluidLMPoroMt(
+void ADAPTER::CouplingPoroMortar::recover_fluid_lm_poro_mt(
     Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli)
 {
   // safety check
@@ -471,6 +471,6 @@ void ADAPTER::CouplingPoroMortar::RecoverFluidLMPoroMt(
 
   porolagstrategy_->RecoverPoroNoPen(disi, veli);
   return;
-}  // ADAPTER::CouplingNonLinMortar::RecoverFluidLMPoroMt
+}  // ADAPTER::CouplingNonLinMortar::recover_fluid_lm_poro_mt
 
 FOUR_C_NAMESPACE_CLOSE

@@ -70,7 +70,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
 
     double dotProduct = 0.0;
 
-    if (not face1_->BelongsToLevelSetSide())
+    if (not face1_->belongs_to_level_set_side())
     {
       const std::vector<Node *> &par_nodes = parent->Nodes();
       std::vector<std::vector<double>> corners(par_nodes.size());
@@ -123,7 +123,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
       coord(1, 0) = cornersLocal[1][1];
       coord(2, 0) = cornersLocal[1][2];
 #ifdef LOCAL
-      phi_deriv1 = elem1_->GetLevelSetGradientAtLocalCoordsInLocalCoords(coord);
+      phi_deriv1 = elem1_->get_level_set_gradient_at_local_coords_in_local_coords(coord);
 #else
       phi_deriv1 = elem1_->GetLevelSetGradient(coord);
 #endif
@@ -434,7 +434,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
       exit(1);
     }
 
-    BoundaryFacetIntegration(cornersLocal, facet_integ, projType);
+    boundary_facet_integration(cornersLocal, facet_integ, projType);
   }
 
   // this condition results in negative normal for all the lines in the line integral
@@ -450,7 +450,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
 /*-----------------------------------------------------------------------------------------------*
                             Performs integration over the boundarycell
 *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
+void CORE::GEO::CUT::FacetIntegration::boundary_facet_integration(
     const std::vector<std::vector<double>> &cornersLocal, double &facet_integ,
     CORE::GEO::CUT::ProjectionDirection intType)
 {
@@ -541,15 +541,15 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       Generate integration rule for the facet if the divergence theorem is used      Sudhakar 03/12
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
+void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule(
     Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::divergence_integration_rule");
 
   std::list<Teuchos::RCP<BoundaryCell>> divCells;
 
   // the last two parameters has no influence when called from the first parameter is set to true
-  GenerateDivergenceCells(true, mesh, divCells);
+  generate_divergence_cells(true, mesh, divCells);
 
   double normalX =
       getNormal(CORE::GEO::CUT::proj_x);  // make sure eqn of plane is available before calling this
@@ -609,7 +609,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
         case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
+          bcell->transform_local_coords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
           bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
@@ -619,7 +619,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
         case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
+          bcell->transform_local_coords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
           bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
@@ -644,7 +644,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
       Split the facet into auxillary divergence cells which is either Tri or Quad         Sudhakar
 03/12
 *------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCells(
+void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells(
     bool divergenceRule,  // if called to generate direct divergence rule
     Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
@@ -753,10 +753,10 @@ void CORE::GEO::CUT::FacetIntegration::TemporaryQuad4(
       Generate integration rule for the facet if the divergence theorem is used      Sudhakar 03/12
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
+void CORE::GEO::CUT::FacetIntegration::divergence_integration_rule_new(
     Mesh &mesh, Teuchos::RCP<CORE::FE::CollectedGaussPoints> &cgp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::divergence_integration_rule");
 
   std::list<Teuchos::RCP<BoundaryCell>> divCells;
 
@@ -768,22 +768,23 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
 
 #ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
   bool triangulate_and_levelset =
-      (face1_->CornerPoints().size() > 3 and face1_->BelongsToLevelSetSide());
+      (face1_->CornerPoints().size() > 3 and face1_->belongs_to_level_set_side());
 #else
   bool triangulate_and_levelset = (face1_->CornerPoints().size() > 3);
 #endif
 
-  //  if(face1_->CornerPoints().size()>3 and face1_->BelongsToLevelSetSide())
+  //  if(face1_->CornerPoints().size()>3 and face1_->belongs_to_level_set_side())
   if (triangulate_and_levelset) face1_->DoTriangulation(mesh, face1_->CornerPoints());
 
 #ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
-  triangulate_and_levelset =
-      ((face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide());
+  triangulate_and_levelset = ((face1_->IsTriangulated() or face1_->IsFacetSplit()) and
+                              face1_->belongs_to_level_set_side());
 #else
   triangulate_and_levelset = (face1_->IsTriangulated() or face1_->IsFacetSplit());
 #endif
 
-  //  if((face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide())
+  //  if((face1_->IsTriangulated() or face1_->IsFacetSplit()) and
+  //  face1_->belongs_to_level_set_side())
   if (triangulate_and_levelset)
   {
     std::vector<std::vector<Point *>> facet_triang;
@@ -799,7 +800,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     for (std::vector<std::vector<Point *>>::const_iterator j = facet_triang.begin();
          j != facet_triang.end(); ++j)
     {
-      GenerateDivergenceCellsNew(true, mesh, divCells, *j);
+      generate_divergence_cells_new(true, mesh, divCells, *j);
       while (counterDivCells < divCells.size())
       {
         counterDivCells++;
@@ -815,8 +816,8 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     std::cout << "NOT TRIANGULATED FACET." << std::endl;
 #endif
 
-    GenerateDivergenceCellsNew(true, mesh, divCells, face1_->CornerPoints());
-    // GenerateDivergenceCells(true,mesh,divCells);
+    generate_divergence_cells_new(true, mesh, divCells, face1_->CornerPoints());
+    // generate_divergence_cells(true,mesh,divCells);
     for (unsigned i = 0; i < divCells.size(); i++)
     {
       eqn_plane_divCell.push_back(eqn_plane_);
@@ -896,7 +897,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
         case CORE::FE::CellType::tri3:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<CORE::FE::CellType::tri3>(
+          bcell->transform_local_coords<CORE::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
           bcell->Transform<CORE::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
@@ -906,7 +907,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
         case CORE::FE::CellType::quad4:
         {
 #ifdef LOCAL
-          bcell->TransformLocalCoords<CORE::FE::CellType::quad4>(
+          bcell->transform_local_coords<CORE::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
           bcell->Transform<CORE::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
@@ -930,8 +931,9 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
 #endif
 }
 
-void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenceRule, Mesh &mesh,
-    std::list<Teuchos::RCP<BoundaryCell>> &divCells, const std::vector<Point *> &cornersGlobal)
+void CORE::GEO::CUT::FacetIntegration::generate_divergence_cells_new(bool divergenceRule,
+    Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell>> &divCells,
+    const std::vector<Point *> &cornersGlobal)
 {
 // First convert format...
 #ifdef LOCAL

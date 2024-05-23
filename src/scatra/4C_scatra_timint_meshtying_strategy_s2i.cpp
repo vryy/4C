@@ -60,7 +60,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
           CORE::UTILS::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
               "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
           Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
-              GLOBAL::Problem::Instance()->MortarCouplingParams().sublist(
+              GLOBAL::Problem::Instance()->mortar_coupling_params().sublist(
                   "PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none),
       islavemap_(Teuchos::null),
@@ -125,7 +125,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
           parameters.sublist("S2I COUPLING"), "MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
 {
   // empty constructor
-}  // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
+}  // SCATRA::meshtying_strategy_s2_i::meshtying_strategy_s2_i
 
 
 /*-----------------------------------------------------------------------*
@@ -310,7 +310,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
 
       // set global state vectors according to time-integration scheme
-      scatratimint_->AddTimeIntegrationSpecificVectors();
+      scatratimint_->add_time_integration_specific_vectors();
 
       // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
       islavematrix_->Zero();
@@ -323,7 +323,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             kinetics_slave_cond.second->GType() != CORE::Conditions::geometry_type_point)
         {
           // collect condition specific data and store to scatra boundary parameter class
-          SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+          set_condition_specific_sca_tra_parameters(*kinetics_slave_cond.second);
 
           if (not slaveonly_)
           {
@@ -566,7 +566,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             icoup_->SlaveToMaster(residualslave), 2, scatratimint_->Residual());
       }
 
-      if (has_capacitive_contributions_) EvaluateAndAssembleCapacitiveContributions();
+      if (has_capacitive_contributions_) evaluate_and_assemble_capacitive_contributions();
 
       break;
     }
@@ -614,7 +614,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         params.set<CORE::Conditions::Condition*>("condition", kinetics_slave_cond.second);
 
         // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*(kinetics_slave_cond.second));
+        set_condition_specific_sca_tra_parameters(*(kinetics_slave_cond.second));
 
         if (couplingtype_ != INPAR::S2I::coupling_nts_standard)
         {
@@ -891,7 +891,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             "action", SCATRA::BoundaryAction::calc_s2icoupling, conditionparams);
 
         // set global state vectors according to time-integration scheme
-        scatratimint_->AddTimeIntegrationSpecificVectors();
+        scatratimint_->add_time_integration_specific_vectors();
 
         // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
         islavematrix_->Zero();
@@ -899,7 +899,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         islaveresidual_->PutScalar(0.);
 
         // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*s2icoupling_growth_conditions[0]);
+        set_condition_specific_sca_tra_parameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(conditionparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
@@ -1015,7 +1015,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                                  .Get<int>("ConditionID");
 
           // set global state vectors according to time-integration scheme
-          scatratimint_->AddTimeIntegrationSpecificVectors();
+          scatratimint_->add_time_integration_specific_vectors();
 
           // compute additional linearizations and residuals depending on type of scalar transport
           // system matrix
@@ -1060,7 +1060,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                   if (kinetics_slave_cond_id == condid)
                   {
                     // collect condition specific data and store to scatra boundary parameter class
-                    SetConditionSpecificScaTraParameters(*kinetics_slave_cond);
+                    set_condition_specific_sca_tra_parameters(*kinetics_slave_cond);
 
                     scatratimint_->Discretization()->EvaluateCondition(
                         condparams, strategy, "S2IKinetics", condid);
@@ -1090,7 +1090,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                     scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
                 // collect condition specific data and store to scatra boundary parameter class
-                SetConditionSpecificScaTraParameters(*s2i_coupling_growth_cond);
+                set_condition_specific_sca_tra_parameters(*s2i_coupling_growth_cond);
 
                 scatratimint_->Discretization()->EvaluateCondition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
@@ -1369,7 +1369,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
+void SCATRA::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contributions()
 {
   // create parameter list for elements
   Teuchos::ParameterList capcondparas;
@@ -1379,7 +1379,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
       "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
 
   // set global state vectors according to time-integration scheme
-  scatratimint_->AddTimeIntegrationSpecificVectors();
+  scatratimint_->add_time_integration_specific_vectors();
 
   // zero out matrices and vectors
   islavematrix_->Zero();
@@ -1395,7 +1395,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
         static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      SetConditionSpecificScaTraParameters(*kinetics_slave_cond_cap.second);
+      set_condition_specific_sca_tra_parameters(*kinetics_slave_cond_cap.second);
 
       scatratimint_->Discretization()->EvaluateCondition(capcondparas, islavematrix_,
           imasterslavematrix_, islaveresidual_, imasterresidual_on_slave_side, Teuchos::null,
@@ -1540,7 +1540,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateSlaveNode(const DRT::Discretization& 
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElement(const DRT::Discretization& idiscret,
+void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_element(const DRT::Discretization& idiscret,
     MORTAR::Element& element, const INPAR::SCATRA::ImplType& impltype,
     DRT::Element::LocationArray& la, const Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
@@ -1550,7 +1550,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElement(const DRT::Discretizati
   // evaluate single mortar element
   SCATRA::MortarCellFactory::MortarCellCalc(
       impltype, element, element, couplingtype_, lmside_, idiscret.Name())
-      ->EvaluateMortarElement(idiscret, element, la, params, elematrix1, elematrix2, elematrix3,
+      ->evaluate_mortar_element(idiscret, element, la, params, elematrix1, elematrix2, elematrix3,
           elematrix4, elevector1, elevector2);
 }
 
@@ -1630,7 +1630,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(const DRT::Discretization
     masterelement->LocationVector(idiscret, la_master, false);
 
     // initialize cell matrices and vectors
-    strategy.InitCellMatricesAndVectors(la_slave, la_master);
+    strategy.init_cell_matrices_and_vectors(la_slave, la_master);
 
     // evaluate current cell
     EvaluateMortarCell(idiscret, *cell, icell.second, *slaveelement, *masterelement, la_slave,
@@ -1638,7 +1638,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(const DRT::Discretization
         strategy.CellMatrix4(), strategy.CellVector1(), strategy.CellVector2());
 
     // assemble cell matrices and vectors into system matrices and vectors
-    strategy.AssembleCellMatricesAndVectors(la_slave, la_master, la_slave[0].lmowner_[0]);
+    strategy.assemble_cell_matrices_and_vectors(la_slave, la_master, la_slave[0].lmowner_[0]);
   }
 }
 
@@ -1702,7 +1702,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateNTS(const Epetra_IntVector& islavenod
     masterelement->LocationVector(idiscret, la_master, false);
 
     // initialize cell matrices and vectors
-    strategy.InitCellMatricesAndVectors(la_slave, la_master);
+    strategy.init_cell_matrices_and_vectors(la_slave, la_master);
 
     // evaluate current slave-side node
     EvaluateSlaveNode(idiscret, *slavenode, islavenodeslumpedareas[inode],
@@ -1712,14 +1712,14 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateNTS(const Epetra_IntVector& islavenod
         strategy.CellVector2());
 
     // assemble cell matrices and vectors into system matrices and vectors
-    strategy.AssembleCellMatricesAndVectors(la_slave, la_master, slavenode->Owner());
+    strategy.assemble_cell_matrices_and_vectors(la_slave, la_master, slavenode->Owner());
   }
 }
 
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElements(const Epetra_Map& ielecolmap,
+void SCATRA::MeshtyingStrategyS2I::evaluate_mortar_elements(const Epetra_Map& ielecolmap,
     const Epetra_IntVector& ieleimpltypes, const DRT::Discretization& idiscret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix1,
@@ -1758,15 +1758,16 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElements(const Epetra_Map& iele
     element->LocationVector(idiscret, la, false);
 
     // initialize element matrices and vectors
-    strategy.InitCellMatricesAndVectors(la, la);  // second function argument only serves as dummy
+    strategy.init_cell_matrices_and_vectors(
+        la, la);  // second function argument only serves as dummy
 
     // evaluate current mortar element
-    EvaluateMortarElement(idiscret, *element, (INPAR::SCATRA::ImplType)ieleimpltypes[ielement], la,
-        params, strategy.CellMatrix1(), strategy.CellMatrix2(), strategy.CellMatrix3(),
+    evaluate_mortar_element(idiscret, *element, (INPAR::SCATRA::ImplType)ieleimpltypes[ielement],
+        la, params, strategy.CellMatrix1(), strategy.CellMatrix2(), strategy.CellMatrix3(),
         strategy.CellMatrix4(), strategy.CellVector1(), strategy.CellVector2());
 
     // assemble element matrices and vectors into system matrices and vectors
-    strategy.AssembleCellMatricesAndVectors(la, la, -1);
+    strategy.assemble_cell_matrices_and_vectors(la, la, -1);
   }
 }
 
@@ -1895,7 +1896,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyS2I::init_conv_check_strategy()
 {
   if (couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
@@ -1906,7 +1907,7 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-}  // SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy
+}  // SCATRA::meshtying_strategy_s2_i::init_conv_check_strategy
 
 
 /*----------------------------------------------------------------------*
@@ -2046,9 +2047,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           auto* kinetics_condition = kinetics_slave_cond.second;
 
           if (num_dof_per_condition == -1)
-            num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
+            num_dof_per_condition =
+                scatratimint_->num_dof_per_node_in_condition(*kinetics_condition);
           else if (num_dof_per_condition !=
-                   scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
+                   scatratimint_->num_dof_per_node_in_condition(*kinetics_condition))
             FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
@@ -2084,9 +2086,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           auto* kinetics_condition = kinetics_slave_cond.second;
 
           if (num_dof_per_condition == -1)
-            num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
+            num_dof_per_condition =
+                scatratimint_->num_dof_per_node_in_condition(*kinetics_condition);
           else if (num_dof_per_condition !=
-                   scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
+                   scatratimint_->num_dof_per_node_in_condition(*kinetics_condition))
             FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
           if (kinetics_condition->parameters().Get<int>("kinetic model") !=
@@ -2123,7 +2126,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // initialize global map extractor
       interfacemaps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
           *(scatratimint_->Discretization()->DofRowMap()), imaps));
-      interfacemaps_->CheckForValidMapExtractor();
+      interfacemaps_->check_for_valid_map_extractor();
 
       // initialize interface vector
       // Although the interface vector only contains the transformed master interface dofs, we still
@@ -2170,7 +2173,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             "on standard mortar approach!");
       }
       if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-              GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") !=
+              GLOBAL::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION") !=
           INPAR::MORTAR::relocation_none)
         FOUR_C_THROW("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
 
@@ -2219,9 +2222,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         // initialize mortar coupling adapter
         icoupmortar_[condid] =
             Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-                GLOBAL::Problem::Instance()->MortarCouplingParams(),
-                GLOBAL::Problem::Instance()->ContactDynamicParams(),
-                GLOBAL::Problem::Instance()->SpatialApproximationType()));
+                GLOBAL::Problem::Instance()->mortar_coupling_params(),
+                GLOBAL::Problem::Instance()->contact_dynamic_params(),
+                GLOBAL::Problem::Instance()->spatial_approximation_type()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
         icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),
@@ -2270,12 +2273,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             interface.InterfaceParams()
                 .sublist("PARALLEL REDISTRIBUTION")
                 .set<std::string>("PARALLEL_REDIST", GLOBAL::Problem::Instance()
-                                                         ->MortarCouplingParams()
+                                                         ->mortar_coupling_params()
                                                          .sublist("PARALLEL REDISTRIBUTION")
                                                          .get<std::string>("PARALLEL_REDIST"));
             interface.Redistribute();
             interface.FillComplete(true);
-            interface.PrintParallelDistribution();
+            interface.print_parallel_distribution();
             interface.CreateSearchTree();
           }
 
@@ -2305,13 +2308,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           {
             case INPAR::MORTAR::search_bfele:
             {
-              interface.EvaluateSearchBruteForce(interface.SearchParam());
+              interface.evaluate_search_brute_force(interface.SearchParam());
               break;
             }
 
             case INPAR::MORTAR::search_binarytree:
             {
-              interface.EvaluateSearchBinarytree();
+              interface.evaluate_search_binarytree();
               break;
             }
 
@@ -2323,7 +2326,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           }
 
           // evaluate normal vectors associated with slave-side nodes
-          interface.EvaluateNodalNormals();
+          interface.evaluate_nodal_normals();
 
           // extract slave-side noderowmap
           const Epetra_Map& noderowmap_slave = *interface.SlaveRowNodes();
@@ -2361,7 +2364,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               std::array<double, 2> coordinates_master;
               double dummy(0.);
               MORTAR::Projector::Impl(*master_mortar_ele)
-                  ->ProjectGaussPointAuxn3D(slavenode->X().data(), slavenode->MoData().n(),
+                  ->project_gauss_point_auxn3_d(slavenode->X().data(), slavenode->MoData().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
@@ -2432,7 +2435,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           const Epetra_Map& dofrowmap_slave = *interface.SlaveRowDofs();
           Teuchos::RCP<Epetra_Vector> islavenodeslumpedareas_dofvector =
               CORE::LINALG::CreateVector(dofrowmap_slave);
-          EvaluateMortarElements(elecolmap_slave, islaveelementsimpltypes, idiscret, eleparams,
+          evaluate_mortar_elements(elecolmap_slave, islaveelementsimpltypes, idiscret, eleparams,
               Teuchos::null, INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
               INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
               INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
@@ -2474,7 +2477,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // initialize global map extractor
       interfacemaps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
           *(scatratimint_->Discretization()->DofRowMap()), imaps));
-      interfacemaps_->CheckForValidMapExtractor();
+      interfacemaps_->check_for_valid_map_extractor();
 
       if (couplingtype_ == INPAR::S2I::coupling_mortar_standard or
           lmside_ == INPAR::S2I::side_slave or couplingtype_ == INPAR::S2I::coupling_nts_standard)
@@ -2648,7 +2651,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   *(scatratimint_->Discretization()->DofRowMap()), *lmdofrowmap, false);
               extendedmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
                   *extendedmap, lmdofrowmap, scatratimint_->Discretization()->DofRowMap()));
-              extendedmaps_->CheckForValidMapExtractor();
+              extendedmaps_->check_for_valid_map_extractor();
 
               // transform range map of mortar matrices D and M from slave-side dofrowmap to
               // Lagrange multiplier dofrowmap
@@ -2715,7 +2718,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             "Global system matrix with block structure requires AMGnxn block preconditioner!");
 
       // initialize map extractors associated with blocks of global system matrix
-      BuildBlockMapExtractors();
+      build_block_map_extractors();
 
       break;
     }
@@ -2756,7 +2759,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           extendedmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
               *CORE::LINALG::MergeMap(*dofrowmap_scatra, *dofrowmap_growth, false),
               scatratimint_->DofRowMap(2), dofrowmap_scatra));
-          extendedmaps_->CheckForValidMapExtractor();
+          extendedmaps_->check_for_valid_map_extractor();
 
           // initialize additional state vectors
           growthnp_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_growth, true));
@@ -2794,7 +2797,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               // interface layer growth
               blockmapgrowth_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*dofrowmap_growth,
                   std::vector<Teuchos::RCP<const Epetra_Map>>(1, dofrowmap_growth)));
-              blockmapgrowth_->CheckForValidMapExtractor();
+              blockmapgrowth_->check_for_valid_map_extractor();
 
               // initialize extended map extractor associated with blocks of global system matrix
               const unsigned nblockmaps = scatratimint_->BlockMaps()->NumMaps();
@@ -2805,7 +2808,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               extendedblockmaps[nblockmaps] = dofrowmap_growth;
               extendedblockmaps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
                   *extendedmaps_->FullMap(), extendedblockmaps));
-              extendedblockmaps_->CheckForValidMapExtractor();
+              extendedblockmaps_->check_for_valid_map_extractor();
 
               scatragrowthblock_ = Teuchos::rcp(
                   new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -2905,18 +2908,18 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic
               ? extendedmaps_->FullMap()
               : Teuchos::rcp(new const Epetra_Map(*scatratimint_->Discretization()->DofRowMap()))));
-}  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
+}  // SCATRA::meshtying_strategy_s2_i::SetupMeshtying
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::ComputeTimeDerivative() const
+void SCATRA::MeshtyingStrategyS2I::compute_time_derivative() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
   {
     // compute inverse time factor 1./(theta*dt)
     const double timefac_inverse =
-        1. / scatratimint_->ScatraTimeParameterList()->get<double>("time factor");
+        1. / scatratimint_->scatra_time_parameter_list()->get<double>("time factor");
 
     // compute state vector of time derivatives of discrete scatra-scatra interface layer
     // thicknesses
@@ -2939,7 +2942,7 @@ void SCATRA::MeshtyingStrategyS2I::Update() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
+void SCATRA::MeshtyingStrategyS2I::set_element_general_parameters(
     Teuchos::ParameterList& parameters) const
 {
   // add local Newton-Raphson convergence tolerance for scatra-scatra interface layer growth to
@@ -2953,13 +2956,13 @@ void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
+void SCATRA::MeshtyingStrategyS2I::set_condition_specific_sca_tra_parameters(
     CORE::Conditions::Condition& s2icondition) const
 {
   Teuchos::ParameterList conditionparams;
 
   // fill the parameter list
-  WriteS2IKineticsSpecificScaTraParametersToParameterList(s2icondition, conditionparams);
+  write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(s2icondition, conditionparams);
 
   // call standard loop over elements
   scatratimint_->Discretization()->Evaluate(
@@ -2968,8 +2971,10 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(
-    CORE::Conditions::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
+void SCATRA::MeshtyingStrategyS2I::
+    write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
+        CORE::Conditions::Condition& s2ikinetics_cond,
+        Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
   const int kineticmodel = s2ikinetics_cond.parameters().Get<int>("kinetic model");
@@ -3140,8 +3145,8 @@ void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
   {
     // compute factor dt*(1-theta)
-    const double factor =
-        scatratimint_->Dt() - scatratimint_->ScatraTimeParameterList()->get<double>("time factor");
+    const double factor = scatratimint_->Dt() -
+                          scatratimint_->scatra_time_parameter_list()->get<double>("time factor");
 
     // compute history vector
     growthhist_->Update(1., *growthn_, factor, *growthdtn_, 0.);
@@ -3205,7 +3210,7 @@ void SCATRA::MeshtyingStrategyS2I::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Discretization& SCATRA::MeshtyingStrategyS2I::MortarDiscretization(const int& condid) const
+DRT::Discretization& SCATRA::MeshtyingStrategyS2I::mortar_discretization(const int& condid) const
 {
   return icoupmortar_.at(condid)->Interface()->Discret();
 }
@@ -3279,7 +3284,7 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
 {
-  AddTimeIntegrationSpecificVectors();
+  add_time_integration_specific_vectors();
   std::vector<CORE::Conditions::Condition*> s2ikinetics_conditions(0, nullptr);
   scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
@@ -3381,7 +3386,7 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
+void SCATRA::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
 {
   // only relevant for scatra-scatra interface coupling with pairwise coinciding interface nodes
   if (couplingtype_ == INPAR::S2I::coupling_matching_nodes)
@@ -3437,7 +3442,7 @@ void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
-  InitConvCheckStrategy();
+  init_conv_check_strategy();
 
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conditions;
@@ -3499,14 +3504,14 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
             numdofpernode, Teuchos::null, Teuchos::null, true));
     if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
       FOUR_C_THROW("Scalar transport discretization exhibits invalid number of dofsets!");
-    scatratimint_->SetNumberOfDofSetGrowth(number_dofsets);
+    scatratimint_->set_number_of_dof_set_growth(number_dofsets);
 
     // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
     // layer growth
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
       const int extendedsolver = GLOBAL::Problem::Instance()
-                                     ->ScalarTransportDynamicParams()
+                                     ->scalar_transport_dynamic_params()
                                      .sublist("S2I COUPLING")
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
       if (extendedsolver < 1)
@@ -3556,7 +3561,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
+void SCATRA::MeshtyingStrategyS2I::build_block_map_extractors()
 {
   if (matrixtype_ == CORE::LINALG::MatrixType::block_condition or
       matrixtype_ == CORE::LINALG::MatrixType::block_condition_dof)
@@ -3580,16 +3585,16 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
     }
     blockmaps_slave_ =
         Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*interfacemaps_->Map(1), blockmaps_slave));
-    blockmaps_slave_->CheckForValidMapExtractor();
+    blockmaps_slave_->check_for_valid_map_extractor();
     blockmaps_master_ = Teuchos::rcp(
         new CORE::LINALG::MultiMapExtractor(*interfacemaps_->Map(2), blockmaps_master));
-    blockmaps_master_->CheckForValidMapExtractor();
+    blockmaps_master_->check_for_valid_map_extractor();
   }
-}  // SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors
+}  // SCATRA::meshtying_strategy_s2_i::build_block_map_extractors
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
+void SCATRA::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() const
 {
   // consider extended linear solver for scatra-scatra interface layer growth if applicable
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
@@ -3626,7 +3631,7 @@ void SCATRA::MeshtyingStrategyS2I::EquipExtendedSolverWithNullSpaceInfo() const
     mllist.set("null space: vectors", nullspace->Values());
     mllist.set("ML validate parameter list", false);
   }
-}  // SCATRA::MeshtyingStrategyS2I::BuildBlockNullSpaces
+}  // SCATRA::meshtying_strategy_s2_i::build_block_null_spaces
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
@@ -3659,7 +3664,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
           solver->Solve(systemmatrix->EpetraOperator(), increment, residual, solver_params);
 
           // unequilibrate global increment vector if necessary
-          equilibration_->UnequilibrateIncrement(increment);
+          equilibration_->unequilibrate_increment(increment);
 
           break;
         }
@@ -3836,7 +3841,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
               extendedresidual, solver_params);
 
           // unequilibrate global increment vector if necessary
-          equilibration_->UnequilibrateIncrement(extendedincrement);
+          equilibration_->unequilibrate_increment(extendedincrement);
 
           // store solution
           extendedmaps_->ExtractVector(extendedincrement, 0, increment);
@@ -3866,7 +3871,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
       break;
     }
   }
-}  // SCATRA::MeshtyingStrategyS2I::Solve
+}  // SCATRA::meshtying_strategy_s2_i::Solve
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3887,7 +3892,7 @@ const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
   }
 
   return *solver;
-}  // SCATRA::MeshtyingStrategyS2I::Solver()
+}  // SCATRA::meshtying_strategy_s2_i::Solver()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -4144,7 +4149,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
     case INPAR::S2I::evaluate_mortar_matrices:
     {
       // evaluate mortar matrices
-      EvaluateMortarMatrices(
+      evaluate_mortar_matrices(
           cell, slaveelement, masterelement, cellmatrix1, cellmatrix2, cellmatrix3);
 
       break;
@@ -4193,7 +4198,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
       ExtractNodeValues(idiscret, la_slave, la_master);
 
       // evaluate and assemble interface linearizations and residuals
-      EvaluateConditionNTS(*condition, slavenode, lumpedarea, slaveelement, masterelement,
+      evaluate_condition_nts(*condition, slavenode, lumpedarea, slaveelement, masterelement,
           ephinp_slave_, ephinp_master_, ntsmatrix1, ntsmatrix2, ntsmatrix3, ntsmatrix4, ntsvector1,
           ntsvector2);
 
@@ -4211,7 +4216,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_element(
     const DRT::Discretization& idiscret, MORTAR::Element& element, DRT::Element::LocationArray& la,
     const Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elematrix1,
     CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseMatrix& elematrix3,
@@ -4224,7 +4229,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
     case INPAR::S2I::evaluate_nodal_area_fractions:
     {
       // evaluate and assemble lumped interface area fractions associated with element nodes
-      EvaluateNodalAreaFractions(element, elevector1);
+      evaluate_nodal_area_fractions(element, elevector1);
 
       break;
     }
@@ -4319,7 +4324,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
+double SCATRA::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_fac_at_int_point(
     MORTAR::Element& slaveelement, MORTAR::Element& masterelement, MORTAR::IntCell& cell,
     const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints, const int iquad)
 {
@@ -4337,10 +4342,10 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
   std::array<double, nsd_master_> coordinates_master;
   double dummy(0.);
   MORTAR::Projector::Impl(slaveelement)
-      ->ProjectGaussPointAuxn3D(
+      ->project_gauss_point_auxn3_d(
           coordinates_global.data(), cell.Auxn(), slaveelement, coordinates_slave.data(), dummy);
   MORTAR::Projector::Impl(masterelement)
-      ->ProjectGaussPointAuxn3D(
+      ->project_gauss_point_auxn3_d(
           coordinates_global.data(), cell.Auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
@@ -4421,7 +4426,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
+double SCATRA::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_fac_at_int_point(
     MORTAR::Element& element, const CORE::FE::IntPointsAndWeights<nsd_slave_>& intpoints,
     const int iquad)
 {
@@ -4454,7 +4459,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::eval_shape_func_at_slave_node(
     const MORTAR::Node& slavenode, MORTAR::Element& slaveelement, MORTAR::Element& masterelement)
 {
   // safety check
@@ -4485,7 +4490,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
   std::array<double, 2> coordinates_master;
   double dummy(0.);
   MORTAR::Projector::Impl(masterelement)
-      ->ProjectGaussPointAuxn3D(slavenode.X().data(), slavenode.MoData().n(), masterelement,
+      ->project_gauss_point_auxn3_d(slavenode.X().data(), slavenode.MoData().n(), masterelement,
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
@@ -4495,7 +4500,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::IntCell& cell,
+void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_matrices(MORTAR::IntCell& cell,
     MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
     CORE::LINALG::SerialDenseMatrix& D, CORE::LINALG::SerialDenseMatrix& M,
     CORE::LINALG::SerialDenseMatrix& E)
@@ -4511,8 +4516,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
-    const double fac =
-        EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, masterelement, cell, intpoints, iquad);
+    const double fac = eval_shape_func_and_dom_int_fac_at_int_point(
+        slaveelement, masterelement, cell, intpoints, iquad);
 
     if (lmside_ == INPAR::S2I::side_slave)
     {
@@ -4640,8 +4645,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
-    const double fac =
-        EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, masterelement, cell, intpoints, iquad);
+    const double fac = eval_shape_func_and_dom_int_fac_at_int_point(
+        slaveelement, masterelement, cell, intpoints, iquad);
 
     // overall integration factors
     const double timefacfac =
@@ -4650,17 +4655,18 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-    DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-        distypeM>(ephinp_slave_, ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_,
-        test_lm_slave_, test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac,
-        timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+    DRT::ELEMENTS::ScaTraEleBoundaryCalc<
+        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(ephinp_slave_,
+        ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_, test_lm_slave_,
+        test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
+        k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_condition_nts(
     CORE::Conditions::Condition& condition, const MORTAR::Node& slavenode, const double& lumpedarea,
     MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
@@ -4678,7 +4684,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
   }
 
   // evaluate shape functions at position of slave-side node
-  EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
+  eval_shape_func_at_slave_node(slavenode, slaveelement, masterelement);
 
   // always in contact
   const double pseudo_contact_fac = 1.0;
@@ -4690,16 +4696,17 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-  DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-      distypeM>(ephinp_slave, ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_,
-      funct_slave_, funct_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac,
-      timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+  DRT::ELEMENTS::ScaTraEleBoundaryCalc<
+      distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(ephinp_slave,
+      ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_, funct_slave_, funct_master_,
+      numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss, k_sm, k_ms,
+      k_mm, r_s, r_m);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
+void SCATRA::MortarCellCalc<distypeS, distypeM>::evaluate_nodal_area_fractions(
     MORTAR::Element& slaveelement, CORE::LINALG::SerialDenseVector& areafractions)
 {
   // integration points and weights
@@ -4710,7 +4717,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
-    const double fac = EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, intpoints, iquad);
+    const double fac = eval_shape_func_and_dom_int_fac_at_int_point(slaveelement, intpoints, iquad);
 
     // compute integrals of shape functions to obtain lumped interface area fractions associated
     // with element nodes
@@ -4761,7 +4768,7 @@ SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::MortarCellAssemblyStrategy::AssembleCellMatricesAndVectors(
+void SCATRA::MortarCellAssemblyStrategy::assemble_cell_matrices_and_vectors(
     DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
     const int assembler_pid_master) const
 {
@@ -4880,7 +4887,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MortarCellAssemblyStrategy::InitCellMatricesAndVectors(
+void SCATRA::MortarCellAssemblyStrategy::init_cell_matrices_and_vectors(
     DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master)
 {
   // initialize system matrix 1

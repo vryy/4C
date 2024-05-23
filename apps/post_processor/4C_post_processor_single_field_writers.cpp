@@ -185,9 +185,10 @@ void StructureFilter::WriteAllResults(PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureFilter::WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
+void StructureFilter::write_all_results_one_time_step(
+    PostResult& result, bool firststep, bool laststep)
 {
-  writer_->WriteResultOneTimeStep(result, "displacement", "displacement", dofbased,
+  writer_->write_result_one_time_step(result, "displacement", "displacement", dofbased,
       result.field()->problem()->num_dim(), firststep, laststep);
   WriteNodeResults(result.field());
   return;

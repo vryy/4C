@@ -120,7 +120,7 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(
       // (2) innerDofMap
       // (3) activeDofMap
       std::vector<Teuchos::RCP<Epetra_Map>> prec_maps(4, Teuchos::null);
-      i_constr_prec_.begin()->second->FillMapsForPreconditioner(prec_maps);
+      i_constr_prec_.begin()->second->fill_maps_for_preconditioner(prec_maps);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);

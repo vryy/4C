@@ -29,8 +29,9 @@ void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) c
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(CORE::LINALG::Matrix<3, 1>& modgamma,
-    CORE::LINALG::Matrix<6, 1>& moddelta, const CORE::LINALG::Matrix<3, 1>& modstr)
+void MAT::ELASTIC::IsoVarga::add_coefficients_stretches_modified(
+    CORE::LINALG::Matrix<3, 1>& modgamma, CORE::LINALG::Matrix<6, 1>& moddelta,
+    const CORE::LINALG::Matrix<3, 1>& modstr)
 {
   // parameters
   const double alpha = 2.0 * params_->mue_ - params_->beta_;

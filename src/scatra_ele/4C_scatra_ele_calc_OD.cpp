@@ -40,7 +40,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateOD(DRT::Element* ele
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele, params, discretization, la);
+  extract_element_and_node_values(ele, params, discretization, la);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
-  // const double vol=EvalShapeFuncAndDerivsAtEleCenter();
+  // const double vol=eval_shape_func_and_derivs_at_ele_center();
 
   //----------------------------------------------------------------------
   // get material and stabilization parameters (evaluation at element center)
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
   {
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     GetMaterialParams(ele, densn, densnp, densam, visc);
   }
@@ -151,9 +151,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -219,18 +219,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
       if (use2ndderiv_)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        GetLaplacianStrongForm(diff);
+        get_laplacian_strong_form(diff);
         diff.Scale(diffmanager_->GetIsotropicDiff(k));
       }
 
-      RecomputeScatraResForRhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
+      recompute_scatra_res_for_rhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
 
-      RecomputeConvPhiForRhs(k, sgvelint, densnp[k], densn[k], vdiv);
+      recompute_conv_phi_for_rhs(k, sgvelint, densnp[k], densn[k], vdiv);
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
       //----------------------------------------------------------------
-      CalcHistAndSourceODMesh(emat, k, ndofpernodemesh, fac, rhsint, J, dJ_dmesh, densnp[k]);
+      calc_hist_and_source_od_mesh(emat, k, ndofpernodemesh, fac, rhsint, J, dJ_dmesh, densnp[k]);
 
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
-  // const double vol=EvalShapeFuncAndDerivsAtEleCenter();
+  // const double vol=eval_shape_func_and_derivs_at_ele_center();
 
   //----------------------------------------------------------------------
   // get material and stabilization parameters (evaluation at element center)
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
   {
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     GetMaterialParams(ele, densn, densnp, densam, visc);
   }
@@ -312,9 +312,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    SetInternalVariablesForMatAndRHS();
+    set_internal_variables_for_mat_and_rhs();
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
       //----------------------------------------------------------------
-      CalcHistAndSourceODFluid(emat, k, numdofpernode_fluid, fac, rhsint, densnp[k]);
+      calc_hist_and_source_od_fluid(emat, k, numdofpernode_fluid, fac, rhsint, densnp[k]);
 
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
@@ -365,7 +365,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
-        CalcMatConvAddConsODFluid(
+        calc_mat_conv_add_cons_od_fluid(
             emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->Phinp(k));
 
       //----------------------------------------------------------------
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvODFluid(
  |   contributions (OD fluid)                                       vuong 08/14 |
  *------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddConsODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const double phinp)
 {
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODMesh(
  |  standard Galerkin transient, old part of rhs and source term  (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODMesh(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_mesh(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
@@ -525,7 +525,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(
   //----------------------------------------------------------------
   // standard Galerkin terms  -- "shapederivatives" convective term
   //----------------------------------------------------------------
-  ApplyShapeDerivsConv(emat, k, rhsfac, densnp, J, gradphi, convelint);
+  apply_shape_derivs_conv(emat, k, rhsfac, densnp, J, gradphi, convelint);
 }
 
 
@@ -630,7 +630,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
  |  put it into its own function                      kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double rhsfac, const double densnp,
     const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
     const CORE::LINALG::Matrix<nsd_, 1>& convelint)
@@ -755,7 +755,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, gradphi, vi);
     const double val = vrhs * laplawf;
 
     const int fvi = vi * numdofpernode_ + k;
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODFluid(
  |  standard Galerkin transient, old part of rhs and source term (OD fluid) kremheller 07/17 |
  *-------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODFluid(
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_fluid(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {

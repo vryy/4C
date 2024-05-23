@@ -32,7 +32,7 @@ void MAT::ELASTIC::VolPow::AddStrainEnergy(double& psi, const CORE::LINALG::Matr
   psi += a / (expon - 1.) * std::pow(modinv(2), -expon - 1.) + a * modinv(2);
 }
 
-void MAT::ELASTIC::VolPow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+void MAT::ELASTIC::VolPow::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
     CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {

@@ -91,34 +91,34 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_forces()
 {
-  return FluidField()->ExtractInterfaceForces();
+  return FluidField()->extract_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
-  return FluidField()->ExtractInterfaceVelnp();
+  return FluidField()->extract_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_veln()
 {
-  return FluidField()->ExtractInterfaceVeln();
+  return FluidField()->extract_interface_veln();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::integrate_interface_shape()
 {
-  return FluidField()->IntegrateInterfaceShape();
+  return FluidField()->integrate_interface_shape();
 }
 
 

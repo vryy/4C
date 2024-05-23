@@ -73,7 +73,7 @@ namespace EHL
 {
   //! monolithic EHL algorithm
   //!
-  //!  Base class of EHL algorithms. Derives from StructureBaseAlgorithm and
+  //!  Base class of EHL algorithms. Derives from structure_base_algorithm and
   //!  LubricationBaseAlgorithm with pressure field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
@@ -142,23 +142,23 @@ namespace EHL
     void CreateLinearSolver();
 
     //! Evaluate lubrication-mechanical system matrix
-    void ApplyLubricationCouplMatrix(
+    void apply_lubrication_coupl_matrix(
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             matheight,  //!< lubrication matrix associated with linearization wrt height
         Teuchos::RCP<CORE::LINALG::SparseMatrix>
             matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
-    void LinPressureForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
+    void lin_pressure_force_disp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
-    void LinPoiseuilleForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
+    void lin_poiseuille_force_disp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
     void LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
 
-    void LinPressureForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
+    void lin_pressure_force_pres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
-    void LinPoiseuilleForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
+    void lin_poiseuille_force_pres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
     void LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
@@ -188,7 +188,7 @@ namespace EHL
 
     //! contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    void print_newton_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
@@ -252,7 +252,7 @@ namespace EHL
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
-    void SetDefaultParameters();
+    void set_default_parameters();
 
     //@}
 

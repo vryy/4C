@@ -65,47 +65,47 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! get reference to particle pair data
-    inline const DEMParticlePairData& GetRefToParticlePairData() const
+    inline const DEMParticlePairData& get_ref_to_particle_pair_data() const
     {
       return particlepairdata_;
     };
 
     //! get reference to particle-wall pair data
-    inline const DEMParticleWallPairData& GetRefToParticleWallPairData() const
+    inline const DEMParticleWallPairData& get_ref_to_particle_wall_pair_data() const
     {
       return particlewallpairdata_;
     };
 
     //! get reference to adhesion particle pair data
-    inline const DEMParticlePairData& GetRefToParticlePairAdhesionData() const
+    inline const DEMParticlePairData& get_ref_to_particle_pair_adhesion_data() const
     {
       return particlepairadhesiondata_;
     };
 
     //! get reference to adhesion particle-wall pair data
-    inline const DEMParticleWallPairData& GetRefToParticleWallPairAdhesionData() const
+    inline const DEMParticleWallPairData& get_ref_to_particle_wall_pair_adhesion_data() const
     {
       return particlewallpairadhesiondata_;
     };
 
     //! evaluate neighbor pairs
-    void EvaluateNeighborPairs();
+    void evaluate_neighbor_pairs();
 
     //! evaluate adhesion neighbor pairs
-    void EvaluateNeighborPairsAdhesion(const double& adhesion_distance);
+    void evaluate_neighbor_pairs_adhesion(const double& adhesion_distance);
 
    private:
     //! evaluate particle pairs
-    void EvaluateParticlePairs();
+    void evaluate_particle_pairs();
 
     //! evaluate particle-wall pairs
-    void EvaluateParticleWallPairs();
+    void evaluate_particle_wall_pairs();
 
     //! evaluate adhesion particle pairs
-    void EvaluateParticlePairsAdhesion(const double& adhesion_distance);
+    void evaluate_particle_pairs_adhesion(const double& adhesion_distance);
 
     //! evaluate adhesion particle-wall pairs
-    void EvaluateParticleWallPairsAdhesion(const double& adhesion_distance);
+    void evaluate_particle_wall_pairs_adhesion(const double& adhesion_distance);
 
     //! particle pair data with evaluated quantities
     DEMParticlePairData particlepairdata_;

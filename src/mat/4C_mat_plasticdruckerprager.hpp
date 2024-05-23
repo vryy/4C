@@ -156,7 +156,7 @@ namespace MAT
      * \param eta :Mohr-columb parameter
      * \param etabar :Mohr-columb parameter
      */
-    void SetupCmatElastoPlasticCone(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+    void setup_cmat_elasto_plastic_cone(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         double Dgamma, double G, double Kappa, CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,
         double xi, double Hiso, double eta, double etabar);
     /**
@@ -170,8 +170,8 @@ namespace MAT
      * \param eta :Mohr-columb parameter
      * \param etabar :Mohr-columb parameter
      */
-    void SetupCmatElastoPlasticApex(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                        cmat,               // elasto-plastic tangent modulus (out)
+    void setup_cmat_elasto_plastic_apex(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                            cmat,           // elasto-plastic tangent modulus (out)
         double Kappa,                                       // Bulk mmodulus
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  // deviatoric strain
         double xi,                                          // Mohr-columb parameter
@@ -182,11 +182,11 @@ namespace MAT
     CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
     double Density() const override { return params_->density_; }
     template <typename T>
-    std::pair<T, T> ReturnToConeFunctAndDeriv(T Dgamma, T G, T kappa, T Phi_trial);
+    std::pair<T, T> return_to_cone_funct_and_deriv(T Dgamma, T G, T kappa, T Phi_trial);
     template <typename T>
-    std::pair<T, T> ReturnToApexFunctAndDeriv(T dstrainv, T p, T kappa, T strainbar_p);
+    std::pair<T, T> return_to_apex_funct_and_deriv(T dstrainv, T p, T kappa, T strainbar_p);
     bool Initialized() const { return (isinit_ and !strainplcurr_.empty()); }
-    void RegisterOutputDataNames(
+    void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(

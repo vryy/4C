@@ -123,7 +123,7 @@ namespace
     {
       // call elements and assemble
       if (!nurbsdis->Filled()) FOUR_C_THROW("FillComplete() was not called");
-      if (!nurbsdis->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+      if (!nurbsdis->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
       // see what we have for input
       bool assemblemat = massmatrix != Teuchos::null;
@@ -578,7 +578,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis,
 
   Teuchos::RCP<CORE::LINALG::Solver> lssolver =
       Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm()));
-  dis.ComputeNullSpaceIfNecessary(lssolver->Params());
+  dis.compute_null_space_if_necessary(lssolver->Params());
 
   // get the processor ID from the communicator
   const int myrank = dis.Comm().MyPID();

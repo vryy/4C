@@ -400,7 +400,7 @@ namespace DRT
         \param refporositydot     (i) time derivative of reference porosity
         \param timefacfacpre      (i) time factor * integration factor
        */
-      void LinMeshMotion_2D_Pres_OD(CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
+      void lin_mesh_motion_2_d_pres_od(CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefacfacpre);
 
@@ -414,7 +414,7 @@ namespace DRT
         \param refporositydot     (i) time derivative of reference porosity
         \param timefacfacpre      (i) time factor * integration factor
        */
-      virtual void LinMeshMotion_3D_Pres_OD(CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
+      virtual void lin_mesh_motion_3_d_pres_od(CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefacfacpre);
 
@@ -476,7 +476,7 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du);
 
       //! Compute linearization of momentum residual (stabilization) w.r.t fluid velocities
-      void ComputeLinResMDuStabilization(
+      void compute_lin_res_m_du_stabilization(
           const double& timefacfac, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du);
 
       //! Compute linearization of momentum residual w.r.t fluid pressure
@@ -535,7 +535,7 @@ namespace DRT
         \param grad_porosity  (o) spatial gradient of porosity
         \param refgrad_porosity  (o) reference gradient of porosity
        */
-      virtual void ComputePorosityGradient(const double& dphidp, const double& dphidJ,
+      virtual void compute_porosity_gradient(const double& dphidp, const double& dphidJ,
           const CORE::LINALG::Matrix<nsd_, 1>& gradJ, const CORE::LINALG::Matrix<nsd_, 1>& gradp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
           CORE::LINALG::Matrix<nsd_, 1>& grad_porosity,
@@ -552,7 +552,7 @@ namespace DRT
         \param gradJ          (i) spatial gradient of jacobian determinant
         \param dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
-      virtual void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
+      virtual void compute_linearization(const double& dphi_dp, const double& dphi_dpp,
           const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
           CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp);
 
@@ -575,7 +575,7 @@ namespace DRT
         \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure
                                   displacments
        */
-      virtual void ComputeLinearizationOD(const double& dphi_dJ, const double& dphi_dJJ,
+      virtual void compute_linearization_od(const double& dphi_dJ, const double& dphi_dJJ,
           const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
           const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
           const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x,
@@ -629,7 +629,7 @@ namespace DRT
         \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
         \param preforce       (o) element rhs vector to be filled
        * */
-      virtual void EvaluatePressureEquation(Teuchos::ParameterList& params,
+      virtual void evaluate_pressure_equation(Teuchos::ParameterList& params,
           const double& timefacfacpre, const double& rhsfac, const double& dphi_dp,
           const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
@@ -658,7 +658,7 @@ namespace DRT
         \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
         \param preforce       (o) element rhs vector to be filled
        * */
-      virtual void EvaluatePressureEquationNonTransient(Teuchos::ParameterList& params,
+      virtual void evaluate_pressure_equation_non_transient(Teuchos::ParameterList& params,
           const double& timefacfacpre, const double& rhsfac, const double& dphi_dp,
           const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
           const CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
@@ -785,7 +785,7 @@ namespace DRT
         \param eporositydot       (i) nodal porosity time derivative at n+1
         \param eporositydotn      (i) nodal porosity time derivative at n
        */
-      void EvaluateVariablesAtGaussPoint(Teuchos::ParameterList& params,
+      void evaluate_variables_at_gauss_point(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
@@ -823,7 +823,7 @@ namespace DRT
         \param escaaf             (i) nodal scalar at n+alpha_F/n+1
         \param eporositynp        (i) nodal porosity at n+alpha_F/n+1
        */
-      void EvaluateVariablesAtGaussPointOD(Teuchos::ParameterList& params,
+      void evaluate_variables_at_gauss_point_od(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
@@ -859,7 +859,7 @@ namespace DRT
                                    dofs
         \param ecoupl_u        (o) coupling element matrix of momentum equation
        */
-      void FillMatrixMomentumOD(const double& timefacfac,
+      void fill_matrix_momentum_od(const double& timefacfac,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,
@@ -909,16 +909,16 @@ namespace DRT
       );
 
       //! computation of material derivatives
-      double SetupMaterialDerivatives();
+      double setup_material_derivatives();
 
       //! access structure material of corresponding solid (poro) element
       void GetStructMaterial(DRT::ELEMENTS::Fluid* ele);
 
       //! get material parameters of poro fluid element
-      void GetMaterialParamters(Teuchos::RCP<const CORE::MAT::Material> material);
+      void get_material_paramters(Teuchos::RCP<const CORE::MAT::Material> material);
 
       //! compute spatial reactive term (darcy term)
-      void ComputeSpatialReactionTerms(
+      void compute_spatial_reaction_terms(
           Teuchos::RCP<const CORE::MAT::Material> material,  //< fluid material
           const CORE::LINALG::Matrix<nsd_, nsd_>&
               invdefgrd  //!< inverse of deformationgradient at gausspoint
@@ -926,7 +926,7 @@ namespace DRT
 
       //! compute linearization of spatial reactive term (darcy term) w.r.t to structural
       //! displacements
-      void ComputeLinSpatialReactionTerms(
+      void compute_lin_spatial_reaction_terms(
           Teuchos::RCP<const CORE::MAT::Material> material,  //< fluid material
           const CORE::LINALG::Matrix<nsd_, nsd_>&
               defgrd_inv,  //!< inverse of deformationgradient at gausspoint
@@ -937,15 +937,15 @@ namespace DRT
       );
 
       //! get compute RHS of momentum equation of time step n and subgrid-scale velocity
-      void ComputeOldRHSAndSubgridScaleVelocity();
+      void compute_old_rhs_and_subgrid_scale_velocity();
 
       //! get stabilization paramters
-      void ComputeStabilizationParameters(const double& vol);
+      void compute_stabilization_parameters(const double& vol);
 
       //! get compute RHS of contiuity equation of time step n
       void ComputeOldRHSConti(double dphi_dp);
 
-      void ComputeMixtureStrongResidual(Teuchos::ParameterList& params,
+      void compute_mixture_strong_residual(Teuchos::ParameterList& params,
           const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
           const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
           const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
@@ -967,13 +967,13 @@ namespace DRT
       );
 
       //! Compute Jacobian Determinant and the volume change
-      void ComputeJacobianDeterminantVolumeChange(double& J, double& volchange,
+      void compute_jacobian_determinant_volume_change(double& J, double& volchange,
           const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
           const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
           const CORE::LINALG::Matrix<nsd_, nen_>& nodaldisp);
 
       //! Compute deformation gradient
-      double ComputeEffectiveStiffness();
+      double compute_effective_stiffness();
 
       //! Evaluate element ERROR
       /*!
@@ -989,7 +989,7 @@ namespace DRT
           const CORE::FE::GaussIntegration& intpoints2) override;
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
-      std::vector<double> ComputeAnisotropicPermeabilityCoeffsAtGP() const;
+      std::vector<double> compute_anisotropic_permeability_coeffs_at_gp() const;
 
       //! first derivatives of shape functions w.r.t. material coordinates
       CORE::LINALG::Matrix<nsd_, nen_> N_XYZ_;

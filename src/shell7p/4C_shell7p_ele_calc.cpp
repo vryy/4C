@@ -80,14 +80,14 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::MaterialPostSetup(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::ResetToLastConverged(
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::reset_to_last_converged(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Element& ele,
+double DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
@@ -185,7 +185,7 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Elem
 
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Element& ele,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(DRT::Element& ele,
     MAT::So3Material& solid_material, const ShellStressIO& stressIO, const ShellStrainIO& strainIO,
     const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
 
           // update the deformation gradient
           CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(false);
-          SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+          SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
               strains.defgrd_, strains.gl_strain_, defgrd_enh);
           strains.defgrd_ = defgrd_enh;
 
@@ -296,8 +296,8 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(DRT::Element& ele,
-    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+void DRT::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffness_mass(
+    DRT::Element& ele, MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const CORE::LINALG::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
           if (solid_material.NeedsDefgrd())
           {
             CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(false);
-            SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+            SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
                 strains.defgrd_, strains.gl_strain_, defgrd_enh);
             strains.defgrd_ = defgrd_enh;
           }
@@ -457,7 +457,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
         // add internal force vector
         if (force_vector != nullptr)
         {
-          SHELL::AddInternalForceVector<distype>(
+          SHELL::add_internal_force_vector<distype>(
               Bop, stress_enh.stress_, integration_factor, *force_vector);
         }
         // add internal mass_matrix
@@ -559,7 +559,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
               // update the deformation gradient (if needed?)
               CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> defgrd_enh(
                   false);
-              SHELL::CalcConsistentDefgrd<SHELL::DETAIL::num_dim>(
+              SHELL::calc_consistent_defgrd<SHELL::DETAIL::num_dim>(
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }

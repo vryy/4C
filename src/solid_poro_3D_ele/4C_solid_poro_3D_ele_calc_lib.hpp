@@ -39,8 +39,8 @@ namespace DRT::ELEMENTS
 
   //! extract element data from global vector
   template <CORE::FE::CellType celltype>
-  void ExtractValuesFromGlobalVector(const DRT::Discretization& discretization, const int& dofset,
-      const std::vector<int>& lm,
+  void extract_values_from_global_vector(const DRT::Discretization& discretization,
+      const int& dofset, const std::vector<int>& lm,
       CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>* matrixtofill,
       CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>* vectortofill, const std::string& state,
       const DRT::Element& ele)
@@ -130,7 +130,7 @@ namespace DRT::ELEMENTS
 
       // gradient of displacements
       CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> mydisp(true);
-      ExtractValuesFromGlobalVector<celltype>(
+      extract_values_from_global_vector<celltype>(
           discretization, 0, lm, &mydisp, nullptr, "displacement", ele);
 
       CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> dispgrad;
@@ -266,7 +266,7 @@ namespace DRT::ELEMENTS
    * @param dPorosity_dDisp (in/out): derivative of porosity w.r.t. the displacements
    */
   template <CORE::FE::CellType celltype>
-  void ComputePorosityAndLinearization(MAT::StructPoro& porostructmat,
+  void compute_porosity_and_linearization(MAT::StructPoro& porostructmat,
       Teuchos::ParameterList& params, const double solidpressure, const int gp,
       const double volchange, double& porosity,
       const CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dDetDefGrad_dDisp,
@@ -369,7 +369,7 @@ namespace DRT::ELEMENTS
    * @param fluidmultiphase_phiAtGP (in): fluid multiphase primary variables at GP
    * @return solid pressure
    */
-  double RecalculateSolPressureAtGP(double press, const double porosity,
+  double recalculate_sol_pressure_at_gp(double press, const double porosity,
       const int nummultifluiddofpernode, const int numfluidphases, const int numvolfrac,
       const std::vector<double>& fluidmultiphase_phiAtGP)
   {
@@ -392,7 +392,7 @@ namespace DRT::ELEMENTS
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
       press += volfracphi[ivolfrac] / porosity * volfracpressure[ivolfrac];
 
-    // note: in RecalculateSolidPressure in porofluid_phasemanager calculation is performed a bit
+    // note: in recalculate_solid_pressure in porofluid_phasemanager calculation is performed a bit
     //       differently since we already pass porosity = porosity - sumaddvolfrac, but result is
     //       equivalent
 
@@ -621,13 +621,13 @@ namespace DRT::ELEMENTS
     porofluidmat.EvaluateGenPressure(genpress, fluidphi);
 
     // transform generalized pressures to true pressure values
-    porofluidmat.TransformGenPresToTruePres(genpress, press);
+    porofluidmat.transform_gen_pres_to_true_pres(genpress, press);
 
     // explicit evaluation of saturation
     porofluidmat.EvaluateSaturation(sat, fluidphi, press);
 
     // calculate the derivative of the pressure (actually first its inverse)
-    porofluidmat.EvaluateDerivOfDofWrtPressure(pressderiv, fluidphi);
+    porofluidmat.evaluate_deriv_of_dof_wrt_pressure(pressderiv, fluidphi);
 
     // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
     // of the pressure w.r.t. the dofs
@@ -641,7 +641,7 @@ namespace DRT::ELEMENTS
     }
 
     // calculate derivatives of saturation w.r.t. pressure
-    porofluidmat.EvaluateDerivOfSaturationWrtPressure(helpderiv, press);
+    porofluidmat.evaluate_deriv_of_saturation_wrt_pressure(helpderiv, press);
 
     // chain rule: the derivative of saturation w.r.t. dof =
     // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
@@ -670,7 +670,7 @@ namespace DRT::ELEMENTS
    * @return solidpressure
    */
   template <CORE::FE::CellType celltype>
-  double ComputeSolPressureAtGP(const int nummultifluiddofpernode, const int numfluidphases,
+  double compute_sol_pressure_at_gp(const int nummultifluiddofpernode, const int numfluidphases,
       const std::vector<double>& fluidmultiphase_phiAtGP, MAT::FluidPoroMultiPhase& porofluidmat)
   {
     // initialize auxiliary variables
@@ -684,7 +684,7 @@ namespace DRT::ELEMENTS
     porofluidmat.EvaluateGenPressure(genpress, fluidphi);
 
     //! transform generalized pressures to true pressure values
-    porofluidmat.TransformGenPresToTruePres(genpress, press);
+    porofluidmat.transform_gen_pres_to_true_pres(genpress, press);
 
     // explicit evaluation of saturation
     porofluidmat.EvaluateSaturation(sat, fluidphi, press);
@@ -708,7 +708,7 @@ namespace DRT::ELEMENTS
    * @param: solidpressurederiv (in/out): derivative of solidpressure w.r.t. fluid multiphase
    * primary variables and volfracs
    */
-  void RecalculateSolPressureDeriv(const std::vector<double>& fluidmultiphase_phiAtGP,
+  void recalculate_sol_pressure_deriv(const std::vector<double>& fluidmultiphase_phiAtGP,
       const int nummultifluiddofpernode, const int numfluidphases, const int numvolfrac,
       const double solidpressure, const double porosity, std::vector<double>& solidpressurederiv)
   {

@@ -100,7 +100,7 @@ namespace MAT
           ) override;
 
       // add first and second derivative w.r.t. principal invariants
-      void AddDerivativesPrincipal(
+      void add_derivatives_principal(
           CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
           CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
           const CORE::LINALG::Matrix<3, 1>&

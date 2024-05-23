@@ -99,7 +99,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
           mueluA->getRowMap();
       Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace;
       nullspace =
-          CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(rowMap, muelulist_);
+          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(rowMap, muelulist_);
 
       mueluOp->SetFixedBlockSize(numdf);
 
@@ -198,9 +198,9 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
     if (create)
     {
       // fix null space for ML inverses
-      numdf = muelulist_.sublist("NodalBlockInformation").get<int>("number of dofs per node", 0);
-      nv = muelulist_.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
-      np = muelulist_.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
+      numdf = muelulist_.sublist("nodal_block_information").get<int>("number of dofs per node", 0);
+      nv = muelulist_.sublist("nodal_block_information").get<int>("number of momentum dofs", 0);
+      np = muelulist_.sublist("nodal_block_information").get<int>("number of constraint dofs", 0);
 
       // build fluid null space in MueLu format
       if (numdf == 0 || nv == 0 || np == 0)
@@ -391,7 +391,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-          CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
               solidmap, muelulist_.sublist("Inverse1"));
 
       int thermoDimns = thermoList.get<int>("null space: dimension", -1);
@@ -399,7 +399,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-          CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
               thermomap, muelulist_.sublist("Inverse2"));
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
@@ -472,7 +472,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 
   // Extract additional maps from parameter list
   //
-  // These maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that has access
+  // These maps are provided by the STR::TimInt::prepare_contact_meshtying routine, that has access
   // to the contact manager class
   //
   // Note: 4C provides Epetra_Map objects. We will transform them to Xpetra::Map later.
@@ -651,7 +651,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
     {
       // Extract pre-computed nullspace for block (0,0) from 4C's ML parameter list
-      nullspace11 = CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+      nullspace11 = CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
           stridedRangeMapPrimal, contactList);
 
       // Compute default nullspace for block (1,1)
@@ -822,14 +822,15 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-          CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(solidmap, solidList);
+          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+              solidmap, solidList);
 
       int beamDimns = beamList.get<int>("null space: dimension", -1);
       if (beamDimns == -1 || beamDofs == -1)
         FOUR_C_THROW("Error: PDE equations of beam or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-          CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(beammap, beamList);
+          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(beammap, beamList);
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(bOp->getRangeMap()->getComm()));
@@ -912,9 +913,9 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
 
     // explicit information about the fluid
     const int numVelocityDofsPerNode =
-        fluidList.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
+        fluidList.sublist("nodal_block_information").get<int>("number of momentum dofs", 0);
     const int numPressureDofsPerNode =
-        fluidList.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
+        fluidList.sublist("nodal_block_information").get<int>("number of constraint dofs", 0);
 
     if (numFluidDofsPerNode != (numVelocityDofsPerNode + numPressureDofsPerNode))
       FOUR_C_THROW("Number of fluid dofs does not match the number of velocity and pressure dofs");
@@ -1002,7 +1003,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-        CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
             solidmap, muelulist_.sublist("Inverse1"));
 
     const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
@@ -1010,7 +1011,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of fluid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-        CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
             fluidmap, muelulist_.sublist("Inverse2"));
 
     const int aleDimns = aleList.get<int>("null space: dimension", -1);
@@ -1018,7 +1019,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of ale or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
-        CORE::LINEAR_SOLVER::Parameters::ExtractNullspaceFromParameterlist(
+        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
             alemap, muelulist_.sublist("Inverse3"));
 
     MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(

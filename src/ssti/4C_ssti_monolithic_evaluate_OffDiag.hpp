@@ -60,23 +60,23 @@ namespace SSTI
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
-    void EvaluateOffDiagBlockStructureThermoDomain(
+    void evaluate_off_diag_block_structure_thermo_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs in domain
-    void EvaluateOffDiagBlockThermoStructureDomain(
+    void evaluate_off_diag_block_thermo_structure_domain(
         Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
-    void EvaluateOffDiagBlockThermoStructureInterface(
+    void evaluate_off_diag_block_thermo_structure_interface(
         Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface);
 
    private:
-    void CopySlaveToMasterThermoStructureInterface(
+    void copy_slave_to_master_thermo_structure_interface(
         Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
 
-    void EvaluateThermoStructureInterfaceSlaveSide(
+    void evaluate_thermo_structure_interface_slave_side(
         Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
 
     //! map extractor associated with all degrees of freedom inside structure field

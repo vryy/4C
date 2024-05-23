@@ -135,7 +135,7 @@ namespace MAT
     }
 
     /// compute reaction coefficient
-    double ComputeReactionCoeff() const;
+    double compute_reaction_coeff() const;
 
     /// set viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
     double SetViscosity() const;

@@ -72,14 +72,14 @@ namespace SCATRA
     //! init
     void InitMeshtying() override;
 
-    bool SystemMatrixInitializationNeeded() const override { return false; }
+    bool system_matrix_initialization_needed() const override { return false; }
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
-          "'SystemMatrixInitializationNeeded()' to return true");
+          "'system_matrix_initialization_needed()' to return true");
       // dummy return
       return Teuchos::null;
     }
@@ -97,7 +97,7 @@ namespace SCATRA
     const CORE::LINALG::Solver& Solver() const override;
 
     //! init the convergence check
-    void InitConvCheckStrategy() override;
+    void init_conv_check_strategy() override;
 
     //! solve resulting linear system of equations
     void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
@@ -114,10 +114,10 @@ namespace SCATRA
     ) const;
 
     //! init the convergence check
-    void SetArteryScatraTimeIntegrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint);
+    void set_artery_scatra_time_integrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint);
 
     //! set the artery time integrator
-    void SetArteryTimeIntegrator(Teuchos::RCP<ADAPTER::ArtNet> arttimint);
+    void set_artery_time_integrator(Teuchos::RCP<ADAPTER::ArtNet> arttimint);
 
     //! set the element pairs that are close as found by search algorithm
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
@@ -132,7 +132,7 @@ namespace SCATRA
     void ApplyMeshMovement();
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> combined_system_matrix()
     {
       return comb_systemmatrix_;
     }
@@ -158,13 +158,13 @@ namespace SCATRA
      * @param[o] vec_cont  3D vector
      * @param[o] vec_art   1D vector
      */
-    void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+    void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) const;
 
    private:
     //! initialize the linear solver
-    void InitializeLinearSolver(const Teuchos::ParameterList& scatraparams);
+    void initialize_linear_solver(const Teuchos::ParameterList& scatraparams);
     //! time integrators
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint_;
     Teuchos::RCP<ADAPTER::ArtNet> arttimint_;

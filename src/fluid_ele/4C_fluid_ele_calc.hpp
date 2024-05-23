@@ -91,18 +91,19 @@ namespace DRT
 
       static constexpr int numdofpernode_ = nsd_ + 1;
 
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
+      virtual int integrate_shape_function(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1);
 
 
-      int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int integrate_shape_function(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints) override;
 
 
-      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+      int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
@@ -151,7 +152,7 @@ namespace DRT
        *
        *  \author rauch \date 05/2014
        */
-      int InterpolateVelocityGradientAndPressure(DRT::ELEMENTS::Fluid* ele,
+      int interpolate_velocity_gradient_and_pressure(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra);
@@ -160,7 +161,7 @@ namespace DRT
        *
        *  \author rauch \date 05/2014
        */
-      int InterpolateVelocityToNode(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
+      int interpolate_velocity_to_node(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra);
@@ -169,16 +170,17 @@ namespace DRT
        *
        *  \author rauch \date 07/2015
        */
-      int CorrectImmersedBoundVelocities(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+      int correct_immersed_bound_velocities(Teuchos::ParameterList& params,
+          DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material>& mat,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra);
 
       /*---------------------------------------------------------------------*
        | Action type: interpolate_velocity_to_given_point                    |
        | calculate velocity at given point                       ghamm 12/15 |
        *---------------------------------------------------------------------*/
-      int InterpolateVelocityToPoint(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int interpolate_velocity_to_point(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
@@ -186,7 +188,7 @@ namespace DRT
        *
        *  \author ghamm \date 06/2015
        */
-      int InterpolatePressureToPoint(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int interpolate_pressure_to_point(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
@@ -200,7 +202,7 @@ namespace DRT
        *
        *  \author bk \date 01/2015
        */
-      virtual int CalcVelGradientEleCenter(DRT::ELEMENTS::Fluid* ele,
+      virtual int calc_vel_gradient_ele_center(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
@@ -216,7 +218,7 @@ namespace DRT
        *
        *  \author bk \date 05/2014
        */
-      virtual int CalcChannelStatistics(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int calc_channel_statistics(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<CORE::MAT::Material>& mat);
 
@@ -224,7 +226,7 @@ namespace DRT
        *
        *  \author bk \date 12/2014
        */
-      virtual int CalcMassFlowPeriodicHill(DRT::ELEMENTS::Fluid* ele,
+      virtual int calc_mass_flow_periodic_hill(DRT::ELEMENTS::Fluid* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           Teuchos::RCP<CORE::MAT::Material>& mat);
@@ -234,7 +236,7 @@ namespace DRT
        *   \author ghamm
        *   \date   06/2014
        */
-      virtual int VelGradientProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int vel_gradient_projection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
@@ -244,8 +246,8 @@ namespace DRT
        *   \author mwinter
        *   \date   09/2015
        */
-      virtual int PresGradientProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
+      virtual int pres_gradient_projection(DRT::ELEMENTS::Fluid* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
       /*! \brief Calculate a divergence of velocity at the element center
@@ -275,7 +277,7 @@ namespace DRT
       /*!
        \brief Evaluates the analytic solution in the given point
        */
-      static void EvaluateAnalyticSolutionPoint(const CORE::LINALG::Matrix<nsd_, 1>& xyzint,
+      static void evaluate_analytic_solution_point(const CORE::LINALG::Matrix<nsd_, 1>& xyzint,
           const double t, const INPAR::FLUID::CalcError calcerr, const int calcerrfunctno,
           const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
           CORE::LINALG::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure = false,
@@ -303,7 +305,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
+      int compute_error_interface(DRT::ELEMENTS::Fluid* ele,         ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -364,7 +366,7 @@ namespace DRT
           const double& Cs, const double& Cs_delta_sq, const double& l_tau);
 
 
-      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -392,7 +394,7 @@ namespace DRT
       }
 
 
-      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
+      void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,     ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -417,7 +419,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) override
       {
@@ -425,7 +427,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
         FOUR_C_THROW("Implemented in derived xfem class!");
@@ -629,7 +631,7 @@ namespace DRT
       );
 
       //! calculate body force contribution from surface tension
-      void AddSurfaceTensionForce(
+      void add_surface_tension_force(
           const CORE::LINALG::Matrix<nen_, 1>& escaaf,  ///< scalar at time n+alpha_f / n+1
           const CORE::LINALG::Matrix<nen_, 1>& escaam,  ///< scalar at time n+alpha_m / n
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>&
@@ -640,10 +642,10 @@ namespace DRT
 
 
       //! evaluate shape functions and their derivatives at element center
-      virtual void EvalShapeFuncAndDerivsAtEleCenter();
+      virtual void eval_shape_func_and_derivs_at_ele_center();
 
       //! brief evaluate shape functions and their derivatives at integration point
-      virtual void EvalShapeFuncAndDerivsAtIntPoint(
+      virtual void eval_shape_func_and_derivs_at_int_point(
           const double* gpcoords,  ///< actual integration point (coords)
           double gpweight          ///< actual integration point (weight)
       );
@@ -653,9 +655,9 @@ namespace DRT
           CORE::LINALG::Matrix<nsd_, nen_>& edispnp, CORE::LINALG::Matrix<nsd_, nen_>& egridv);
 
       //! get ALE grid displacements and grid velocity for element
-      void GetGridDispVelALEOSTNew(DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::Matrix<nsd_, nen_>& edispnp, CORE::LINALG::Matrix<nsd_, nen_>& egridvnp,
-          CORE::LINALG::Matrix<nsd_, nen_>& egridvn);
+      void get_grid_disp_vel_aleost_new(DRT::Discretization& discretization,
+          const std::vector<int>& lm, CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+          CORE::LINALG::Matrix<nsd_, nen_>& egridvnp, CORE::LINALG::Matrix<nsd_, nen_>& egridvn);
 
       //! get ALE grid displacements for element
       virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -665,10 +667,10 @@ namespace DRT
       void SetConvectiveVelint(const bool isale);
 
       //! set the (relative) convective velocity at integration point for various physical types
-      void SetConvectiveVelintN(const bool isale);
+      void set_convective_velint_n(const bool isale);
 
       //! set element advective field for Oseen problems
-      void SetAdvectiveVelOseen(DRT::ELEMENTS::Fluid* ele);
+      void set_advective_vel_oseen(DRT::ELEMENTS::Fluid* ele);
 
       //! get material parameters
       void GetMaterialParams(
@@ -718,7 +720,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& eveln);  ///< velocity at time n+alpha_f / n+1
 
       //! compute residual of momentum equation and subgrid-scale velocity
-      virtual void ComputeSubgridScaleVelocity(
+      virtual void compute_subgrid_scale_velocity(
           const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,  ///< acceleration at time n+alpha_M
           double& fac1,                                    ///< factor for old s.-s. velocities
           double& fac2,                                    ///< factor for old s.-s. accelerations
@@ -732,7 +734,7 @@ namespace DRT
 
 
       //! compute residual of momentum equation and subgrid-scale velocity
-      void ComputeSubgridScaleVelocityOSTNew(
+      void compute_subgrid_scale_velocity_ost_new(
           const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,  ///< acceleration at time n+alpha_M
           double& fac1,                                    ///< factor for old s.-s. velocities
           double& fac2,                                    ///< factor for old s.-s. accelerations
@@ -760,8 +762,8 @@ namespace DRT
 
       //! Provide linearization of Garlerkin momentum residual with respect to the velocities in the
       //! case if subscales
-      void LinGalMomResU_subscales(CORE::LINALG::Matrix<nen_ * nsd_, nen_>&
-                                       estif_p_v,  ///< block (weighting function v x pressure)
+      void lin_gal_mom_res_u_subscales(CORE::LINALG::Matrix<nen_ * nsd_, nen_>&
+                                           estif_p_v,  ///< block (weighting function v x pressure)
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
               lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
           CORE::LINALG::Matrix<nsd_, 1>& resM_Du,  ///< residual of the fluid momentum equation
@@ -771,9 +773,9 @@ namespace DRT
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
       //! reactive terms of the Galerkin part
-      void InertiaConvectionReactionGalPart(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                                                estif_u,  ///< block (weighting function v x u)
-          CORE::LINALG::Matrix<nsd_, nen_>& velforce,     ///< rhs forces velocity
+      void inertia_convection_reaction_gal_part(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                                                    estif_u,  ///< block (weighting function v x u)
+          CORE::LINALG::Matrix<nsd_, nen_>& velforce,         ///< rhs forces velocity
           CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
               lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
           CORE::LINALG::Matrix<nsd_, 1>&
@@ -829,7 +831,7 @@ namespace DRT
       void PressureProjection(CORE::LINALG::Matrix<nen_, nen_>& ppmat);
 
       //! Finalize pressure projection terms
-      void PressureProjectionFinalize(CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+      void pressure_projection_finalize(CORE::LINALG::Matrix<nen_, nen_>& ppmat,
           CORE::LINALG::Matrix<nen_, 1>& preforce, const CORE::LINALG::Matrix<nen_, 1>& eprenp);
 
       //! Compute element matrix entries: body force terms on rhs
@@ -839,11 +841,11 @@ namespace DRT
       );
 
       //! Compute element matrix entries: conservative formulation
-      virtual void ConservativeFormulation(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
-                                               estif_u,  ///< block (weighting function v x u)
-          CORE::LINALG::Matrix<nsd_, nen_>& velforce,    ///< rhs forces velocity
-          const double& timefacfac,                      ///< = timefac x fac
-          const double& rhsfac                           ///< right-hand-side factor
+      virtual void conservative_formulation(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+                                                estif_u,  ///< block (weighting function v x u)
+          CORE::LINALG::Matrix<nsd_, nen_>& velforce,     ///< rhs forces velocity
+          const double& timefacfac,                       ///< = timefac x fac
+          const double& rhsfac                            ///< right-hand-side factor
       );
 
       //! Provide linearization of stabilization residual with respect to the velocities
@@ -971,7 +973,7 @@ namespace DRT
       //! definition in fluid_impl_turbulence_service.cpp
 
       //! get parameters for multifractal subgrid scales
-      void PrepareMultifractalSubgrScales(
+      void prepare_multifractal_subgr_scales(
           CORE::LINALG::Matrix<nsd_, 1>&
               B_mfs,      ///< coefficient multifractal subgrid scales velocity
           double& D_mfs,  ///< coefficient multifractal subgrid scales scalar (loma only)
@@ -1002,7 +1004,7 @@ namespace DRT
       );
 
       //! calculate fine-scale subgrid viscosity
-      void CalcFineScaleSubgrVisc(
+      void calc_fine_scale_subgr_visc(
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const CORE::LINALG::Matrix<nsd_, nen_>&
               fsevelaf,     ///< fine scale velocity at time n+alpha_f / n+1
@@ -1010,16 +1012,16 @@ namespace DRT
       );
 
       //! get coefficient for multifractal subgrid scales (velocity)
-      void CalcMultiFracSubgridVelCoef(const double Csgs,  ///< model coefficient
-          const double alpha,                              ///< filter width ratio
-          const std::vector<double> Nvel,                  ///< number of casacade steps
-          CORE::LINALG::Matrix<nsd_, 1>& B_mfs             ///< final coefficient
+      void calc_multi_frac_subgrid_vel_coef(const double Csgs,  ///< model coefficient
+          const double alpha,                                   ///< filter width ratio
+          const std::vector<double> Nvel,                       ///< number of casacade steps
+          CORE::LINALG::Matrix<nsd_, 1>& B_mfs                  ///< final coefficient
       );
 
       //! get coefficient for multifractal subgrid scales (scalar) (loma only)
-      void CalcMultiFracSubgridScaCoef(const double Csgs,  ///< model coefficient
-          const double alpha,                              ///< model coefficient
-          const double Pr,                                 ///< Prandtl number
+      void calc_multi_frac_subgrid_sca_coef(const double Csgs,  ///< model coefficient
+          const double alpha,                                   ///< model coefficient
+          const double Pr,                                      ///< Prandtl number
           const double Pr_limit,  ///< Prandtl number to distinguish between low and high Prandtl
                                   ///< number regime
           const std::vector<double> Nvel,  ///< number of casacade steps (velocity)
@@ -1028,26 +1030,27 @@ namespace DRT
       );
 
       //! Compute element matrix entries: fine scale subgrid viscousity rhs term
-      void FineScaleSubGridViscosityTerm(
+      void fine_scale_sub_grid_viscosity_term(
           CORE::LINALG::Matrix<nsd_, nen_>& velforce,  ///< rhs forces velocity
           const double& fssgviscfac  ///< = (fine scale subgrid viscousity) x timefacfac
       );
 
-      void MultfracSubGridScalesCross(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+      void multfrac_sub_grid_scales_cross(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
           CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac,
           const double& rhsfac);
 
-      void MultfracSubGridScalesReynolds(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+      void multfrac_sub_grid_scales_reynolds(
+          CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
           CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac,
           const double& rhsfac);
 
-      void MultfracSubGridScalesConsistentResidual();
+      void multfrac_sub_grid_scales_consistent_residual();
 
       //! loma related methods
       //! definition in fluid_impl_loma_service.cpp
 
       //! update material parameters including subgrid-scale part of scalar
-      void UpdateMaterialParams(
+      void update_material_params(
           Teuchos::RCP<const CORE::MAT::Material> material,  ///< reference pointer to material
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,    ///< velocity at time n+alpha_f / n+1
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,       ///< pressure at time n+alpha_f / n+1
@@ -1071,7 +1074,7 @@ namespace DRT
 
       //! compute additional Galerkin terms on right-hand side of continuity equation
       //! (only required for weakly compressibility)
-      void ComputeGalRHSContEqWeakComp(
+      void compute_gal_rhs_cont_eq_weak_comp(
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,  ///< pressure at time n+alpha_F/n+1
           const CORE::LINALG::Matrix<nen_, 1>&
               epredtam,  ///< derivative of pressure at time n+alpha_M/n
@@ -1080,7 +1083,7 @@ namespace DRT
 
       //! compute additional Galerkin terms on right-hand side of continuity equation
       //! (only required for artificial compressibility)
-      void ComputeGalRHSContEqArtComp(
+      void compute_gal_rhs_cont_eq_art_comp(
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,   ///< pressure at time n+alpha_F/n+1
           const CORE::LINALG::Matrix<nen_, 1>& epren,    ///< pressure at time n
           const CORE::LINALG::Matrix<nen_, 1>& escadtam  ///< acceleration at time n+alpha_M/n
@@ -1088,7 +1091,7 @@ namespace DRT
 
       //! compute residual of scalar equation and subgrid-scale part of scalar
       //! (only required for variable-density flow at low Mach number)
-      void ComputeSubgridScaleScalar(
+      void compute_subgrid_scale_scalar(
           const CORE::LINALG::Matrix<nen_, 1>& escaaf,  ///< scalar at time n+alpha_F/n+1
           const CORE::LINALG::Matrix<nen_, 1>& escaam   ///< scalar at time n+alpha_M/n
       );
@@ -1097,7 +1100,7 @@ namespace DRT
       //! including s.-s. part of scalar and compute cross-stress term on
       //! right-hand side of continuity equation
       //! (only required for variable-density flow at low Mach number)
-      void RecomputeGalAndComputeCrossRHSContEq();
+      void recompute_gal_and_compute_cross_rhs_cont_eq();
 
       //! Compute element matrix entries: LOMA
       void LomaGalPart(
@@ -1108,13 +1111,13 @@ namespace DRT
       );
 
       //! Compute element matrix entries: artificial compressibility
-      void ArtCompPressureInertiaGalPartandContStab(
+      void art_comp_pressure_inertia_gal_partand_cont_stab(
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,  ///< block (weighting function v x p)
           CORE::LINALG::Matrix<nen_, nen_>& ppmat              ///< block (weighting function q x p)
       );
 
       //! Compute element matrix entries: weak compressibility
-      void WeakCompPressureInertiaGalPart(
+      void weak_comp_pressure_inertia_gal_part(
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,  ///< block (weighting function v x p)
           CORE::LINALG::Matrix<nen_, nen_>& ppmat              ///< block (weighting function q x p)
       );
@@ -1204,13 +1207,13 @@ namespace DRT
       }
 
       //! output values of Cs, visceff and Cs_delta_sq for statistics
-      void StoreModelParametersForOutput(const double Cs_delta_sq, const double Ci_delta_sq,
+      void store_model_parameters_for_output(const double Cs_delta_sq, const double Ci_delta_sq,
           const int nlayer, const bool isowned, Teuchos::ParameterList& turbmodelparams);
 
       /*!
        * \brief fill elment matrix and vectors with the global values
        */
-      void ExtractValuesFromGlobalVector(
+      void extract_values_from_global_vector(
           const DRT::Discretization& discretization,  ///< discretization
           const std::vector<int>& lm,                 ///<
           FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>& rotsymmpbc,  ///<
@@ -1234,7 +1237,7 @@ namespace DRT
       //
       //    // rotate the vector field in the case of rotationally symmetric boundary conditions
       //    if(matrixtofill != nullptr)
-      //      rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
+      //      rotsymmpbc.rotate_my_values_if_necessary(mymatrix);
       //
       //    for (int inode=0; inode<nen_; ++inode)  // number of nodes
       //    {
@@ -1263,7 +1266,7 @@ namespace DRT
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
       //! reactive terms of the Galerkin part
-      virtual void InertiaConvectionReactionGalPart(
+      virtual void inertia_convection_reaction_gal_part(
           CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
               estif_u,                                 ///< block (weighting function v x u)
           CORE::LINALG::Matrix<nsd_, nen_>& velforce,  ///< rhs forces velocity

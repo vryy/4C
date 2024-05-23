@@ -115,9 +115,9 @@ namespace CONTACT
       void GetSupportPoints(enum INPAR::CONTACT::PlotSupportType stype,
           CORE::LINALG::SerialDenseMatrix& support_mat_x);
 
-      void ComputeAnglePosition();
+      void compute_angle_position();
 
-      void ComputeDistancePosition();
+      void compute_distance_position();
 
       void PlotScalar(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
@@ -131,18 +131,18 @@ namespace CONTACT
       void PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
 
-      void WriteSurfaceDataToFile() const;
+      void write_surface_data_to_file() const;
 
       void WriteLineDataToFile() const;
 
-      void WriteVectorFieldToFile() const;
+      void write_vector_field_to_file() const;
 
       void AddFileNameToPath();
 
-      enum NOX::NLN::MeritFunction::MeritFctName ConvertPlotFuncName2MeritFuncName(
+      enum NOX::NLN::MeritFunction::MeritFctName convert_plot_func_name2_merit_func_name(
           const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
 
-      enum CONTACT::AUG::WGapGradientType ConvertPlotFuncName2WGapGradientType(
+      enum CONTACT::AUG::WGapGradientType convert_plot_func_name2_w_gap_gradient_type(
           const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
 
       const NOX::NLN::CONSTRAINT::Group* GetReferenceGroup(
@@ -152,22 +152,22 @@ namespace CONTACT
           NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
           const Epetra_Vector* curr_dir = nullptr) const;
 
-      double GetNodalErrorAtPosition(
+      double get_nodal_error_at_position(
           const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const;
 
       void GetVectorValues(const enum INPAR::CONTACT::PlotFuncName functype,
           NOX::NLN::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
           std::vector<double>& vec_vals) const;
 
-      void GetWGapDirectionGradients(const enum CONTACT::AUG::WGapGradientType wgap_type,
+      void get_w_gap_direction_gradients(const enum CONTACT::AUG::WGapGradientType wgap_type,
           const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
 
-      void GetEnergyDirectionGradients(
+      void get_energy_direction_gradients(
           const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
 
-      int MapSlNodeGID2NDofGID(int node_gid) const;
+      int map_sl_node_gi_d2_n_dof_gid(int node_gid) const;
 
-      double CharacteristicInterfaceElementLength(const enum CONTACT::AUG::SideType stype) const;
+      double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
 
       void ModifyStepLength(const INPAR::CONTACT::PlotSupportType stype, const double alpha,
           const Epetra_Vector& full_x_dir, Epetra_Vector& mod_step) const;
@@ -193,7 +193,7 @@ namespace CONTACT
 
         void ReadInput(const Teuchos::ParameterList& pp);
 
-        void SplitIntoSurfaceDirections(const Epetra_Vector& dir,
+        void split_into_surface_directions(const Epetra_Vector& dir,
             Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const;
 
         Teuchos::RCP<const Epetra_Vector> Get(const ::NOX::Solver::Generic& solver) const;
@@ -209,10 +209,11 @@ namespace CONTACT
         std::string GetFullFilePath(
             const std::string& input_file, const std::string& dir_file) const;
 
-        void SplitIntoSlaveMasterBody(const Epetra_Vector& dir,
+        void split_into_slave_master_body(const Epetra_Vector& dir,
             Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const;
 
-        Teuchos::RCP<Epetra_Vector> ReadSparseVectorFromMatlab(const std::string& dir_file) const;
+        Teuchos::RCP<Epetra_Vector> read_sparse_vector_from_matlab(
+            const std::string& dir_file) const;
 
         bool ExtendFileName(std::string& file_name, const std::string& file_path) const;
 

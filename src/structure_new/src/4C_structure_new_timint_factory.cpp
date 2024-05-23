@@ -45,10 +45,10 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
     case INPAR::STR::int_standard:
     {
       // Check first if a implicit integration strategy is desired
-      ti_strategy = BuildImplicitStrategy(sdyn);
+      ti_strategy = build_implicit_strategy(sdyn);
       // If there was no suitable implicit time integrator check for the
       // explicit case
-      if (ti_strategy.is_null()) ti_strategy = BuildExplicitStrategy(sdyn);
+      if (ti_strategy.is_null()) ti_strategy = build_explicit_strategy(sdyn);
       break;
     }
     default:
@@ -61,7 +61,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::build_implicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
@@ -71,7 +71,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
       CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-                                GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+                                GLOBAL::Problem::Instance()->structural_dynamic_params(),
                                 "PRESTRESS") != INPAR::STR::PreStress::none;
   if (is_prestress or dyntype == INPAR::STR::dyna_statics or  // dynamic type
       dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
@@ -83,7 +83,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::build_explicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
@@ -139,7 +139,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::BuildDataGlobalState() const
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::build_data_global_state() const
 {
   return Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
 }
@@ -164,10 +164,10 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::BuildDataSDyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::BuildDataGlobalState()
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::build_data_global_state()
 {
   Factory factory;
-  return factory.BuildDataGlobalState();
+  return factory.build_data_global_state();
 }
 
 FOUR_C_NAMESPACE_CLOSE

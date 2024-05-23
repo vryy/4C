@@ -38,7 +38,7 @@ void MAT::CylinderCoordinateSystemManager::Unpack(
   is_defined_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
-void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
+void MAT::CylinderCoordinateSystemManager::read_from_element_line_definition(
     INPUT::LineDefinition* linedef)
 {
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
@@ -50,7 +50,7 @@ void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
   }
 }
 
-void MAT::CylinderCoordinateSystemManager::EvaluateLocalCoordinateSystem(
+void MAT::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(
     CORE::LINALG::Matrix<3, 3>& cosy) const
 {
   for (int i = 0; i < 3; ++i)
@@ -61,13 +61,13 @@ void MAT::CylinderCoordinateSystemManager::EvaluateLocalCoordinateSystem(
   }
 }
 
-const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetElementCylinderCoordinateSystem()
-    const
+const MAT::CylinderCoordinateSystemManager&
+MAT::Anisotropy::get_element_cylinder_coordinate_system() const
 {
   return element_cylinder_coordinate_system_manager_.value();
 }
 
-const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetGPCylinderCoordinateSystem(
+const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::get_gp_cylinder_coordinate_system(
     const int gp) const
 {
   return gp_cylinder_coordinate_system_managers_[gp];

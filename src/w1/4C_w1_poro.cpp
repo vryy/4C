@@ -185,15 +185,16 @@ bool DRT::ELEMENTS::Wall1Poro<distype>::ReadElement(
     FOUR_C_THROW("material assigned to poro element is not a poro material!");
   poromat->PoroSetup(numgpt_, linedef);
 
-  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
-  ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
+  read_anisotropic_permeability_directions_from_element_line_definition(linedef);
+  read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(linedef);
 
   return true;
 }
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1Poro<distype>::
-    ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
+    read_anisotropic_permeability_directions_from_element_line_definition(
+        INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
@@ -205,7 +206,8 @@ void DRT::ELEMENTS::Wall1Poro<distype>::
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Wall1Poro<distype>::
-    ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
+    read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
+        INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
@@ -248,7 +250,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
+void DRT::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)

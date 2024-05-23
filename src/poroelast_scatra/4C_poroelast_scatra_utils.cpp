@@ -70,7 +70,7 @@ Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> POROELASTSCATRA::UTILS::CreatePoro
   Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> algo = Teuchos::null;
 
   // Parameter reading
-  const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
+  const Teuchos::ParameterList& params = problem->poro_scatra_control_params();
   const auto coupling =
       CORE::UTILS::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
 
@@ -134,7 +134,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> POROELASTSCATRA::UTILS::BuildPoroScatra
   return porositysplitter;
 }
 
-void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
+void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscret)
 {
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
@@ -203,7 +203,7 @@ void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[1], voldis[2]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0], &(*voldis[1]));
+  POROELAST::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
   Teuchos::RCP<DRT::DiscretizationFaces> facediscret =

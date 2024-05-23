@@ -70,7 +70,7 @@ void PARTICLEINTERACTION::SPHBarrierForce::Setup(
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+  particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -88,26 +88,26 @@ void PARTICLEINTERACTION::SPHBarrierForce::Setup(
       boundarytypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceContribution() const
+void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_contribution() const
 {
   // compute barrier force contribution (particle contribution)
-  ComputeBarrierForceParticleContribution();
+  compute_barrier_force_particle_contribution();
 
   // compute barrier force contribution (particle-boundary contribution)
-  ComputeBarrierForceParticleBoundaryContribution();
+  compute_barrier_force_particle_boundary_contribution();
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleContribution() const
+void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_particle_contribution() const
 {
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
+  neighborpairs_->get_relevant_particle_pair_indices_for_equal_combination(fluidtypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -122,10 +122,10 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleContributi
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -175,18 +175,19 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleContributi
   }
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleBoundaryContribution() const
+void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_particle_boundary_contribution()
+    const
 {
   // get relevant particle pair indices
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
+  neighborpairs_->get_relevant_particle_pair_indices_for_disjoint_combination(
       fluidtypes_, boundarytypes_, relindices);
 
   // iterate over relevant particle pairs
   for (const int particlepairindex : relindices)
   {
     const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+        neighborpairs_->get_ref_to_particle_pair_data()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -217,10 +218,10 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleBoundaryCo
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+        particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);

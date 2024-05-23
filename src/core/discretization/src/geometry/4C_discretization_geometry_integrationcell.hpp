@@ -60,7 +60,7 @@ namespace CORE::GEO
     bool indomainplus_;
 
     //! get geometric center of the cell in physical coordinates
-    CORE::LINALG::Matrix<3, 1> ComputePhysicalCenterPosition(
+    CORE::LINALG::Matrix<3, 1> compute_physical_center_position(
         const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const;
   };
 
@@ -119,13 +119,13 @@ namespace CORE::GEO
     virtual BoundaryIntCell& operator=(const BoundaryIntCell& boundaryintcell);
 
     //! returns the coordinates of the integration cell in parent element coordinates xsi
-    const CORE::LINALG::SerialDenseMatrix& CellNodalPosXiDomain() const
+    const CORE::LINALG::SerialDenseMatrix& cell_nodal_pos_xi_domain() const
     {
       return nodalpos_xi_domain_;
     };
 
     //! returns the coordinates of the integration cell in boundary parent space eta
-    const CORE::LINALG::SerialDenseMatrix& CellNodalPosXiBoundary() const
+    const CORE::LINALG::SerialDenseMatrix& cell_nodal_pos_xi_boundary() const
     {
       return nodalpos_xi_boundary_;
     };
@@ -134,7 +134,7 @@ namespace CORE::GEO
     const CORE::LINALG::SerialDenseMatrix& CellNodalPosXYZ() const { return nodalpos_xyz_domain_; }
 
     //! returns an array with the coordinates of the integration cell in physical coordinates
-    const CORE::LINALG::Matrix<3, 1>& GetPhysicalCenterPosition() const { return phys_center_; }
+    const CORE::LINALG::Matrix<3, 1>& get_physical_center_position() const { return phys_center_; }
 
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const { return surface_ele_gid_; }

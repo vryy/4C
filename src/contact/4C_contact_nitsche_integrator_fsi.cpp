@@ -48,10 +48,10 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::Element& sele,
   // do quick orientation check
   CORE::LINALG::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
-  sele.ComputeUnitNormalAtXi(center, sn.A());
+  sele.compute_unit_normal_at_xi(center, sn.A());
   for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
-    (*mit)->ComputeUnitNormalAtXi(center, mn.A());
+    (*mit)->compute_unit_normal_at_xi(center, mn.A());
     if (sn.Dot(mn) > -1e-1)
     {
       meles.erase(mit);
@@ -61,8 +61,8 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::Element& sele,
 
   if (!meles.size()) return;
 
-  if (xf_c_comm_->HigherIntegrationforContactElement(sele.Id()))
-    xf_c_comm_->GetCutSideIntegrationPoints(sele.Id(), coords_, weights_, ngp_);
+  if (xf_c_comm_->higher_integrationfor_contact_element(sele.Id()))
+    xf_c_comm_->get_cut_side_integration_points(sele.Id(), coords_, weights_, ngp_);
 
   // Call Base Contact Integratederiv with potentially increased number of GPs!
   CONTACT::Integrator::IntegrateDerivEle3D(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
@@ -84,7 +84,7 @@ void CONTACT::IntegratorNitscheFsi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
   // Here the consistent element normal is use to allow for a continous transition between FSI and
   // Contact
   double n[3];
-  sele.ComputeUnitNormalAtXi(sxi, n);
+  sele.compute_unit_normal_at_xi(sxi, n);
   std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
@@ -185,12 +185,12 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
       xf_c_comm_->Gmsh_Write(sgp_x, 2.0, 2);
     }
 #endif
-    UpdateEleContactState(sele, 0);
+    update_ele_contact_state(sele, 0);
   }
 
   if (snn_pengap >= normal_contact_transition)
   {
-    UpdateEleContactState(sele, -1);
+    update_ele_contact_state(sele, -1);
     if (!FSI_integrated)
       xf_c_comm_->Inc_GP(1);
     else
@@ -230,7 +230,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
       d_snn_av_pen_gap, normal, dnmap_unit);
 
-  UpdateEleContactState(sele, 1);
+  update_ele_contact_state(sele, 1);
 #ifdef WRITE_GMSH
   {
     CORE::LINALG::Matrix<3, 1> sgp_x;
@@ -245,19 +245,19 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   xf_c_comm_->Inc_GP(0);
 }
 
-void CONTACT::IntegratorNitscheFsi::UpdateEleContactState(MORTAR::Element& sele, int state)
+void CONTACT::IntegratorNitscheFsi::update_ele_contact_state(MORTAR::Element& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
     ele_contact_state_ = state;
-    xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
   }
   else if (ele_contact_state_ == -2)
     ele_contact_state_ = state;
   else if (ele_contact_state_ == -state)  // switch between contact and no contact
   {
     ele_contact_state_ = 0;
-    xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
   }
 }
 
@@ -279,7 +279,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
     if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(cele->ParentElement());
         solid_ele != nullptr)
     {
-      solid_ele->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(), n, dir,
+      solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(), n, dir,
           sigma_nt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, nullptr);
     }
@@ -299,7 +299,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
   {
     dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
         cele->ParentElement())
-        ->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(),
+        ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(),
             cele->MoData().ParentPFPres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
             nullptr);
   }

@@ -144,14 +144,14 @@ namespace MAT
     double Valence() const { return params_->valence_; }
 
     /// computation of the transference number based on the defined curve
-    double ComputeTransferenceNumber(const double cint) const;
+    double compute_transference_number(const double cint) const;
     /// computation of the first derivative of the transference number based on the defined curve
-    double ComputeFirstDerivTrans(const double cint) const;
+    double compute_first_deriv_trans(const double cint) const;
 
     /// computation of the thermodynamic factor based on the defined curve
     double ComputeThermFac(const double cint) const;
     /// computation of the first derivative of the transference number based on the defined curve
-    double ComputeFirstDerivThermFac(const double cint) const;
+    double compute_first_deriv_therm_fac(const double cint) const;
 
    private:
     /// return curve defining the transference number

@@ -31,14 +31,14 @@ void STR::TimIntImpl::NoxSetup()
 
   // solving
   Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
-  newtonParams = *(NoxCreateSolverParameters());
+  newtonParams = *(nox_create_solver_parameters());
   //  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   //  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   // Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
 
   // printing
   Teuchos::ParameterList& printParams = (*noxparams_).sublist("Printing");
-  printParams = *(NoxCreatePrintParameters(false));
+  printParams = *(nox_create_print_parameters(false));
 
   // Create printing utilities
   noxutils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
@@ -230,7 +230,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreateSolverParameters()
+Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_solver_parameters()
 {
   // Create the list of solver parameters
   Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr =
@@ -251,7 +251,7 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreateSolverParameters(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreatePrintParameters(
+Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_print_parameters(
     const bool verbose) const
 {
   // Set the printing parameters in the "Printing" sublist
@@ -300,10 +300,10 @@ bool STR::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
   UpdateIter(0);
 
   // Evaluate the residual (without its linearization)
-  EvaluateForceResidual();
+  evaluate_force_residual();
 
   // blank DBC stuff. HINT: a negative residual is returned
-  PrepareSystemForNewtonSolve(false);
+  prepare_system_for_newton_solve(false);
 
   // associate the RHS and scale back to positive residual as expected by NOX
   RHS.Update(-1.0, *fres_, 0.0);
@@ -319,10 +319,10 @@ bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x, Epetra_Operator& J
   Teuchos::ParameterList params;
 
   // make force residual and tangent, disi is needed for element-wise variables
-  EvaluateForceStiffResidual(params);
+  evaluate_force_stiff_residual(params);
 
   // blank DBC stuff. HINT: a negative residual is returned
-  PrepareSystemForNewtonSolve(true);
+  prepare_system_for_newton_solve(true);
 
   return true;
 }
@@ -338,7 +338,7 @@ bool STR::TimIntImpl::computePreconditioner(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> STR::TimIntImpl::nox_create_linear_system(
     Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
     Teuchos::RCP<::NOX::Utils> utils)
 {
@@ -371,7 +371,7 @@ int STR::TimIntImpl::NoxSolve()
 
   // Linear system
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
-      NoxCreateLinearSystem(nlParams, noxSoln, noxutils_);
+      nox_create_linear_system(nlParams, noxSoln, noxutils_);
 
   // Create group
   Teuchos::RCP<NOX::STR::Group> grp = Teuchos::rcp(

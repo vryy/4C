@@ -84,7 +84,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDGType::Create(const int id, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGType::NodalBlockInformation(
+void DRT::ELEMENTS::ScaTraHDGType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 1;  // Only one scalar (so far) is the unknown that is solved for
@@ -117,11 +117,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGType ::SetupElementDefinition(
+void DRT::ELEMENTS::ScaTraHDGType ::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_scatra;
-  TransportType::SetupElementDefinition(definitions_scatra);
+  TransportType::setup_element_definition(definitions_scatra);
 
   std::map<std::string, INPUT::LineDefinition>& defs_scatra = definitions_scatra["TRANSP"];
 
@@ -534,7 +534,7 @@ DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode
     const int* nodeids, DRT::Node** nodes, DRT::Element* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -736,8 +736,8 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
     )
     : DRT::FaceElement(id, owner), degree_(0), degree_old_(0)
 {
-  SetParentMasterElement(parent_master, lsurface_master);
-  SetParentSlaveElement(parent_slave, lsurface_slave);
+  set_parent_master_element(parent_master, lsurface_master);
+  set_parent_slave_element(parent_slave, lsurface_slave);
 
   if (parent_slave != nullptr)
   {

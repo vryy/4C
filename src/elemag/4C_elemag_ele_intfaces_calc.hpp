@@ -59,7 +59,7 @@ namespace DRT
       /// Empty destructor
       virtual ~ElemagIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      virtual void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
           std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
@@ -70,7 +70,7 @@ namespace DRT
           ) = 0;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
+      virtual int evaluate_internal_faces(
           DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
           Teuchos::ParameterList& params,         ///< parameter list
           DRT::Discretization& discretization,    ///< discretization
@@ -128,7 +128,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      void AssembleInternalFacesUsingNeighborData(
+      void assemble_internal_faces_using_neighbor_data(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
           std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
@@ -139,10 +139,10 @@ namespace DRT
           ) override;
 
       //! Evaluate internal faces
-      int EvaluateInternalFaces(DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
-          Teuchos::ParameterList& params,                               ///< parameter list
-          DRT::Discretization& discretization,                          ///< discretization
-          std::vector<int>& patchlm,                                    ///< patch local map
+      int evaluate_internal_faces(DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Teuchos::ParameterList& params,                                 ///< parameter list
+          DRT::Discretization& discretization,                            ///< discretization
+          std::vector<int>& patchlm,                                      ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
           std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm

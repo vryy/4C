@@ -134,7 +134,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
 
   Teuchos::RCP<Epetra_Vector> lmn_vec = Teuchos::rcp(new Epetra_Vector(data_->GActiveNDofRowMap()));
 
-  Teuchos::RCP<Epetra_Vector> str_gradient = GetStructureGradient(cparams);
+  Teuchos::RCP<Epetra_Vector> str_gradient = get_structure_gradient(cparams);
 
   CreateBMatrix();
 
@@ -154,7 +154,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::GetStructureGradient(
+Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::get_structure_gradient(
     const CONTACT::ParamsInterface& cparams) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
@@ -164,7 +164,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::GetStructu
   const std::vector<INPAR::STR::ModelType> without_contact_model(1, model.Type());
 
   Teuchos::RCP<Epetra_Vector> str_gradient =
-      cmodel.AssembleForceOfModels(&without_contact_model, true);
+      cmodel.assemble_force_of_models(&without_contact_model, true);
 
   return str_gradient;
 }
@@ -224,7 +224,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   bmat_->Multiply(true, *tmp_vec_exp, rhs);
 
   // --- second summand
-  tmp_vec = GetStructureGradient(cparams);
+  tmp_vec = get_structure_gradient(cparams);
   tmp_vec_exp->PutScalar(0.0);
   tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
 
@@ -233,10 +233,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   err = dincr_exp->Import(dincr, exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
-  AssembleGradientBMatrixContribution(*dincr_exp, *tmp_vec_exp, rhs);
+  assemble_gradient_b_matrix_contribution(*dincr_exp, *tmp_vec_exp, rhs);
 
   // --- 3rd summand
-  AssembleGradientBBMatrixContribution(*dincr_exp, data_->LmN(), rhs);
+  assemble_gradient_bb_matrix_contribution(*dincr_exp, data_->LmN(), rhs);
 
   Teuchos::RCP<Epetra_Vector> lmincr = CORE::LINALG::CreateVector(data_->GActiveNDofRowMap(), true);
 
@@ -250,7 +250,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBBMatrixContribution(
+void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_bb_matrix_contribution(
     const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
   if (not lmincr.Map().SameAs(lm.Map())) FOUR_C_THROW("The maps must be identical!");
@@ -260,13 +260,13 @@ void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBBMatrixContribut
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<const CONTACT::AUG::Interface&>(**cit);
 
-    interface.AssembleGradientBBMatrixContribution(dincr, lm, lmincr);
+    interface.assemble_gradient_bb_matrix_contribution(dincr, lm, lmincr);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBMatrixContribution(
+void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_b_matrix_contribution(
     const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
   if (not dincr.Map().SameAs(str_grad.Map())) FOUR_C_THROW("The maps must be identical!");
@@ -276,7 +276,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBMatrixContributi
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<const CONTACT::AUG::Interface&>(**cit);
 
-    interface.AssembleGradientBMatrixContribution(dincr, str_grad, lmincr);
+    interface.assemble_gradient_b_matrix_contribution(dincr, str_grad, lmincr);
   }
 }
 

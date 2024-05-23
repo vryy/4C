@@ -46,89 +46,89 @@ namespace BEAMINTERACTION
     inline bool IsSetup() const { return issetup_; }
 
     //! asserts the init and setup status
-    void ThrowErrorIfNotInitAndSetup() const;
+    void throw_error_if_not_init_and_setup() const;
 
     //! asserts the init status
     void ThrowErrorIfNotInit() const;
 
-    inline std::vector<double> const& PotentialLawExponents() const
+    inline std::vector<double> const& potential_law_exponents() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return *pot_law_exponents_;
     }
 
-    inline std::vector<double> const& PotentialLawPrefactors() const
+    inline std::vector<double> const& potential_law_prefactors() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return *pot_law_prefactors_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::BeamPotentialType PotentialType() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return potential_type_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return strategy_;
     }
 
     inline double CutoffRadius() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return cutoff_radius_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType RegularizationType() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return regularization_type_;
     }
 
-    inline double RegularizationSeparation() const
+    inline double regularization_separation() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return regularization_separation_;
     }
 
-    inline int NumberIntegrationSegments() const
+    inline int number_integration_segments() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return num_integration_segments_;
     }
 
     inline int NumberGaussPoints() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return num_gp_s_;
     }
 
     inline bool UseFAD() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return use_fad_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return choice_master_slave_;
     }
 
     //! whether to write visualization output for beam contact
     inline bool RuntimeOutput() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return visualization_output_;
     }
 
     //! get the data container for parameters regarding visualization output
     inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
-    GetBeamPotentialVisualizationOutputParams() const
+    get_beam_potential_visualization_output_params() const
     {
-      ThrowErrorIfNotInitAndSetup();
+      throw_error_if_not_init_and_setup();
       return params_runtime_visualization_output_btb_potential_;
     }
 

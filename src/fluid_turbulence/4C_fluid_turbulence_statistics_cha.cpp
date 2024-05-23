@@ -425,7 +425,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
     Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
@@ -462,7 +462,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       int patchid = 0;
 
       std::vector<int> ele_cart_id(3);
-      knots->ConvertEleGidToKnotIds(gid, patchid, ele_cart_id);
+      knots->convert_ele_gid_to_knot_ids(gid, patchid, ele_cart_id);
 
       // want to loop all control points of the element,
       // so get the number of points
@@ -1372,7 +1372,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   // loop planes and calculate integral means in each plane
 
 #ifndef NO_VALUES_IN_PLANES
-  this->EvaluateIntegralMeanValuesInPlanes();
+  this->evaluate_integral_mean_values_in_planes();
 #endif
 
   //----------------------------------------------------------------------
@@ -1386,7 +1386,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 
   if (nurbsdis == nullptr)
   {
-    this->EvaluatePointwiseMeanValuesInPlanes();
+    this->evaluate_pointwise_mean_values_in_planes();
   }
 
   //----------------------------------------------------------------------
@@ -1520,7 +1520,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
 
-  this->EvaluateLomaIntegralMeanValuesInPlanes(eosfac);
+  this->evaluate_loma_integral_mean_values_in_planes(eosfac);
 
   //----------------------------------------------------------------------
   // compute forces on top and bottom plate for normalization purposes
@@ -1678,7 +1678,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
 
-  this->EvaluateScatraIntegralMeanValuesInPlanes();
+  this->evaluate_scatra_integral_mean_values_in_planes();
 
   //----------------------------------------------------------------------
   // compute forces on top and bottom plate for normalization purposes
@@ -1820,7 +1820,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
           Compute in plane means of u,u^2 etc. (integral version)
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
+void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 {
   //----------------------------------------------------------------------
   // loop elements and perform integration over homogeneous plane
@@ -1997,7 +1997,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   else
   {
     // get nurbs dis' element numbers
-    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     numele_ = nele_x_mele_x_lele[0] * nele_x_mele_x_lele[2];
   }
@@ -2024,7 +2024,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   return;
 
-}  // TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
+}  // TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
 /*----------------------------------------------------------------------*
 
@@ -2032,7 +2032,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
                      for low-Mach-number flow
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes(const double eosfac)
+void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(const double eosfac)
 {
   //----------------------------------------------------------------------
   // loop elements and perform integration over homogeneous plane
@@ -2261,7 +2261,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes(const 
 
   return;
 
-}  // TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes()
+}  // TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes()
 
 
 /*----------------------------------------------------------------------*
@@ -2270,7 +2270,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes(const 
                      for turbulent passive scalar transport
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
+void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_planes()
 {
   //----------------------------------------------------------------------
   // loop elements and perform integration over homogeneous plane
@@ -2471,7 +2471,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
 
   return;
 
-}  // TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
+}  // TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_planes()
 
 
 /*----------------------------------------------------------------------*
@@ -2479,7 +2479,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
           Compute in plane means of u,u^2 etc. (nodal quantities)
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
+void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 {
   int planenum = 0;
 
@@ -2649,7 +2649,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
   }
 
   return;
-}  // TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
+}  // TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 
 
 /*----------------------------------------------------------------------*
@@ -2659,7 +2659,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
                       during the computation)
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
+void FLD::TurbulenceStatisticsCha::add_dynamic_smagorinsky_quantities()
 {
   // get sublist of turbulence parameters from the fluid dynamic
   // parameter list --- it is used to transfer data between element
@@ -2782,7 +2782,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
       "local_Ci_delta_sq_sum", local_Ci_delta_sq_sum);
 
   return;
-}  // FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities
+}  // FLD::TurbulenceStatisticsCha::add_dynamic_smagorinsky_quantities
 
 
 /*----------------------------------------------------------------------*
@@ -2791,7 +2791,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
                  subgrid-scales model
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
+void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
     const Teuchos::RCP<const Epetra_Vector> velnp, const Teuchos::RCP<const Epetra_Vector> fsvelnp,
     const bool withscatra)
 {
@@ -3037,7 +3037,7 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   }
 
   return;
-}  // FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal();
+}  // FLD::TurbulenceStatisticsCha::add_model_params_multifractal();
 
 
 void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
@@ -3750,7 +3750,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
           since the last output. Dump the result to file.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const int step)
+void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(const int step)
 {
   if (numsamp_ == 0)
   {
@@ -4244,7 +4244,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 
   return;
 
-}  // TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics
+}  // TurbulenceStatisticsCha::time_average_means_and_output_of_statistics
 
 
 /*----------------------------------------------------------------------*
@@ -5129,7 +5129,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
                       Dump the result to file.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
+void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
 {
   if (numsamp_ == 0) FOUR_C_THROW("No samples to do time average");
 
@@ -5660,7 +5660,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
 
   return;
 
-}  // TurbulenceStatisticsCha::DumpScatraStatistics
+}  // TurbulenceStatisticsCha::dump_scatra_statistics
 
 
 /*----------------------------------------------------------------------*
@@ -5848,7 +5848,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 }  // TurbulenceStatisticsCha::ClearStatistics
 
 
-void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
+void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
     Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Teuchos::ParameterList> scatraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatratimeparams)

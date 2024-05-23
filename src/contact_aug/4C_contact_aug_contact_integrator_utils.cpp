@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::Element& sele,
+bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
     const std::vector<MORTAR::Element*>& meles, bool boundary_ele, Integrator& wrapper,
     UniqueProjInfoPair& projInfo)
 {
@@ -98,7 +98,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::Element& sele,
 #endif
 
       // check GP projection
-      proj_tol = 10.0 * proj.getRelativeSolutionTolerance();
+      proj_tol = 10.0 * proj.get_relative_solution_tolerance();
       is_on_meles[m] = WithinBounds(mxi, mastertype, proj_tol);
 
       if (is_on_meles[m] and not conv)
@@ -272,7 +272,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
     // get parametric coordinates of the current slave node in the adjacent element
     const int ele_node_lid = adj_ele.GetLocalNodeId(slavenode.Id());
     double* xi = adj_ele_normals[e].xi_;
-    adj_ele.LocalCoordinatesOfNode(ele_node_lid, xi);
+    adj_ele.local_coordinates_of_node(ele_node_lid, xi);
 
     // evaluate the convective base vectors
     CORE::LINALG::Matrix<3, 2> tau;
@@ -281,7 +281,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
     // evaluate the unit normal of the adjacent element at the current slave node
     CORE::LINALG::Matrix<3, 1>& unit_normal = adj_ele_normals[e].unit_n_;
     double& length_n_inv = adj_ele_normals[e].length_n_inv_;
-    length_n_inv = UnitSlaveElementNormal(adj_ele, tau, unit_normal);
+    length_n_inv = unit_slave_element_normal(adj_ele, tau, unit_normal);
 
     // sum up all nodal unit element normals of the adjacent elements
     avg_nodal_normal.Update(1.0, unit_normal, 1.0);
@@ -300,7 +300,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::Element& sele,
+double CONTACT::INTEGRATOR::unit_slave_element_normal(const MORTAR::Element& sele,
     const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal)
 {
   const CORE::FE::CellType slavetype = sele.Shape();
@@ -311,45 +311,45 @@ double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::Element& sele,
       const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::line2> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
     case CORE::FE::CellType::nurbs2:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs2> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
     case CORE::FE::CellType::nurbs3:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs3> slave_policy;
 
       CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
     case CORE::FE::CellType::quad4:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::quad4> slave_policy;
 
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
     case CORE::FE::CellType::tri3:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::tri3> slave_policy;
 
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
     case CORE::FE::CellType::nurbs4:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs4> slave_policy;
 
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
     case CORE::FE::CellType::nurbs9:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs9> slave_policy;
 
-      return slave_policy.UnitSlaveElementNormal(sele, tau, unit_normal);
+      return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
     default:
     {
@@ -411,7 +411,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -424,7 +424,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -437,7 +437,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -448,7 +448,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -459,7 +459,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -470,7 +470,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -481,7 +481,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
-      slave_policy.Deriv1st_UnitSlaveElementNormal(
+      slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
@@ -572,7 +572,8 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
   CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
   const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
-  slave_policy.Deriv1st_NonUnitSlaveElementNormal(sele, nodal_dofs, deriv, tau, d_non_unit_normal);
+  slave_policy.deriv1st_non_unit_slave_element_normal(
+      sele, nodal_dofs, deriv, tau, d_non_unit_normal);
 }
 
 /*----------------------------------------------------------------------------*
@@ -695,7 +696,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
   CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
   const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
-  slave_policy.Deriv2nd_NonUnitSlaveElementNormal(sele, nodal_dofs, deriv, dd_non_unit_normal);
+  slave_policy.deriv2nd_non_unit_slave_element_normal(sele, nodal_dofs, deriv, dd_non_unit_normal);
 }
 
 /*----------------------------------------------------------------------------*
@@ -715,8 +716,8 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
-          d_unit_normal, dd_non_unit_normal, dd_unit_normal);
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
+          d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
@@ -728,8 +729,8 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
-          d_unit_normal, dd_non_unit_normal, dd_unit_normal);
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
+          d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
@@ -741,8 +742,8 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
-          d_unit_normal, dd_non_unit_normal, dd_unit_normal);
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
+          d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
@@ -752,7 +753,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
@@ -763,7 +764,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
@@ -774,7 +775,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
@@ -785,7 +786,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
       const unsigned probdim = eledim + 1;
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
-      slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal, length_n_inv, d_non_unit_normal,
+      slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;

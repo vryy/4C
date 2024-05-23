@@ -30,7 +30,7 @@ namespace FBI
   /**
    *  \brief Factory that creates the appropriate geometry coupler strategy
    *
-   *  To create an immersed coupling implementation for FBI, call the static CreateGeometryCoupler
+   *  To create an immersed coupling implementation for FBI, call the static create_geometry_coupler
    * function directly! No instance of GeometryCouplerFactory has to be created! If you try to
    * call the constructor, you will get an error message.
    */
@@ -50,7 +50,7 @@ namespace FBI
      *
      * \return FBI geometry coupler strategy
      */
-    static Teuchos::RCP<FBI::FBIGeometryCoupler> CreateGeometryCoupler(
+    static Teuchos::RCP<FBI::FBIGeometryCoupler> create_geometry_coupler(
         const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace FBI

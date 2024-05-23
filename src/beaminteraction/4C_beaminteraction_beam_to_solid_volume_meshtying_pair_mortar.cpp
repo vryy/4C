@@ -43,7 +43,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
     CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
     CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
@@ -84,25 +84,25 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
-                                      visualization_writer,
+    mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                        visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
-  BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
+  BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_visualization(
       visualization_writer, visualization_params);
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
-      visualization_writer->GetVisualizationWriter("btsvc-mortar");
+      visualization_writer->get_visualization_writer("btsvc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
-      visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
+      visualization_writer->get_visualization_writer("btsvc-mortar-continuous");
   if (visualization_discret.is_null() and visualization_continuous.is_null()) return;
 
   const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
       visualization_params
           .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
               "btsvc-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
 
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         beam_tracker->insert(this->Element1()->Id());
 
         // Get the visualization vectors.
-        auto& visualization_data = visualization_discret->GetVisualizationData();
+        auto& visualization_data = visualization_discret->get_visualization_data();
         std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
         std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
         std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
@@ -199,9 +199,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
                   "btsvc-output_params_ptr")
-              ->GetMortarLambdaContinuousSegments();
+              ->get_mortar_lambda_continuous_segments();
       double xi;
-      auto& visualization_data = visualization_continuous->GetVisualizationData();
+      auto& visualization_data = visualization_continuous->get_visualization_data();
       std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<double>& displacement = visualization_data.GetPointData<double>(
@@ -381,7 +381,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+    mortar>::evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
     const CORE::LINALG::Matrix<3, 1, double>& r_solid,
     CORE::LINALG::Matrix<3, 1, double>& force) const
 {

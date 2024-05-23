@@ -77,7 +77,7 @@ namespace PARTICLEINTERACTION
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 
     //! insert density evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    virtual void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const = 0;
 
@@ -89,49 +89,49 @@ namespace PARTICLEINTERACTION
     virtual void SumWeightedMass() const final;
 
     //! clear density sum state
-    virtual void ClearDensitySumState() const final;
+    virtual void clear_density_sum_state() const final;
 
     //! sum weighted mass (self contribution)
-    virtual void SumWeightedMassSelfContribution() const final;
+    virtual void sum_weighted_mass_self_contribution() const final;
 
     //! sum weighted mass (particle contribution)
-    virtual void SumWeightedMassParticleContribution() const final;
+    virtual void sum_weighted_mass_particle_contribution() const final;
 
     //! sum weighted mass (particle-wall contribution)
-    virtual void SumWeightedMassParticleWallContribution() const final;
+    virtual void sum_weighted_mass_particle_wall_contribution() const final;
 
     //! evaluate sum of colorfield
     virtual void SumColorfield() const final;
 
     //! clear colorfield state
-    virtual void ClearColorfieldState() const final;
+    virtual void clear_colorfield_state() const final;
 
     //! sum colorfield (self contribution)
-    virtual void SumColorfieldSelfContribution() const final;
+    virtual void sum_colorfield_self_contribution() const final;
 
     //! sum colorfield (particle contribution)
-    virtual void SumColorfieldParticleContribution() const final;
+    virtual void sum_colorfield_particle_contribution() const final;
 
     //! sum colorfield (particle-wall contribution)
-    virtual void SumColorfieldParticleWallContribution() const final;
+    virtual void sum_colorfield_particle_wall_contribution() const final;
 
     //! evaluate continuity equation
     virtual void ContinuityEquation() const final;
 
     //! clear density dot state
-    virtual void ClearDensityDotState() const final;
+    virtual void clear_density_dot_state() const final;
 
     //! continuity equation (particle contribution)
-    virtual void ContinuityEquationParticleContribution() const final;
+    virtual void continuity_equation_particle_contribution() const final;
 
     //! continuity equation (particle-wall contribution)
-    virtual void ContinuityEquationParticleWallContribution() const final;
+    virtual void continuity_equation_particle_wall_contribution() const final;
 
     //! set density sum to density field
     virtual void SetDensitySum() const final;
 
     //! add time step scaled density dot to density field
-    virtual void AddTimeStepScaledDensityDot() const final;
+    virtual void add_time_step_scaled_density_dot() const final;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
@@ -177,7 +177,7 @@ namespace PARTICLEINTERACTION
     explicit SPHDensitySummation(const Teuchos::ParameterList& params);
 
     //! insert density evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
@@ -192,7 +192,7 @@ namespace PARTICLEINTERACTION
     explicit SPHDensityIntegration(const Teuchos::ParameterList& params);
 
     //! insert density evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
@@ -231,7 +231,7 @@ namespace PARTICLEINTERACTION
         override;
 
     //! insert density evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
+    void insert_particle_states_of_particle_types(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
@@ -240,7 +240,7 @@ namespace PARTICLEINTERACTION
 
    private:
     //! init density correction handler
-    void InitDensityCorrectionHandler();
+    void init_density_correction_handler();
 
     //! correct density of interior/surface particles
     void CorrectDensity() const;

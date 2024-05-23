@@ -131,8 +131,8 @@ namespace
     std::array<double, 3> midpoint = {0.528750000000000, 0.351250000000000, 1.035000000000000};
     for (int i = 0; i < 3; ++i)
     {
-      EXPECT_NEAR(testele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
-      EXPECT_NEAR(copytestele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
+      EXPECT_NEAR(testele_->element_center_refe_coords()[i], midpoint[i], 1e-14);
+      EXPECT_NEAR(copytestele_->element_center_refe_coords()[i], midpoint[i], 1e-14);
     }
   }
 

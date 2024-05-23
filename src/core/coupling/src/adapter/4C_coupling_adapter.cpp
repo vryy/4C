@@ -42,7 +42,7 @@ CORE::ADAPTER::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::setup_condition_coupling(const DRT::Discretization& masterdis,
     Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, bool matchall,
@@ -102,14 +102,14 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+void CORE::ADAPTER::Coupling::setup_condition_coupling(const DRT::Discretization& masterdis,
     Teuchos::RCP<const Epetra_Map> mastercondmap, const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap, const std::string& condname, const int numdof,
     bool matchall, const int nds_master, const int nds_slave)
 {
-  SetupConditionCoupling(masterdis, mastercondmap, slavedis, slavecondmap, condname,
-      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), matchall, nds_master,
-      nds_slave);
+  setup_condition_coupling(masterdis, mastercondmap, slavedis, slavecondmap, condname,
+      build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), matchall,
+      nds_master, nds_slave);
 }
 
 /*----------------------------------------------------------------------*/
@@ -147,13 +147,13 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
     const std::vector<int>& slavenodes, const int numdof, const bool matchall,
     const double tolerance, const int nds_master, const int nds_slave)
 {
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, BuildDofVectorFromNumDof(numdof),
-      BuildDofVectorFromNumDof(numdof), matchall, tolerance, nds_master, nds_slave);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, build_dof_vector_from_num_dof(numdof),
+      build_dof_vector_from_num_dof(numdof), matchall, tolerance, nds_master, nds_slave);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
+void CORE::ADAPTER::Coupling::setup_constrained_condition_coupling(
     const DRT::Discretization& masterdis, Teuchos::RCP<const Epetra_Map> mastercondmap,
     const DRT::Discretization& slavedis, Teuchos::RCP<const Epetra_Map> slavecondmap,
     const std::string& condname1, const std::string& condname2, const int numdof, bool matchall)
@@ -268,7 +268,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
       new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
-      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
+      build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), nds_master,
+      nds_slave);
 }
 
 
@@ -292,7 +293,7 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
 
   // build slave to master permutation and dof all maps
   FinishCoupling(masterdis, slavedis, mymasternodemap, myslavenodemap, mypermslavenodemap,
-      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof));
+      build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof));
 }
 
 /*----------------------------------------------------------------------*/
@@ -354,7 +355,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
       CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
-      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
+      build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), nds_master,
+      nds_slave);
 }
 
 /*----------------------------------------------------------------------*/
@@ -458,7 +460,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> CORE::ADAPTER::Coupling::BuildDofVectorFromNumDof(const int numdof)
+std::vector<int> CORE::ADAPTER::Coupling::build_dof_vector_from_num_dof(const int numdof)
 {
   std::vector<int> dofvec;
   if (numdof > 0)
@@ -728,7 +730,7 @@ void CORE::ADAPTER::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_I
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int, int>& rowmap) const
+void CORE::ADAPTER::Coupling::fill_master_to_slave_map(std::map<int, int>& rowmap) const
 {
   for (int i = 0; i < masterdofmap_->NumMyElements(); ++i)
   {
@@ -739,7 +741,7 @@ void CORE::ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int, int>& rowmap) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int, int>& rowmap) const
+void CORE::ADAPTER::Coupling::fill_slave_to_master_map(std::map<int, int>& rowmap) const
 {
   for (int i = 0; i < slavedofmap_->NumMyElements(); ++i)
   {
@@ -846,7 +848,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSla
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
+void CORE::ADAPTER::Coupling::setup_coupling_matrices(const Epetra_Map& shiftedmastermap,
     const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
 {
   // we always use the masterdofmap for the domain

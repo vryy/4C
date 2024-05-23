@@ -263,7 +263,7 @@ namespace MAT
     virtual int Kron(int i, int j);
 
     //! Returns the pullback of the 4th order tensor in voigt notation
-    virtual void Pullback4thTensorVoigt(const double jacobian,
+    virtual void pullback4th_tensor_voigt(const double jacobian,
         const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cmatEul,
         CORE::LINALG::Matrix<6, 6>* cmatLag);
 
@@ -271,15 +271,15 @@ namespace MAT
     virtual double Idev(int i, int j, int k, int l);
 
     //! Returns the residual of the local Newton step
-    virtual CORE::LINALG::Matrix<2, 1> ComputeLocalNewtonResidual(
+    virtual CORE::LINALG::Matrix<2, 1> compute_local_newton_residual(
         CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the system matrix of the local Newton step
-    virtual CORE::LINALG::Matrix<2, 2> ComputeLocalNewtonJacobian(
+    virtual CORE::LINALG::Matrix<2, 2> compute_local_newton_jacobian(
         CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the loading in the local Newton step, without historical data.
-    virtual LoadingData ComputeLocalNewtonLoading(
+    virtual LoadingData compute_local_newton_loading(
         double xi_s, double log_strain_vol, double log_strain_dev_norm, Material mat_data);
 
     //! indicator if #Initialize routine has been called

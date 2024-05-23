@@ -66,7 +66,7 @@ namespace MAT
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
      * available
      */
-    virtual void OnGlobalDataInitialized() = 0;
+    virtual void on_global_data_initialized() = 0;
 
    protected:
     /*!
@@ -87,14 +87,14 @@ namespace MAT
      * \brief This method will be called by MAT::Anisotropy to notify that element information is
      * available.
      */
-    virtual void OnGlobalElementDataInitialized() = 0;
+    virtual void on_global_element_data_initialized() = 0;
 
 
     /*!
      * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
      * is available.
      */
-    virtual void OnGlobalGPDataInitialized() = 0;
+    virtual void on_global_gp_data_initialized() = 0;
 
     /// \name Private methods called by the friend class MAT::Anisotropy
     /// \{

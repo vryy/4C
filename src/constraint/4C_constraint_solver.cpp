@@ -332,7 +332,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   /*
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
   // get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
@@ -343,14 +343,14 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
 
   Teuchos::ParameterList sfparams =
       solver_->Params();  // save copy of original solver parameter list
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-  solver_->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
+  solver_->Params() = CORE::LINALG::Solver::translate_solver_parameters(
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
-  // CORE::LINALG::Solver::TranslateSolverParameters(GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+  // CORE::LINALG::Solver::translate_solver_parameters(GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
   if (!solver_->Params().isSublist("Belos Parameters")) FOUR_C_THROW("Iterative solver expected!");
 
   solver_->Params().set<bool>(
@@ -363,7 +363,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   // check if the SIMPLER solver has a valid solver number
   if (simplersolvernumber == (-1))
     FOUR_C_THROW("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in
-  CONTACT DYNAMIC to a valid number!"); solver_->PutSolverParamsToSubParams("Inverse2",
+  CONTACT DYNAMIC to a valid number!"); solver_->put_solver_params_to_sub_params("Inverse2",
       GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber));
   */
 

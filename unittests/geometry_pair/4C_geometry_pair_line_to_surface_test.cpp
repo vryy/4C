@@ -247,7 +247,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(
+    pair.intersect_line_with_other(
         element_data_line, element_data_solid, intersection_points, 0., xi_start);
 
     // Check the results.
@@ -295,7 +295,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(
+    pair.intersect_line_with_other(
         element_data_line, element_data_solid, intersection_points, 0., xi_start);
 
     // Check the results.
@@ -342,7 +342,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(
+    pair.intersect_line_with_other(
         element_data_line, element_data_solid, intersection_points, 0., xi_start);
 
     // Check the results.
@@ -390,7 +390,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(
+    pair.intersect_line_with_other(
         element_data_line, element_data_solid, intersection_points, 0., xi_start);
 
     // Check the results.
@@ -437,7 +437,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(
+    pair.intersect_line_with_other(
         element_data_line, element_data_solid, intersection_points, 0., xi_start);
 
     // Check the results.

@@ -54,7 +54,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
   {
     // add state vectors to discretization
     scatratimint_->Discretization()->ClearState();
-    scatratimint_->AddTimeIntegrationSpecificVectors();
+    scatratimint_->add_time_integration_specific_vectors();
 
     // create parameter list
     Teuchos::ParameterList condparams;
@@ -72,7 +72,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
-    SetConditionSpecificScaTraParameters(*conditions[0]);
+    set_condition_specific_sca_tra_parameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
     scatratimint_->Discretization()->EvaluateCondition(condparams, Teuchos::null, Teuchos::null,
@@ -155,11 +155,11 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
+void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 {
   // extract multi-scale coupling conditions
   // loop over conditions
-  for (const auto& slave_condition : KineticsConditionsMeshtyingSlaveSide())
+  for (const auto& slave_condition : kinetics_conditions_meshtying_slave_side())
   {
     auto* cond_slave = slave_condition.second;
 
@@ -274,8 +274,8 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         // equilibrium electric potential difference and its derivative w.r.t. concentration
         // at electrode surface
         const double epd =
-            matelectrode->ComputeOpenCircuitPotential(ed_conc, faraday, frt, dummy_detF);
-        const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
+            matelectrode->compute_open_circuit_potential(ed_conc, faraday, frt, dummy_detF);
+        const double epdderiv = matelectrode->compute_d_open_circuit_potential_d_concentration(
             ed_conc, faraday, frt, dummy_detF);
 
         // overpotential
@@ -316,7 +316,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         (*residual)[el_pot_lid] -= timefacrhsfac * nume * j * -1.0;
 
         // assemble concentration linearizations
-        auto sys_mat = scatratimint_->SystemMatrixOperator();
+        auto sys_mat = scatratimint_->system_matrix_operator();
         sys_mat->Assemble(timefacfac * dj_ded_conc, ed_conc_gid, ed_conc_gid);
         sys_mat->Assemble(timefacfac * dj_del_conc, ed_conc_gid, el_conc_gid);
         sys_mat->Assemble(timefacfac * dj_ded_pot, ed_conc_gid, ed_pot_gid);
@@ -354,7 +354,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyS2IElch::init_conv_check_strategy()
 {
   if (couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
@@ -370,7 +370,7 @@ void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-}  // SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyS2IElch::init_conv_check_strategy
 
 
 /*------------------------------------------------------------------------------------------*
@@ -619,7 +619,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(
+    const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
         slaveelement, masterelement, cell, intpoints, iquad);
     // no deformation available
     const double dummy_detF(1.0);
@@ -632,7 +632,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
+        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
@@ -643,7 +643,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
+void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
     CORE::Conditions::Condition& condition, const MORTAR::Node& slavenode, const double& lumpedarea,
     MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
@@ -668,7 +668,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // evaluate shape functions at position of slave-side node
-  my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
+  my::eval_shape_func_at_slave_node(slavenode, slaveelement, masterelement);
 
   // dummy matrix of nodal temperature values
   CORE::LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
@@ -687,7 +687,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   const double dummy_detF(1.0);
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-      distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
+      distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
@@ -854,8 +854,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac =
-        my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, masterelement, cell, intpoints, gpid);
+    const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
+        slaveelement, masterelement, cell, intpoints, gpid);
 
     // evaluate overall integration factor
     const double timefac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
@@ -868,7 +868,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     const double dummy_detF(1.0);
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
+        distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, dummy_shapederivatives, dummy_shapederivatives,
@@ -1074,8 +1074,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac =
-        my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, masterelement, cell, intpoints, gpid);
+    const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
+        slaveelement, masterelement, cell, intpoints, gpid);
 
     // evaluate overall integration factors
     const double timefacfac =
@@ -1088,7 +1088,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     const double dummy_detF(1.0);
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
+        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
         timefacfac, timefacrhsfac, dummy_detF, k_ss, dummy_ksm, r_s);
@@ -1150,7 +1150,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(
+    const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
         slaveelement, masterelement, cell, intpoints, iquad);
 
     // overall integration factors
@@ -1162,7 +1162,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     const double dummy_detF(1.0);
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
+        distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
         timefacfac, fac, dummy_detF, SCATRA::DifferentiationType::elch, dummy_shape_deriv,

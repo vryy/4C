@@ -126,12 +126,12 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
+void ADAPTER::StructureBaseAlgorithmNew::register_model_evaluator(
     const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
-  if (not IsInit()) FOUR_C_THROW("Init(...) must be called before RegisterModelEvaluator(...) !");
-  if (IsSetup()) FOUR_C_THROW("RegisterModelEvaluator(...) must be called before Setup() !");
+  if (not IsInit()) FOUR_C_THROW("Init(...) must be called before register_model_evaluator(...) !");
+  if (IsSetup()) FOUR_C_THROW("register_model_evaluator(...) must be called before Setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
@@ -188,7 +188,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs =
       Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
-  DetectElementTechnologies(*eletechs);
+  detect_element_technologies(*eletechs);
 
   // ---------------------------------------------------------------------------
   // Setup the parameter lists for structural
@@ -286,7 +286,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Build time integrator
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
-  SetTimeIntegrationStrategy(ti_strategy, dataio, datasdyn, dataglobalstate, restart);
+  set_time_integration_strategy(ti_strategy, dataio, datasdyn, dataglobalstate, restart);
 
 
   // ---------------------------------------------------------------------------
@@ -318,7 +318,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     //       strategy resides in the TSI algorithm.
     if (probtype == GLOBAL::ProblemType::tsi)
     {
-      const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_nitsche)
         modeltypes.insert(INPAR::STR::model_contact);
@@ -494,34 +494,34 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
   if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
+          GLOBAL::Problem::Instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
     modeltypes.insert(INPAR::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
   // ---------------------------------------------------------------------------
   if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"),
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER") or
       CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"),
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING") or
       CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
@@ -544,7 +544,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
+void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
     std::set<enum INPAR::STR::EleTech>& eletechs) const
 {
   int isplasticity_local = 0;
@@ -760,7 +760,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetGlobalState(
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
     const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn)
 {
-  dataglobalstate = STR::TIMINT::BuildDataGlobalState();
+  dataglobalstate = STR::TIMINT::build_data_global_state();
   dataglobalstate->Init(actdis_, *sdyn_, datasdyn);
   dataglobalstate->Setup();
 }
@@ -768,7 +768,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetGlobalState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
+void ADAPTER::StructureBaseAlgorithmNew::set_time_integration_strategy(
     Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
     const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
@@ -893,7 +893,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
     case GLOBAL::ProblemType::fps3i:
     case GLOBAL::ProblemType::fpsi_xfem:
     {
-      const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
+      const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
           CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
               porodyn, "COUPALGO");

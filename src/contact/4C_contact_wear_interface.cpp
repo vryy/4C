@@ -443,7 +443,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing disp derivatives         farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinT_D_Master(CORE::LINALG::SparseMatrix& lintglobal)
+void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -683,7 +683,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinE containing disp derivatives         farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinE_D_Master(CORE::LINALG::SparseMatrix& lineglobal)
+void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& lineglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -836,7 +836,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing lm derivatives           farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinT_LM_Master(CORE::LINALG::SparseMatrix& lintglobal)
+void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -894,10 +894,10 @@ void WEAR::WearInterface::AssembleLinT_LM_Master(CORE::LINALG::SparseMatrix& lin
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                          farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::EvaluateNodalNormals() const
+void WEAR::WearInterface::evaluate_nodal_normals() const
 {
   // call mortar function
-  MORTAR::Interface::EvaluateNodalNormals();
+  MORTAR::Interface::evaluate_nodal_normals();
 
   // for both-sided discrete wear
   if (wearboth_ == true and wearpv_ == true)
@@ -3097,7 +3097,7 @@ void WEAR::WearInterface::AssembleD2(CORE::LINALG::SparseMatrix& dglobal)
 /*----------------------------------------------------------------------*
  |  build active set (nodes / dofs) for Master               farah 11/13|
  *----------------------------------------------------------------------*/
-bool WEAR::WearInterface::BuildActiveSetMaster()
+bool WEAR::WearInterface::build_active_set_master()
 {
   //****************************************
   // for both-sided discr wear
@@ -3429,10 +3429,10 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
 /*----------------------------------------------------------------------*
  |  Initialize Data Container for nodes and elements         farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::InitializeDataContainer()
+void WEAR::WearInterface::initialize_data_container()
 {
   // call contact class function which calls mortar function
-  CONTACT::Interface::InitializeDataContainer();
+  CONTACT::Interface::initialize_data_container();
 
   //***********************************************************
   // both-sided wear
@@ -3453,12 +3453,12 @@ void WEAR::WearInterface::InitializeDataContainer()
       //********************************************************
       // NOTE: depending on which kind of node this really is,
       // i.e. mortar, contact or friction node, several derived
-      // versions of the InitializeDataContainer() methods will
+      // versions of the initialize_data_container() methods will
       // be called here, apart from the base class version.
       //********************************************************
 
       // initialize container if not yet initialized before
-      mnode->InitializeDataContainer();
+      mnode->initialize_data_container();
     }
   }
 
@@ -3469,7 +3469,7 @@ void WEAR::WearInterface::InitializeDataContainer()
 /*----------------------------------------------------------------------*
  |  Assemble inactive wear right hand side                   farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
+void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -3533,7 +3533,7 @@ void WEAR::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
 /*----------------------------------------------------------------------*
  |  Assemble inactive wear right hand side                   farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs)
+void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& inactiverhs)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -3703,7 +3703,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
 /*----------------------------------------------------------------------*
  |  Assemble wear-cond. right hand side (discr)              farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
+void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -4155,7 +4155,7 @@ void WEAR::WearInterface::SetElementAreas()
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
       MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
-      element->InitializeDataContainer();
+      element->initialize_data_container();
       element->MoData().Area() = element->ComputeArea();
     }
   }

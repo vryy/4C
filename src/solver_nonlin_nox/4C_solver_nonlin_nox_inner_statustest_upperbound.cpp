@@ -40,7 +40,7 @@ NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(const double& upperboundval,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::UpperBound::GetSearchDirectionLength(
+double NOX::NLN::INNER::StatusTest::UpperBound::get_search_direction_length(
     const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp) const
 {
@@ -72,7 +72,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
    * line search (i.e. inner) iteration and do nothing in all following iterations */
   if (interface.GetNumIterations() == 0)
   {
-    const double dir_length = GetSearchDirectionLength(*linesearch, solver, grp);
+    const double dir_length = get_search_direction_length(*linesearch, solver, grp);
     double steplength = linesearch->GetStepLength();
 
     // compute specified norm

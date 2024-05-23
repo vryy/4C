@@ -76,7 +76,7 @@ namespace
   {
     // build node coordinates based on the node row map of the whole discretization
     Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
-        test_discretization_->BuildNodeCoordinates();
+        test_discretization_->build_node_coordinates();
 
     if (comm_->MyPID() == 0)
     {
@@ -142,7 +142,7 @@ namespace
       Teuchos::RCP<Epetra_Map> node_row_map =
           Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
-          test_discretization_->BuildNodeCoordinates(node_row_map);
+          test_discretization_->build_node_coordinates(node_row_map);
 
       if (comm_->MyPID() == 0)
       {
@@ -187,7 +187,7 @@ namespace
       }
 
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
-          test_discretization_->BuildNodeCoordinates(node_row_map);
+          test_discretization_->build_node_coordinates(node_row_map);
 
       if (comm_->MyPID() == 0)
       {

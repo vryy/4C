@@ -45,9 +45,9 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
-  EnsureMaterialPostSetup(params);
+  ensure_material_post_setup(params);
 
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
   CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
@@ -214,11 +214,11 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       {
         stressdata = StrParamsInterface().StressDataPtr();
         straindata = StrParamsInterface().StrainDataPtr();
-        plstraindata = StrParamsInterface().PlasticStrainDataPtr();
+        plstraindata = StrParamsInterface().plastic_strain_data_ptr();
 
         iostress = StrParamsInterface().GetStressOutputType();
         iostrain = StrParamsInterface().GetStrainOutputType();
-        ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
+        ioplstrain = StrParamsInterface().get_plastic_strain_output_type();
       }
       else
       {
@@ -330,7 +330,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       }
 
       // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp, *prestress_);
+      update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
       if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
@@ -550,7 +550,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        StrParamsInterface().AddContributionToEnergyType(intenergy, STR::internal_energy);
+        StrParamsInterface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
       }
       else  // old structural time integration
       {
@@ -628,7 +628,7 @@ int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  SetParamsInterfacePtr(params);
+  set_params_interface_ptr(params);
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
   const auto* val = &condition.parameters().Get<std::vector<double>>("val");
@@ -1146,19 +1146,19 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
     // in case of temperature-dependent material parameters, e.g. Young's modulus,
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
 
-    UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
+    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
         Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
         Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
-      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      soh8_gauss_point_refe_coords(point, xrefe, gp);
       params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
       point.Clear();
-      soh8_ElementCenterRefeCoords(point, xrefe);
+      soh8_element_center_refe_coords(point, xrefe);
       params.set("elecenter_coords_ref", point);
     }
 
@@ -1524,7 +1524,7 @@ void DRT::ELEMENTS::SoHex8fbar::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8fbar::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
@@ -1696,13 +1696,13 @@ void DRT::ELEMENTS::SoHex8fbar::Update_element(std::vector<double>& disp,
     // center of element in reference configuration
     CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(false);
     point.Clear();
-    soh8_ElementCenterRefeCoords(point, xrefe);
+    soh8_element_center_refe_coords(point, xrefe);
     params.set("elecenter_coords_ref", point);
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
-      soh8_GaussPointRefeCoords(point, xrefe, gp);
+      soh8_gauss_point_refe_coords(point, xrefe, gp);
       params.set("gp_coords_ref", point);
 
       /* get the inverse of the Jacobian matrix which looks like:

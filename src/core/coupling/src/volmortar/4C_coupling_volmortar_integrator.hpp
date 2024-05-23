@@ -94,7 +94,7 @@ namespace CORE::VOLMORTAR
     \brief Integrate cell for 3D problems
 
     */
-    void IntegrateCells3D_DirectDiveregence(DRT::Element& Aele, DRT::Element& Bele,
+    void integrate_cells3_d_direct_diveregence(DRT::Element& Aele, DRT::Element& Bele,
         CORE::GEO::CUT::VolumeCell& vc, Teuchos::RCP<CORE::FE::GaussPoints> intpoints,
         bool switched_conf, CORE::LINALG::SparseMatrix& dmatrix_A,
         CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
@@ -116,7 +116,7 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_ADis(DRT::Element& Aele, std::vector<int>& foundeles,
+    void integrate_ele_based3_d_a_dis(DRT::Element& Aele, std::vector<int>& foundeles,
         CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
         Teuchos::RCP<const DRT::Discretization> Adiscret,
         Teuchos::RCP<const DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
@@ -125,7 +125,7 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D_BDis(DRT::Element& Bele, std::vector<int>& foundeles,
+    void integrate_ele_based3_d_b_dis(DRT::Element& Bele, std::vector<int>& foundeles,
         CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const DRT::Discretization> Adiscret,
         Teuchos::RCP<const DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);

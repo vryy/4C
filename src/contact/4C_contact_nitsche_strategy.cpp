@@ -93,14 +93,14 @@ void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   {
     for (const auto& interface : interface_)
     {
-      interface->EvaluateNodalNormals();
+      interface->evaluate_nodal_normals();
       interface->ExportNodalNormals();
     }
     StoreToOld(MORTAR::StrategyBase::n_old);
   }
 
   if (CORE::UTILS::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
-    UpdateTraceIneqEtimates();
+    update_trace_ineq_etimates();
 }
 
 void CONTACT::NitscheStrategy::SetState(
@@ -231,14 +231,14 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   }
 
   // check the parallel distribution
-  CheckParallelDistribution(t_start);
+  check_parallel_distribution(t_start);
 
   // now we also did this state
   curr_state_eval_ = true;
 
   // ... and we can assemble the matrix and rhs
   fc_ = CreateRhsBlockPtr(CONTACT::VecBlockType::displ);
-  kc_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
+  kc_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_displ);
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
@@ -313,7 +313,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBl
   return Teuchos::null;
 }
 
-void CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategy::complete_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -327,7 +327,7 @@ void CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::create_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
@@ -344,7 +344,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixB
     }
   }
 
-  CompleteMatrixBlockPtr(bt, kc);
+  complete_matrix_block_ptr(bt, kc);
 
   return kc;
 }
@@ -375,12 +375,12 @@ void CONTACT::NitscheStrategy::Setup(bool redistributed, bool init)
 
     if (selfcontact) isselfcontact_ = true;
   }
-  ReconnectParentElements();
+  reconnect_parent_elements();
   curr_state_ = Teuchos::null;
   curr_state_eval_ = false;
 }
 
-void CONTACT::NitscheStrategy::UpdateTraceIneqEtimates()
+void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
 {
   auto NitWgt =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
@@ -392,7 +392,7 @@ void CONTACT::NitscheStrategy::UpdateTraceIneqEtimates()
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       if (NitWgt == INPAR::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;
-      mele->EstimateNitscheTraceMaxEigenvalueCombined();
+      mele->estimate_nitsche_trace_max_eigenvalue_combined();
     }
   }
 }
@@ -400,7 +400,7 @@ void CONTACT::NitscheStrategy::UpdateTraceIneqEtimates()
 void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (CORE::UTILS::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
-    UpdateTraceIneqEtimates();
+    update_trace_ineq_etimates();
   if (friction_)
   {
     StoreToOld(MORTAR::StrategyBase::n_old);
@@ -408,26 +408,26 @@ void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   }
 }
 
-void CONTACT::NitscheStrategy::EvaluateReferenceState()
+void CONTACT::NitscheStrategy::evaluate_reference_state()
 {
   if (friction_)
   {
     for (const auto& interface : interface_)
     {
-      interface->EvaluateNodalNormals();
+      interface->evaluate_nodal_normals();
       interface->ExportNodalNormals();
     }
     StoreToOld(MORTAR::StrategyBase::n_old);
   }
 
-  UpdateTraceIneqEtimates();
+  update_trace_ineq_etimates();
 }
 
 
 /*----------------------------------------------------------------------------------------------*
  |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
  *---------------------------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::ReconnectParentElements()
+void CONTACT::NitscheStrategy::reconnect_parent_elements()
 {
   Teuchos::RCP<DRT::Discretization> voldis = GLOBAL::Problem::Instance()->GetDis("structure");
 
@@ -448,15 +448,15 @@ void CONTACT::NitscheStrategy::ReconnectParentElements()
       const int volgid = faceele->ParentElementId();
       if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
         FOUR_C_THROW(
-            "Manager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
+            "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis->gElement(volgid);
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
-      faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+      faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
 
       auto* vele_plast = dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>*>(vele);
-      if (vele_plast) vele_plast->SetIsNitscheContactEle(true);
+      if (vele_plast) vele_plast->set_is_nitsche_contact_ele(true);
     }
   }
 }

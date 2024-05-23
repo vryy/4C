@@ -57,7 +57,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProject
       Teuchos::rcp(new CORE::FE::CollectedGaussPoints(gp_ic->NumPoints()));
 
   // Perform actual mapping to correct local coordinates
-  CORE::FE::GaussIntegration::ProjectGaussPointsLocalToGlobal<distype>(xie, intpoints, cgp);
+  CORE::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
   return cgp;
 }
 
@@ -66,7 +66,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProject
 // Collect the Gaussian points of all volume-cells belonging to this element in such a way
 // that Gaussian rule for every volume-cell can be separated
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
+void CORE::GEO::CUT::ElementHandle::volume_cell_gauss_points(
     plain_volumecell_set& cells, std::vector<CORE::FE::GaussIntegration>& intpoints)
 {
   intpoints.clear();
@@ -79,27 +79,27 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
     Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
         Teuchos::rcp(new CORE::FE::GaussPointsComposite(0));
 
-    switch (vc->ParentElement()->GetElementIntegrationType())
+    switch (vc->ParentElement()->get_element_integration_type())
     {
       case INPAR::CUT::EleIntType_Tessellation:
       {
-        AppendVolumeCellGaussPoints_Tessellation(gpc, vc);
+        append_volume_cell_gauss_points_tessellation(gpc, vc);
         break;
       }
       case INPAR::CUT::EleIntType_MomentFitting:
       {
-        AppendVolumeCellGaussPoints_MomentFitting(gpc, vc);
+        append_volume_cell_gauss_points_moment_fitting(gpc, vc);
         break;
       }
       case INPAR::CUT::EleIntType_DirectDivergence:
       {
-        AppendVolumeCellGaussPoints_DirectDivergence(gpc, vc);
+        append_volume_cell_gauss_points_direct_divergence(gpc, vc);
         break;
       }
       default:
       {
         FOUR_C_THROW("non supported element integration type for given volume-cell %i",
-            vc->ParentElement()->GetElementIntegrationType());
+            vc->ParentElement()->get_element_integration_type());
         exit(EXIT_FAILURE);
       }
     }
@@ -108,14 +108,14 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
     if (gpc->NumPoints() > 56)
     {
       QuadratureCompression qc;
-      bool quad_comp_success = qc.PerformCompressionOfQuadrature(*gpc, vc);
+      bool quad_comp_success = qc.perform_compression_of_quadrature(*gpc, vc);
       if (quad_comp_success)
       {
-        intpoints.push_back(CORE::FE::GaussIntegration(qc.GetCompressedQuadrature()));
+        intpoints.push_back(CORE::FE::GaussIntegration(qc.get_compressed_quadrature()));
 
         // reset the Gauss points for the volumecell so that the compression need not be performed
         // for each iteration within the Newton loop
-        vc->SetGaussRule(qc.GetCompressedQuadrature());
+        vc->SetGaussRule(qc.get_compressed_quadrature());
       }
       else
         intpoints.push_back(CORE::FE::GaussIntegration(gpc));
@@ -131,7 +131,7 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
 }
 
 
-void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
+void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_tessellation(
     Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //---------------
@@ -200,7 +200,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
   }
 }
 
-void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
+void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
     Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //-------------------
@@ -249,7 +249,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
 }
 
 
-void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence(
+void CORE::GEO::CUT::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
     Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc)
 {
   //-------------------
@@ -262,7 +262,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence
   Teuchos::RCP<CORE::FE::GaussPoints> gp = vc->GetGaussRule();
 
   // volume cell gausspoints are identified to be negligible in
-  // CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule
+  // CORE::GEO::CUT::VolumeCell::direct_divergence_gauss_rule
   if (gp == Teuchos::null) return;
 
   gpc->Append(gp);
@@ -272,7 +272,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence
 // Collect the Gaussian points of all the volume-cells belonging to this element.
 // The integration rules over all the volume-cells are connected.
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::GaussPointsConnected(
+Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::gauss_points_connected(
     plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype)
 {
   Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
@@ -347,11 +347,11 @@ Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::Gaus
 // Collect the Gauss points of all the boundary-cells belong to this element.
 // This is the method used now in the new implementation
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
+void CORE::GEO::CUT::ElementHandle::boundary_cell_gauss_points_lin(
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
     std::map<int, std::vector<CORE::FE::GaussIntegration>>& intpoints, const int bc_cubaturedegree)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::ElementHandle::boundary_cell_gauss_points_lin" );
 
   for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator i = bcells.begin();
        i != bcells.end(); ++i)
@@ -414,15 +414,15 @@ void CORE::GEO::CUT::ElementHandle::GetBoundaryCellSets(
 /*----------------------------------------------------------------------*/
 // get all the element' sets of volume-cells and nds-vectors
 /*----------------------------------------------------------------------*/
-void CORE::GEO::CUT::ElementHandle::GetVolumeCellsDofSets(
+void CORE::GEO::CUT::ElementHandle::get_volume_cells_dof_sets(
     std::vector<plain_volumecell_set>& cellsets, std::vector<std::vector<int>>& nds_sets,
     bool include_inner)
 {
   const std::vector<plain_volumecell_set>& ele_vc_sets_inside = GetVcSetsInside();
   const std::vector<plain_volumecell_set>& ele_vc_sets_outside = GetVcSetsOutside();
 
-  std::vector<std::vector<int>>& nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
-  std::vector<std::vector<int>>& nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
+  std::vector<std::vector<int>>& nodaldofset_vc_sets_inside = get_nodal_dof_set_vc_sets_inside();
+  std::vector<std::vector<int>>& nodaldofset_vc_sets_outside = get_nodal_dof_set_vc_sets_outside();
 
   if (include_inner)
   {
@@ -477,13 +477,13 @@ void CORE::GEO::CUT::LinearElementHandle::CollectVolumeCells(
   get all the element sets of volume-cells, nds-vectors and integration points
   return true if a specific XFEM-Gaussrule is available and necessary
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
+bool CORE::GEO::CUT::ElementHandle::get_cell_sets_dof_sets_gauss_points(
     std::vector<plain_volumecell_set>& cell_sets, std::vector<std::vector<int>>& nds_sets,
     std::vector<std::vector<CORE::FE::GaussIntegration>>& intpoints_sets, bool include_inner)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::ElementHandle::get_cell_sets_dof_sets_gauss_points");
 
-  GetVolumeCellsDofSets(cell_sets, nds_sets, include_inner);
+  get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner);
 
   intpoints_sets.clear();
 
@@ -513,7 +513,7 @@ bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
     plain_volumecell_set& cells = *i;
 
     std::vector<CORE::FE::GaussIntegration> gaussCellsets;
-    VolumeCellGaussPoints(cells, gaussCellsets);
+    volume_cell_gauss_points(cells, gaussCellsets);
 
     intpoints_sets.push_back(gaussCellsets);
   }
@@ -716,12 +716,12 @@ void CORE::GEO::CUT::QuadraticElementHandle::BoundaryCellSet(Point::PointPositio
 {
   if (connected_bcell_sets_.find(position) != connected_bcell_sets_.end()) return;
 
-  ConnectBoundaryCells(position);
+  connect_boundary_cells(position);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadraticElementHandle::ConnectBoundaryCells(Point::PointPosition position)
+void CORE::GEO::CUT::QuadraticElementHandle::connect_boundary_cells(Point::PointPosition position)
 {
   plain_volumecell_set evolcells_position;
   CollectVolumeCells(position, evolcells_position);
@@ -729,12 +729,12 @@ void CORE::GEO::CUT::QuadraticElementHandle::ConnectBoundaryCells(Point::PointPo
   std::vector<plain_volumecell_set> connected_evolcells_position;
   BuildCellSets(evolcells_position, connected_evolcells_position);
 
-  BuildBoundaryCellSets(connected_evolcells_position, connected_bcell_sets_[position]);
+  build_boundary_cell_sets(connected_evolcells_position, connected_bcell_sets_[position]);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadraticElementHandle::BuildBoundaryCellSets(
+void CORE::GEO::CUT::QuadraticElementHandle::build_boundary_cell_sets(
     const std::vector<plain_volumecell_set>& connected_vcell_set,
     std::vector<plain_boundarycell_set>& connected_bcell_set) const
 {

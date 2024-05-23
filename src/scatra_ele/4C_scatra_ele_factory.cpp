@@ -222,7 +222,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::hex8, 3>(
+        return define_problem_type_hdg<CORE::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -233,7 +233,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::tet4, 3>(
+        return define_problem_type_hdg<CORE::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -244,7 +244,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::tet10, 3>(
+        return define_problem_type_hdg<CORE::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -255,7 +255,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     {
       if (ndim == 3)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::pyramid5, 3>(
+        return define_problem_type_hdg<CORE::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -266,12 +266,12 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     {
       if (ndim == 2)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::quad4, 2>(
+        return define_problem_type_hdg<CORE::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       }
       else if (ndim == 3)
       {
-        return DefineProblemTypeHDG<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type_hdg<CORE::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
@@ -280,7 +280,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     }
     case CORE::FE::CellType::tri3:
     {
-      return DefineProblemTypeHDG<CORE::FE::CellType::tri3, 2>(
+      return define_problem_type_hdg<CORE::FE::CellType::tri3, 2>(
           problem, numdofpernode, numscal, disname);
     }
     default:
@@ -447,7 +447,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTypeHDG(
+DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::define_problem_type_hdg(
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {

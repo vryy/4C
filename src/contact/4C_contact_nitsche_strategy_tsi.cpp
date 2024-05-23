@@ -106,7 +106,7 @@ void CONTACT::NitscheStrategyTsi::Setup(bool redistributed, bool init)
   curr_state_temp_ = Teuchos::null;
 }
 
-void CONTACT::NitscheStrategyTsi::UpdateTraceIneqEtimates()
+void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
 {
   auto NitWgt =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
@@ -118,7 +118,7 @@ void CONTACT::NitscheStrategyTsi::UpdateTraceIneqEtimates()
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       if (NitWgt == INPAR::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;
-      mele->EstimateNitscheTraceMaxEigenvalueCombined();
+      mele->estimate_nitsche_trace_max_eigenvalue_combined();
     }
   }
 }
@@ -175,7 +175,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatri
   }
 }
 
-void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
+void CONTACT::NitscheStrategyTsi::complete_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
@@ -201,7 +201,7 @@ void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
-      CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
+      CONTACT::NitscheStrategy::complete_matrix_block_ptr(bt, kc);
       break;
   }
 }
@@ -230,9 +230,9 @@ void CONTACT::NitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cpar
   CONTACT::NitscheStrategy::Integrate(cparams);
 
   ft_ = CreateRhsBlockPtr(CONTACT::VecBlockType::temp);
-  ktt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_temp);
-  ktd_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::temp_displ);
-  kdt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_temp);
+  ktt_ = create_matrix_block_ptr(CONTACT::MatBlockType::temp_temp);
+  ktd_ = create_matrix_block_ptr(CONTACT::MatBlockType::temp_displ);
+  kdt_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_temp);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -125,7 +125,8 @@ namespace ALE
      *  \param[in]     startfuncno Function to evaluate initial displacement
      *
      */
-    virtual void SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const int startfuncno);
+    virtual void set_initial_displacement(
+        const INPAR::ALE::InitialDisp init, const int startfuncno);
 
     /*! \brief Create Systemmatrix
      *
@@ -273,7 +274,7 @@ namespace ALE
     Teuchos::RCP<const DRT::Discretization> Discretization() const override { return discret_; }
 
     /// writing access to discretization
-    Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() override { return discret_; }
+    Teuchos::RCP<DRT::Discretization> write_access_discretization() override { return discret_; }
 
     /*! \brief setup Dirichlet boundary condition map extractor.
      *
@@ -347,7 +348,7 @@ namespace ALE
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessResidual() const { return residual_; }
 
    private:
-    virtual bool UpdateSysMatEveryStep() const { return true; }
+    virtual bool update_sys_mat_every_step() const { return true; }
 
     //! @name Misc
 
@@ -429,7 +430,7 @@ namespace ALE
     //@!{
 
     //! Loop all elements to compute quality measure according to [Oddy et al. 1988a]
-    virtual bool EvaluateElementQuality();
+    virtual bool evaluate_element_quality();
 
     //! det of element jacobian
     Teuchos::RCP<Epetra_Vector> eledetjac_;
@@ -574,7 +575,7 @@ namespace ALE
 
    protected:
    private:
-    bool UpdateSysMatEveryStep() const override { return updateeverystep_; }
+    bool update_sys_mat_every_step() const override { return updateeverystep_; }
 
     //! Is the #sysmat_ valid (true) or does it need to be re-evaluated (false)
     bool validsysmat_;

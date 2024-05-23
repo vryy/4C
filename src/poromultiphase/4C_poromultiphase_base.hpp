@@ -81,7 +81,7 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     /// system matrix of coupled artery porofluid problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() override { return structure_; }
@@ -119,9 +119,9 @@ namespace POROMULTIPHASE
 
     /// set (relaxed) fluid solution on structure field (partitioned coupling will overwrite this
     /// method)
-    void SetRelaxedFluidSolution() override
+    void set_relaxed_fluid_solution() override
     {
-      FOUR_C_THROW("SetRelaxedFluidSolution() only available for partitioned schemes!");
+      FOUR_C_THROW("set_relaxed_fluid_solution() only available for partitioned schemes!");
       return;
     };
 
@@ -142,17 +142,17 @@ namespace POROMULTIPHASE
     };
 
     //! build the block null spaces
-    void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override
+    void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override
     {
-      FOUR_C_THROW("BuildBlockNullSpaces() only available for monolithic schemes!");
+      FOUR_C_THROW("build_block_null_spaces() only available for monolithic schemes!");
       return;
     };
 
     //! build the block null spaces
-    void BuildArteryBlockNullSpace(
+    void build_artery_block_null_space(
         Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override
     {
-      FOUR_C_THROW("BuildArteryBlockNullSpace() only available for monolithic schemes!");
+      FOUR_C_THROW("build_artery_block_null_space() only available for monolithic schemes!");
       return;
     };
 
@@ -166,10 +166,10 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    void UpdateFieldsAfterConvergence(
+    void update_fields_after_convergence(
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override
     {
-      FOUR_C_THROW("UpdateFieldsAfterConvergence() only available for monolithic schemes!");
+      FOUR_C_THROW("update_fields_after_convergence() only available for monolithic schemes!");
       return;
     };
 
@@ -225,7 +225,7 @@ namespace POROMULTIPHASE
     const bool artery_coupl_;
 
     /// Print user output that structure field is disabled
-    void PrintStructureDisabledInfo();
+    void print_structure_disabled_info();
 
   };  // PoroMultiPhaseBase
 

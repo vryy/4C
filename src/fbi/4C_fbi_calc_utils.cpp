@@ -39,7 +39,7 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
 
   if (beamele != nullptr)
   {
-    beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
+    beamele->centerline_dof_indices_of_element(ele_centerline_dof_indices);
   }
   else
   {

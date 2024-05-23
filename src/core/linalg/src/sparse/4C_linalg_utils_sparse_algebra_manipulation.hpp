@@ -229,7 +229,7 @@ namespace CORE::LINALG
    *  \param diag (in) : Given diagonal (row-layout)
    *
    *  Return 0, if successful. If the given matrix is already filled, the method
-   *  returns -1. In this case you should use ReplaceDiagonalValues(), instead.
+   *  returns -1. In this case you should use replace_diagonal_values(), instead.
    *
    *  \author hiermeier \date 03/17 */
   int InsertMyRowDiagonalIntoUnfilledMatrix(

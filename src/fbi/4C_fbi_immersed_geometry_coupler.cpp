@@ -56,7 +56,7 @@ void FBI::FBIGeometryCoupler::Setup(std::vector<Teuchos::RCP<DRT::Discretization
   beampositions_ = Teuchos::rcp(new std::map<int, CORE::LINALG::Matrix<3, 1>>);
 
   // todo Specific for fixed grids.. we will have to do something here for ALE (overload?)
-  ComputeFixedPositions(*discretizations[1], fluidpositions_);
+  compute_fixed_positions(*discretizations[1], fluidpositions_);
 
   // Computes a bounding box for the fluid elements, within which the search will be done
   CORE::LINALG::Matrix<3, 2> fluidBox = CORE::GEO::getXAABBofPositions(*fluidpositions_);
@@ -80,7 +80,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
 
   // todo Specific to 'linearized penalty'. Maybe have to do something for structure+beam in
   // discretization.
-  ComputeCurrentPositions(*discretizations[0], beampositions_, column_structure_displacement);
+  compute_current_positions(*discretizations[0], beampositions_, column_structure_displacement);
 
   // todo Maybe have to do something for structure+beam in discretization.
   std::map<int, CORE::LINALG::Matrix<3, 1>>::const_iterator beamnodeiterator;
@@ -92,7 +92,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
     const CORE::LINALG::Matrix<3, 1>& curbeamnodeposition = beamnodeiterator->second;
 
     // search for all fluid elements in the given radius
-    std::map<int, std::set<int>> closeeles = searchtree_->searchElementsInRadius(
+    std::map<int, std::set<int>> closeeles = searchtree_->search_elements_in_radius(
         *discretizations[1], *fluidpositions_, curbeamnodeposition, searchradius_, 0);
 
     // loop over the map of beam node-IDs and fluid elements within the search radius
@@ -171,7 +171,7 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
   // redistribute the discretization of the interface according to the
   // new column layout
   discretization.ExportColumnNodes(*newnodecolmap);
-  discretization.ExportColumnElements(*newelecolmap);
+  discretization.export_column_elements(*newelecolmap);
 
   discretization.FillComplete(true, false, false);
 }
@@ -289,7 +289,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 
     // export nodes and elements
     discretizations[1]->ExportColumnNodes(*newnodecolmap);
-    discretizations[1]->ExportColumnElements(*newelecolmap);
+    discretizations[1]->export_column_elements(*newelecolmap);
 
     Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discretizations[1], true)
         ->FillCompleteFaces(true, true, true, edgebased_fluidstabilization_);
@@ -302,7 +302,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 }
 
 /*----------------------------------------------------------------------*/
-void FBI::FBIGeometryCoupler::ComputeFixedPositions(DRT::Discretization& dis,
+void FBI::FBIGeometryCoupler::compute_fixed_positions(DRT::Discretization& dis,
     Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions) const
 {
   positions->clear();
@@ -315,7 +315,7 @@ void FBI::FBIGeometryCoupler::ComputeFixedPositions(DRT::Discretization& dis,
 }
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
+void FBI::FBIGeometryCoupler::compute_current_positions(DRT::Discretization& dis,
     Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {

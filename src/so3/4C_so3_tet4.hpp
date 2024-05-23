@@ -55,20 +55,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoTet4Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDT4"; }
+      std::string get_element_type_string() const { return "SOLIDT4"; }
     };
 
     /*!
@@ -146,7 +146,7 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      virtual std::vector<double> ElementCenterRefeCoords();
+      virtual std::vector<double> element_center_refe_coords();
 
       /*!
       \brief Return unique ParObject id
@@ -334,7 +334,7 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -392,7 +392,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
-      void UpdateJacobianMapping(
+      void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd ypein all gp for given disp
       void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
@@ -405,7 +405,7 @@ namespace DRT
        * \param xdisp Displacement vectir for each node (3x4)
        * \param gp Gauss point
        */
-      void ComputeDeformationGradient(CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
+      void compute_deformation_gradient(CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
           const CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, int gp) const;
 
 
@@ -481,7 +481,7 @@ namespace DRT
       void MaterialPostSetup(Teuchos::ParameterList& params) override;
 
      private:
-      std::string GetElementTypeString() const { return "SOLIDT4"; }
+      std::string get_element_type_string() const { return "SOLIDT4"; }
     };  // class So_tet4
 
 

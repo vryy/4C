@@ -70,7 +70,7 @@ namespace PARTICLEALGORITHM
      * \param[in]  time           evaluation time
      * \param[out] scaled_gravity scaled gravity acceleration
      */
-    void GetGravityAcceleration(const double time, std::vector<double>& scaled_gravity);
+    void get_gravity_acceleration(const double time, std::vector<double>& scaled_gravity);
 
    protected:
     //! particle simulation parameter list

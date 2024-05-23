@@ -22,9 +22,9 @@ namespace
   bool PrestressIsActive(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
@@ -39,11 +39,11 @@ ADAPTER::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> stru
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn(bool FPSI)
+Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::extract_interface_dispn(bool FPSI)
 {
   if (!FPSI)
   {
-    return ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn();
+    return ADAPTER::FSIStructureWrapper::extract_interface_dispn();
   }
   else
   {
@@ -62,11 +62,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispnp(bool FPSI)
+Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::extract_interface_dispnp(bool FPSI)
 {
   if (!FPSI)
   {
-    return ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp();
+    return ADAPTER::FSIStructureWrapper::extract_interface_dispnp();
   }
   else
   {

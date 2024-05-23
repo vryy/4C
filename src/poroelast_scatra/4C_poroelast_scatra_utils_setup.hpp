@@ -133,7 +133,7 @@ namespace POROELASTSCATRA
         if (scatradis->AddDofSet(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");
 
-        // call AssignDegreesOfFreedom also for auxiliary dofsets
+        // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
         // 1. structure dofs
         // 2. fluiddis dofs

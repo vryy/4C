@@ -50,7 +50,7 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele,
+void XFEM::UTILS::get_volume_cell_material(DRT::Element* actele,
     Teuchos::RCP<CORE::MAT::Material>& mat, CORE::GEO::CUT::Point::PointPosition position)
 {
   int position_id = 0;

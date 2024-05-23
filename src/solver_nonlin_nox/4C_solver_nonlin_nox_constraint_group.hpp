@@ -65,12 +65,12 @@ namespace NOX
 
         //! Returns a pointer to the given soltype. If the solution type is not found an error is
         //! thrown.
-        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterfacePtr(
+        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
             const NOX::NLN::SolutionType soltype) const;
 
         //! If the \c errflag is set to true, a error is thrown as soon as we cannot find the
         //! corresponding entry in the stl_map. Otherwise a Teuchos::null pointer is returned.
-        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterfacePtr(
+        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
             const NOX::NLN::SolutionType soltype, const bool errflag) const;
 
         // @name "Get" functions
@@ -79,7 +79,7 @@ namespace NOX
         double GetModelValue(
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-        double GetLinearizedModelTerms(const ::NOX::Abstract::Vector& dir,
+        double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const override;
@@ -92,13 +92,14 @@ namespace NOX
                 Teuchos::null) const override;
 
         //! Returns the root mean square norm of the primary and Lagrange multiplier updates
-        Teuchos::RCP<std::vector<double>> GetSolutionUpdateRMS(const ::NOX::Abstract::Vector& xOld,
-            const std::vector<double>& aTol, const std::vector<double>& rTol,
+        Teuchos::RCP<std::vector<double>> get_solution_update_rms(
+            const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
+            const std::vector<double>& rTol,
             const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
             const std::vector<bool>& disable_implicit_weighting) const override;
 
         //! Returns the desired norm of the primary solution updates and Lagrange multiplier updates
-        Teuchos::RCP<std::vector<double>> GetSolutionUpdateNorms(
+        Teuchos::RCP<std::vector<double>> get_solution_update_norms(
             const ::NOX::Abstract::Vector& xOld,
             const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<StatusTest::QuantityType>& chQ,
@@ -107,7 +108,7 @@ namespace NOX
 
         //! Returns the desired norm of the previous primary solution and Lagrange multiplier
         //! solution
-        Teuchos::RCP<std::vector<double>> GetPreviousSolutionNorms(
+        Teuchos::RCP<std::vector<double>> get_previous_solution_norms(
             const ::NOX::Abstract::Vector& xOld,
             const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<StatusTest::QuantityType>& chQ,
@@ -118,7 +119,7 @@ namespace NOX
         //! @name Handle active set strategies
         //! @{
         //! Returns the current active set map (only needed for inequality constraint problems)
-        Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
+        Teuchos::RCP<const Epetra_Map> get_current_active_set_map(
             const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
         //! Returns the active set map of the previous Newton step (only needed for inequality

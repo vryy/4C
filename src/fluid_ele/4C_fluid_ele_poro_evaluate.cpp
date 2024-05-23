@@ -32,7 +32,7 @@ void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
   {
     DRT::ELEMENTS::FluidEleParameterPoro* fldpara =
         DRT::ELEMENTS::FluidEleParameterPoro::Instance();
-    fldpara->SetElementPoroParameter(p, dis.Comm().MyPID());
+    fldpara->set_element_poro_parameter(p, dis.Comm().MyPID());
   }
   else
   {

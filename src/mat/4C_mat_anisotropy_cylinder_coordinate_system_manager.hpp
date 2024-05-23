@@ -67,7 +67,7 @@ namespace MAT
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void ReadFromElementLineDefinition(INPUT::LineDefinition* linedef);
+    void read_from_element_line_definition(INPUT::LineDefinition* linedef);
 
     /*!
      * \brief Flag
@@ -109,7 +109,7 @@ namespace MAT
      *
      * \param cosy
      */
-    void EvaluateLocalCoordinateSystem(CORE::LINALG::Matrix<3, 3>& cosy) const;
+    void evaluate_local_coordinate_system(CORE::LINALG::Matrix<3, 3>& cosy) const;
 
    private:
     /// Flag whether coordinate system is already set

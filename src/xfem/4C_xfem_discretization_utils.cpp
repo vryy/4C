@@ -158,7 +158,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
+void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> dis,
     int numdof) const
 {
@@ -203,7 +203,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
+void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<DRT::Discretization> embedded_dis, const std::string& embedded_cond_name,
     int numdof) const
@@ -221,19 +221,19 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   std::vector<std::string> conditions_to_copy;
   xdis->GetConditionNames(conditions_to_copy);
 
-  SplitDiscretizationByCondition(xdis, embedded_dis, conditions, conditions_to_copy);
+  split_discretization_by_condition(xdis, embedded_dis, conditions, conditions_to_copy);
 
-  SetupXFEMDiscretization(xgen_params, xdis, numdof);
+  setup_xfem_discretization(xgen_params, xdis, numdof);
 
-  CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis);
-  CORE::REBALANCE::UTILS::PrintParallelDistribution(*embedded_dis);
+  CORE::REBALANCE::UTILS::print_parallel_distribution(*dis);
+  CORE::REBALANCE::UTILS::print_parallel_distribution(*embedded_dis);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
+int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> src_dis,
     Teuchos::RCP<DRT::Discretization> target_dis,
     const std::vector<CORE::Conditions::Condition*>& boundary_conds) const
@@ -250,15 +250,16 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   std::vector<std::string> conditions_to_copy;
   src_dis->GetConditionNames(conditions_to_copy);
 
-  SplitDiscretizationByBoundaryCondition(src_dis, target_dis, boundary_conds, conditions_to_copy);
+  split_discretization_by_boundary_condition(
+      src_dis, target_dis, boundary_conds, conditions_to_copy);
 
   if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(src_dis).is_null())
-    SetupXFEMDiscretization(xgen_params, src_dis, num_dof_per_node);
+    setup_xfem_discretization(xgen_params, src_dis, num_dof_per_node);
   if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(target_dis).is_null())
-    SetupXFEMDiscretization(xgen_params, target_dis, num_dof_per_node);
+    setup_xfem_discretization(xgen_params, target_dis, num_dof_per_node);
 
-  CORE::REBALANCE::UTILS::PrintParallelDistribution(*src_dis);
-  CORE::REBALANCE::UTILS::PrintParallelDistribution(*target_dis);
+  CORE::REBALANCE::UTILS::print_parallel_distribution(*src_dis);
+  CORE::REBALANCE::UTILS::print_parallel_distribution(*target_dis);
 
   return num_dof_per_node;
 }
@@ -266,7 +267,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByCondition(
+void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
     Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
     std::vector<CORE::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
@@ -457,20 +458,20 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
   std::tie(noderowmap, nodecolmap) = CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
-  auto const& [roweles, coleles] = dis->BuildElementRowColumn(*noderowmap, *nodecolmap);
+  auto const& [roweles, coleles] = dis->build_element_row_column(*noderowmap, *nodecolmap);
 
   dis->ExportRowNodes(*noderowmap);
   dis->ExportRowElements(*roweles);
 
   dis->ExportColumnNodes(*nodecolmap);
-  dis->ExportColumnElements(*coleles);
+  dis->export_column_elements(*coleles);
 
   dis->FillComplete();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondition(
+void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
     const Teuchos::RCP<DRT::Discretization>& sourcedis,
     const Teuchos::RCP<DRT::Discretization>& targetdis,
     const std::vector<CORE::Conditions::Condition*>& boundary_conds,

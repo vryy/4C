@@ -48,7 +48,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     }
 
     int startID = 0;
-    constraintdis_ = CreateDiscretizationFromCondition(
+    constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", startID);
 
     std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
@@ -193,7 +193,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 std::map<int, Teuchos::RCP<DRT::Discretization>>
-CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
+CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     Teuchos::RCP<DRT::Discretization> actdisc,
     std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
@@ -341,7 +341,7 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -432,7 +432,7 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discreti
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector, bool init)
 {
   if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;

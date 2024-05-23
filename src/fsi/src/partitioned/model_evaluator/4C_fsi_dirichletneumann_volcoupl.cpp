@@ -51,14 +51,14 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  SetKinematicCoupling(
+  set_kinematic_coupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
-  if (!GetKinematicCoupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
+  if (!get_kinematic_coupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
 
-  SetupCouplingStructAle(fsidyn, Comm());
+  setup_coupling_struct_ale(fsidyn, Comm());
 
-  SetupInterfaceCorrector(fsidyn, Comm());
+  setup_interface_corrector(fsidyn, Comm());
 
   return;
 }
@@ -66,7 +66,7 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
+void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
@@ -86,7 +86,7 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
 
   // initialize coupling adapter
   coupsa_->Init(ndim, StructureField()->Discretization(),
-      fluidale->AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
+      fluidale->AleField()->write_access_discretization(), &coupleddof12, &coupleddof21, &dofsets12,
       &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
@@ -95,7 +95,7 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannVolCoupl::SetupInterfaceCorrector(
+void FSI::DirichletNeumannVolCoupl::setup_interface_corrector(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
   icorrector_ = Teuchos::rcp(new InterfaceCorrector());
@@ -132,24 +132,24 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::FluidOp(
     Teuchos::RCP<ADAPTER::FluidAle> fluidale =
         Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
 
-    icorrector_->SetInterfaceDisplacements(idisp, StructureFluidCoupling());
+    icorrector_->set_interface_displacements(idisp, structure_fluid_coupling());
 
     // important difference to dirichletneumann.cpp: vdisp is mapped from structure to ale here
-    fluidale->NonlinearSolveVolCoupl(StructureToAle(vdisp), StructToFluid(ivel), icorrector_);
+    fluidale->nonlinear_solve_vol_coupl(StructureToAle(vdisp), StructToFluid(ivel), icorrector_);
 
     MBFluidField()->SetItemax(itemax);
 
-    return FluidToStruct(MBFluidField()->ExtractInterfaceForces());
+    return FluidToStruct(MBFluidField()->extract_interface_forces());
   }
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::DirichletNeumannVolCoupl::ExtractPreviousInterfaceSolution()
+void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 {
-  iveln_ = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
-  idispn_ = StructureField()->ExtractInterfaceDispn();
+  iveln_ = FluidToStruct(MBFluidField()->extract_interface_veln());
+  idispn_ = StructureField()->extract_interface_dispn();
 }
 
 
@@ -186,7 +186,7 @@ void FSI::InterfaceCorrector::Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::InterfaceCorrector::SetInterfaceDisplacements(
+void FSI::InterfaceCorrector::set_interface_displacements(
     Teuchos::RCP<Epetra_Vector>& idisp_struct, CORE::ADAPTER::Coupling& icoupfs)
 {
   idisp_ = idisp_struct;
@@ -199,7 +199,8 @@ void FSI::InterfaceCorrector::SetInterfaceDisplacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> disp_fluid,
+void FSI::InterfaceCorrector::correct_interface_displacements(
+    Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   if (icoupfs_ == Teuchos::null) FOUR_C_THROW("Coupling adapter not set!");
@@ -221,7 +222,7 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_
   CORE::LINALG::Export(*idisp_fluid_corrected, *disp_fluid);
   // finterface->InsertFSICondVector(idisp_fluid_corrected,disp_fluid);
 
-  volcorrector_->CorrectVolDisplacements(fluidale_, deltadisp_, disp_fluid, finterface);
+  volcorrector_->correct_vol_displacements(fluidale_, deltadisp_, disp_fluid, finterface);
 
   // reset
   idisp_ = Teuchos::null;
@@ -233,7 +234,7 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
     Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
@@ -242,10 +243,10 @@ void FSI::VolCorrector::CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> 
               << std::endl;
 
   // correction step in parameter space
-  if (true) CorrectVolDisplacementsParaSpace(fluidale, deltadisp, disp_fluid, finterface);
+  if (true) correct_vol_displacements_para_space(fluidale, deltadisp, disp_fluid, finterface);
   // correction step in physical space
   else
-    CorrectVolDisplacementsPhysSpace(fluidale, deltadisp, disp_fluid, finterface);
+    correct_vol_displacements_phys_space(fluidale, deltadisp, disp_fluid, finterface);
 
   // output
   if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
@@ -259,8 +260,9 @@ void FSI::VolCorrector::CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+void FSI::VolCorrector::correct_vol_displacements_para_space(
+    Teuchos::RCP<ADAPTER::FluidAle> fluidale, Teuchos::RCP<Epetra_Vector> deltadisp,
+    Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
@@ -386,8 +388,9 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+void FSI::VolCorrector::correct_vol_displacements_phys_space(
+    Teuchos::RCP<ADAPTER::FluidAle> fluidale, Teuchos::RCP<Epetra_Vector> deltadisp,
+    Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
@@ -398,7 +401,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::F
   std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::ConditionedElementMap(
+  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::conditioned_element_map(
       *fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search
@@ -471,7 +474,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::ConditionedElementMap(
+  Teuchos::RCP<std::set<int>> FSIaleeles = CORE::Conditions::conditioned_element_map(
       *fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search

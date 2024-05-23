@@ -46,7 +46,7 @@ namespace POROMULTIPHASESCATRA
     const Teuchos::RCP<const Epetra_Map>& FullMap() const;
 
     //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
-    void RecomputeCoupledDOFsForNTP(
+    void recompute_coupled_do_fs_for_ntp(
         std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
@@ -63,7 +63,7 @@ namespace POROMULTIPHASESCATRA
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
 
     //! print out the coupling method
-    virtual void PrintOutCouplingMethod() const = 0;
+    virtual void print_out_coupling_method() const = 0;
 
     //! Evaluate the 1D-3D coupling
     virtual void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
@@ -101,7 +101,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    virtual void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+    virtual void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) = 0;
 
@@ -115,7 +115,7 @@ namespace POROMULTIPHASESCATRA
     virtual void ApplyMeshMovement() = 0;
 
     //! return blood vessel volume fraction inside each 2D/3D element
-    virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() = 0;
 
    protected:
     //! communicator

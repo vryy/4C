@@ -241,8 +241,8 @@ void CONTACT::AUG::NodeDataContainer::Complete()
   GetDeriv2nd_WGapSl().complete();
   GetDeriv2nd_WGapMa().complete();
 
-  GetDeriv1st_WGapSl_Complete().complete();
-  GetDeriv1st_WGapMa_Complete().complete();
+  get_deriv1st_w_gap_sl_complete().complete();
+  get_deriv1st_w_gap_ma_complete().complete();
 
   GetDeriv1st_Kappa().complete();
   GetDeriv2nd_Kappa().complete();
@@ -723,7 +723,7 @@ void CONTACT::Node::AddDerivZValue(int& row, const int& col, double val)
 /*----------------------------------------------------------------------*
  |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::InitializeDataContainer()
+void CONTACT::Node::initialize_data_container()
 {
   // get maximum size of lin vectors
   linsize_ = 0;
@@ -766,7 +766,7 @@ void CONTACT::Node::InitializeDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Node::InitializeAugDataContainer(
+void CONTACT::Node::initialize_aug_data_container(
     const int slMaElementAreaRatio, const bool isTriangleOnMaster)
 {
   // Do it only, if the container has not been initialized, yet.
@@ -782,7 +782,7 @@ void CONTACT::Node::InitializeAugDataContainer(
 /*-----------------------------------------------------------------------*
  |  Initialize poro data container                             ager 07/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::InitializePoroDataContainer()
+void CONTACT::Node::initialize_poro_data_container()
 {
   // only initialize if not yet done
 
@@ -797,7 +797,7 @@ void CONTACT::Node::InitializePoroDataContainer()
 /*-----------------------------------------------------------------------*
  |  Initialize ehl data container                             seitz 11/17|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::InitializeEhlDataContainer()
+void CONTACT::Node::initialize_ehl_data_container()
 {
   // only initialize if not yet done
 
@@ -812,7 +812,7 @@ void CONTACT::Node::InitializeEhlDataContainer()
 /*-----------------------------------------------------------------------*
  |  Initialize TSI data container                             seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::InitializeTSIDataContainer(double t_ref, double t_dam)
+void CONTACT::Node::initialize_tsi_data_container(double t_ref, double t_dam)
 {
   // only initialize if not yet done
 
@@ -838,7 +838,7 @@ void CONTACT::Node::ResetDataContainer()
 /*----------------------------------------------------------------------*
  |  Build averaged nodal edge tangents                       farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::BuildAveragedEdgeTangent()
+void CONTACT::Node::build_averaged_edge_tangent()
 {
   for (int j = 0; j < 3; ++j)
   {
@@ -930,7 +930,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
           lineEle->BuildNodalPointers(nodes.data());
 
           // init data container for dual shapes
-          lineEle->InitializeDataContainer();
+          lineEle->initialize_data_container();
 
           // push back into vector
           lineElementsS.push_back(lineEle);

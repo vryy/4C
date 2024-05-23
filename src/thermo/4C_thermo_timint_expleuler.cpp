@@ -38,7 +38,7 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
   }
 
   // determine capacity
-  DetermineCapaConsistTempRate();
+  determine_capa_consist_temp_rate();
 
   // allocate force vectors
   fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -105,7 +105,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
-    // in TimInt::DetermineCapaConsistTempRate
+    // in TimInt::determine_capa_consist_temp_rate
     CORE::LINALG::SolverParams solver_params;
     solver_params.reset = true;
     solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, solver_params);

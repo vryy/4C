@@ -29,7 +29,7 @@ namespace
      * @param alpha_eff [in]: effective solubility of oxygen in blood
      * @return CaO2: oxygen concentration
      */
-    double GetOxyConcentrationFromPartialPressure(const double& Pb, const double& CaO2_max,
+    double get_oxy_concentration_from_partial_pressure(const double& Pb, const double& CaO2_max,
         const double& Pb50, const double& n, const double& alpha_eff)
     {
       // Hill equation for saturation
@@ -70,7 +70,8 @@ namespace
     const double Pb = 25.0;
 
     // get oxygen concentration for this partial pressure
-    const double CaO2 = GetOxyConcentrationFromPartialPressure(Pb, CaO2_max, Pb50, n, alpha_eff);
+    const double CaO2 =
+        get_oxy_concentration_from_partial_pressure(Pb, CaO2_max, Pb50, n, alpha_eff);
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
@@ -92,7 +93,8 @@ namespace
     const double Pb = 50.0;
 
     // get oxygen concentration for this partial pressure
-    const double CaO2 = GetOxyConcentrationFromPartialPressure(Pb, CaO2_max, Pb50, n, alpha_eff);
+    const double CaO2 =
+        get_oxy_concentration_from_partial_pressure(Pb, CaO2_max, Pb50, n, alpha_eff);
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
@@ -114,7 +116,8 @@ namespace
     const double Pb = 100.0;
 
     // get oxygen concentration for this partial pressure
-    const double CaO2 = GetOxyConcentrationFromPartialPressure(Pb, CaO2_max, Pb50, n, alpha_eff);
+    const double CaO2 =
+        get_oxy_concentration_from_partial_pressure(Pb, CaO2_max, Pb50, n, alpha_eff);
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;

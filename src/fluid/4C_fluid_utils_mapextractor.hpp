@@ -61,7 +61,7 @@ namespace FLD
           const FLD::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> ConditionedElementMap(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
@@ -103,7 +103,7 @@ namespace FLD
       void Setup(const DRT::Discretization& dis);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> ConditionedElementMap(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(KSPCond, cond_ksp)

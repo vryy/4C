@@ -69,7 +69,7 @@ namespace FSI
     void PrepareTimeStep() override;
 
     /// Prepare preconditioner for a new time step
-    void PrepareTimeStepPreconditioner() override{};
+    void prepare_time_step_preconditioner() override{};
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
     void Output() override = 0;
@@ -96,7 +96,7 @@ namespace FSI
     //@}
 
     /// create merged map of DOF in the final system from all fields
-    virtual void CreateCombinedDofRowMap() = 0;
+    virtual void create_combined_dof_row_map() = 0;
 
     /// Newton Raphson
     virtual void Newton();
@@ -105,7 +105,7 @@ namespace FSI
     bool Converged();
 
     /// compute the residual and incremental norms required for convergence check
-    virtual void BuildConvergenceNorms() = 0;
+    virtual void build_convergence_norms() = 0;
 
     void LinearSolve();
 
@@ -130,7 +130,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
-    virtual void RecoverLagrangeMultiplier() = 0;
+    virtual void recover_lagrange_multiplier() = 0;
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
@@ -154,7 +154,7 @@ namespace FSI
     void PrintNewtonIterText();
 
     //! contains header to PrintNewtonIter
-    void PrintNewtonIterHeader();
+    void print_newton_iter_header();
 
     //! print statistics of converged Newton-Raphson iteration
     // void PrintNewtonConv();
@@ -180,7 +180,7 @@ namespace FSI
     const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     /// setup list with default parameters
-    void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+    void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /*!
      * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),
@@ -188,7 +188,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    virtual void HandleFluidDofMapChangeInNewton() = 0;
+    virtual void handle_fluid_dof_map_change_in_newton() = 0;
 
     /*!
      * Determine a change in fluid DOF map
@@ -198,7 +198,7 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    virtual bool HasFluidDofMapChanged(const Epetra_BlockMap& fluidincrementmap) = 0;
+    virtual bool has_fluid_dof_map_changed(const Epetra_BlockMap& fluidincrementmap) = 0;
 
     /// access type-cast pointer to problem-specific ALE-wrapper
     const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }

@@ -1028,7 +1028,7 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-unsigned int DRT::Element::AppendVisualizationGeometry(const DRT::Discretization& discret,
+unsigned int DRT::Element::append_visualization_geometry(const DRT::Discretization& discret,
     std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const
 {
   if (IsNurbsElement())
@@ -1041,7 +1041,7 @@ unsigned int DRT::Element::AppendVisualizationGeometry(const DRT::Discretization
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-unsigned int DRT::Element::AppendVisualizationDofBasedResultDataVector(
+unsigned int DRT::Element::append_visualization_dof_based_result_data_vector(
     const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
     unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const

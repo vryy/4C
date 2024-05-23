@@ -641,7 +641,7 @@ namespace CONTACT
     @param maxdof Largest GID of underlying solid discretization
     @param meanVelocity Mean velocity of this interface
     */
-    void UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
+    void update_parallel_layout_and_data_structures(const bool perform_rebalancing,
         const bool enforce_ghosting_update, const int maxdof, const double meanVelocity) final;
 
     /*!
@@ -689,11 +689,11 @@ namespace CONTACT
     */
     void Redistribute() final;
 
-    void RoundRobinChangeOwnership();
+    void round_robin_change_ownership();
 
-    void RoundRobinDetectGhosting();
+    void round_robin_detect_ghosting();
 
-    void RoundRobinExtendGhosting(bool firstevaluation);
+    void round_robin_extend_ghosting(bool firstevaluation);
 
     /*!
     \brief Collect data concerning load balance and parallel distribution
@@ -709,7 +709,7 @@ namespace CONTACT
     during evaluation. Master elements don't require any computations and, hence, can be neglected
     here.
     */
-    void CollectDistributionData(int& numColElements, int& numRowElements);
+    void collect_distribution_data(int& numColElements, int& numRowElements);
 
     //! @}
 
@@ -760,7 +760,7 @@ namespace CONTACT
     Derived version!
 
     */
-    bool EvaluateSearchBinarytree() final;
+    bool evaluate_search_binarytree() final;
 
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
@@ -819,7 +819,7 @@ namespace CONTACT
     TODO: maybe update kappa each time step?
 
     */
-    virtual bool IntegrateKappaPenalty(CONTACT::Element& sele);
+    virtual bool integrate_kappa_penalty(CONTACT::Element& sele);
     /*!
     \brief Evaluate relative movement (jump) of slave nodes
 
@@ -875,19 +875,19 @@ namespace CONTACT
     class, these corresponding methods have to be called before AssembleMacauley()!
 
     */
-    virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
+    virtual void assemble_reg_normal_forces(bool& localisincontact, bool& localactivesetchange);
 
     /*!
     \brief Assemble geometry dependent, tangential lagrange multipliers
     and their derivatives in the penalty case
     */
-    virtual void AssembleRegTangentForcesPenalty();
+    virtual void assemble_reg_tangent_forces_penalty();
 
     /*!
     \brief Assemble geometry dependent, tangential lagrange multipliers
     and their derivatives in the Uzawa augmented lagrange case
     */
-    virtual void AssembleRegTangentForcesUzawa();
+    virtual void assemble_reg_tangent_forces_uzawa();
 
     /*!
     \brief Assemble LM derivatives into global matrix (penalty strategy)
@@ -1011,14 +1011,15 @@ namespace CONTACT
     /*!
       \brief Assemble linearization of regularized normal constraint
     */
-    virtual void AssembleNormalContactRegularization(
+    virtual void assemble_normal_contact_regularization(
         CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f);
 
     /*!
       \brief Assemble linearization of slip condition with regularized normal constraint
     */
-    virtual void AssembleLinSlipNormalRegularization(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    virtual void assemble_lin_slip_normal_regularization(
+        CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
+        Epetra_Vector& linslipRHSglobal);
 
 
     /*!
@@ -1038,7 +1039,7 @@ namespace CONTACT
 
     \return Boolean flag indicating convergence of active set
     */
-    virtual bool UpdateActiveSetSemiSmooth();
+    virtual bool update_active_set_semi_smooth();
 
     /*!
     \brief Update active set to conform with given active set from input file
@@ -1052,7 +1053,7 @@ namespace CONTACT
     does not affect the convergence of the active set. So, not convergence flag
     on return.
     */
-    virtual void UpdateActiveSetInitialStatus() const;
+    virtual void update_active_set_initial_status() const;
 
     /*!
     \brief Build active set (nodes / dofs) of this interface
@@ -1078,7 +1079,8 @@ namespace CONTACT
     \param(in) gref_lmmap: global lagrange multiplier reference map
     \param(in) gref_smmap: global merged slave/master reference map
     */
-    void UpdateSelfContactLagMultSet(const Epetra_Map& gref_lmmap, const Epetra_Map& gref_smmap);
+    void update_self_contact_lag_mult_set(
+        const Epetra_Map& gref_lmmap, const Epetra_Map& gref_smmap);
 
     /*!
     \brief Assemble normal coupling weighted condition for poro contact
@@ -1176,7 +1178,7 @@ namespace CONTACT
     \brief Check normal/tangent derivatives with finite differences
 
     */
-    void FDCheckNormalCPPDeriv();
+    void fd_check_normal_cpp_deriv();
 
     /*!
     \brief Check Mortar matrix D derivatives with finite differences
@@ -1219,8 +1221,8 @@ namespace CONTACT
     \brief Check weighted slip increment derivatives with finite differences (gp-wise calculated)
 
     */
-    void FDCheckSlipIncrDerivTXI();   //- TXI
-    void FDCheckSlipIncrDerivTETA();  //- TETA
+    void fd_check_slip_incr_deriv_txi();   //- TXI
+    void fd_check_slip_incr_deriv_teta();  //- TETA
 
     /*!
     \brief Check tangential LM derivatives with finite differences
@@ -1246,17 +1248,17 @@ namespace CONTACT
     \brief Check penalty approach with finite differences
 
     */
-    void FDCheckPenaltyTracNor();
+    void fd_check_penalty_trac_nor();
 
     /*!
     \brief Check frictional penalty traction with finite differences
 
     */
-    virtual void FDCheckPenaltyTracFric();
+    virtual void fd_check_penalty_trac_fric();
 
     //!@}
 
-    void WriteNodalCoordinatesToFile(
+    void write_nodal_coordinates_to_file(
         const int interfacel_id, const Epetra_Map& nodal_map, const std::string& full_path) const;
 
     /*!
@@ -1293,13 +1295,13 @@ namespace CONTACT
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void AddLTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void AddNTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
 
     /*!
@@ -1326,13 +1328,13 @@ namespace CONTACT
 
     inline bool IsFriction() const { return friction_; }
 
-    const Interface& GetMaSharingRefInterface() const;
+    const Interface& get_ma_sharing_ref_interface() const;
 
     //! @name Output
     //! @{
 
     //! [derived]
-    void PostprocessQuantities(const Teuchos::ParameterList& outputParams) final;
+    void postprocess_quantities(const Teuchos::ParameterList& outputParams) final;
 
     //! @}
 
@@ -1356,8 +1358,9 @@ namespace CONTACT
      *  \param localfns (out)     (slave) node GIDs of the elements in the far set
      *
      *  All sets are restricted to the current/local processor. */
-    virtual void SplitIntoFarAndCloseSets(std::vector<int>& closeele, std::vector<int>& noncloseele,
-        std::vector<int>& localcns, std::vector<int>& localfns) const;
+    virtual void split_into_far_and_close_sets(std::vector<int>& closeele,
+        std::vector<int>& noncloseele, std::vector<int>& localcns,
+        std::vector<int>& localfns) const;
 
     /*!
     \brief initialize node and element data container
@@ -1365,7 +1368,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void InitializeDataContainer() override;
+    void initialize_data_container() override;
 
     /*!
     \brief initialize slave/master node status for corner/edge modification
@@ -1373,7 +1376,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void InitializeCornerEdge() final;
+    void initialize_corner_edge() final;
 
     /*!
     \brief Set closest-point-projection normal and tangent to data container
@@ -1414,7 +1417,7 @@ namespace CONTACT
     \brief export master nodal normals for cpp calculation
 
     */
-    virtual void ExportMasterNodalNormals();
+    virtual void export_master_nodal_normals();
 
     /*!
     \brief evaluate cpp normals on slave side based on averaged normal field on master side
@@ -1456,14 +1459,14 @@ namespace CONTACT
     \brief Compute normal between slave and master node
 
     */
-    virtual double ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::Node& mnode, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
+    virtual double compute_normal_node_to_node(MORTAR::Node& snode, MORTAR::Node& mnode,
+        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute normal between slave node and master edge ele
 
     */
-    virtual double ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::Element& mele,
+    virtual double compute_normal_node_to_edge(MORTAR::Node& snode, MORTAR::Element& mele,
         double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
@@ -1540,8 +1543,8 @@ namespace CONTACT
     \brief These functions are not properly implemented/used!!!!
 
     */
-    virtual void DetectNonSmoothGeometries();
-    virtual void EvaluateAveragedNodalNormals();
+    virtual void detect_non_smooth_geometries();
+    virtual void evaluate_averaged_nodal_normals();
 
     /*!
     \brief Update interface master and slave sets
@@ -1553,7 +1556,7 @@ namespace CONTACT
     slave/master status is assigned dynamically.
 
     */
-    void UpdateMasterSlaveSets() override;
+    void update_master_slave_sets() override;
 
    private:
     //! @name Parallel distribution and ghosting
@@ -1571,7 +1574,7 @@ namespace CONTACT
     DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
     only if requested by the user/algorithm.
 
-    \sa ExtendInterfaceGhostingSafely()
+    \sa extend_interface_ghosting_safely()
 
     @param[in] isFinalParallelDistribution Is this the final parallel distribution?
     @param[in] maxdof Largest GID of underlying solid discretization
@@ -1593,7 +1596,7 @@ namespace CONTACT
     Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
 
     */
-    void ExtendInterfaceGhostingSafely(const double meanVelocity = 0.0) final;
+    void extend_interface_ghosting_safely(const double meanVelocity = 0.0) final;
 
     //! @}
 
@@ -1604,7 +1607,7 @@ namespace CONTACT
      *
      * @param[in/out] cnode A single contact node
      */
-    virtual void SetNodeInitiallyActive(CONTACT::Node& cnode) const;
+    virtual void set_node_initially_active(CONTACT::Node& cnode) const;
 
     /*! \brief Check if node \c cnode is set active by gap on input
      *
@@ -1613,13 +1616,13 @@ namespace CONTACT
      *
      * @param[in/out] cnode A single contact node
      */
-    void SetNodeInitiallyActiveByGap(Node& cnode) const;
+    void set_node_initially_active_by_gap(Node& cnode) const;
 
     /*!
      * \brief Set condition specific parameters such that the correct parameters are available for
      * the actual evaluation process
      */
-    void SetConditionSpecificParameters();
+    void set_condition_specific_parameters();
 
     /// pointer to the interface data object
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_;

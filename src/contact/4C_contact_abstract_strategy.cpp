@@ -124,29 +124,29 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       gmnoderowmap_(data_ptr->GMaNodeRowMapPtr()),
       gsdofrowmap_(data_ptr->GSlDofRowMapPtr()),
       gmdofrowmap_(data_ptr->GMaDofRowMapPtr()),
-      gndofrowmap_(data_ptr->GInternalDofRowMapPtr()),
+      gndofrowmap_(data_ptr->g_internal_dof_row_map_ptr()),
       gsmdofrowmap_(data_ptr->GSlMaDofRowMapPtr()),
       gdisprowmap_(data_ptr->GDispDofRowMapPtr()),
-      gactivenodes_(data_ptr->GActiveNodeRowMapPtr()),
+      gactivenodes_(data_ptr->g_active_node_row_map_ptr()),
       gactivedofs_(data_ptr->GActiveDofRowMapPtr()),
-      ginactivenodes_(data_ptr->GInActiveNodeRowMapPtr()),
-      ginactivedofs_(data_ptr->GInActiveDofRowMapPtr()),
-      gactiven_(data_ptr->GActiveNDofRowMapPtr()),
-      gactivet_(data_ptr->GActiveTDofRowMapPtr()),
+      ginactivenodes_(data_ptr->g_in_active_node_row_map_ptr()),
+      ginactivedofs_(data_ptr->g_in_active_dof_row_map_ptr()),
+      gactiven_(data_ptr->g_active_n_dof_row_map_ptr()),
+      gactivet_(data_ptr->g_active_t_dof_row_map_ptr()),
       gslipnodes_(data_ptr->GSlipNodeRowMapPtr()),
       gslipdofs_(data_ptr->GSlipDofRowMapPtr()),
       gslipt_(data_ptr->GSlipTDofRowMapPtr()),
-      gsdofVertex_(data_ptr->GSDofVertexRowMapPtr()),
+      gsdofVertex_(data_ptr->gs_dof_vertex_row_map_ptr()),
       gsdofEdge_(data_ptr->GSDofEdgeRowMapPtr()),
       gsdofSurf_(data_ptr->GSDofSurfRowMapPtr()),
-      unbalanceEvaluationTime_(data_ptr->UnbalanceTimeFactors()),
-      unbalanceNumSlaveElements_(data_ptr->UnbalanceElementFactors()),
+      unbalanceEvaluationTime_(data_ptr->unbalance_time_factors()),
+      unbalanceNumSlaveElements_(data_ptr->unbalance_element_factors()),
       pglmdofrowmap_(data_ptr->PGLmDofRowMapPtr()),
       pgsdofrowmap_(data_ptr->PGSlDofRowMapPtr()),
       pgmdofrowmap_(data_ptr->PGMaDofRowMapPtr()),
       pgsmdofrowmap_(data_ptr->PGSlMaDofRowMapPtr()),
-      pgsdirichtoggle_(data_ptr->PGSlDirichToggleDofRowMapPtr()),
-      initial_elecolmap_(data_ptr->InitialSlMaEleColMap()),
+      pgsdirichtoggle_(data_ptr->pg_sl_dirich_toggle_dof_row_map_ptr()),
+      initial_elecolmap_(data_ptr->initial_sl_ma_ele_col_map()),
       dmatrix_(data_ptr->DMatrixPtr()),
       mmatrix_(data_ptr->MMatrixPtr()),
       g_(data_ptr->WGapPtr()),
@@ -171,16 +171,16 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       iter_(data_ptr->NlnIter()),
       isincontact_(data_ptr->IsInContact()),
       wasincontact_(data_ptr->WasInContact()),
-      wasincontactlts_(data_ptr->WasInContactLastTimeStep()),
+      wasincontactlts_(data_ptr->was_in_contact_last_time_step()),
       isselfcontact_(data_ptr->IsSelfContact()),
       friction_(data_ptr->IsFriction()),
       nonSmoothContact_(data_ptr->IsNonSmoothContact()),
       regularized_(data_ptr->IsRegularized()),
-      dualquadslavetrafo_(data_ptr->IsDualQuadSlaveTrafo()),
+      dualquadslavetrafo_(data_ptr->is_dual_quad_slave_trafo()),
       trafo_(data_ptr->TrafoPtr()),
       invtrafo_(data_ptr->InvTrafoPtr()),
       dmatrixmod_(data_ptr->ModifiedDMatrixPtr()),
-      doldmod_(data_ptr->OldModifiedDMatrixPtr()),
+      doldmod_(data_ptr->old_modified_d_matrix_ptr()),
       inttime_(data_ptr->IntTime()),
       ivel_(data_ptr->MeanInterfaceVels()),
       stype_(data_ptr->SolType()),
@@ -232,7 +232,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& stra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AbstractStrategy::IsRebalancingNecessary(const bool first_time_step)
+bool CONTACT::AbstractStrategy::is_rebalancing_necessary(const bool first_time_step)
 {
   // No rebalancing of a serial run, since it makes no sense.
   if (Comm().NumProc() == 1) return false;
@@ -245,7 +245,8 @@ bool CONTACT::AbstractStrategy::IsRebalancingNecessary(const bool first_time_ste
 
   double time_average = 0.0;
   double elements_average = 0.0;
-  if (!first_time_step) ComputeAndResetParallelBalanceIndicators(time_average, elements_average);
+  if (!first_time_step)
+    compute_and_reset_parallel_balance_indicators(time_average, elements_average);
 
   switch (WhichParRedist())
   {
@@ -296,14 +297,14 @@ bool CONTACT::AbstractStrategy::IsRebalancingNecessary(const bool first_time_ste
     }
   }
 
-  PrintParallelBalanceIndicators(time_average, elements_average, max_time_unbalance);
+  print_parallel_balance_indicators(time_average, elements_average, max_time_unbalance);
 
   return perform_rebalancing;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::ComputeAndResetParallelBalanceIndicators(
+void CONTACT::AbstractStrategy::compute_and_reset_parallel_balance_indicators(
     double& time_average, double& elements_average)
 {
   FOUR_C_ASSERT(unbalanceEvaluationTime_.size() > 0, "Vector should have length > 0.");
@@ -322,7 +323,7 @@ void CONTACT::AbstractStrategy::ComputeAndResetParallelBalanceIndicators(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::PrintParallelBalanceIndicators(
+void CONTACT::AbstractStrategy::print_parallel_balance_indicators(
     double& time_average, double& elements_average, const double& max_time_unbalance) const
 {
   // Screen output only on proc 0
@@ -343,7 +344,7 @@ void CONTACT::AbstractStrategy::PrintParallelBalanceIndicators(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AbstractStrategy::IsUpdateOfGhostingNecessary(
+bool CONTACT::AbstractStrategy::is_update_of_ghosting_necessary(
     const INPAR::MORTAR::ExtendGhosting& ghosting_strategy, const bool first_time_step) const
 {
   bool enforce_update_of_ghosting = false;
@@ -383,7 +384,7 @@ bool CONTACT::AbstractStrategy::RedistributeContact(
   bool redistributed = false;
 
   if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(Params()))
-    redistributed = RedistributeWithSafeGhosting(*dis, *vel);
+    redistributed = redistribute_with_safe_ghosting(*dis, *vel);
   else
   {
     if (Comm().MyPID() == 0)
@@ -394,7 +395,7 @@ bool CONTACT::AbstractStrategy::RedistributeContact(
                 << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
                 << std::endl;
     }
-    redistributed = RedistributeContactOld(dis, vel);
+    redistributed = redistribute_contact_old(dis, vel);
   }
 
   return redistributed;
@@ -402,7 +403,7 @@ bool CONTACT::AbstractStrategy::RedistributeContact(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AbstractStrategy::RedistributeWithSafeGhosting(
+bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
     const Epetra_Vector& displacement, const Epetra_Vector& velocity)
 {
   // time measurement
@@ -414,14 +415,14 @@ bool CONTACT::AbstractStrategy::RedistributeWithSafeGhosting(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   bool first_time_step = IsFirstTimeStep();
-  const bool perform_rebalancing = IsRebalancingNecessary(first_time_step);
+  const bool perform_rebalancing = is_rebalancing_necessary(first_time_step);
   const bool enforce_ghosting_update =
-      IsUpdateOfGhostingNecessary(ghosting_strategy, first_time_step);
+      is_update_of_ghosting_necessary(ghosting_strategy, first_time_step);
 
   // Prepare for extending the ghosting
   ivel_.resize(Interfaces().size(), 0.0);  // initialize to zero for non-binning strategies
   if (ghosting_strategy == INPAR::MORTAR::ExtendGhosting::binning)
-    CalcMeanVelocityForBinning(velocity);
+    calc_mean_velocity_for_binning(velocity);
 
   // Set old and current displacement state (needed for search within redistribution)
   if (perform_rebalancing)
@@ -432,7 +433,7 @@ bool CONTACT::AbstractStrategy::RedistributeWithSafeGhosting(
 
   // Update parallel distribution and ghosting of all interfaces
   for (std::size_t i = 0; i < Interfaces().size(); ++i)
-    Interfaces()[i]->UpdateParallelLayoutAndDataStructures(
+    Interfaces()[i]->update_parallel_layout_and_data_structures(
         perform_rebalancing, enforce_ghosting_update, maxdof_, ivel_[i]);
 
   // Re-setup strategy to update internal map objects
@@ -452,12 +453,12 @@ bool CONTACT::AbstractStrategy::RedistributeWithSafeGhosting(
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-bool CONTACT::AbstractStrategy::RedistributeContactOld(
+bool CONTACT::AbstractStrategy::redistribute_contact_old(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // decide whether redistribution should be applied or not
   bool first_time_step = IsFirstTimeStep();
-  const bool doredist = IsRebalancingNecessary(first_time_step);
+  const bool doredist = is_rebalancing_necessary(first_time_step);
 
   // get out of here if simulation is still in balance
   if (!doredist) return false;
@@ -471,7 +472,7 @@ bool CONTACT::AbstractStrategy::RedistributeContactOld(
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
       INPAR::MORTAR::ExtendGhosting::binning)
-    CalcMeanVelocityForBinning(*vel);
+    calc_mean_velocity_for_binning(*vel);
 
   /* set old and current displacement state
    * (needed for search within redistribution) */
@@ -490,7 +491,7 @@ bool CONTACT::AbstractStrategy::RedistributeContactOld(
     // print new parallel distribution
     if (Comm().MyPID() == 0)
       std::cout << "Interface parallel distribution after rebalancing:" << std::endl;
-    Interfaces()[i]->PrintParallelDistribution();
+    Interfaces()[i]->print_parallel_distribution();
 
     // re-create binary search tree
     Interfaces()[i]->CreateSearchTree();
@@ -585,8 +586,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
       Teuchos::RCP<Epetra_Map> selfcontact_lmmap =
           Interfaces()[i]->UpdateLagMultSets(offset_if, redistributed, *refdofrowmap);
 
-      Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = Data().GSelfContactRefDofRowMapPtr();
-      Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = Data().GSelfContactLmDofRowMapPtr();
+      Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = Data().g_self_contact_ref_dof_row_map_ptr();
+      Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = Data().g_self_contact_lm_dof_row_map_ptr();
       gsc_lmdofmap_ptr = CORE::LINALG::MergeMap(selfcontact_lmmap, gsc_lmdofmap_ptr);
       gsc_refdofmap_ptr = CORE::LINALG::MergeMap(refdofrowmap, gsc_refdofmap_ptr);
 
@@ -643,7 +644,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
   }
 
   // create the global Lagrange multiplier DoF row map
-  glmdofrowmap_ = CreateDeterministicLMDofRowMap(*gsdofrowmap_);
+  glmdofrowmap_ = create_deterministic_lm_dof_row_map(*gsdofrowmap_);
 
   // setup global non-slave-or-master dof map
   // (this is done by splitting from the discretization dof map)
@@ -751,7 +752,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
       dold_->Complete();
     }
     else if (dold_->RowMap().NumGlobalElements() > 0)
-      dold_ = MORTAR::MatrixRowColTransform(dold_, SlDoFRowMapPtr(true), SlDoFRowMapPtr(true));
+      dold_ = MORTAR::matrix_row_col_transform(dold_, SlDoFRowMapPtr(true), SlDoFRowMapPtr(true));
 
     if (mold_ == Teuchos::null)
     {
@@ -760,7 +761,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
       mold_->Complete(*gmdofrowmap_, SlDoFRowMap(true));
     }
     else if (mold_->RowMap().NumGlobalElements() > 0)
-      mold_ = MORTAR::MatrixRowColTransform(mold_, SlDoFRowMapPtr(true), gmdofrowmap_);
+      mold_ = MORTAR::matrix_row_col_transform(mold_, SlDoFRowMapPtr(true), gmdofrowmap_);
   }
 
   // output contact stress vectors
@@ -832,7 +833,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     }
     else
       doldmod_ =
-          MORTAR::MatrixRowColTransform(doldmod_, SlDoFRowMapPtr(true), SlDoFRowMapPtr(true));
+          MORTAR::matrix_row_col_transform(doldmod_, SlDoFRowMapPtr(true), SlDoFRowMapPtr(true));
   }
 
   if (init)
@@ -843,7 +844,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     if (ParRedist())
     {
       for (std::size_t i = 0; i < Interfaces().size(); ++i)
-        Interfaces()[i]->StoreUnredistributedMaps();
+        Interfaces()[i]->store_unredistributed_maps();
       if (LMDoFRowMapPtr(true) != Teuchos::null)
         pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
       pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
@@ -859,7 +860,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::CreateDeterministicLMDofRowMap(
+Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_dof_row_map(
     const Epetra_Map& gsdofrowmap) const
 {
   const unsigned num_my_sdofs = gsdofrowmap.NumMyElements();
@@ -956,12 +957,12 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
     Comm().Barrier();
     const double t_start3 = Teuchos::Time::wallTime();
     if (predictor)
-      EvaluateRelMovPredict();
+      evaluate_rel_mov_predict();
     else
       EvaluateRelMov();
 
     // update active set
-    if (!predictor) UpdateActiveSetSemiSmooth();
+    if (!predictor) update_active_set_semi_smooth();
 
     Comm().Barrier();
     const double t_end3 = Teuchos::Time::wallTime() - t_start3;
@@ -1013,12 +1014,12 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
 
     // evaluate relative movement for friction
     if (predictor)
-      EvaluateRelMovPredict();
+      evaluate_rel_mov_predict();
     else
       EvaluateRelMov();
 
     // update active set
-    if (!predictor) UpdateActiveSetSemiSmooth();
+    if (!predictor) update_active_set_semi_smooth();
 
     // apply contact forces and stiffness
     Initialize();          // init lin-matrices
@@ -1061,7 +1062,7 @@ void CONTACT::AbstractStrategy::SetState(
 /*----------------------------------------------------------------------*
  | update global master and slave sets (public)               popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::UpdateGlobalSelfContactState()
+void CONTACT::AbstractStrategy::update_global_self_contact_state()
 {
   if (not IsSelfContact()) return;
 
@@ -1079,7 +1080,7 @@ void CONTACT::AbstractStrategy::UpdateGlobalSelfContactState()
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
     // build Lagrange multiplier dof map
-    Interfaces()[i]->UpdateSelfContactLagMultSet(GSelfContactLmMap(), *gsmdofrowmap_);
+    Interfaces()[i]->update_self_contact_lag_mult_set(GSelfContactLmMap(), *gsmdofrowmap_);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
     glmdofrowmap_ = CORE::LINALG::MergeMap(LMDoFRowMapPtr(true), Interfaces()[i]->LagMultDofs());
@@ -1136,7 +1137,7 @@ void CONTACT::AbstractStrategy::UpdateGlobalSelfContactState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector& velocity)
+void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(const Epetra_Vector& velocity)
 {
   ivel_.clear();
   ivel_.resize(0);
@@ -1191,7 +1192,7 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
       case INPAR::MORTAR::ExtendGhosting::roundrobin:
       {
         // first perform rrloop to detect the required ghosting
-        Interfaces()[i]->RoundRobinDetectGhosting();
+        Interfaces()[i]->round_robin_detect_ghosting();
 
         // second step --> evaluate
         Interfaces()[i]->Evaluate(0, step_, iter_);
@@ -1214,7 +1215,7 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
   }  // end interface loop
 
   // check the parallel distribution
-  CheckParallelDistribution(t_start);
+  check_parallel_distribution(t_start);
 
   //**********************************************************************
   // OVERVIEW OF PARALLEL MORTAR COUPLING STATUS
@@ -1267,15 +1268,15 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::CheckParallelDistribution(const double& t_start)
+void CONTACT::AbstractStrategy::check_parallel_distribution(const double& t_start)
 {
   const double my_total_time = Teuchos::Time::wallTime() - t_start;
-  UpdateParallelDistributionStatus(my_total_time);
+  update_parallel_distribution_status(my_total_time);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::UpdateParallelDistributionStatus(const double& my_total_time)
+void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double& my_total_time)
 {
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
@@ -1288,7 +1289,7 @@ void CONTACT::AbstractStrategy::UpdateParallelDistributionStatus(const double& m
   std::vector<int> numloadele((int)Interfaces().size());
   std::vector<int> numcrowele((int)Interfaces().size());
   for (int i = 0; i < (int)Interfaces().size(); ++i)
-    Interfaces()[i]->CollectDistributionData(numloadele[i], numcrowele[i]);
+    Interfaces()[i]->collect_distribution_data(numloadele[i], numcrowele[i]);
 
   // time measurement (on each processor)
   double t_end_for_minall = my_total_time;
@@ -1318,9 +1319,9 @@ void CONTACT::AbstractStrategy::UpdateParallelDistributionStatus(const double& m
 
   // check for plausibility before storing
   if (maxall == 0.0 && minall == 1.0e12)
-    Data().UnbalanceTimeFactors().push_back(1.0);
+    Data().unbalance_time_factors().push_back(1.0);
   else
-    Data().UnbalanceTimeFactors().push_back(maxall / minall);
+    Data().unbalance_time_factors().push_back(maxall / minall);
 
   // obtain info whether there is an unbalance in element distribution
   bool eleunbalance = false;
@@ -1363,9 +1364,9 @@ void CONTACT::AbstractStrategy::UpdateParallelDistributionStatus(const double& m
   int leleunbalance = (int)(eleunbalance);
   Comm().SumAll(&leleunbalance, &geleunbalance, 1);
   if (geleunbalance > 0)
-    Data().UnbalanceElementFactors().push_back(1);
+    Data().unbalance_element_factors().push_back(1);
   else
-    Data().UnbalanceElementFactors().push_back(0);
+    Data().unbalance_element_factors().push_back(0);
 
   // debugging output
   // std::cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " <<
@@ -1386,7 +1387,7 @@ void CONTACT::AbstractStrategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
-  UpdateGlobalSelfContactState();
+  update_global_self_contact_state();
 
   // initialize Dold and Mold if not done already
   if (dold_ == Teuchos::null)
@@ -1446,7 +1447,7 @@ void CONTACT::AbstractStrategy::AssembleMortar()
     // FD check of normal derivatives
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
     //    Interfaces()[i]->FDCheckNormalDeriv();
-    Interfaces()[i]->FDCheckNormalCPPDeriv();
+    Interfaces()[i]->fd_check_normal_cpp_deriv();
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
 #endif  // #ifdef CONTACTFDNORMAL
 #ifdef CONTACTFDMORTARD
@@ -1476,7 +1477,7 @@ void CONTACT::AbstractStrategy::AssembleMortar()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvaluateReferenceState()
+void CONTACT::AbstractStrategy::evaluate_reference_state()
 {
   // flag for initialization of contact with nodal gaps
   bool initcontactbygap = CORE::UTILS::IntegralValue<int>(Params(), "INITCONTACTBYGAP");
@@ -1531,7 +1532,7 @@ void CONTACT::AbstractStrategy::EvaluateReferenceState()
   if (friction_)
   {
     // store contact state to contact nodes (active or inactive)
-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+    store_nodal_quantities(MORTAR::StrategyBase::activeold);
 
     // store D and M to old ones
     StoreDM("old");
@@ -1632,7 +1633,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
     Interfaces()[i]->SetState(MORTAR::state_new_displacement, *dis);
-    Interfaces()[i]->EvaluateNodalNormals();
+    Interfaces()[i]->evaluate_nodal_normals();
   }
 
   // create empty global matrix
@@ -1653,7 +1654,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AbstractStrategy::EvaluateNorm
 /*----------------------------------------------------------------------*
  |  Store Lagrange mulitpliers and disp. jumps into CNode     popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
+void CONTACT::AbstractStrategy::store_nodal_quantities(MORTAR::StrategyBase::QuantityType type)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -1686,7 +1687,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
         break;
       }
       default:
-        FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
+        FOUR_C_THROW("store_nodal_quantities: Unknown state std::string variable!");
         break;
     }  // switch
 
@@ -1776,7 +1777,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
             break;
           }
           default:
-            FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
+            FOUR_C_THROW("store_nodal_quantities: Unknown state std::string variable!");
             break;
         }  // switch
       }
@@ -1789,7 +1790,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
 /*----------------------------------------------------------------------*
  |  Output vector of normal/tang. contact stresses        gitterle 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::ComputeContactStresses()
+void CONTACT::AbstractStrategy::compute_contact_stresses()
 {
   // reset contact stress class variables
   stressnormal_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
@@ -1855,7 +1856,7 @@ void CONTACT::AbstractStrategy::ComputeContactStresses()
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into CNode                    popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::StoreDirichletStatus(
+void CONTACT::AbstractStrategy::store_dirichlet_status(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
@@ -1897,7 +1898,7 @@ void CONTACT::AbstractStrategy::StoreDirichletStatus(
   temp->PutScalar(1.0);
   CORE::LINALG::Export(*temp, *pgsdirichtoggle_);
 
-  PostStoreDirichletStatus(dbcmaps);
+  post_store_dirichlet_status(dbcmaps);
 
   return;
 }
@@ -1953,11 +1954,11 @@ void CONTACT::AbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   if (IsSelfContact()) zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
   zold_->Scale(1.0, *z_);
-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  store_nodal_quantities(MORTAR::StrategyBase::lmold);
   StoreDM("old");
 
   // store contact state to contact nodes (active or inactive)
-  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+  store_nodal_quantities(MORTAR::StrategyBase::activeold);
 
   // old displacements in nodes
   // (this is NOT only needed for friction but also for calculating
@@ -1987,7 +1988,7 @@ void CONTACT::AbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   if (friction_)
   {
     // store contact state to friction nodes (slip or stick)
-    StoreNodalQuantities(MORTAR::StrategyBase::slipold);
+    store_nodal_quantities(MORTAR::StrategyBase::slipold);
 
     // store nodal entries of D and M to old ones
     StoreToOld(MORTAR::StrategyBase::dm);
@@ -2144,8 +2145,8 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   z_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   if (!restartwithcontact)
-    if (!(GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
-                "Standard" &&
+    if (!(GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>(
+              "INT_STRATEGY") == "Standard" &&
             IsPenalty()))
     {
       reader.ReadVector(LagrMult(), "lagrmultold");
@@ -2155,8 +2156,8 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   // store restart information on Lagrange multipliers into nodes
-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  store_nodal_quantities(MORTAR::StrategyBase::lmcurrent);
+  store_nodal_quantities(MORTAR::StrategyBase::lmold);
 
   // only for Uzawa augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
@@ -2164,7 +2165,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
     if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(), "lagrmultold");
-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+    store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
   }
 
   // store restart Mortar quantities
@@ -2172,7 +2173,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
   if (friction_)
   {
-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+    store_nodal_quantities(MORTAR::StrategyBase::activeold);
     StoreToOld(MORTAR::StrategyBase::dm);
   }
 
@@ -2922,9 +2923,9 @@ void CONTACT::AbstractStrategy::VisualizeGmsh(const int step, const int iter)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
-    Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-    Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
+void CONTACT::AbstractStrategy::collect_maps_for_preconditioner(
+    Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
+    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
 {
   InnerDofMap = gndofrowmap_;   // global internal dof row map
   ActiveDofMap = gactivedofs_;  // global active slave dof row map
@@ -2950,7 +2951,7 @@ void CONTACT::AbstractStrategy::Reset(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
 {
   SetState(MORTAR::state_new_displacement, dispnp);
-  ResetLagrangeMultipliers(cparams, xnew);
+  reset_lagrange_multipliers(cparams, xnew);
 
   return;
 }
@@ -3086,7 +3087,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
       const Epetra_Vector* xold = cparams.Get<const Epetra_Vector>(2);
       const NOX::NLN::Group* grp = cparams.Get<const NOX::NLN::Group>(3);
 
-      RunPostApplyJacobianInverse(cparams, *rhs, *result, *xold, *grp);
+      run_post_apply_jacobian_inverse(cparams, *rhs, *result, *xold, *grp);
 
       break;
     }
@@ -3100,13 +3101,13 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case MORTAR::eval_wgap_gradient_error:
     {
-      EvalWeightedGapGradientError(cparams);
+      eval_weighted_gap_gradient_error(cparams);
 
       break;
     }
     case MORTAR::eval_static_constraint_rhs:
     {
-      EvalStaticConstraintRHS(cparams);
+      eval_static_constraint_rhs(cparams);
 
       break;
     }
@@ -3119,7 +3120,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
             " of 1!");
 
       Epetra_Vector& str_rhs = *eval_vec_mutable->front();
-      RemoveCondensedContributionsFromRhs(str_rhs);
+      remove_condensed_contributions_from_rhs(str_rhs);
 
       break;
     }
@@ -3171,7 +3172,7 @@ void CONTACT::AbstractStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
 {
   FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
@@ -3180,7 +3181,8 @@ void CONTACT::AbstractStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterface
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vector& str_rhs) const
+void CONTACT::AbstractStrategy::remove_condensed_contributions_from_rhs(
+    Epetra_Vector& str_rhs) const
 {
   return;
 }
@@ -3238,9 +3240,9 @@ void CONTACT::AbstractStrategy::RunPreSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
-    const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-    const NOX::NLN::Group& grp)
+void CONTACT::AbstractStrategy::run_post_apply_jacobian_inverse(
+    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
+    const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
   // do nothing
   return;
@@ -3248,7 +3250,7 @@ void CONTACT::AbstractStrategy::RunPostApplyJacobianInverse(const CONTACT::Param
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::EvalWeightedGapGradientError(CONTACT::ParamsInterface& cparams)
+void CONTACT::AbstractStrategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams)
 {
   FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
@@ -3257,7 +3259,7 @@ void CONTACT::AbstractStrategy::EvalWeightedGapGradientError(CONTACT::ParamsInte
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::ResetLagrangeMultipliers(
+void CONTACT::AbstractStrategy::reset_lagrange_multipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
   FOUR_C_THROW(
@@ -3280,7 +3282,7 @@ bool CONTACT::AbstractStrategy::IsSaddlePointSystem() const
   if ((stype_ == INPAR::CONTACT::solution_lagmult) and
       SystemType() == INPAR::CONTACT::system_saddlepoint)
   {
-    if (IsInContact() or WasInContact() or WasInContactLastTimeStep()) return true;
+    if (IsInContact() or WasInContact() or was_in_contact_last_time_step()) return true;
   }
   return false;
 }
@@ -3292,17 +3294,17 @@ bool CONTACT::AbstractStrategy::IsCondensedSystem() const
   if (stype_ == INPAR::CONTACT::solution_lagmult and
       SystemType() != INPAR::CONTACT::system_saddlepoint)
   {
-    if (IsInContact() or WasInContact() or WasInContactLastTimeStep()) return true;
+    if (IsInContact() or WasInContact() or was_in_contact_last_time_step()) return true;
   }
   return false;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::FillMapsForPreconditioner(
+void CONTACT::AbstractStrategy::fill_maps_for_preconditioner(
     std::vector<Teuchos::RCP<Epetra_Map>>& maps) const
 {
-  /* FixMe This function replaces the deprecated CollectMapsForPreconditioner(),
+  /* FixMe This function replaces the deprecated collect_maps_for_preconditioner(),
    * the old version can be deleted, as soon as the contact uses the new
    * structure framework. */
 
@@ -3376,7 +3378,7 @@ double CONTACT::AbstractStrategy::GetPotentialValue(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AbstractStrategy::GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
+double CONTACT::AbstractStrategy::get_linearized_potential_value_terms(const Epetra_Vector& dir,
     const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
@@ -3388,7 +3390,7 @@ double CONTACT::AbstractStrategy::GetLinearizedPotentialValueTerms(const Epetra_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::PostprocessQuantitiesPerInterface(
+void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
   using Teuchos::RCP;
@@ -3410,14 +3412,14 @@ void CONTACT::AbstractStrategy::PostprocessQuantitiesPerInterface(
 
   // Postprocess contact stresses
   {
-    ComputeContactStresses();
+    compute_contact_stresses();
 
     // Append data to parameter list
     outputParams->set<RCP<const Epetra_Vector>>("norcontactstress", stressnormal_);
     outputParams->set<RCP<const Epetra_Vector>>("tancontactstress", stresstangential_);
   }
 
-  for (auto& interface : Interfaces()) interface->PostprocessQuantities(*outputParams);
+  for (auto& interface : Interfaces()) interface->postprocess_quantities(*outputParams);
 }
 
 /*----------------------------------------------------------------------*

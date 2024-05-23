@@ -55,13 +55,13 @@ namespace SCATRA
     void PrintTimeStepInfo() override;
 
     /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    void CalcInitialTimeDerivative() override;
+    void calc_initial_time_derivative() override;
 
     /// additional predictor not intended for level-set methods
     void ExplicitPredictor() const override { return; };
 
     /// Set the part of the righthandside belonging to the last timestep.
-    void SetOldPartOfRighthandside() override;
+    void set_old_part_of_righthandside() override;
 
     /// update state vectors
     /// current solution becomes old solution of next time step

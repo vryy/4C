@@ -82,15 +82,15 @@ namespace FLD
     void SendBlock(std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
 
     //! unpack all master values contained in receive block
-    void UnpackLocalMasterValues(std::vector<int>& mymasters,
+    void unpack_local_master_values(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel, std::vector<char>& rblock);
 
     //! pack all master values into a send block
-    void PackLocalMasterValues(std::vector<int>& mymasters,
+    void pack_local_master_values(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock);
 
     //! for all values avaible on the processor, do the final setting of the value
-    virtual void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+    virtual void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Epetra_Vector> velnp);
 
     //! flag active boundary condition (may be used to switch off everything)
@@ -136,7 +136,7 @@ namespace FLD
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
-    void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+    void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
         Teuchos::RCP<Epetra_Vector> velnp) override;
   };
@@ -169,7 +169,7 @@ namespace FLD
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
-    void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+    void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vec,
         Teuchos::RCP<Epetra_Vector> outvec) override;
   };

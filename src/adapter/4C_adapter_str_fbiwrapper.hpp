@@ -42,13 +42,13 @@ namespace ADAPTER
     explicit FBIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// extracts interface velocities at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_veln();
 
     /// extracts interface velocities at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    virtual Teuchos::RCP<Epetra_Vector> extract_interface_velnp();
 
     /// Predictor for interface velocities
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceVelnp();
+    virtual Teuchos::RCP<Epetra_Vector> predict_interface_velnp();
 
     /** \brief linear structure solve with just a interface load
      *
@@ -61,13 +61,13 @@ namespace ADAPTER
     void UseBlockMatrix() override { FOUR_C_THROW("Not yet implemented\n"); };
 
     /// extract interface displacements at \f$t_{n}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_dispn() override;
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp() override;
+    Teuchos::RCP<Epetra_Vector> extract_interface_dispnp() override;
 
     /// Predictor for interface displacements
-    Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() override;
+    Teuchos::RCP<Epetra_Vector> predict_interface_dispnp() override;
 
     /** \brief Apply interface forces to structural solver
      *
@@ -75,13 +75,13 @@ namespace ADAPTER
      * step. This implementation overloads the base class function because we are not using a
      * condition for the interface, since we expect all beam elements to be immersed.
      */
-    void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) override;
+    void apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// rebuild FSI interface from structure side
     void RebuildInterface() override;
 
     /// Setup the multi map extractor after ghosting of the structure discretization
-    virtual void SetupMultiMapExtractor();
+    virtual void setup_multi_map_extractor();
 
     /// Get Runtime Output data
     virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> GetIOData();

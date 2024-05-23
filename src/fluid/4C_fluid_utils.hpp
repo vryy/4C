@@ -325,15 +325,15 @@ namespace FLD
       void InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
 
       /// update and return WSS vector
-      Teuchos::RCP<Epetra_Vector> GetWallShearStresses(
+      Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses(
           Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt);
 
       /// return WSS vector (without updating the mean wss vector)
-      Teuchos::RCP<Epetra_Vector> GetPreCalcWallShearStresses(
+      Teuchos::RCP<Epetra_Vector> get_pre_calc_wall_shear_stresses(
           Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// return WSS vector always without aggregation, even if scale separation matrix exists
-      Teuchos::RCP<Epetra_Vector> GetWallShearStressesWOAgg(
+      Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses_wo_agg(
           Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// update and return stress vector
@@ -355,10 +355,10 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// integrate shape functions at nodes marked by condition
-      Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+      Teuchos::RCP<Epetra_Vector> integrate_interface_shape(std::string condname);
 
       /// calculate WSS based on residual
-      Teuchos::RCP<Epetra_Vector> CalcWallShearStresses(Teuchos::RCP<Epetra_Vector> stresses);
+      Teuchos::RCP<Epetra_Vector> calc_wall_shear_stresses(Teuchos::RCP<Epetra_Vector> stresses);
 
       /// smooth stress/wss via ML-aggregation
       Teuchos::RCP<Epetra_Vector> AggreagteStresses(Teuchos::RCP<Epetra_Vector> wss);

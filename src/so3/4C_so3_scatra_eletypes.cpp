@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8ScatraType::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
@@ -47,15 +47,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8ScatraType::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::SoHex8ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
-  SoHex8Type::SetupElementDefinition(definitions_hex8);
+  SoHex8Type::setup_element_definition(definitions_hex8);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
@@ -102,7 +102,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8fbarScatraType::Create(const std::ve
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>(
@@ -120,15 +120,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarScatraType::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::SoHex8fbarScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8fbarScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
-  SoHex8fbarType::SetupElementDefinition(definitions_hex8);
+  SoHex8fbarType::setup_element_definition(definitions_hex8);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8FBAR"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
@@ -171,7 +171,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27ScatraType::Create(const std::vecto
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
@@ -187,15 +187,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27ScatraType::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::SoHex27ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex27ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
-  SoHex27Type::SetupElementDefinition(definitions_hex27);
+  SoHex27Type::setup_element_definition(definitions_hex27);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX27"] =
       INPUT::LineDefinition::Builder(defs_hex27["HEX27"]).AddNamedString("TYPE").Build();
@@ -241,7 +241,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4ScatraType::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
@@ -257,15 +257,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4ScatraType::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::SoTet4ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
-  SoTet4Type::SetupElementDefinition(definitions_tet4);
+  SoTet4Type::setup_element_definition(definitions_tet4);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET4"] = INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
 }
@@ -310,7 +310,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10ScatraType::Create(const std::vecto
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
@@ -326,15 +326,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10ScatraType::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::SoTet10ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet10ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet10;
-  SoTet10Type::SetupElementDefinition(definitions_tet10);
+  SoTet10Type::setup_element_definition(definitions_tet10);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["TET10"] =
       INPUT::LineDefinition::Builder(defs_tet10["TET10"]).AddNamedString("TYPE").Build();
@@ -380,7 +380,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoWeg6ScatraType::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>(id, owner));
@@ -396,15 +396,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6ScatraType::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::SoWeg6ScatraType::SetupElementDefinition(
+void DRT::ELEMENTS::SoWeg6ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_weg6;
-  SoWeg6Type::SetupElementDefinition(definitions_weg6);
+  SoWeg6Type::setup_element_definition(definitions_weg6);
 
   std::map<std::string, INPUT::LineDefinition>& defs_weg6 = definitions_weg6["SOLIDW6"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["WEDGE6"] =
       INPUT::LineDefinition::Builder(defs_weg6["WEDGE6"]).AddNamedString("TYPE").Build();

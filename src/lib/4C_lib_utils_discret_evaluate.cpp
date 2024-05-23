@@ -61,7 +61,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate");
 
   if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
-  if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();

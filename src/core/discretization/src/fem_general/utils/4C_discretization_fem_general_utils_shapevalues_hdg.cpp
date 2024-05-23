@@ -248,8 +248,8 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
-  AdjustFaceOrientation(ele, face);
-  ComputeFaceReferenceSystem(ele, face);
+  adjust_face_orientation(ele, face);
+  compute_face_reference_system(ele, face);
 
   CORE::FE::ShapeValuesFaceParams interiorparams = params_;
   interiorparams.degree_ = ele.Degree();
@@ -263,7 +263,7 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
  |  Reorder evaluated face shape functions (private)  kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
+void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
     const DRT::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
@@ -479,7 +479,7 @@ void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
  |  Compute the face reference system       (private)  berardocco 09/18 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
+void CORE::FE::ShapeValuesFace<distype>::compute_face_reference_system(
     const DRT::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to

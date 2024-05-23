@@ -104,7 +104,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
   else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
     MatArrheniusPV(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_thermostvenant)
-    MatThermoStVenantKirchhoff(material, k, densn, densnp, densam, visc);
+    mat_thermo_st_venant_kirchhoff(material, k, densn, densnp, densam, visc);
   else if (material->MaterialType() == CORE::Materials::m_yoghurt)
     MatYoghurt(material, k, densn, densnp, densam, visc);
   else
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), 0);
 
   // compute reaction coefficient for progress variable
-  const double reacoef = actmat->ComputeReactionCoeff(tempnp);
+  const double reacoef = actmat->compute_reaction_coeff(tempnp);
 
   // set different reaction terms in the reaction manager
   my::reamanager_->SetReaCoeff(reacoef, 0);
@@ -416,7 +416,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   densgradfac_[k] = -densnp / tempnp;
 
   // compute reaction coefficient for species equation and set in reaction manager
-  const double reacoef = actmat->ComputeReactionCoeff(tempnp);
+  const double reacoef = actmat->compute_reaction_coeff(tempnp);
   my::reamanager_->SetReaCoeff(reacoef, k);
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -560,7 +560,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), 0);
 
   // compute reaction coefficient for progress variable
-  const double reacoef = actmat->ComputeReactionCoeff(provarnp);
+  const double reacoef = actmat->compute_reaction_coeff(provarnp);
 
   // set different reaction terms in the reaction manager
   my::reamanager_->SetReaCoeff(reacoef, 0);
@@ -583,7 +583,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
  | material thermo St. Venant Kirchhoff                        vg 02/17 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
     const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -760,7 +760,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
  | re-implementatio: adaption of convective term for rhs   ehrl 11/13 |
  *--------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& conv_phi,
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(double& conv_phi,
     const int k, const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double densnp, const double densn,
     const double phinp, const double phin, const double vdiv)

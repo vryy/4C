@@ -48,7 +48,7 @@ namespace POROMULTIPHASESCATRA
     void ApplyMeshMovement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
+    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
     //! Evaluate the 1D-3D coupling
     void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
@@ -56,35 +56,35 @@ namespace POROMULTIPHASESCATRA
 
    private:
     //! pre-evaluate the pairs
-    void PreEvaluateCouplingPairs();
+    void pre_evaluate_coupling_pairs();
 
     //! calculate the volume fraction occupied by blood vessels
-    void CalculateBloodVesselVolumeFraction();
+    void calculate_blood_vessel_volume_fraction();
 
     /*!
      * @brief et the artery diameter in material to be able to use it on 1D discretization
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void SetArteryDiamInMaterial() override{};
+    void set_artery_diam_in_material() override{};
 
     /*!
      * @brief reset the integrated diameter vector to zero
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void ResetIntegratedDiamToZero() override{};
+    void reset_integrated_diam_to_zero() override{};
 
     /*!
      * @brief evaluate additional linearization of (integrated) element diameter dependent terms
      * (Hagen-Poiseuille)
      * \note nothing to do for surface-based formulation since varying diameter not yet possible
      */
-    void EvaluateAdditionalLinearizationofIntegratedDiam() override{};
+    void evaluate_additional_linearizationof_integrated_diam() override{};
 
     //! get the segment lengths of element 'artelegid'
-    std::vector<double> GetEleSegmentLengths(const int artelegid) override { return {2.0}; };
+    std::vector<double> get_ele_segment_lengths(const int artelegid) override { return {2.0}; };
 
     //! print out the coupling method
-    void PrintOutCouplingMethod() const override;
+    void print_out_coupling_method() const override;
 
     /*!
      * @brief check if pair is not active

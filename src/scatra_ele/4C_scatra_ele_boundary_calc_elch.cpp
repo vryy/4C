@@ -58,7 +58,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
   {
     case SCATRA::BoundaryAction::calc_elch_linearize_nernst:
     {
-      CalcNernstLinearization(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
+      calc_nernst_linearization(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
  | process an electrode kinetics boundary condition          fang 08/15 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundaryKinetics(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics(
     DRT::FaceElement* ele,                            ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
     DRT::Discretization& discretization,              ///< discretization
@@ -180,8 +180,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
 
     if (zerocur == 0)
     {
-      EvaluateElchBoundaryKinetics(ele, elemat1_epetra, elevec1_epetra, my::ephinp_, ehist, timefac,
-          ele->ParentElement()->Material(), cond, nume, *stoich, kinetics, pot0, frt, scalar);
+      evaluate_elch_boundary_kinetics(ele, elemat1_epetra, elevec1_epetra, my::ephinp_, ehist,
+          timefac, ele->ParentElement()->Material(), cond, nume, *stoich, kinetics, pot0, frt,
+          scalar);
     }
 
     // realize correct scaling of rhs contribution for gen.alpha case
@@ -206,19 +207,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, my::ephinp_, ephidtnp, kinetics,
+    evaluate_electrode_status(ele, elevec1_epetra, params, cond, my::ephinp_, ephidtnp, kinetics,
         *stoich, nume, pot0, frt, timefac, scalar);
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundaryKinetics
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics
 
 
 /*----------------------------------------------------------------------*
  | calculate linearization of nernst equation                     ehrl  |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinearization(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_linearization(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
@@ -284,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
       {
-        const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+        const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all
@@ -344,7 +345,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndIntFac(intpoints, iquad);
+    const double fac = my::eval_shape_func_and_int_fac(intpoints, iquad);
 
     // calculate potential and domain integrals
     for (int vi = 0; vi < nen_; ++vi)
@@ -371,7 +372,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
  | evaluate an electrode kinetics boundary condition          gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBoundaryKinetics(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics(
     const DRT::Element* ele,                ///< current element
     CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
     CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
@@ -418,7 +419,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
      *----------------------------------------------------------------------*/
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+      const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
       // get boundary porosity from condition if available, or set equal to volume porosity
       // otherwise
@@ -429,20 +430,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
         FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
       // call utility class for element evaluation
-      utils_->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, fac,
-          my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
+      utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
+          fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
     }  // loop over integration points
   }    // loop over all scalars
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBoundaryKinetics
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics
 
 
 /*----------------------------------------------------------------------*
  | evaluate electrode kinetics status information             gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectrodeStatus(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status(
     const DRT::Element* ele,                         ///< current element
     CORE::LINALG::SerialDenseVector& scalars,        ///< scalars to be integrated
     Teuchos::ParameterList& params,                  ///< parameter list
@@ -498,10 +499,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
     // loop over integration points
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
+      const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
       // call utility class for element evaluation
-      utils_->EvaluateElectrodeStatusAtIntegrationPoint(ele, scalars, params, cond, ephinp,
+      utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, epsilon,
           k);
     }  // loop over integration points
@@ -515,7 +516,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
     FOUR_C_THROW(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectrodeStatus
+}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status
 
 
 /*----------------------------------------------------------------------*

@@ -26,7 +26,7 @@ namespace MIXTURE
      public:
       explicit AnisotropicGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> CreateGrowthStrategy() override;
+      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
 
       const int init_mode_;
       const int fiber_id_;
@@ -48,20 +48,20 @@ namespace MIXTURE
    public:
     explicit AnisotropicGrowthStrategy(MIXTURE::PAR::AnisotropicGrowthStrategy* params);
 
-    void PackMixtureGrowthStrategy(CORE::COMM::PackBuffer& data) const override;
+    void pack_mixture_growth_strategy(CORE::COMM::PackBuffer& data) const override;
 
-    void UnpackMixtureGrowthStrategy(
+    void unpack_mixture_growth_strategy(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
-    [[nodiscard]] bool HasInelasticGrowthDeformationGradient() const override { return true; };
+    [[nodiscard]] bool has_inelastic_growth_deformation_gradient() const override { return true; };
 
-    void EvaluateInverseGrowthDeformationGradient(CORE::LINALG::Matrix<3, 3>& iFgM,
+    void evaluate_inverse_growth_deformation_gradient(CORE::LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
-    void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
+    void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
         const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
         const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,

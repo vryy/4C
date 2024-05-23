@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::ComputePhysicalCenterPosition(
+CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::compute_physical_center_position(
     const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
@@ -61,7 +61,7 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
       nodalpos_xi_domain_(xfemEleDomainCoordinates),
       nodalpos_xi_boundary_(eleBoundaryCoordinates),
       nodalpos_xyz_domain_(physDomainCoordinates),
-      phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+      phys_center_(compute_physical_center_position(distype, physDomainCoordinates))
 {
   indomainplus_ = true;
 }
@@ -75,7 +75,7 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
       nodalpos_xi_domain_(xfemEleDomainCoordinates),
       nodalpos_xi_boundary_(eleBoundaryCoordinates),
       nodalpos_xyz_domain_(physDomainCoordinates),
-      phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+      phys_center_(compute_physical_center_position(distype, physDomainCoordinates))
 {
   indomainplus_ = indomainplus;
 }

@@ -158,7 +158,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
     break;
     case solve_blood_air_transport:
     {
-      DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(this)->SolveBloodAirTransport(
+      DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(this)->solve_blood_air_transport(
           this, elevec1, elevec2, params, discretization, lm, mat);
     }
     break;
@@ -212,7 +212,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::getOptimalGaussrule
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::RedAirBloodScatraLine3::isHigherOrderElement(
+bool DRT::ELEMENTS::RedAirBloodScatraLine3::is_higher_order_element(
     const CORE::FE::CellType distype) const
 {
   bool hoel = true;

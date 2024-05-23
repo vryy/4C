@@ -37,7 +37,7 @@ namespace STR
 
       //! get pointer to force vector at time level n+1 (full structural map).
       //! interface part is inserted in ADAPTER::FSIStructureWrapper.
-      const Teuchos::RCP<Epetra_Vector>& GetInterfaceForceNpPtr()
+      const Teuchos::RCP<Epetra_Vector>& get_interface_force_np_ptr()
       {
         return interface_force_np_ptr_;
       };
@@ -116,13 +116,13 @@ namespace STR
       void UpdateStepElement() override { return; };
 
       //! [derived]
-      void DetermineStressStrain() override { return; };
+      void determine_stress_strain() override { return; };
 
       //! [derived]
       void DetermineEnergy() override { return; };
 
       //! [derived]
-      void DetermineOptionalQuantity() override { return; };
+      void determine_optional_quantity() override { return; };
 
       //! [derived]
       void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
@@ -134,13 +134,13 @@ namespace STR
       void PostOutput() override { return; };
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
+      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! @}
 
@@ -150,13 +150,13 @@ namespace STR
        * calculation (and matrix free Newton Krylov).
        *
        * \note Can only be called after a valid structural solve. */
-      Teuchos::RCP<const Epetra_Vector> SolveRelaxationLinear(
+      Teuchos::RCP<const Epetra_Vector> solve_relaxation_linear(
           Teuchos::RCP<ADAPTER::Structure> structure);
 
-      virtual void SetupMultiMapExtractor();
+      virtual void setup_multi_map_extractor();
 
       //! set flag true if in order to request a relaxation solve
-      void SetIsRelaxationSolve(bool trueorfalse) { is_relaxationsolve_ = trueorfalse; };
+      void set_is_relaxation_solve(bool trueorfalse) { is_relaxationsolve_ = trueorfalse; };
 
       //! Returns the global input/output data container
       const STR::TIMINT::BaseDataIO& GetInOutput() const;

@@ -36,7 +36,8 @@ void BEAMINTERACTION::BeamInteractionParams::Init()
 {
   issetup_ = false;
 
-  Teuchos::ParameterList const& params_list = GLOBAL::Problem::Instance()->BeamInteractionParams();
+  Teuchos::ParameterList const& params_list =
+      GLOBAL::Problem::Instance()->beam_interaction_params();
 
   rep_strategy_ = CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::RepartitionStrategy>(
       params_list, "REPARTITIONSTRATEGY");

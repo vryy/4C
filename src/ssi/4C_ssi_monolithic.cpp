@@ -70,19 +70,19 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::ApplyContactToSubProblems()
+void SSI::SSIMono::apply_contact_to_sub_problems()
 {
   // uncomplete matrices; we need to do this here since in contact simulations the dofs that
   // interact with each other can change and thus the graph of the matrix can also change.
   ssi_matrices_->ScaTraMatrix()->UnComplete();
-  ssi_matrices_->ScaTraStructureMatrix()->UnComplete();
-  ssi_matrices_->StructureScaTraMatrix()->UnComplete();
+  ssi_matrices_->sca_tra_structure_matrix()->UnComplete();
+  ssi_matrices_->structure_sca_tra_matrix()->UnComplete();
 
   // add contributions
-  strategy_contact_->ApplyContactToScatraResidual(ssi_vectors_->ScatraResidual());
-  strategy_contact_->ApplyContactToScatraScatra(ssi_matrices_->ScaTraMatrix());
-  strategy_contact_->ApplyContactToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
-  strategy_contact_->ApplyContactToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
+  strategy_contact_->apply_contact_to_scatra_residual(ssi_vectors_->ScatraResidual());
+  strategy_contact_->apply_contact_to_scatra_scatra(ssi_matrices_->ScaTraMatrix());
+  strategy_contact_->apply_contact_to_scatra_structure(ssi_matrices_->sca_tra_structure_matrix());
+  strategy_contact_->apply_contact_to_structure_scatra(ssi_matrices_->structure_sca_tra_matrix());
 }
 
 /*-------------------------------------------------------------------------------*
@@ -90,7 +90,7 @@ void SSI::SSIMono::ApplyContactToSubProblems()
 void SSI::SSIMono::ApplyDBCToSystem()
 {
   // apply Dirichlet boundary conditions to global system matrix
-  dbc_handler_->ApplyDBCToSystemMatrix(ssi_matrices_->SystemMatrix());
+  dbc_handler_->apply_dbc_to_system_matrix(ssi_matrices_->SystemMatrix());
 
   // apply Dirichlet boundary conditions to global RHS
   dbc_handler_->ApplyDBCToRHS(ssi_vectors_->Residual());
@@ -98,18 +98,19 @@ void SSI::SSIMono::ApplyDBCToSystem()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
+bool SSI::SSIMono::is_uncomplete_of_matrices_necessary_for_mesh_tying() const
 {
   // check for first iteration in calculation of initial time derivative
-  if (IterationCount() == 0 and Step() == 0 and !DoCalculateInitialPotentialField()) return true;
+  if (IterationCount() == 0 and Step() == 0 and !do_calculate_initial_potential_field())
+    return true;
 
   if (IterationCount() <= 2)
   {
     // check for first iteration in standard Newton loop
-    if (Step() == 1 and !DoCalculateInitialPotentialField()) return true;
+    if (Step() == 1 and !do_calculate_initial_potential_field()) return true;
 
     // check for first iterations in calculation of initial potential field
-    if (Step() == 0 and DoCalculateInitialPotentialField()) return true;
+    if (Step() == 0 and do_calculate_initial_potential_field()) return true;
 
     // check for first iteration in restart simulations
     if (IsRestart())
@@ -127,49 +128,51 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::ApplyMeshtyingToSubProblems()
+void SSI::SSIMono::apply_meshtying_to_sub_problems()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: apply mesh tying");
-  if (SSIInterfaceMeshtying())
+  if (ssi_interface_meshtying())
   {
     // check if matrices are filled because they have to be for the below methods
-    if (!ssi_matrices_->StructureScaTraMatrix()->Filled())
-      ssi_matrices_->CompleteStructureScaTraMatrix();
-    if (!ssi_matrices_->ScaTraStructureMatrix()->Filled())
-      ssi_matrices_->CompleteScaTraStructureMatrix();
+    if (!ssi_matrices_->structure_sca_tra_matrix()->Filled())
+      ssi_matrices_->complete_structure_sca_tra_matrix();
+    if (!ssi_matrices_->sca_tra_structure_matrix()->Filled())
+      ssi_matrices_->complete_sca_tra_structure_matrix();
 
-    strategy_meshtying_->ApplyMeshtyingToScatraStructure(
-        ssi_matrices_->ScaTraStructureMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
+    strategy_meshtying_->apply_meshtying_to_scatra_structure(
+        ssi_matrices_->sca_tra_structure_matrix(),
+        is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureMatrix(*ssi_matrices_->StructureMatrix(),
-        StructureField()->SystemMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
+    strategy_meshtying_->apply_meshtying_to_structure_matrix(*ssi_matrices_->StructureMatrix(),
+        StructureField()->SystemMatrix(), is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureScatra(
-        ssi_matrices_->StructureScaTraMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
+    strategy_meshtying_->apply_meshtying_to_structure_scatra(
+        ssi_matrices_->structure_sca_tra_matrix(),
+        is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
     ssi_vectors_->StructureResidual()->Update(
-        1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
+        1.0, strategy_meshtying_->apply_meshtying_to_structure_rhs(StructureField()->RHS()), 1.0);
 
     if (IsScaTraManifold())
     {
-      if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
-        ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
-      if (!manifoldscatraflux_->MatrixManifoldStructure()->Filled())
-        manifoldscatraflux_->CompleteMatrixManifoldStructure();
-      if (!manifoldscatraflux_->MatrixScaTraStructure()->Filled())
-        manifoldscatraflux_->CompleteMatrixScaTraStructure();
+      if (!ssi_matrices_->sca_tra_manifold_structure_matrix()->Filled())
+        ssi_matrices_->complete_sca_tra_manifold_structure_matrix();
+      if (!manifoldscatraflux_->matrix_manifold_structure()->Filled())
+        manifoldscatraflux_->complete_matrix_manifold_structure();
+      if (!manifoldscatraflux_->matrix_sca_tra_structure()->Filled())
+        manifoldscatraflux_->complete_matrix_sca_tra_structure();
 
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          ssi_matrices_->ScaTraManifoldStructureMatrix(),
-          IsUncompleteOfMatricesNecessaryForMeshTying());
+      strategy_meshtying_->apply_meshtying_to_scatra_manifold_structure(
+          ssi_matrices_->sca_tra_manifold_structure_matrix(),
+          is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          manifoldscatraflux_->MatrixManifoldStructure(),
-          IsUncompleteOfMatricesNecessaryForMeshTying());
+      strategy_meshtying_->apply_meshtying_to_scatra_manifold_structure(
+          manifoldscatraflux_->matrix_manifold_structure(),
+          is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
-      strategy_meshtying_->ApplyMeshtyingToScatraStructure(
-          manifoldscatraflux_->MatrixScaTraStructure(),
-          IsUncompleteOfMatricesNecessaryForMeshTying());
+      strategy_meshtying_->apply_meshtying_to_scatra_structure(
+          manifoldscatraflux_->matrix_sca_tra_structure(),
+          is_uncomplete_of_matrices_necessary_for_mesh_tying());
     }
   }
   // copy the structure residual and matrix if we do not have a mesh tying problem
@@ -182,47 +185,49 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::ApplyManifoldMeshtying()
+void SSI::SSIMono::apply_manifold_meshtying()
 {
-  if (!manifoldscatraflux_->SystemMatrixManifold()->Filled())
-    manifoldscatraflux_->SystemMatrixManifold()->Complete();
+  if (!manifoldscatraflux_->system_matrix_manifold()->Filled())
+    manifoldscatraflux_->system_matrix_manifold()->Complete();
 
-  if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
-    ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+  if (!ssi_matrices_->sca_tra_manifold_structure_matrix()->Filled())
+    ssi_matrices_->complete_sca_tra_manifold_structure_matrix();
 
-  if (!manifoldscatraflux_->MatrixManifoldStructure()->Filled())
-    manifoldscatraflux_->CompleteMatrixManifoldStructure();
+  if (!manifoldscatraflux_->matrix_manifold_structure()->Filled())
+    manifoldscatraflux_->complete_matrix_manifold_structure();
 
-  if (!manifoldscatraflux_->MatrixScaTraManifold()->Filled())
-    manifoldscatraflux_->CompleteMatrixScaTraManifold();
+  if (!manifoldscatraflux_->matrix_sca_tra_manifold()->Filled())
+    manifoldscatraflux_->complete_matrix_sca_tra_manifold();
 
-  if (!manifoldscatraflux_->MatrixManifoldScatra()->Filled())
-    manifoldscatraflux_->CompleteMatrixManifoldScaTra();
+  if (!manifoldscatraflux_->matrix_manifold_scatra()->Filled())
+    manifoldscatraflux_->complete_matrix_manifold_sca_tra();
 
   // apply mesh tying to...
   // manifold - manifold
-  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldMatrix(
-      ssi_matrices_->ManifoldMatrix(), ScaTraManifold()->SystemMatrixOperator());
-  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldMatrix(
-      ssi_matrices_->ManifoldMatrix(), manifoldscatraflux_->SystemMatrixManifold());
+  strategy_manifold_meshtying_->apply_meshtying_to_manifold_matrix(
+      ssi_matrices_->ManifoldMatrix(), ScaTraManifold()->system_matrix_operator());
+  strategy_manifold_meshtying_->apply_meshtying_to_manifold_matrix(
+      ssi_matrices_->ManifoldMatrix(), manifoldscatraflux_->system_matrix_manifold());
 
   // manifold - structure
-  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldStructureMatrix(
-      ssi_matrices_->ScaTraManifoldStructureMatrix(),
-      manifoldscatraflux_->MatrixManifoldStructure(),
-      IsUncompleteOfMatricesNecessaryForMeshTying());
+  strategy_manifold_meshtying_->apply_meshtying_to_manifold_structure_matrix(
+      ssi_matrices_->sca_tra_manifold_structure_matrix(),
+      manifoldscatraflux_->matrix_manifold_structure(),
+      is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
   // scatra - manifold
-  strategy_manifold_meshtying_->ApplyMeshtyingToScatraManifoldMatrix(
-      ssi_matrices_->ScaTraScaTraManifoldMatrix(), manifoldscatraflux_->MatrixScaTraManifold(),
-      IsUncompleteOfMatricesNecessaryForMeshTying());
+  strategy_manifold_meshtying_->apply_meshtying_to_scatra_manifold_matrix(
+      ssi_matrices_->sca_tra_sca_tra_manifold_matrix(),
+      manifoldscatraflux_->matrix_sca_tra_manifold(),
+      is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
   // manifold - scatra
-  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldScatraMatrix(
-      ssi_matrices_->ScaTraManifoldScaTraMatrix(), manifoldscatraflux_->MatrixManifoldScatra());
+  strategy_manifold_meshtying_->apply_meshtying_to_manifold_scatra_matrix(
+      ssi_matrices_->sca_tra_manifold_sca_tra_matrix(),
+      manifoldscatraflux_->matrix_manifold_scatra());
 
   // RHS
-  strategy_manifold_meshtying_->ApplyMeshTyingToManifoldRHS(ssi_vectors_->ManifoldResidual());
+  strategy_manifold_meshtying_->apply_mesh_tying_to_manifold_rhs(ssi_vectors_->ManifoldResidual());
 }
 
 /*--------------------------------------------------------------------------*
@@ -233,9 +238,9 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   AssembleMatScaTra();
 
-  AssembleMatStructure();
+  assemble_mat_structure();
 
-  if (IsScaTraManifold()) AssembleMatScaTraManifold();
+  if (IsScaTraManifold()) assemble_mat_sca_tra_manifold();
 
   // finalize global system matrix
   ssi_matrices_->SystemMatrix()->Complete();
@@ -251,54 +256,54 @@ void SSI::SSIMono::AssembleMatAndRHS()
 void SSI::SSIMono::AssembleMatScaTra()
 {
   // assemble scatra-scatra block into system matrix
-  strategy_assemble_->AssembleScatraScatra(
+  strategy_assemble_->assemble_scatra_scatra(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraMatrix());
 
   // assemble scatra-structure block into system matrix
-  strategy_assemble_->AssembleScatraStructure(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureMatrix());
+  strategy_assemble_->assemble_scatra_structure(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->sca_tra_structure_matrix());
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::AssembleMatScaTraManifold()
+void SSI::SSIMono::assemble_mat_sca_tra_manifold()
 {
   // assemble scatra manifold - scatra manifold block into system matrix
-  strategy_assemble_->AssembleScatramanifoldScatramanifold(
+  strategy_assemble_->assemble_scatramanifold_scatramanifold(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->ManifoldMatrix());
 
   // assemble scatra manifold-structure block into system matrix
-  strategy_assemble_->AssembleScatramanifoldStructure(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureMatrix());
+  strategy_assemble_->assemble_scatramanifold_structure(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->sca_tra_manifold_structure_matrix());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // scatra side
-  strategy_assemble_->AssembleScatraScatra(
+  strategy_assemble_->assemble_scatra_scatra(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixScaTra());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
   // scatra side
-  strategy_assemble_->AssembleScatraScatramanifold(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraScaTraManifoldMatrix());
+  strategy_assemble_->assemble_scatra_scatramanifold(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->sca_tra_sca_tra_manifold_matrix());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // manifold side
-  strategy_assemble_->AssembleScatramanifoldScatra(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldScaTraMatrix());
+  strategy_assemble_->assemble_scatramanifold_scatra(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->sca_tra_manifold_sca_tra_matrix());
 
-  strategy_assemble_->AssembleScatraStructure(
-      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixScaTraStructure());
+  strategy_assemble_->assemble_scatra_structure(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->matrix_sca_tra_structure());
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::AssembleMatStructure()
+void SSI::SSIMono::assemble_mat_structure()
 {  // assemble structure-scatra block into system matrix
-  strategy_assemble_->AssembleStructureScatra(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraMatrix());
+  strategy_assemble_->assemble_structure_scatra(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->structure_sca_tra_matrix());
 
   // assemble structure-structure block into system matrix
-  strategy_assemble_->AssembleStructureStructure(
+  strategy_assemble_->assemble_structure_structure(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureMatrix());
 }
 
@@ -313,7 +318,7 @@ void SSI::SSIMono::EvaluateSubproblems()
   ssi_vectors_->ClearResiduals();
 
   // evaluate temperature from function and set to structural discretization
-  EvaluateAndSetTemperatureField();
+  evaluate_and_set_temperature_field();
 
   // build system matrix and residual for structure field
   StructureField()->Evaluate();
@@ -322,44 +327,44 @@ void SSI::SSIMono::EvaluateSubproblems()
   EvaluateScaTra();
 
   // build system matrix and residual for scalar transport field on manifold
-  if (IsScaTraManifold()) EvaluateScaTraManifold();
+  if (IsScaTraManifold()) evaluate_sca_tra_manifold();
 
   // build all off diagonal matrices
-  EvaluateOffDiagContributions();
+  evaluate_off_diag_contributions();
 
   // apply mesh tying to sub problems
-  ApplyMeshtyingToSubProblems();
+  apply_meshtying_to_sub_problems();
 
   // apply mesh tying to manifold domains
-  if (IsScaTraManifold()) ApplyManifoldMeshtying();
+  if (IsScaTraManifold()) apply_manifold_meshtying();
 
   // apply contact contributions to sub problems
-  if (SSIInterfaceContact()) ApplyContactToSubProblems();
+  if (SSIInterfaceContact()) apply_contact_to_sub_problems();
 }
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::EvaluateOffDiagContributions()
+void SSI::SSIMono::evaluate_off_diag_contributions()
 {
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
-  scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      ssi_matrices_->ScaTraStructureMatrix());
+  scatrastructure_off_diagcoupling_->evaluate_off_diag_block_scatra_structure_domain(
+      ssi_matrices_->sca_tra_structure_matrix());
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
-  if (SSIInterfaceMeshtying())
-    scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        ssi_matrices_->ScaTraStructureMatrix());
+  if (ssi_interface_meshtying())
+    scatrastructure_off_diagcoupling_->evaluate_off_diag_block_scatra_structure_interface(
+        ssi_matrices_->sca_tra_structure_matrix());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
-  scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      ssi_matrices_->StructureScaTraMatrix());
+  scatrastructure_off_diagcoupling_->evaluate_off_diag_block_structure_scatra_domain(
+      ssi_matrices_->structure_sca_tra_matrix());
 
   if (IsScaTraManifold())
   {
     // evaluate off-diagonal manifold-structure block of global system matrix
-    scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
-        ssi_matrices_->ScaTraManifoldStructureMatrix());
+    scatrastructure_off_diagcoupling_->evaluate_off_diag_block_scatra_manifold_structure_domain(
+        ssi_matrices_->sca_tra_manifold_structure_matrix());
   }
 }
 
@@ -373,11 +378,11 @@ void SSI::SSIMono::BuildNullSpaces() const
     case CORE::LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
-      ScaTraField()->BuildBlockNullSpaces(
+      ScaTraField()->build_block_null_spaces(
           solver_, ssi_maps_->GetBlockPositions(Subproblem::scalar_transport).at(0));
       if (IsScaTraManifold())
       {
-        ScaTraManifold()->BuildBlockNullSpaces(
+        ScaTraManifold()->build_block_null_spaces(
             solver_, ssi_maps_->GetBlockPositions(Subproblem::manifold).at(0));
       }
       break;
@@ -396,7 +401,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparamsscatra);
+      ScaTraField()->Discretization()->compute_null_space_if_necessary(blocksmootherparamsscatra);
 
       if (IsScaTraManifold())
       {
@@ -409,7 +414,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
         // equip smoother for scatra matrix block with null space associated with all degrees of
         // freedom on scatra discretization
-        ScaTraManifold()->Discretization()->ComputeNullSpaceIfNecessary(
+        ScaTraManifold()->Discretization()->compute_null_space_if_necessary(
             blocksmootherparamsscatramanifold);
       }
 
@@ -436,31 +441,31 @@ void SSI::SSIMono::BuildNullSpaces() const
 
   // equip smoother for structural matrix block with null space associated with all degrees of
   // freedom on structural discretization
-  StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+  StructureField()->Discretization()->compute_null_space_if_necessary(blocksmootherparams);
 }  // SSI::SSIMono::BuildNullSpaces
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::CompleteSubproblemMatrices()
+void SSI::SSIMono::complete_subproblem_matrices()
 {
   ssi_matrices_->ScaTraMatrix()->Complete();
-  ssi_matrices_->CompleteScaTraStructureMatrix();
-  ssi_matrices_->CompleteStructureScaTraMatrix();
+  ssi_matrices_->complete_sca_tra_structure_matrix();
+  ssi_matrices_->complete_structure_sca_tra_matrix();
   ssi_matrices_->StructureMatrix()->Complete();
 
   if (IsScaTraManifold())
   {
     ssi_matrices_->ManifoldMatrix()->Complete();
-    ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
-    ssi_matrices_->CompleteScaTraScaTraManifoldMatrix();
-    ssi_matrices_->CompleteScaTraManifoldScaTraMatrix();
+    ssi_matrices_->complete_sca_tra_manifold_structure_matrix();
+    ssi_matrices_->complete_sca_tra_sca_tra_manifold_matrix();
+    ssi_matrices_->complete_sca_tra_manifold_sca_tra_matrix();
 
-    manifoldscatraflux_->CompleteMatrixManifoldScaTra();
-    manifoldscatraflux_->CompleteMatrixManifoldStructure();
-    manifoldscatraflux_->CompleteMatrixScaTraManifold();
-    manifoldscatraflux_->CompleteMatrixScaTraStructure();
-    manifoldscatraflux_->CompleteSystemMatrixManifold();
-    manifoldscatraflux_->CompleteSystemMatrixScaTra();
+    manifoldscatraflux_->complete_matrix_manifold_sca_tra();
+    manifoldscatraflux_->complete_matrix_manifold_structure();
+    manifoldscatraflux_->complete_matrix_sca_tra_manifold();
+    manifoldscatraflux_->complete_matrix_sca_tra_structure();
+    manifoldscatraflux_->complete_system_matrix_manifold();
+    manifoldscatraflux_->complete_system_matrix_sca_tra();
   }
 }
 
@@ -473,16 +478,16 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::SSIMono::SetupContactStrategy()
+void SSI::SSIMono::setup_contact_strategy()
 {
   // get the contact solution strategy
   auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      GLOBAL::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
+      GLOBAL::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
 
   if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
   {
     if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
-            GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
+            GLOBAL::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
       FOUR_C_THROW("ssi contact only with new structural time integration");
 
@@ -555,11 +560,11 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 void SSI::SSIMono::Output()
 {
   // output scalar transport field
-  ScaTraField()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->check_and_write_output_and_restart();
   if (IsScaTraManifold())
   {
     // domain output
-    ScaTraManifold()->CheckAndWriteOutputAndRestart();
+    ScaTraManifold()->check_and_write_output_and_restart();
     // coupling output
     if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
   }
@@ -567,7 +572,7 @@ void SSI::SSIMono::Output()
   // output structure field
   StructureField()->Output();
 
-  if (print_matlab_) PrintSystemMatrixRHSToMatLabFormat();
+  if (print_matlab_) print_system_matrix_rhs_to_mat_lab_format();
 }
 
 /*----------------------------------------------------------------------*
@@ -580,7 +585,7 @@ void SSI::SSIMono::ReadRestart(int restart)
   // do ssi contact specific tasks
   if (SSIInterfaceContact())
   {
-    SetupContactStrategy();
+    setup_contact_strategy();
     SetSSIContactStates(ScaTraField()->Phinp());
   }
 }
@@ -589,14 +594,14 @@ void SSI::SSIMono::ReadRestart(int restart)
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::PrepareTimeLoop()
 {
-  SetStructSolution(
-      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+      is_s2_i_kinetics_with_pseudo_contact());
 
   // calculate initial potential field if needed
-  if (DoCalculateInitialPotentialField()) CalcInitialPotentialField();
+  if (do_calculate_initial_potential_field()) calc_initial_potential_field();
 
   // calculate initial time derivatives
-  CalcInitialTimeDerivative();
+  calc_initial_time_derivative();
 
   ScaTraField()->PrepareTimeLoop();
   if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeLoop();
@@ -607,11 +612,11 @@ void SSI::SSIMono::PrepareTimeLoop()
 void SSI::SSIMono::PrepareTimeStep()
 {
   // update time and time step
-  IncrementTimeAndStep();
+  increment_time_and_step();
 
   // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(
-      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+      is_s2_i_kinetics_with_pseudo_contact());
 
   // prepare time step for scalar transport field
   ScaTraField()->PrepareTimeStep();
@@ -619,16 +624,16 @@ void SSI::SSIMono::PrepareTimeStep()
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to other fields
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
+  if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
 
   // pass scalar transport degrees of freedom to structural discretization
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(ScaTraField()->Phinp());
-  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
+  if (IsScaTraManifold()) set_scatra_manifold_solution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
-  EvaluateAndSetTemperatureField();
+  evaluate_and_set_temperature_field();
 
   // prepare time step for structural field
   StructureField()->PrepareTimeStep();
@@ -636,12 +641,12 @@ void SSI::SSIMono::PrepareTimeStep()
   // StructureField()->PrepareTimeStep() evaluates the DBC displaements on the master side. Now, the
   // master side displacements are copied to slave side to consider non zero DBC values in the first
   // Newton step on the slave side in case of interface mesh tying
-  if (SSIInterfaceMeshtying())
+  if (ssi_interface_meshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_structure_mesh_tying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
-      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+      auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // displacements
       coupling_map_extractor->InsertVector(
@@ -697,7 +702,7 @@ void SSI::SSIMono::Setup()
     FOUR_C_THROW("Block based equilibration only for block matrices");
 
   if (!CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
+          GLOBAL::Problem::Instance()->scalar_transport_dynamic_params(), "SKIPINITDER"))
   {
     FOUR_C_THROW(
         "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
@@ -714,15 +719,15 @@ void SSI::SSIMono::Setup()
     FOUR_C_THROW(
         "Must have incremental solution approach for monolithic scalar-structure interaction!");
 
-  if (SSIInterfaceMeshtying() and
-      MeshtyingStrategyS2I()->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+  if (ssi_interface_meshtying() and
+      meshtying_strategy_s2_i()->CouplingType() != INPAR::S2I::coupling_matching_nodes)
   {
     FOUR_C_THROW(
         "Monolithic scalar-structure interaction only implemented for scatra-scatra "
         "interface coupling with matching interface nodes!");
   }
 
-  if (SSIInterfaceContact() and !IsRestart()) SetupContactStrategy();
+  if (SSIInterfaceContact() and !IsRestart()) setup_contact_strategy();
 }
 
 /*--------------------------------------------------------------------------*
@@ -782,7 +787,7 @@ void SSI::SSIMono::SetupSystem()
     // initialize object, that performs evaluations of OD coupling
     scatrastructure_off_diagcoupling_ =
         Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(BlockMapStructure(),
-            SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(), MeshtyingStrategyS2I(),
+            SSIMaps()->StructureDofRowMap(), ssi_structure_mesh_tying(), meshtying_strategy_s2_i(),
             ScaTraField(), ScaTraManifold(), StructureField()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
@@ -791,17 +796,17 @@ void SSI::SSIMono::SetupSystem()
     // initialize object, that performs meshtying between manifold domains
     strategy_manifold_meshtying_ =
         SSI::BuildManifoldMeshTyingStrategy(ScaTraManifold()->Discretization(), ssi_maps_,
-            IsScaTraManifoldMeshtying(), ScaTraManifold()->MatrixType());
+            is_sca_tra_manifold_meshtying(), ScaTraManifold()->MatrixType());
   }
   else
   {
     scatrastructure_off_diagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-        BlockMapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
-        MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
+        BlockMapStructure(), SSIMaps()->StructureDofRowMap(), ssi_structure_mesh_tying(),
+        meshtying_strategy_s2_i(), ScaTraField(), StructureField()));
   }
   // instantiate appropriate equilibration class
   strategy_equilibration_ = CORE::LINALG::BuildEquilibration(
-      matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
+      matrixtype_, get_block_equilibration(), MapsSubProblems()->FullMap());
 
   // instantiate appropriate contact class
   strategy_contact_ =
@@ -809,7 +814,7 @@ void SSI::SSIMono::SetupSystem()
 
   // instantiate appropriate mesh tying class
   strategy_meshtying_ = SSI::BuildMeshtyingStrategy(
-      IsScaTraManifold(), ScaTraField()->MatrixType(), ssi_maps_, SSIStructureMeshTying());
+      IsScaTraManifold(), ScaTraField()->MatrixType(), ssi_maps_, ssi_structure_mesh_tying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
@@ -840,7 +845,7 @@ void SSI::SSIMono::SolveLinearSystem()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SSI mono: solve linear system");
   strategy_equilibration_->EquilibrateSystem(
-      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), BlockMapSystemMatrix());
+      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), block_map_system_matrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
@@ -858,7 +863,7 @@ void SSI::SSIMono::SolveLinearSystem()
   solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), ssi_vectors_->Increment(),
       ssi_vectors_->Residual(), solver_params);
 
-  strategy_equilibration_->UnequilibrateIncrement(ssi_vectors_->Increment());
+  strategy_equilibration_->unequilibrate_increment(ssi_vectors_->Increment());
 }
 
 /*--------------------------------------------------------------------------*
@@ -873,7 +878,7 @@ void SSI::SSIMono::NewtonLoop()
   while (true)
   {
     // update iteration counter
-    IncrementIterationCount();
+    increment_iteration_count();
 
     timer_->reset();
 
@@ -881,13 +886,13 @@ void SSI::SSIMono::NewtonLoop()
     const double time_before_evaluate = timer_->wallTime();
 
     // set solution from last Newton step to all fields
-    DistributeSolutionAllFields();
+    distribute_solution_all_fields();
 
     // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
 
     // complete the sub problem matrices
-    CompleteSubproblemMatrices();
+    complete_subproblem_matrices();
 
     // assemble global system of equations
     AssembleMatAndRHS();
@@ -922,7 +927,7 @@ void SSI::SSIMono::NewtonLoop()
     // applicable
     if (CORE::UTILS::IntegralValue<bool>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
-      ScaTraField()->OutputLinSolverStats(*solver_, dt_solve_, Step(), IterationCount(),
+      ScaTraField()->output_lin_solver_stats(*solver_, dt_solve_, Step(), IterationCount(),
           ssi_vectors_->Residual()->Map().NumGlobalElements());
 
     // update states for next Newton iteration
@@ -959,7 +964,7 @@ void SSI::SSIMono::Timeloop()
     // applicable
     if (CORE::UTILS::IntegralValue<int>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
-      ScaTraField()->OutputNonlinSolverStats(IterationCount(), dtnonlinsolve, Step(), Comm());
+      ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
     PrepareOutput();
 
@@ -969,7 +974,7 @@ void SSI::SSIMono::Timeloop()
     // output solution to screen and files
     Output();
   }
-  strategy_convcheck_->PrintNonConvergedSteps(Comm().MyPID());
+  strategy_convcheck_->print_non_converged_steps(Comm().MyPID());
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -991,7 +996,7 @@ void SSI::SSIMono::UpdateIterScaTra()
   // update scalar transport field
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
       ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)));
-  ScaTraField()->ComputeIntermediateValues();
+  ScaTraField()->compute_intermediate_values();
 
   if (IsScaTraManifold())
   {
@@ -999,13 +1004,13 @@ void SSI::SSIMono::UpdateIterScaTra()
         ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold));
 
     // reconstruct slave side solution from master side
-    if (IsScaTraManifoldMeshtying())
+    if (is_sca_tra_manifold_meshtying())
     {
       for (const auto& meshtying :
           strategy_manifold_meshtying_->SSIMeshTying()->MeshTyingHandlers())
       {
         auto coupling_adapter = meshtying->SlaveMasterCoupling();
-        auto multimap = meshtying->SlaveMasterExtractor();
+        auto multimap = meshtying->slave_master_extractor();
 
         auto master_dofs = multimap->ExtractVector(increment_manifold, 2);
         auto master_dofs_to_slave = coupling_adapter->MasterToSlave(master_dofs);
@@ -1014,7 +1019,7 @@ void SSI::SSIMono::UpdateIterScaTra()
     }
 
     ScaTraManifold()->UpdateIter(increment_manifold);
-    ScaTraManifold()->ComputeIntermediateValues();
+    ScaTraManifold()->compute_intermediate_values();
   }
 }
 
@@ -1027,12 +1032,12 @@ void SSI::SSIMono::UpdateIterStructure()
       ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
-  if (SSIInterfaceMeshtying())
+  if (ssi_interface_meshtying())
   {
-    for (const auto& meshtying : SSIStructureMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_structure_mesh_tying()->MeshTyingHandlers())
     {
       auto coupling_adapter = meshtying->SlaveMasterCoupling();
-      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+      auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // displacements
       coupling_map_extractor->InsertVector(
@@ -1050,12 +1055,12 @@ void SSI::SSIMono::UpdateIterStructure()
   }
 
   // update displacement of structure field
-  StructureField()->UpdateStateIncrementally(increment_structure);
+  StructureField()->update_state_incrementally(increment_structure);
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
+std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::get_block_equilibration()
 {
   std::vector<CORE::LINALG::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
@@ -1137,7 +1142,7 @@ void SSI::SSIMono::EvaluateScaTra()
 
   // copy the matrix to the corresponding ssi matrix and complete it such that additional
   // contributions like contact contributions can be added before assembly
-  ssi_matrices_->ScaTraMatrix()->Add(*ScaTraField()->SystemMatrixOperator(), false, 1.0, 1.0);
+  ssi_matrices_->ScaTraMatrix()->Add(*ScaTraField()->system_matrix_operator(), false, 1.0, 1.0);
 
   // copy the residual to the corresponding ssi vector to enable application of contact
   // contributions before assembly
@@ -1146,7 +1151,7 @@ void SSI::SSIMono::EvaluateScaTra()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::EvaluateScaTraManifold()
+void SSI::SSIMono::evaluate_sca_tra_manifold()
 {
   // evaluate single problem
   ScaTraManifold()->PrepareLinearSolve();
@@ -1170,17 +1175,17 @@ void SSI::SSIMono::PrepareOutput()
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
   {
-    DistributeSolutionAllFields();
-    manifoldscatraflux_->EvaluateScaTraManifoldInflow();
+    distribute_solution_all_fields();
+    manifoldscatraflux_->evaluate_sca_tra_manifold_inflow();
   }
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
+void SSI::SSIMono::distribute_solution_all_fields(const bool restore_velocity)
 {
   // has to be called before the call of 'SetStructSolution()' to have updated stress/strain states
-  if (IsS2IKineticsWithPseudoContact()) StructureField()->DetermineStressStrain();
+  if (is_s2_i_kinetics_with_pseudo_contact()) StructureField()->determine_stress_strain();
 
   // clear all states before redistributing the new states
   StructureField()->Discretization()->ClearState(true);
@@ -1198,15 +1203,15 @@ void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
     StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
   // distribute states to other fields
-  SetStructSolution(
-      StructureField()->Dispnp(), StructureField()->Velnp(), IsS2IKineticsWithPseudoContact());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp(),
+      is_s2_i_kinetics_with_pseudo_contact());
   SetScatraSolution(ScaTraField()->Phinp());
-  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
+  if (IsScaTraManifold()) set_scatra_manifold_solution(ScaTraManifold()->Phinp());
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::CalcInitialPotentialField()
+void SSI::SSIMono::calc_initial_potential_field()
 {
   const auto equpot = CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(
       GLOBAL::Problem::Instance()->ELCHControlParams(), "EQUPOT");
@@ -1230,8 +1235,8 @@ void SSI::SSIMono::CalcInitialPotentialField()
     FOUR_C_THROW("Cast to Elch time integrator faild. Scatra is not an Elch problem");
 
   // prepare specific time integrators
-  scatra_elch->PreCalcInitialPotentialField();
-  if (IsScaTraManifold()) manifold_elch->PreCalcInitialPotentialField();
+  scatra_elch->pre_calc_initial_potential_field();
+  if (IsScaTraManifold()) manifold_elch->pre_calc_initial_potential_field();
 
   auto scatra_elch_splitter = ScaTraField()->Splitter();
   auto manifold_elch_splitter = IsScaTraManifold() ? ScaTraManifold()->Splitter() : Teuchos::null;
@@ -1240,7 +1245,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
 
   while (true)
   {
-    IncrementIterationCount();
+    increment_iteration_count();
 
     timer_->reset();
 
@@ -1248,11 +1253,11 @@ void SSI::SSIMono::CalcInitialPotentialField()
     const double time_before_evaluate = timer_->wallTime();
 
     // prepare full SSI system
-    DistributeSolutionAllFields(true);
+    distribute_solution_all_fields(true);
     EvaluateSubproblems();
 
     // complete the sub problem matrices
-    CompleteSubproblemMatrices();
+    complete_subproblem_matrices();
 
     AssembleMatAndRHS();
     ApplyDBCToSystem();
@@ -1275,15 +1280,15 @@ void SSI::SSIMono::CalcInitialPotentialField()
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
 
     auto rhs = ssi_vectors_->Residual();
-    CORE::LINALG::ApplyDirichletToSystem(*ssi_matrices_->SystemMatrix(), *ssi_vectors_->Increment(),
-        *rhs, *dbc_zeros, *pseudo_dbc_map);
+    CORE::LINALG::apply_dirichlet_to_system(*ssi_matrices_->SystemMatrix(),
+        *ssi_vectors_->Increment(), *rhs, *dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
     // time needed for evaluating elements and assembling global system of equations
     double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
     Comm().MaxAll(&my_evaluation_time, &dt_eval_, 1);
 
-    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this)) break;
+    if (strategy_convcheck_->exit_newton_raphson_init_pot_calc(*this)) break;
 
     // solve for potential increments
     ssi_vectors_->ClearIncrement();
@@ -1305,28 +1310,28 @@ void SSI::SSIMono::CalcInitialPotentialField()
     if (IsScaTraManifold()) ScaTraManifold()->Phin()->Update(1.0, *ScaTraManifold()->Phinp(), 0.0);
 
     // update state vectors for intermediate time steps (only for generalized alpha)
-    ScaTraField()->ComputeIntermediateValues();
-    if (IsScaTraManifold()) ScaTraManifold()->ComputeIntermediateValues();
+    ScaTraField()->compute_intermediate_values();
+    if (IsScaTraManifold()) ScaTraManifold()->compute_intermediate_values();
   }
 
-  scatra_elch->PostCalcInitialPotentialField();
-  if (IsScaTraManifold()) manifold_elch->PostCalcInitialPotentialField();
+  scatra_elch->post_calc_initial_potential_field();
+  if (IsScaTraManifold()) manifold_elch->post_calc_initial_potential_field();
 
   StructureField()->WriteAccessVelnp()->Update(1.0, init_velocity, 0.0);
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::CalcInitialTimeDerivative()
+void SSI::SSIMono::calc_initial_time_derivative()
 {
   // store initial velocity to restore them afterwards
   auto init_velocity = *StructureField()->Velnp();
 
-  const bool is_elch = IsElchScaTraTimIntType();
+  const bool is_elch = is_elch_sca_tra_tim_int_type();
 
   // prepare specific time integrators
-  ScaTraField()->PreCalcInitialTimeDerivative();
-  if (IsScaTraManifold()) ScaTraManifold()->PreCalcInitialTimeDerivative();
+  ScaTraField()->pre_calc_initial_time_derivative();
+  if (IsScaTraManifold()) ScaTraManifold()->pre_calc_initial_time_derivative();
 
   auto scatra_elch_splitter = is_elch ? ScaTraField()->Splitter() : Teuchos::null;
   auto manifold_elch_splitter =
@@ -1351,11 +1356,11 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   if (IsScaTraManifold()) ScaTraManifold()->Hist()->PutScalar(0.0);
 
   // In a first step, we assemble the standard global system of equations (we need the residual)
-  DistributeSolutionAllFields(true);
+  distribute_solution_all_fields(true);
   EvaluateSubproblems();
 
   // complete the sub problem matrices
-  CompleteSubproblemMatrices();
+  complete_subproblem_matrices();
 
   AssembleMatAndRHS();
   ApplyDBCToSystem();
@@ -1384,7 +1389,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
                                      UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
                                : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
                                      UTILS::SSIMatrices::SetupBlockMatrix(
-                                         BlockMapSystemMatrix(), BlockMapSystemMatrix()));
+                                         block_map_system_matrix(), block_map_system_matrix()));
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
@@ -1423,9 +1428,9 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   // global residual vector.
 
   // Evaluate mass matrix and modify residual
-  ScaTraField()->EvaluateInitialTimeDerivative(massmatrix_scatra, rhs_scatra);
+  ScaTraField()->evaluate_initial_time_derivative(massmatrix_scatra, rhs_scatra);
   if (IsScaTraManifold())
-    ScaTraManifold()->EvaluateInitialTimeDerivative(massmatrix_manifold, rhs_manifold);
+    ScaTraManifold()->evaluate_initial_time_derivative(massmatrix_manifold, rhs_manifold);
 
   // assemble global mass matrix from
   switch (MatrixType())
@@ -1551,7 +1556,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
   // temporal derivative of transported scalars
   auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
-  CORE::LINALG::ApplyDirichletToSystem(
+  CORE::LINALG::apply_dirichlet_to_system(
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 
   // solve global system of equations for initial time derivative of state variables
@@ -1577,8 +1582,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   // reset solver
   solver_->Reset();
 
-  ScaTraField()->PostCalcInitialTimeDerivative();
-  if (IsScaTraManifold()) ScaTraManifold()->PostCalcInitialTimeDerivative();
+  ScaTraField()->post_calc_initial_time_derivative();
+  if (IsScaTraManifold()) ScaTraManifold()->post_calc_initial_time_derivative();
 
   StructureField()->WriteAccessVelnp()->Update(1.0, init_velocity, 0.0);
 }
@@ -1599,9 +1604,9 @@ Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTraManifold() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::block_map_sca_tra_manifold() const
 {
-  return ssi_maps_->BlockMapScaTraManifold();
+  return ssi_maps_->block_map_sca_tra_manifold();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1613,9 +1618,9 @@ Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStruct
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::block_map_system_matrix() const
 {
-  return ssi_maps_->BlockMapSystemMatrix();
+  return ssi_maps_->block_map_system_matrix();
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1633,7 +1638,7 @@ void SSI::SSIMono::PrintTimeStepInfo()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
+void SSI::SSIMono::print_system_matrix_rhs_to_mat_lab_format()
 {
   // print system matrix
   switch (matrixtype_)
@@ -1694,15 +1699,15 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
+void SSI::SSIMono::set_scatra_manifold_solution(Teuchos::RCP<const Epetra_Vector> phi)
 {
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =
       CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
 
-  for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
+  for (const auto& coup : manifoldscatraflux_->sca_tra_manifold_couplings())
   {
-    auto manifold_cond = coup->ManifoldMapExtractor()->ExtractCondVector(*phi);
+    auto manifold_cond = coup->manifold_map_extractor()->ExtractCondVector(*phi);
     auto manifold_on_scatra_cond = coup->CouplingAdapter()->SlaveToMaster(manifold_cond);
     coup->ScaTraMapExtractor()->InsertCondVector(manifold_on_scatra_cond, manifold_on_scatra);
   }

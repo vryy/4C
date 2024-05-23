@@ -56,7 +56,7 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
-    void CreateMergedDBCMapExtractor(
+    void create_merged_dbc_map_extractor(
         Teuchos::RCP<const CORE::LINALG::MapExtractor> embfluiddbcmaps);
 
     //! @name Accessors
@@ -78,7 +78,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>& Velnp() override { return xffluidvelnp_; }
     //@}
 
-    void CompleteCouplingMatricesAndRhs() override;
+    void complete_coupling_matrices_and_rhs() override;
 
     //@name Map of the merged system
     //@{

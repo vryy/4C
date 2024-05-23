@@ -36,7 +36,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8Type::Create(const std::vector<char>&
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == GetElementTypeString())
+  if (eletype == get_element_type_string())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8(id, owner));
     return ele;
@@ -52,7 +52,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8Type::Create(const int id, const 
 }
 
 
-void DRT::ELEMENTS::SoSh8Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoSh8Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -66,10 +66,10 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoSh8Type::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoSh8Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh8Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
+  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
 
   defs["HEX8"] = INPUT::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
@@ -78,14 +78,14 @@ void DRT::ELEMENTS::SoSh8Type::SetupElementDefinition(
                      .AddNamedString("EAS")
                      .AddNamedString("ANS")
                      .AddNamedString("THICKDIR")
-                     .AddOptionalNamedDoubleVector("RAD", 3)
-                     .AddOptionalNamedDoubleVector("AXI", 3)
-                     .AddOptionalNamedDoubleVector("CIR", 3)
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
-                     .AddOptionalNamedDouble("STRENGTH")
-                     .AddOptionalNamedDouble("GROWTHTRIG")
+                     .add_optional_named_double_vector("RAD", 3)
+                     .add_optional_named_double_vector("AXI", 3)
+                     .add_optional_named_double_vector("CIR", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
+                     .add_optional_named_double("STRENGTH")
+                     .add_optional_named_double("GROWTHTRIG")
                      .Build();
 }
 
@@ -106,7 +106,7 @@ DRT::ELEMENTS::SoSh8::SoSh8(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;

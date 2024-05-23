@@ -44,10 +44,10 @@ namespace PARTICLEINTERACTION
     virtual bool ComputeDensityBC() const = 0;
 
     //! set corrected density of interior particles
-    virtual void CorrectedDensityInterior(const double* denssum, double* dens) const;
+    virtual void corrected_density_interior(const double* denssum, double* dens) const;
 
     //! set corrected density of free surface particles
-    virtual void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    virtual void corrected_density_free_surface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const = 0;
   };
 
@@ -61,7 +61,7 @@ namespace PARTICLEINTERACTION
     bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void corrected_density_free_surface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 
@@ -75,7 +75,7 @@ namespace PARTICLEINTERACTION
     bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void corrected_density_free_surface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 
@@ -89,7 +89,7 @@ namespace PARTICLEINTERACTION
     bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void corrected_density_free_surface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 

@@ -103,11 +103,11 @@ namespace MAT
       //@}
 
       /// Answer if coefficients with respect to principal stretches are provided
-      bool HaveCoefficientsStretchesPrincipal() override { return true; }
+      bool have_coefficients_stretches_principal() override { return true; }
 
 
       /// Add coefficients with respect to principal stretches (or zeros)
-      void AddCoefficientsStretchesPrincipal(
+      void add_coefficients_stretches_principal(
           CORE::LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
           CORE::LINALG::Matrix<6, 1>&
               delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]

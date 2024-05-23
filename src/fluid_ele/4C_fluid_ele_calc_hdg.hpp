@@ -47,7 +47,7 @@ namespace DRT
       static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
-      int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int integrate_shape_function(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints) override
       {
@@ -55,8 +55,9 @@ namespace DRT
         return 1;
       }
 
-      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+      int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
@@ -111,23 +112,23 @@ namespace DRT
 
       /*! \brief Interpolates an HDG solution to the element nodes for output
        */
-      virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
+      virtual int interpolate_solution_to_nodes(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*! \brief Interpolates an HDG solution for homogeneous isotropic turbulence postprocessing
        */
-      virtual int InterpolateSolutionForHIT(DRT::ELEMENTS::Fluid* ele,
+      virtual int interpolate_solution_for_hit(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*! \brief Project force from equidistant points on interior node dof vector
        */
-      virtual int ProjectForceOnDofVecForHIT(DRT::ELEMENTS::Fluid* ele,
+      virtual int project_force_on_dof_vec_for_hit(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
 
       /*! \brief Project initial field for hit
        */
-      virtual int ProjectInitialFieldForHIT(DRT::ELEMENTS::Fluid* ele,
+      virtual int project_initial_field_for_hit(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
       /*!
@@ -158,7 +159,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
+      int compute_error_interface(DRT::ELEMENTS::Fluid* ele,         ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -192,7 +193,7 @@ namespace DRT
       }
 
 
-      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -219,7 +220,7 @@ namespace DRT
         return;
       }
 
-      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
+      void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,     ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -244,7 +245,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) override
       {
@@ -252,7 +253,7 @@ namespace DRT
         return;
       }
 
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -260,8 +261,9 @@ namespace DRT
       }
 
       /// Evaluate the pressure average inside the element from an analytical expression
-      virtual int EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec);
+      virtual int evaluate_pressure_average(DRT::ELEMENTS::Fluid* ele,
+          Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
+          CORE::LINALG::SerialDenseVector& elevec);
 
       /// Singleton access method
       static FluidEleCalcHDG<distype>* Instance(
@@ -274,7 +276,7 @@ namespace DRT
       void PrintLocalVariables(DRT::ELEMENTS::Fluid* ele);
 
       /// Print local correction term
-      void PrintLocalCorrection(
+      void print_local_correction(
           DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm);
 
       /// Print local body force
@@ -294,7 +296,7 @@ namespace DRT
             const CORE::FE::ShapeValues<distype>& shapeValues,
             CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
-        void ComputeInteriorResidual(const Teuchos::RCP<CORE::MAT::Material>& mat,
+        void compute_interior_residual(const Teuchos::RCP<CORE::MAT::Material>& mat,
             const std::vector<double>& valnp, const std::vector<double>& accel,
             const double avgPressure, const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce,
             const std::vector<double>& intebodyforce, CORE::LINALG::SerialDenseVector& eleVec,
@@ -305,7 +307,7 @@ namespace DRT
             const std::vector<double>& val, const std::vector<double>& traceval,
             CORE::LINALG::SerialDenseVector& eleVec);
 
-        void ComputeInteriorMatrices(
+        void compute_interior_matrices(
             const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear);
 
         void ComputeFaceMatrices(const int face, const Teuchos::RCP<CORE::MAT::Material>& mat,
@@ -314,7 +316,7 @@ namespace DRT
         // inverts the velocity gradient matrix and puts its contribution into the velocity matrix
         // (pre-factorization). Should only be done once per element even if multiple velocities are
         // used
-        void EliminateVelocityGradient(CORE::LINALG::SerialDenseMatrix& elemat);
+        void eliminate_velocity_gradient(CORE::LINALG::SerialDenseMatrix& elemat);
 
         // solves the local problem, including factorization of the matrix
         void SolveResidual();
@@ -325,7 +327,7 @@ namespace DRT
             CORE::LINALG::SerialDenseMatrix& elemat, CORE::LINALG::SerialDenseVector& elevec);
 
         // compute the correction term on the rhs for the weakly compressible benchmark
-        void ComputeCorrectionTerm(
+        void compute_correction_term(
             std::vector<double>& interiorecorrectionterm, int corrtermfuncnum);
 
         // compute the body force on the rhs for the weakly compressible benchmark
@@ -409,7 +411,7 @@ namespace DRT
           const std::vector<int>& lm, const bool updateLocally);
 
       // writes the updated solution vector to the secondary vector stored in the discretization
-      void UpdateSecondarySolution(const DRT::Element& ele, DRT::Discretization& discretization,
+      void update_secondary_solution(const DRT::Element& ele, DRT::Discretization& discretization,
           const CORE::LINALG::SerialDenseVector& updateG,
           const CORE::LINALG::SerialDenseVector& updateUp);
 

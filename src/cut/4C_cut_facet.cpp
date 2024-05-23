@@ -114,9 +114,9 @@ bool CORE::GEO::CUT::Facet::OnBoundaryCellSide() const { return parentside_->IsB
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::OnMarkedBackgroundSide() const
+bool CORE::GEO::CUT::Facet::on_marked_background_side() const
 {
-  return parentside_->IsMarkedBackgroundSide();
+  return parentside_->is_marked_background_side();
 }
 
 /*----------------------------------------------------------------------------*
@@ -334,7 +334,7 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
   // Also we assume that the levelset facet never contains a hole --> May be in future changes?
   CORE::GEO::CUT::FacetShape geoType;
   std::vector<int> concave_ids = KERNEL::CheckConvexity(corner_points_, geoType, false, false);
-  if (((geoType == CORE::GEO::CUT::Convex) or BelongsToLevelSetSide()) and (not HasHoles()))
+  if (((geoType == CORE::GEO::CUT::Convex) or belongs_to_level_set_side()) and (not HasHoles()))
   {
     std::vector<Point*> pts(points);
     // Find the middle point
@@ -367,7 +367,7 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
 
       // For LevelSet, make sure to orient a concave point on the 2nd entry of the triangulation.
       //  This assumption is necessary for Direct Divergence to work correctly.
-      if (!BelongsToLevelSetSide())
+      if (!belongs_to_level_set_side())
       {
         newtri[1] = pt1;
         newtri[2] = pt2;
@@ -417,7 +417,7 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
         holepts.push_back((*ifacet)->corner_points_);
       }
       CORE::GEO::CUT::TriangulateFacet tf(facetpts, holepts);
-      tf.EarClippingWithHoles(parentside_);
+      tf.ear_clipping_with_holes(parentside_);
       triangulation_ = tf.GetSplitCells();
     }
   }
@@ -730,7 +730,7 @@ bool CORE::GEO::CUT::Facet::Touches(Facet* f)
  * If this Facet has a CommonEdge with another facet, based on this edge the point ordering is
  *checked ager 08/15
  *----------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
+bool CORE::GEO::CUT::Facet::have_consistant_normal(Facet* f, bool& result)
 {
   // 1// create map which stores references to all points cycles, which should be matched!
   //(this function uses the fact, that ordering of the points in holes is opposite to the ordering
@@ -1307,7 +1307,7 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
 
     // TODO: do we really need call a Newton here?
     if (shadow and elem1->isShadow())
-      elem1->LocalCoordinatesQuad(glo, loc);
+      elem1->local_coordinates_quad(glo, loc);
     else
       elem1->LocalCoordinates(glo, loc);
 
@@ -1360,7 +1360,7 @@ void CORE::GEO::CUT::Facet::SplitFacet(const std::vector<Point*>& facetpts)
       holepts.push_back((*ifacet)->corner_points_);
     }
     CORE::GEO::CUT::TriangulateFacet tf(facetpts, holepts);
-    tf.EarClippingWithHoles(parentside_);
+    tf.ear_clipping_with_holes(parentside_);
     split_cells_ = tf.GetSplitCells();
   }
 }
@@ -1382,7 +1382,7 @@ bool CORE::GEO::CUT::Facet::isConvex()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::BelongsToLevelSetSide() { return parentside_->IsLevelSetSide(); }
+bool CORE::GEO::CUT::Facet::belongs_to_level_set_side() { return parentside_->IsLevelSetSide(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

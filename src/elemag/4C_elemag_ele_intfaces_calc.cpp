@@ -87,7 +87,7 @@ DRT::ELEMENTS::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
+void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
     DRT::ELEMENTS::ElemagIntFace* intface,                  // internal face element
     std::vector<int>& nds_master,                           // nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                            // nodal dofset w.r.t. slave element
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::ElemagIntFaceImpl<distype>::AssembleInternalFacesUsingNeighb
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagIntFaceImpl<distype>::EvaluateInternalFaces(
+int DRT::ELEMENTS::ElemagIntFaceImpl<distype>::evaluate_internal_faces(
     DRT::ELEMENTS::ElemagIntFace* intface,   // internal face element
     Teuchos::ParameterList& params,          // parameter list
     DRT::Discretization& discretization,     // discretization

@@ -186,12 +186,12 @@ void NOX::NLN::LinearSystem::reset(Teuchos::ParameterList& p)
   outputSolveDetails_ = p.get<bool>("Output Solver Details", true);
 
   // set the pre/post-operator
-  resetPrePostOperator(p);
+  reset_pre_post_operator(p);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::resetPrePostOperator(Teuchos::ParameterList& p)
+void NOX::NLN::LinearSystem::reset_pre_post_operator(Teuchos::ParameterList& p)
 {
   if (prePostOperatorPtr_.is_null())
     prePostOperatorPtr_ = Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator(p));
@@ -256,7 +256,7 @@ bool NOX::NLN::LinearSystem::applyJacobianTranspose(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
+void NOX::NLN::LinearSystem::set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
     CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const
 {
   linear_problem.SetOperator(jac.EpetraOperator().get());
@@ -266,7 +266,7 @@ void NOX::NLN::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProblem& line
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::CompleteSolutionAfterSolve(
+void NOX::NLN::LinearSystem::complete_solution_after_solve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
   /* nothing to do in the default case */
@@ -284,7 +284,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
    * possibility to change the linear system. */
   ::NOX::Epetra::Vector& nonConstInput = const_cast<::NOX::Epetra::Vector&>(input);
 
-  prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput, Jacobian(), *this);
+  prePostOperatorPtr_->run_pre_apply_jacobian_inverse(nonConstInput, Jacobian(), *this);
 
   double startTime = timer_.wallTime();
 
@@ -299,7 +299,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
    * This is necessary for the linear solver.
    *     CORE::LINALG::SparseMatrix ---> Epetra_CrsMatrix */
   Epetra_LinearProblem linProblem;
-  SetLinearProblemForSolve(
+  set_linear_problem_for_solve(
       linProblem, Jacobian(), result.getEpetraVector(), nonConstInput.getEpetraVector());
 
   // ************* Begin linear system scaling *****************
@@ -340,12 +340,12 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   if (!Teuchos::is_null(scaling_)) scaling_->unscaleLinearSystem(linProblem);
   // ************* End linear system unscaling ***************
 
-  CompleteSolutionAfterSolve(linProblem, result.getEpetraVector());
+  complete_solution_after_solve(linProblem, result.getEpetraVector());
 
   double endTime = timer_.wallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
-  prePostOperatorPtr_->runPostApplyJacobianInverse(result, nonConstInput, Jacobian(), *this);
+  prePostOperatorPtr_->run_post_apply_jacobian_inverse(result, nonConstInput, Jacobian(), *this);
 
   return (linsol_status == 0);
 }
@@ -364,11 +364,11 @@ bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
-  prePostOperatorPtr_->runPreComputeJacobian(Jacobian(), x.getEpetraVector(), *this);
+  prePostOperatorPtr_->run_pre_compute_jacobian(Jacobian(), x.getEpetraVector(), *this);
 
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), Jacobian());
 
-  prePostOperatorPtr_->runPostComputeJacobian(Jacobian(), x.getEpetraVector(), *this);
+  prePostOperatorPtr_->run_post_compute_jacobian(Jacobian(), x.getEpetraVector(), *this);
   return success;
 }
 
@@ -377,32 +377,32 @@ bool NOX::NLN::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 bool NOX::NLN::LinearSystem::computeFandJacobian(
     const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
-  prePostOperatorPtr_->runPreComputeFandJacobian(
+  prePostOperatorPtr_->run_pre_compute_fand_jacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
 
   const bool success =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(jacInterfacePtr_, true)
           ->computeFandJacobian(x.getEpetraVector(), rhs.getEpetraVector(), Jacobian());
 
-  prePostOperatorPtr_->runPostComputeFandJacobian(
+  prePostOperatorPtr_->run_post_compute_fand_jacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
   return success;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::computeCorrectionSystem(const enum CorrectionType type,
+bool NOX::NLN::LinearSystem::compute_correction_system(const enum CorrectionType type,
     const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
-  prePostOperatorPtr_->runPreComputeFandJacobian(
+  prePostOperatorPtr_->run_pre_compute_fand_jacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
 
   const bool success =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(jacInterfacePtr_, true)
-          ->computeCorrectionSystem(
+          ->compute_correction_system(
               type, grp, x.getEpetraVector(), rhs.getEpetraVector(), Jacobian());
 
-  prePostOperatorPtr_->runPostComputeFandJacobian(
+  prePostOperatorPtr_->run_post_compute_fand_jacobian(
       rhs.getEpetraVector(), Jacobian(), x.getEpetraVector(), *this);
 
   return success;
@@ -422,26 +422,26 @@ void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::adjustPseudoTimeStep(double& delta, const double& stepSize,
+void NOX::NLN::LinearSystem::adjust_pseudo_time_step(double& delta, const double& stepSize,
     const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
 {
-  const Epetra_Vector& scalingDiagOp = ptcsolver.getScalingDiagOperator();
+  const Epetra_Vector& scalingDiagOp = ptcsolver.get_scaling_diag_operator();
   // ---------------------------------------------------------------------
   // first undo the modification of the jacobian
   // ---------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(scalingDiagOp));
-  v->Scale(ptcsolver.getInversePseudoTimeStep());
+  v->Scale(ptcsolver.get_inverse_pseudo_time_step());
   Teuchos::RCP<CORE::LINALG::SparseMatrix> jac =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(JacobianPtr());
   if (jac.is_null())
-    throwError("adjustPseudoTimeStep()", "Cast to CORE::LINALG::SparseMatrix failed!");
+    throwError("adjust_pseudo_time_step()", "Cast to CORE::LINALG::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
   Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(jac->RowMap(), false);
   jac->ExtractDiagonalCopy(*diag);
   diag->Update(-1.0, *v, 1.0);
   // Finally undo the changes
-  jac->ReplaceDiagonalValues(*diag);
+  jac->replace_diagonal_values(*diag);
 
   // ---------------------------------------------------------------------
   // calculate the least squares approximated corrected pseudo time step
@@ -502,7 +502,7 @@ void NOX::NLN::LinearSystem::throwError(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const ::NOX::Epetra::Interface::Required>
-NOX::NLN::LinearSystem::getRequiredInterface() const
+NOX::NLN::LinearSystem::get_required_interface() const
 {
   return reqInterfacePtr_;
 }
@@ -510,7 +510,7 @@ NOX::NLN::LinearSystem::getRequiredInterface() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian>
-NOX::NLN::LinearSystem::getJacobianInterface() const
+NOX::NLN::LinearSystem::get_jacobian_interface() const
 {
   return jacInterfacePtr_;
 }
@@ -539,7 +539,7 @@ Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const enum NOX::NLN::LinSystem::OperatorType& NOX::NLN::LinearSystem::getJacobianOperatorType()
+const enum NOX::NLN::LinSystem::OperatorType& NOX::NLN::LinearSystem::get_jacobian_operator_type()
     const
 {
   return jacType_;
@@ -555,17 +555,17 @@ void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(
   if (linalgSprOp.is_null())
     throwError("setJacobianOperatorForSolve", "dynamic_cast to LINALG_SparseOperator failed!");
 
-  SetJacobianOperatorForSolve(linalgSprOp);
+  set_jacobian_operator_for_solve(linalgSprOp);
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
+void NOX::NLN::LinearSystem::set_jacobian_operator_for_solve(
     const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp)
 {
   if (jacType_ != NOX::NLN::AUX::GetOperatorType(*solveJacOp))
-    throwError("SetJacobianOperatorForSolve", "wrong operator type!");
+    throwError("set_jacobian_operator_for_solve", "wrong operator type!");
 
   jac_ptr_ = Teuchos::rcp_const_cast<CORE::LINALG::SparseOperator>(solveJacOp);
   return;
@@ -686,7 +686,8 @@ const Epetra_Map& NOX::NLN::LinearSystem::getJacobianRangeMap(unsigned rbid, uns
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::LinearSystem::getDiagonalOfJacobian(unsigned diag_bid) const
+Teuchos::RCP<Epetra_Vector> NOX::NLN::LinearSystem::get_diagonal_of_jacobian(
+    unsigned diag_bid) const
 {
   const CORE::LINALG::SparseMatrix& diag_block = getJacobianBlock(diag_bid, diag_bid);
   const Epetra_Map& rmap = diag_block.RangeMap();
@@ -700,24 +701,24 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::LinearSystem::getDiagonalOfJacobian(unsign
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::replaceDiagonalOfJacobian(
+void NOX::NLN::LinearSystem::replace_diagonal_of_jacobian(
     const Epetra_Vector& new_diag, unsigned diag_bid)
 {
   const CORE::LINALG::SparseMatrix& diag_block = getJacobianBlock(diag_bid, diag_bid);
   CORE::LINALG::SparseMatrix& mod_diag_block = const_cast<CORE::LINALG::SparseMatrix&>(diag_block);
 
-  CATCH_EPETRA_ERROR(mod_diag_block.ReplaceDiagonalValues(new_diag));
+  CATCH_EPETRA_ERROR(mod_diag_block.replace_diagonal_values(new_diag));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
+double NOX::NLN::LinearSystem::compute_serial_condition_number_of_jacobian(
     const LinSystem::ConditionNumber condnum_type) const
 {
   if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
-  convertJacobianToDenseMatrix(dense_jac);
+  convert_jacobian_to_dense_matrix(dense_jac);
 
   Teuchos::LAPACK<int, double> lapack;
 
@@ -768,22 +769,22 @@ double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::computeSerialEigenvaluesOfJacobian(
+void NOX::NLN::LinearSystem::compute_serial_eigenvalues_of_jacobian(
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
   if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
-  convertJacobianToDenseMatrix(dense_jac);
+  convert_jacobian_to_dense_matrix(dense_jac);
 
   throwIfZeroRow(dense_jac);
-  solveNonSymmEigenValueProblem(dense_jac, reigenvalues, ieigenvalues);
+  solve_non_symm_eigen_value_problem(dense_jac, reigenvalues, ieigenvalues);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::prepareBlockDenseMatrix(
+void NOX::NLN::LinearSystem::prepare_block_dense_matrix(
     const CORE::LINALG::BlockSparseMatrixBase& block_sparse,
     CORE::LINALG::SerialDenseMatrix& block_dense) const
 {
@@ -811,10 +812,10 @@ void NOX::NLN::LinearSystem::throwIfZeroRow(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::convertJacobianToDenseMatrix(
+void NOX::NLN::LinearSystem::convert_jacobian_to_dense_matrix(
     CORE::LINALG::SerialDenseMatrix& dense_jac) const
 {
-  switch (getJacobianOperatorType())
+  switch (get_jacobian_operator_type())
   {
     case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
     {
@@ -826,14 +827,14 @@ void NOX::NLN::LinearSystem::convertJacobianToDenseMatrix(
       const Epetra_Map& full_rangemap = block_sparse.FullRangeMap();
       const Epetra_Map& full_domainmap = block_sparse.FullDomainMap();
 
-      prepareBlockDenseMatrix(block_sparse, dense_jac);
+      prepare_block_dense_matrix(block_sparse, dense_jac);
 
       for (int r = 0; r < block_sparse.Rows(); ++r)
       {
         for (int c = 0; c < block_sparse.Cols(); ++c)
         {
           const CORE::LINALG::SparseMatrix& block = block_sparse.Matrix(r, c);
-          convertSparseToDenseMatrix(block, dense_jac, full_rangemap, full_domainmap);
+          convert_sparse_to_dense_matrix(block, dense_jac, full_rangemap, full_domainmap);
         }
       }
 
@@ -844,7 +845,7 @@ void NOX::NLN::LinearSystem::convertJacobianToDenseMatrix(
       const CORE::LINALG::SparseMatrix& jac =
           dynamic_cast<const CORE::LINALG::SparseMatrix&>(Jacobian());
 
-      convertSparseToDenseMatrix(jac, dense_jac, jac.RangeMap(), jac.DomainMap());
+      convert_sparse_to_dense_matrix(jac, dense_jac, jac.RangeMap(), jac.DomainMap());
 
       break;
     }
@@ -858,9 +859,9 @@ void NOX::NLN::LinearSystem::convertJacobianToDenseMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::SparseMatrix& sparse,
-    CORE::LINALG::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
-    const Epetra_Map& full_domainmap) const
+void NOX::NLN::LinearSystem::convert_sparse_to_dense_matrix(
+    const CORE::LINALG::SparseMatrix& sparse, CORE::LINALG::SerialDenseMatrix& dense,
+    const Epetra_Map& full_rangemap, const Epetra_Map& full_domainmap) const
 {
   if (not sparse.Filled()) FOUR_C_THROW("The sparse matrix must be filled!");
   Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.EpetraMatrix();
@@ -909,8 +910,8 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::solveNonSymmEigenValueProblem(CORE::LINALG::SerialDenseMatrix& mat,
-    CORE::LINALG::SerialDenseVector& reigenvalues,
+void NOX::NLN::LinearSystem::solve_non_symm_eigen_value_problem(
+    CORE::LINALG::SerialDenseMatrix& mat, CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
   // start debugging

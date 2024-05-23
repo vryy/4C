@@ -147,7 +147,7 @@ namespace MAT
        *
        * \param anisotropy Reference to the anisotropy manager
        */
-      void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
 
       /// Setup of summand
       void Setup(int numgp, INPUT::LineDefinition* linedef) override;
@@ -162,7 +162,7 @@ namespace MAT
       void PostSetup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
-      void AddStressAnisoPrincipal(
+      void add_stress_aniso_principal(
           const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
           CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress

@@ -50,7 +50,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri3Type::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneTri3Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneTri3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -64,7 +64,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneTri3Type::ComputeNullSpac
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::MembraneTri3Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneTri3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
@@ -75,12 +75,12 @@ void DRT::ELEMENTS::MembraneTri3Type::SetupElementDefinition(
                      .AddNamedString("KINEM")
                      .AddNamedDouble("THICK")
                      .AddNamedString("STRESS_STRAIN")
-                     .AddOptionalNamedDoubleVector("RAD", 3)
-                     .AddOptionalNamedDoubleVector("AXI", 3)
-                     .AddOptionalNamedDoubleVector("CIR", 3)
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .add_optional_named_double_vector("RAD", 3)
+                     .add_optional_named_double_vector("AXI", 3)
+                     .add_optional_named_double_vector("CIR", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
                      .Build();
 }
 
@@ -118,7 +118,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri6Type::Create(const int id,
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneTri6Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneTri6Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -132,7 +132,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneTri6Type::ComputeNullSpac
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::MembraneTri6Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneTri6Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
@@ -143,12 +143,12 @@ void DRT::ELEMENTS::MembraneTri6Type::SetupElementDefinition(
                      .AddNamedString("KINEM")
                      .AddNamedDouble("THICK")
                      .AddNamedString("STRESS_STRAIN")
-                     .AddOptionalNamedDoubleVector("RAD", 3)
-                     .AddOptionalNamedDoubleVector("AXI", 3)
-                     .AddOptionalNamedDoubleVector("CIR", 3)
-                     .AddOptionalNamedDoubleVector("FIBER1", 3)
-                     .AddOptionalNamedDoubleVector("FIBER2", 3)
-                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .add_optional_named_double_vector("RAD", 3)
+                     .add_optional_named_double_vector("AXI", 3)
+                     .add_optional_named_double_vector("CIR", 3)
+                     .add_optional_named_double_vector("FIBER1", 3)
+                     .add_optional_named_double_vector("FIBER2", 3)
+                     .add_optional_named_double_vector("FIBER3", 3)
                      .Build();
 }
 
@@ -186,7 +186,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneQuad4Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneQuad4Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -200,7 +200,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneQuad4Type::ComputeNullSpa
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::MembraneQuad4Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneQuad4Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
@@ -211,12 +211,12 @@ void DRT::ELEMENTS::MembraneQuad4Type::SetupElementDefinition(
                       .AddNamedString("KINEM")
                       .AddNamedDouble("THICK")
                       .AddNamedString("STRESS_STRAIN")
-                      .AddOptionalNamedDoubleVector("RAD", 3)
-                      .AddOptionalNamedDoubleVector("AXI", 3)
-                      .AddOptionalNamedDoubleVector("CIR", 3)
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
-                      .AddOptionalNamedDoubleVector("FIBER2", 3)
-                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .add_optional_named_double_vector("RAD", 3)
+                      .add_optional_named_double_vector("AXI", 3)
+                      .add_optional_named_double_vector("CIR", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER2", 3)
+                      .add_optional_named_double_vector("FIBER3", 3)
                       .Build();
 }
 
@@ -254,7 +254,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(const int id
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneQuad9Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneQuad9Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -268,7 +268,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneQuad9Type::ComputeNullSpa
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::MembraneQuad9Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneQuad9Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];
@@ -279,12 +279,12 @@ void DRT::ELEMENTS::MembraneQuad9Type::SetupElementDefinition(
                       .AddNamedString("KINEM")
                       .AddNamedDouble("THICK")
                       .AddNamedString("STRESS_STRAIN")
-                      .AddOptionalNamedDoubleVector("RAD", 3)
-                      .AddOptionalNamedDoubleVector("AXI", 3)
-                      .AddOptionalNamedDoubleVector("CIR", 3)
-                      .AddOptionalNamedDoubleVector("FIBER1", 3)
-                      .AddOptionalNamedDoubleVector("FIBER2", 3)
-                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .add_optional_named_double_vector("RAD", 3)
+                      .add_optional_named_double_vector("AXI", 3)
+                      .add_optional_named_double_vector("CIR", 3)
+                      .add_optional_named_double_vector("FIBER1", 3)
+                      .add_optional_named_double_vector("FIBER2", 3)
+                      .add_optional_named_double_vector("FIBER3", 3)
                       .Build();
 }
 

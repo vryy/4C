@@ -22,7 +22,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
-  ParentElement()->SetParamsInterfacePtr(params);
+  ParentElement()->set_params_interface_ptr(params);
 
   // we need the displacement at the previous step
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   // element geometry update - currently only material configuration
   const int numnode = NumNode();
   CORE::LINALG::SerialDenseMatrix x(numnode, num_dim_);
-  MaterialConfiguration(x);
+  material_configuration(x);
 
   // integration parameters
   const CORE::FE::IntegrationPoints1D intpoints(CORE::FE::GaussRule1D::line_2point);

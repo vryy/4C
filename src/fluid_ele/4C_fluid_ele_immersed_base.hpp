@@ -45,7 +45,7 @@ namespace DRT
       /*!
       \brief Setup the definition line for this element
       */
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override = 0;
 
@@ -112,16 +112,16 @@ namespace DRT
       surface lies in this element.
 
       */
-      virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed)
+      virtual void set_boundary_is_immersed(int IsBoundaryImmersed)
       {
         FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
       \brief Each element, which is either Immersed or BoundaryImmersed is also set
-      HasProjectedDirichlet
+      has_projected_dirichlet
       */
-      virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues)
+      virtual void set_has_projected_dirichlet(int has_projected_dirichletvalues)
       {
         FOUR_C_THROW("not implemented in base class");
       };
@@ -129,7 +129,8 @@ namespace DRT
       /*!
       \brief set if divergence needs to be projected to an integration point
       */
-      virtual void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence)
+      virtual void set_int_point_has_projected_divergence(
+          int gp, int intpoint_has_projected_divergence)
       {
         FOUR_C_THROW("not implemented in base class");
       };
@@ -137,7 +138,8 @@ namespace DRT
       /*!
       \brief store the projected divergence
       */
-      virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence)
+      virtual void store_projected_int_point_divergence(
+          int gp, double projected_intpoint_divergence)
       {
         FOUR_C_THROW("not implemented in base class");
       };
@@ -163,7 +165,7 @@ namespace DRT
       /*!
       \brief returns true if element needs to get projected Dirichlet values
       */
-      virtual int HasProjectedDirichlet()
+      virtual int has_projected_dirichlet()
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234;
@@ -173,7 +175,7 @@ namespace DRT
       \brief returns true if element needs to get projected divergence at integration point
 
       */
-      virtual int IntPointHasProjectedDivergence(int gp)
+      virtual int int_point_has_projected_divergence(int gp)
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234;
@@ -182,7 +184,7 @@ namespace DRT
       /*!
       \brief returns projected divergence at integration point
       */
-      virtual double ProjectedIntPointDivergence(int gp)
+      virtual double projected_int_point_divergence(int gp)
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234.0;
@@ -191,7 +193,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing gps with projected divergence
       */
-      virtual Teuchos::RCP<std::vector<int>> GetRCPIntPointHasProjectedDivergence()
+      virtual Teuchos::RCP<std::vector<int>> get_rcp_int_point_has_projected_divergence()
       {
         FOUR_C_THROW("not implemented in base class");
         return Teuchos::null;
@@ -200,7 +202,7 @@ namespace DRT
       /*!
       \brief returns rcp to vector containing projected divergence values
       */
-      virtual Teuchos::RCP<std::vector<double>> GetRCPProjectedIntPointDivergence()
+      virtual Teuchos::RCP<std::vector<double>> get_rcp_projected_int_point_divergence()
       {
         FOUR_C_THROW("not implemented in base class");
         return Teuchos::null;

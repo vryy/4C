@@ -96,15 +96,15 @@ namespace ADAPTER
 
   <h3>Dirichlet-Neumann coupled FSI</h3>
 
-  A good starting displacement can be guessed with PredictInterfaceDispnp().
+  A good starting displacement can be guessed with predict_interface_dispnp().
 
   Dirichlet-Neumann coupled FSI will need to Solve() the nonlinear
   structural problem for each time step after the fluid forces have been
-  applied (ApplyInterfaceForces()). Solve() will be called many times for each
+  applied (apply_interface_forces()). Solve() will be called many times for each
   time step until the interface equilibrium is reached. The structural
   algorithm has to preserve its state until Update() is called.
 
-  After each Solve() you get the interface forces by ExtractInterfaceDispnp().
+  After each Solve() you get the interface forces by extract_interface_dispnp().
 
   A Dirichlet-Neumann FSI with steepest descent relaxation or matrix free
   Newton Krylov will want to solve the structural problem linearly without
@@ -209,7 +209,7 @@ namespace ADAPTER
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) = 0;
 
     /// return contact/meshtying bridge
-    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
+    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
     virtual bool HaveModel(INPAR::STR::ModelType model)
@@ -234,10 +234,10 @@ namespace ADAPTER
     virtual bool HaveSpringDashpot() = 0;
 
     /// get constraint manager defined in the structure
-    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() = 0;
+    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() = 0;
 
     /// get SpringDashpot manager defined in the structure
-    virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() = 0;
+    virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::StcScale GetSTCAlgo() = 0;
@@ -349,7 +349,7 @@ namespace ADAPTER
     virtual void Evaluate() = 0;
 
     //! Calculate stresses and strains
-    virtual void DetermineStressStrain() = 0;
+    virtual void determine_stress_strain() = 0;
 
     /// update at time step end
     void Update() override = 0;
@@ -359,11 +359,11 @@ namespace ADAPTER
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
+    virtual void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
 
     /// Update iteration
     /// Add residual increment to pressures stored in Cardiovascular0D manager
-    virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) = 0;
+    virtual void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
@@ -445,7 +445,7 @@ namespace ADAPTER
 
     \note Can only be called after a valid structural solve.
     */
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
@@ -491,7 +491,7 @@ namespace ADAPTER
     /// solution instead of evaluating the initial guess (as the predictor)
     /// does.
     //! will be obsolete after switch to new structural timint.
-    virtual void PreparePartitionStep() = 0;
+    virtual void prepare_partition_step() = 0;
 
     //@}
 
@@ -516,13 +516,13 @@ namespace ADAPTER
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
-    virtual void WriteGmshStrucOutputStep() = 0;
+    virtual void write_gmsh_struc_output_step() = 0;
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
 
     /// \brief Returns true if the final state has been written
-    [[nodiscard]] virtual bool HasFinalStateBeenWritten() const = 0;
+    [[nodiscard]] virtual bool has_final_state_been_written() const = 0;
   };
 
 
@@ -580,7 +580,7 @@ namespace ADAPTER
      *
      * \sa CreateLinearSolver()
      */
-    Teuchos::RCP<CORE::LINALG::Solver> CreateContactMeshtyingSolver(
+    Teuchos::RCP<CORE::LINALG::Solver> create_contact_meshtying_solver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
@@ -599,7 +599,7 @@ namespace ADAPTER
      *
      * \return Linear solver object for pure structural problems
      *
-     * \sa CreateContactMeshtyingSolver()
+     * \sa create_contact_meshtying_solver()
      */
     Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);

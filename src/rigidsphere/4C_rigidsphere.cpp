@@ -65,7 +65,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const int id, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RigidsphereType::NodalBlockInformation(
+void DRT::ELEMENTS::RigidsphereType::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -85,7 +85,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::RigidsphereType::ComputeNullSpace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition(
+void DRT::ELEMENTS::RigidsphereType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["RIGIDSPHERE"];
@@ -231,7 +231,7 @@ int DRT::ELEMENTS::RigidsphereType::Initialize(DRT::Discretization& dis) { retur
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Rigidsphere::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(

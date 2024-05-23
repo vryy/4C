@@ -36,7 +36,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreE
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
   }
@@ -56,7 +56,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
-    this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
+    this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
@@ -90,7 +90,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   // Initialize scalar variables.
   double beam_jacobian;
   double penalty_parameter =
-      this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+      this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.
@@ -200,7 +200,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::GetT
   {
     GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
     GEOMETRYPAIR::ElementData<solid, double> dummy;
-    this->GetCouplingReferencePosition(beam_coupling_ref, dummy);
+    this->get_coupling_reference_position(beam_coupling_ref, dummy);
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad);
   }
   else

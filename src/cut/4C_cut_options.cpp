@@ -34,8 +34,8 @@ void CORE::GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cu
       cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
   direct_divergence_refplane_ = CORE::UTILS::IntegralValue<INPAR::CUT::CutDirectDivergenceRefplane>(
       cutparams, "DIRECT_DIVERGENCE_REFPLANE");
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
   split_cutsides_ = CORE::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
   do_selfcut_ = CORE::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
   selfcut_do_meshcorrection_ =
@@ -52,8 +52,8 @@ void CORE::GEO::CUT::Options::Init_for_Cuttests()
   general_position_dist_floattype_ = INPAR::CUT::floattype_cln;
   general_position_pos_floattype_ = INPAR::CUT::floattype_cln;
   direct_divergence_refplane_ = INPAR::CUT::DirDiv_refplane_all;
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
-  CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
+  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
   split_cutsides_ = true;
   selfcut_do_meshcorrection_ = false;
   bc_cubaturedegree_ = 20;

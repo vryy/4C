@@ -100,7 +100,7 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
   if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

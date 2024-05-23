@@ -40,7 +40,7 @@ namespace NOX
       /*! Set printing parameters
        *
        *  Note: The Yes/No tuples are translated to booleans! */
-      void SetPrintingParameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm);
+      void set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm);
 
       /*! \brief Returns the type of operator that is passed in.
        *
@@ -110,7 +110,7 @@ namespace NOX
       /** \brief Do a recursive search for a <T> status test class containing
        *  the given quantity. */
       template <class T>
-      ::NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
+      ::NOX::StatusTest::Generic* get_outer_status_test_with_quantity(
           ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return its status.

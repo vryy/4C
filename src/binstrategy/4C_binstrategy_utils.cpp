@@ -36,12 +36,12 @@ namespace BINSTRATEGY
         bool initelements, bool doboundaryconditions)
     {
       // make sure that all procs are either filled or unfilled
-      // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
+      // oldmap in export_column_elements must be Reset() on every proc or nowhere
       discret->CheckFilledGlobally();
 
       // adapt layout to extended ghosting in discret
       // first export the elements according to the processor local element column maps
-      discret->ExportColumnElements(*extendedelecolmap);
+      discret->export_column_elements(*extendedelecolmap);
 
       // get the node ids of the elements that are to be ghosted
       // and create a proper node column map for their export
@@ -67,7 +67,7 @@ namespace BINSTRATEGY
       // print distribution after standard ghosting
       if (discret->Comm().MyPID() == 0)
         std::cout << "parallel distribution with extended ghosting" << std::endl;
-      CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret);
+      CORE::REBALANCE::UTILS::print_parallel_distribution(*discret);
 #endif
 
       return;

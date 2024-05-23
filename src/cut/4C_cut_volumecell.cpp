@@ -205,7 +205,7 @@ bool CORE::GEO::CUT::VolumeCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::CreateTet4IntegrationCells(Mesh& mesh,
+void CORE::GEO::CUT::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
     const std::vector<std::vector<Point*>>& tets,
     const std::map<Facet*, std::vector<Point*>>& sides_xyz)
 {
@@ -269,7 +269,7 @@ void CORE::GEO::CUT::VolumeCell::GetBoundaryCells(
 
 /// get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
 /// note that the boundary cells of subsides with the same side id are stored now in one key
-void CORE::GEO::CUT::VolumeCell::GetBoundaryCellsToBeIntegrated(
+void CORE::GEO::CUT::VolumeCell::get_boundary_cells_to_be_integrated(
     std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells)
 {
   for (plain_boundarycell_set::iterator i = bcells_.begin(); i != bcells_.end(); ++i)
@@ -287,7 +287,7 @@ void CORE::GEO::CUT::VolumeCell::GetBoundaryCellsToBeIntegrated(
 
       //@ Christoph: Here one could add marked sides for the cut-mesh!
     }
-    else if (f->OnMarkedBackgroundSide())
+    else if (f->on_marked_background_side())
     {
       // Loop over all marked actions and extract bc's for corresponding coupling object.
       for (std::map<CORE::GEO::CUT::MarkedActions, int>::iterator markit =
@@ -368,7 +368,7 @@ void CORE::GEO::CUT::VolumeCell::Print(std::ostream& stream) const
   stream << "\n==========================================\n";
   stream << "=== VolumeCell ( address: " << std::setw(10) << this << " ) ===\n";
   stream << "# VolumeCell: "
-         << " pos: " << Point::PointPosition2String(position_) << " "
+         << " pos: " << Point::point_position2_string(position_) << " "
          << "#facets: " << facets_.size() << " "
          << "#intcells: " << integrationcells_.size() << " "
          << "#bcells: " << bcells_.size() << "\n";
@@ -887,7 +887,7 @@ void CORE::GEO::CUT::VolumeCell::DumpGmshSolid(std::ofstream& file, Mesh& mesh)
         Moment fitting for visualization a separate file with "Mom_volcell" prefix is generated
         for every volumecell as the gausspoint distribution can be clearly seen
 *---------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsMomFit(
+void CORE::GEO::CUT::VolumeCell::dump_gmsh_gauss_points_mom_fit(
     const std::vector<std::vector<double>>& gauspts)
 {
   static int sideno = 0;
@@ -916,7 +916,7 @@ void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsMomFit(
         write the boundaries of volumecell and the positions of Gauss points for visualization
         a separate file when using tessellation
 *---------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
+void CORE::GEO::CUT::VolumeCell::dump_gmsh_gauss_points_tessellation()
 {
   static int sideno = 0;
   sideno++;
@@ -977,7 +977,7 @@ void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
  * Perform integration of a pre-defined function over this vc using gauss points          Sudhakar
  *01/13 generated from tessellation
  *----------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
+void CORE::GEO::CUT::VolumeCell::integrate_specific_functions_tessellation()
 {
   Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc =
       Teuchos::rcp(new CORE::FE::GaussPointsComposite(0));
@@ -1075,11 +1075,11 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GaussPointsFitti
 /*--------------------------------------------------------------------------------------------*
                  Generate boundary cells for the cut facets of the volumecell
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
+void CORE::GEO::CUT::VolumeCell::generate_boundary_cells(Mesh& mesh,
     const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, int BaseNos,
     INPAR::CUT::BCellGaussPts BCellgausstype)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::generate_boundary_cells" );
 
 
   // TODO: we have to restructure the creation of boundary cells.
@@ -1095,9 +1095,9 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
       continue;
 
     // For LevelSetSides generate Boundary Cells in own way.
-    if (fac->BelongsToLevelSetSide())
+    if (fac->belongs_to_level_set_side())
     {
-      GenerateBoundaryCellsLevelSetSide(mesh, posi, elem, fac, BaseNos, BCellgausstype);
+      generate_boundary_cells_level_set_side(mesh, posi, elem, fac, BaseNos, BCellgausstype);
       continue;
     }
 
@@ -1129,7 +1129,7 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
     }
 
     // For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
-    if (fac->OnMarkedBackgroundSide() and posi == CORE::GEO::CUT::Point::outside) rever = !rever;
+    if (fac->on_marked_background_side() and posi == CORE::GEO::CUT::Point::outside) rever = !rever;
 
     if (rever)  // normal from facet is in wrong direction
     {
@@ -1182,8 +1182,8 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
                                                          // solving moment fitting equations
       {
         BoundarycellIntegration bcell_inte(elem, fac, posi, BaseNos);
-        bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
-        bcellgaus_pts_ = bcell_inte.getBcellGaussPointLocation();
+        bcellweights_ = bcell_inte.generate_boundary_cell_integration_rule();
+        bcellgaus_pts_ = bcell_inte.get_bcell_gauss_point_location();
 
         // the boundarycell integration is carriedout in the local coord of the element
         // to project the coordinates of Gauss points, shape functions of element can be used
@@ -1243,11 +1243,11 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
                COMMENT:  Might need to rethink BC-creation, as it generates a lot of tris now.
                          Could probably be enough with quads some times?
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
+void CORE::GEO::CUT::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
     const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, Facet* fac, int BaseNos,
     INPAR::CUT::BCellGaussPts BCellgausstype)
 {
-  if (not fac->BelongsToLevelSetSide())
+  if (not fac->belongs_to_level_set_side())
     FOUR_C_THROW("Why would you call BC-creation for LS-Side without a LS side?");
 
   if (BCellgausstype == INPAR::CUT::BCellGaussPts_MomentFitting)
@@ -1439,10 +1439,10 @@ bool CORE::GEO::CUT::VolumeCell::ToReverse(const CORE::GEO::CUT::Point::PointPos
    When DirectDivergence method is used for gauss point generation, for every gauss point
    on the facet, an internal gauss rule is to be generated to find the modified integrand
 *-------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GenerateInternalGaussRule(
+Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::generate_internal_gauss_rule(
     Teuchos::RCP<CORE::FE::GaussPoints>& gp)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::generate_internal_gauss_rule" );
 
 
   CORE::FE::GaussIntegration grule(gp);
@@ -1493,14 +1493,14 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GenerateInternal
 /*------------------------------------------------------------------------------------------*
    Moment fitting equations are solved at each volume cell to construct integration rules
 *-------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::MomentFitGaussWeights(
+void CORE::GEO::CUT::VolumeCell::moment_fit_gauss_weights(
     Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype)
 {
 #ifdef LOCAL
   // position is used to decide whether the ordering of points are in clockwise or not
   if (Position() == Point::undecided)
   {
-    if (!SetPositionCutSideBased())
+    if (!set_position_cut_side_based())
     {
       FOUR_C_THROW("undefined position for the volumecell");
     }
@@ -1513,13 +1513,13 @@ void CORE::GEO::CUT::VolumeCell::MomentFitGaussWeights(
   int BaseNos = 84;  // number of base functions to be used in the integration
   VolumeIntegration vc_inte(this, elem, Position(), BaseNos);
 
-  weights_ = vc_inte.compute_weights();        // obtain the integration weight at all points
-  gausPts_ = vc_inte.getGaussPointLocation();  // get the coordinates of all the Gauss points
+  weights_ = vc_inte.compute_weights();           // obtain the integration weight at all points
+  gausPts_ = vc_inte.get_gauss_point_location();  // get the coordinates of all the Gauss points
 
   gp_ = GaussPointsFitting();  // convert the weight and the location to Gauss rule
 
   // generate boundary cells -- when using tessellation this is automatically done
-  GenerateBoundaryCells(mesh, Position(), elem, BaseNos, BCellgausstype);
+  generate_boundary_cells(mesh, Position(), elem, BaseNos, BCellgausstype);
 
   // std::cout<<"MOMENT FITTING ::: Number of points = "<<weights_.Length()<<"\n";
 #else
@@ -1529,7 +1529,7 @@ void CORE::GEO::CUT::VolumeCell::MomentFitGaussWeights(
 
   std::cout << "MomFitting not functional in Global coordinates. NOTHING IS DONE!" << std::endl;
 
-  //  DirectDivergenceGaussRule( elem, mesh, include_inner, BCellgausstype );
+  //  direct_divergence_gauss_rule( elem, mesh, include_inner, BCellgausstype );
 #endif
 }
 
@@ -1538,21 +1538,22 @@ void CORE::GEO::CUT::VolumeCell::MomentFitGaussWeights(
 03/12 The gauss integration rules are generated by applying divergence theorem The reference facet
 is identified which will be used to find the modified integral in fluid integration
 *----------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
+void CORE::GEO::CUT::VolumeCell::direct_divergence_gauss_rule(
     Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype)
 {
   if (elem->Shape() != CORE::FE::CellType::hex8 && elem->Shape() != CORE::FE::CellType::hex20)
-    FOUR_C_THROW("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
+    FOUR_C_THROW("direct_divergence_gauss_rule: Just hex8 and hex20 avaiable yet in DD!");
 
   if (BCellgausstype != INPAR::CUT::BCellGaussPts_Tessellation)
     FOUR_C_THROW(
-        "DirectDivergenceGaussRule: just INPAR::CUT::BCellGaussPts_Tessellation supported at the "
+        "direct_divergence_gauss_rule: just INPAR::CUT::BCellGaussPts_Tessellation supported at "
+        "the "
         "moment!");
 
   // position is used to decide whether the ordering of points are in clockwise or not
   if (Position() == Point::undecided)
   {
-    if (!SetPositionCutSideBased())
+    if (!set_position_cut_side_based())
     {
       FOUR_C_THROW("undefined position for the volumecell");
     }
@@ -1577,7 +1578,8 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
 
   Teuchos::RCP<CORE::FE::GaussPoints> gp =
       dd.VCIntegrationRule(ref_eqn_plane_);  // compute main gauss points
-  gp_ = GenerateInternalGaussRule(gp);  // compute internal gauss points for every main gauss point
+  gp_ =
+      generate_internal_gauss_rule(gp);  // compute internal gauss points for every main gauss point
 
   // compute volume of this cell
   // also check whether generated gauss rule predicts volume accurately
@@ -1603,18 +1605,18 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     // we have generated the integration rule in global coordinates of the element
     // Now we map this rule to local coodinates since the weak form evaluation is done on local
     // coord
-    ProjectGaussPointsToLocalCoodinates();
+    project_gauss_points_to_local_coodinates();
 #endif
   }
   // generate boundary cells -- when using tessellation this is automatically done
-  GenerateBoundaryCells(mesh, Position(), elem, 0, BCellgausstype);
+  generate_boundary_cells(mesh, Position(), elem, 0, BCellgausstype);
 }
 
 /*----------------------------------------------------------------------------------------------------*
  * Project the integration rule generated on global coordinate system of sudhakar 05/15 the
  *background element to its local coordinates
  *----------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
+void CORE::GEO::CUT::VolumeCell::project_gauss_points_to_local_coodinates()
 {
   if (element_->Shape() != CORE::FE::CellType::hex8)
     FOUR_C_THROW(
@@ -1631,18 +1633,16 @@ void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
       {
         CORE::LINALG::Matrix<3, 20> xyze;
         element_->CoordinatesQuad(xyze.A());
-        gp_ =
-            CORE::FE::GaussIntegration::ProjectGaussPointsGlobalToLocal<CORE::FE::CellType::hex20>(
-                xyze, intpoints, false);
+        gp_ = CORE::FE::GaussIntegration::project_gauss_points_global_to_local<
+            CORE::FE::CellType::hex20>(xyze, intpoints, false);
         break;
       }
       case CORE::FE::CellType::hex27:
       {
         CORE::LINALG::Matrix<3, 27> xyze;
         element_->CoordinatesQuad(xyze.A());
-        gp_ =
-            CORE::FE::GaussIntegration::ProjectGaussPointsGlobalToLocal<CORE::FE::CellType::hex27>(
-                xyze, intpoints, false);
+        gp_ = CORE::FE::GaussIntegration::project_gauss_points_global_to_local<
+            CORE::FE::CellType::hex27>(xyze, intpoints, false);
         break;
       }
       default:
@@ -1658,8 +1658,9 @@ void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
   {
     CORE::LINALG::Matrix<3, 8> xyze;
     element_->Coordinates(xyze.A());
-    gp_ = CORE::FE::GaussIntegration::ProjectGaussPointsGlobalToLocal<CORE::FE::CellType::hex8>(
-        xyze, intpoints, false);
+    gp_ =
+        CORE::FE::GaussIntegration::project_gauss_points_global_to_local<CORE::FE::CellType::hex8>(
+            xyze, intpoints, false);
   }
 }
 
@@ -1698,7 +1699,7 @@ const std::set<int>& CORE::GEO::CUT::VolumeCell::VolumeCellPointIds()
 /*-------------------------------------------------------------------------------------*
 | Find Position of the Volumecell based on the orientation of the cut_sides   ager 08/15
 *--------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
+bool CORE::GEO::CUT::VolumeCell::set_position_cut_side_based()
 {
   if (Position() != Point::undecided)
     FOUR_C_THROW(
@@ -1787,7 +1788,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
              ++on)
         {
           bool consistant_normal = false;
-          if (ff->HaveConsistantNormal(on->first, consistant_normal))
+          if (ff->have_consistant_normal(on->first, consistant_normal))
           {
             if (consistant_normal)
               outsidenormal[ff] = outsidenormal[on->first];
@@ -1806,7 +1807,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
   if (iter == 1000 && !done)
   {
     FOUR_C_THROW(
-        "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "
+        "set_position_cut_side_based failed: too many iterations (theoretically a facet with many "
         "points could also lead to this)!");
     return false;
   }
@@ -1832,20 +1833,22 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
       {
         if (posi != Point::undecided && posi != Point::inside)
           FOUR_C_THROW(
-              "SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside (Are all "
+              "set_position_cut_side_based: posi != Point::undecided && posi != Point::inside (Are "
+              "all "
               "you Cut Sides oriented correct?)");
-        // FOUR_C_THROW("SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside
-        // (Are all you Cut Sides oriented correct?)");
+        // FOUR_C_THROW("set_position_cut_side_based: posi != Point::undecided && posi !=
+        // Point::inside (Are all you Cut Sides oriented correct?)");
         posi = Point::inside;
       }
       else
       {
         if (posi != Point::undecided && posi != Point::outside)
           FOUR_C_THROW(
-              "SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside (Are "
+              "set_position_cut_side_based: posi != Point::undecided && posi != Point::outside "
+              "(Are "
               "all you Cut Sides oriented correct?)");
-        // FOUR_C_THROW("SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside
-        // (Are all you Cut Sides oriented correct?)");
+        // FOUR_C_THROW("set_position_cut_side_based: posi != Point::undecided && posi !=
+        // Point::outside (Are all you Cut Sides oriented correct?)");
         posi = Point::outside;
       }
     }

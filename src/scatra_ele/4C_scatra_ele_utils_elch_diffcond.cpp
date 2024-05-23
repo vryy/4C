@@ -164,26 +164,28 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
 
   // concentration depending diffusion coefficient
   diffmanager->SetIsotropicDiff(
-      matnewman->ComputeDiffusionCoefficient(concentration, temperature), 0);
+      matnewman->compute_diffusion_coefficient(concentration, temperature), 0);
   // derivation of concentration depending diffusion coefficient wrt concentration
-  diffmanager->SetConcDerivIsoDiffCoef(
-      matnewman->ComputeConcentrationDerivativeOfDiffusionCoefficient(concentration, temperature),
+  diffmanager->set_conc_deriv_iso_diff_coef(
+      matnewman->compute_concentration_derivative_of_diffusion_coefficient(
+          concentration, temperature),
       0, 0);
 
   // derivation of concentration depending diffusion coefficient wrt temperature
-  diffmanager->SetTempDerivIsoDiffCoef(
-      matnewman->ComputeTemperatureDerivativeOfDiffusionCoefficient(concentration, temperature), 0,
-      0);
+  diffmanager->set_temp_deriv_iso_diff_coef(
+      matnewman->compute_temperature_derivative_of_diffusion_coefficient(
+          concentration, temperature),
+      0, 0);
 
   // concentration depending transference number
-  diffmanager->SetTransNum(matnewman->ComputeTransferenceNumber(concentration), 0);
+  diffmanager->SetTransNum(matnewman->compute_transference_number(concentration), 0);
   // derivation of concentration depending transference number wrt all ionic species
-  diffmanager->SetDerivTransNum(matnewman->ComputeFirstDerivTrans(concentration), 0, 0);
+  diffmanager->SetDerivTransNum(matnewman->compute_first_deriv_trans(concentration), 0, 0);
 
   // thermodynamic factor of electrolyte solution
   diffmanager->SetThermFac(matnewman->ComputeThermFac(concentration));
   // derivative of conductivity with respect to concentrations
-  diffmanager->SetDerivThermFac(matnewman->ComputeFirstDerivThermFac(concentration), 0);
+  diffmanager->SetDerivThermFac(matnewman->compute_first_deriv_therm_fac(concentration), 0);
 
   // conductivity and first derivative can maximally depend on one concentration
   // since time curve is used as input routine
@@ -192,11 +194,11 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
 
   // derivative of electronic conductivity w.r.t. concentration
   diffmanager->SetConcDerivCond(
-      matnewman->ComputeConcentrationDerivativeOfConductivity(concentration, temperature), 0);
+      matnewman->compute_concentration_derivative_of_conductivity(concentration, temperature), 0);
 
   // derivative of electronic conductivity w.r.t. temperature
   diffmanager->SetTempDerivCond(
-      matnewman->ComputeTemperatureDerivativeOfConductivity(concentration, temperature), 0);
+      matnewman->compute_temperature_derivative_of_conductivity(concentration, temperature), 0);
 }
 
 

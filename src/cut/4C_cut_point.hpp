@@ -56,7 +56,7 @@ namespace CORE::GEO
       };
 
       /// translate PointPosition enumerator to string
-      static inline std::string PointPosition2String(const enum PointPosition& pos)
+      static inline std::string point_position2_string(const enum PointPosition& pos)
       {
         switch (pos)
         {
@@ -155,7 +155,7 @@ namespace CORE::GEO
        *  TODO: Look into this
        *  winter 02/2017
        */
-      bool HasAssociatedBoundaryCellFacet();
+      bool has_associated_boundary_cell_facet();
 
       /*! \brief Get the coordinates of this point */
       virtual void Coordinates(double* x) const = 0;
@@ -259,10 +259,10 @@ namespace CORE::GEO
       Edge* CommonCutEdge(Side* side);
 
       /// erase all cut pairs containing this side
-      void ErasedContainingCutPairs(Side* cutside);
+      void erased_containing_cut_pairs(Side* cutside);
 
       /// erased all cut pairs containing this edge
-      void ErasedContainingCutPairs(Edge* cutsideedge);
+      void erased_containing_cut_pairs(Edge* cutsideedge);
       /// Erase the cutside from this point because it is deleted in the selfcut
       void EraseCutSide(Side* cutside) { cut_sides_.erase(cutside); }
 
@@ -283,7 +283,7 @@ namespace CORE::GEO
 
       /// Removes information that this point was created by cut from everywhere (e.g. sides,
       /// edges, element)
-      void RemoveConnectivityInfo();
+      void remove_connectivity_info();
 
       /// Carefully replace this points by another at the stage before/during creation of cut_lines
       void Replace(Point* p);
@@ -302,7 +302,7 @@ namespace CORE::GEO
 
       /// Dump all information of how this point was created, edges x sides intersections. Useful to
       /// debug reasons crashing
-      void DumpConnectivityInfo();
+      void dump_connectivity_info();
 
       /// Get the Merged Points
       std::vector<Point*> GetMergedPoints() { return merged_points_; };

@@ -50,7 +50,7 @@ namespace FS3I
     virtual void PrepareTimeStep();
 
     //! check convergence of monolithic ScaTra problem
-    virtual bool ScatraConvergenceCheck(int itnum);
+    virtual bool scatra_convergence_check(int itnum);
   };
 }  // namespace FS3I
 

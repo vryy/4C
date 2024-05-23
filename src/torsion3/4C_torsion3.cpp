@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create(const int id, con
 }
 
 
-void DRT::ELEMENTS::Torsion3Type::NodalBlockInformation(
+void DRT::ELEMENTS::Torsion3Type::nodal_block_information(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -61,7 +61,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Torsion3Type::ComputeNullSpace(
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(
+void DRT::ELEMENTS::Torsion3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["TORSION3"];
@@ -153,7 +153,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Torsion3::Lines()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::Torsion3::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(

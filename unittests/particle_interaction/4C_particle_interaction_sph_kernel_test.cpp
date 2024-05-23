@@ -63,17 +63,17 @@ namespace
     // Setup() and thus implicitly tested by all following unittests
   };
 
-  TEST_F(SPHKernelCubicSplineTest, KernelSpaceDimension)
+  TEST_F(SPHKernelCubicSplineTest, kernel_space_dimension)
   {
     int dim = 0;
 
-    kernel_1D_->KernelSpaceDimension(dim);
+    kernel_1D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 1);
 
-    kernel_2D_->KernelSpaceDimension(dim);
+    kernel_2D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 2);
 
-    kernel_3D_->KernelSpaceDimension(dim);
+    kernel_3D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 3);
   }
 
@@ -87,7 +87,7 @@ namespace
     EXPECT_NEAR(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
   }
 
-  TEST_F(SPHKernelCubicSplineTest, NormalizationConstant)
+  TEST_F(SPHKernelCubicSplineTest, normalization_constant)
   {
     const double h = 0.4;
     const double inv_h = 1.0 / h;
@@ -97,9 +97,9 @@ namespace
         10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
     const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
 
-    EXPECT_NEAR(kernel_1D_->NormalizationConstant(inv_h), normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->NormalizationConstant(inv_h), normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->NormalizationConstant(inv_h), normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->normalization_constant(inv_h), normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, W0)
@@ -331,17 +331,17 @@ namespace
     // Setup() and thus implicitly tested by all following unittests
   };
 
-  TEST_F(SPHKernelQuinticSplineTest, KernelSpaceDimension)
+  TEST_F(SPHKernelQuinticSplineTest, kernel_space_dimension)
   {
     int dim = 0;
 
-    kernel_1D_->KernelSpaceDimension(dim);
+    kernel_1D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 1);
 
-    kernel_2D_->KernelSpaceDimension(dim);
+    kernel_2D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 2);
 
-    kernel_3D_->KernelSpaceDimension(dim);
+    kernel_3D_->kernel_space_dimension(dim);
     EXPECT_EQ(dim, 3);
   }
 
@@ -355,7 +355,7 @@ namespace
     EXPECT_NEAR(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
   }
 
-  TEST_F(SPHKernelQuinticSplineTest, NormalizationConstant)
+  TEST_F(SPHKernelQuinticSplineTest, normalization_constant)
   {
     const double h = 0.3;
     const double inv_h = 1.0 / h;
@@ -366,9 +366,9 @@ namespace
     const double normalizationconstant_3D =
         3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
 
-    EXPECT_NEAR(kernel_1D_->NormalizationConstant(inv_h), normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->NormalizationConstant(inv_h), normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->NormalizationConstant(inv_h), normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->normalization_constant(inv_h), normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, W0)

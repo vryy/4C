@@ -46,7 +46,7 @@ namespace CONTACT
     double BuildAveragedNormalAtSlaveNode(
         std::vector<ElementNormal>& adj_ele_normals, MORTAR::Node& slavenode);
 
-    double UnitSlaveElementNormal(const MORTAR::Element& sele,
+    double unit_slave_element_normal(const MORTAR::Element& sele,
         const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal);
 
     void Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
@@ -101,7 +101,7 @@ namespace CONTACT
      *                             master element
      *
      *  \author hiermeier \date 03/17 */
-    bool FindFeasibleMasterElements(MORTAR::Element& sele,
+    bool find_feasible_master_elements(MORTAR::Element& sele,
         const std::vector<MORTAR::Element*>& meles, bool boundary_ele, Integrator& wrapper,
         UniqueProjInfoPair& projInfo);
 
@@ -119,11 +119,11 @@ namespace CONTACT
      *                             master element
      *
      *  \author hiermeier \date 03/17 */
-    inline bool FindFeasibleMasterElements(MORTAR::Element& sele,
+    inline bool find_feasible_master_elements(MORTAR::Element& sele,
         const std::vector<MORTAR::Element*>& meles, Integrator& wrapper,
         UniqueProjInfoPair& projInfo)
     {
-      return FindFeasibleMasterElements(sele, meles, true, wrapper, projInfo);
+      return find_feasible_master_elements(sele, meles, true, wrapper, projInfo);
     }
 
     /** \brief Is the given GP inside the bounds of the element of the given type?

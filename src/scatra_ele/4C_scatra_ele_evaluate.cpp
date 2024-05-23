@@ -48,7 +48,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
 
     case SCATRA::Action::set_nodeset_parameter:
     {
-      ScaTraEleParameterStd::Instance(dis.Name())->SetNodesetParameters(p);
+      ScaTraEleParameterStd::Instance(dis.Name())->set_nodeset_parameters(p);
 
       break;
     }

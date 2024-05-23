@@ -182,7 +182,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   //---------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current
   //---------------------------------------------------------------------
-  // see function CalcMatAndRhsOutsideScalarLoop()
+  // see function calc_mat_and_rhs_outside_scalar_loop()
 
   //-----------------------------------------------------------------------
   // 4) element right hand side vector (neg. residual of nonlinear problem)
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
       VarManager()->Hist(k));
 
   // add RHS and history contribution
-  my::CalcRHSHistAndSource(erhs, k, fac, rhsint);
+  my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // convective term
   my::CalcRHSConv(erhs, k, rhsfac * DiffManager()->GetPhasePoro(0));
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
   // conservative part of convective term, needed for deforming bodies, i.e., for scalar-structure
   // interaction
   if (my::scatrapara_->IsConservative())
-    myelectrode::CalcRhsConservativePartOfConvectiveTerm(
+    myelectrode::calc_rhs_conservative_part_of_convective_term(
         erhs, k, rhsfac * DiffManager()->GetPhasePoro(0), velocity_divergence);
 
   // electrical conduction term (transport equation)
@@ -251,9 +251,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
-    const double timefacfac, const double rhsfac)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::calc_mat_and_rhs_outside_scalar_loop(CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const double fac, const double timefacfac,
+    const double rhsfac)
 {
   //----------------------------------------------------------------
   // 3)   governing equation for the electric potential field
@@ -281,24 +282,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhsOu
     {
       //  i)  ohmic overpotential (implemented after the scalar loop)
       //      (w_k, - kappa nabla phi)
-      myelectrode::CalcMatPotEquDiviOhm(emat, timefacfac, VarManager()->InvF(),
+      myelectrode::calc_mat_pot_equ_divi_ohm(emat, timefacfac, VarManager()->InvF(),
           VarManager()->GradPot(), DiffManager()->GetPhasePoroTort(0));
 
       //
-      myelectrode::CalcRhsPotEquDiviOhm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(),
-          DiffManager()->GetPhasePoroTort(0));
+      myelectrode::calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, VarManager()->InvF(),
+          VarManager()->GradPot(), DiffManager()->GetPhasePoroTort(0));
 
       //  ii)  concentration overpotential
       //      (w_k, RT/F kappa (thermfactor) f(t_k) nabla ln c_k)
       for (int k = 0; k < my::numscal_; ++k)
       {
         //
-        CalcMatPotEquDiviConc(emat, k, timefacfac, VarManager()->RTFFC(), VarManager()->RTF(),
+        calc_mat_pot_equ_divi_conc(emat, k, timefacfac, VarManager()->RTFFC(), VarManager()->RTF(),
             VarManager()->InvF(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
             VarManager()->GradPhi(k), VarManager()->ConIntInv(k));
 
         //
-        CalcRhsPotEquDiviConc(erhs, k, rhsfac, VarManager()->RTF(), DiffManager()->InvFVal(),
+        calc_rhs_pot_equ_divi_conc(erhs, k, rhsfac, VarManager()->RTF(), DiffManager()->InvFVal(),
             VarManager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
             VarManager()->GradPhi(k), VarManager()->ConIntInv(k));
       }
@@ -390,7 +391,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);  // compute once, reuse below!
+      my::get_laplacian_weak_form(laplawf, ui, vi);  // compute once, reuse below!
 
       // linearization of conduction term depending on the potential
       //
@@ -401,7 +402,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
           DiffManager()->GetCond() * invfval * laplawf;
 
       double laplawfrhs_gradpot(0.0);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
       for (int iscal = 0; iscal < my::numscal_; ++iscal)
       {
@@ -445,7 +446,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // Material Newman is only valid for binary electrolyte utilizing the ENC:
       // -> the equations are solved only for one species (k=0)
@@ -453,7 +454,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
       // -> all derivations of the transport parameters wrt this species
       //
       // additional safety check in the beginning of this material: k != 0
-      // original safety check by method CheckElchElementParameter() in
+      // original safety check by method check_elch_element_parameter() in
       // scatra_ele_calc_service_elch.cpp
 
       // linearization of conduction term depending on the concentration
@@ -470,7 +471,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
       // only for one species
       // otherwise you would need a second loop over the all scalars
       double laplawfrhs_gradc(0.0);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradc, gradphi, vi);
+      my::get_laplacian_weak_form_rhs(laplawfrhs_gradc, gradphi, vi);
 
       // Linearization wrt ln c
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
@@ -562,7 +563,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff
     {
       // compute once, reuse below!
       double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       for (int iscal = 0; iscal < my::numscal_; ++iscal)
       {
@@ -586,7 +587,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff
         for (int iscal2 = 0; iscal2 < my::numscal_; ++iscal2)
         {
           double laplawfrhs_gradphi = 0.0;
-          my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi[iscal2], vi);
+          my::get_laplacian_weak_form_rhs(laplawfrhs_gradphi, gradphi[iscal2], vi);
 
           term_vi += DiffManager()->GetValence(iscal2) * DiffManager()->GetIsotropicDiff(iscal2) *
                      laplawfrhs_gradphi;
@@ -604,7 +605,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff
 /*---------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDiviConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_pot_equ_divi_conc(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double rtffc,
     const double rtf, const double invf, const double newman_const_a, const double newman_const_b,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double conintinv)
@@ -614,7 +615,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDi
     for (unsigned ui = 0; ui < nen_; ++ui)
     {
       double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf, ui, vi);
+      my::get_laplacian_weak_form(laplawf, ui, vi);
 
       if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
       {
@@ -632,7 +633,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDi
         // only for one species
         // otherwise you would need a second loop over the all scalars
         double laplawfrhs_gradphi(0.0);
-        my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi, vi);
+        my::get_laplacian_weak_form_rhs(laplawfrhs_gradphi, gradphi, vi);
 
         // Linearization wrt ln c
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
@@ -875,7 +876,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondOhm(
   {
     // diffusive term
     double laplawfrhs_gradpot = 0.0;
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
     erhs[vi * my::numdofpernode_ + k] -= rhsfac * DiffManager()->GetPhasePoroTort(0) *
                                          DiffManager()->GetTransNum(k) * DiffManager()->GetCond() *
                                          invfval * laplawfrhs_gradpot;
@@ -896,7 +897,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc
     {
       // diffusive term second
       double laplawfrhs_gradphi(0.0);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi, vi);  // compute once, reuse below!
+      my::get_laplacian_weak_form_rhs(
+          laplawfrhs_gradphi, gradphi, vi);  // compute once, reuse below!
 
       // formulation a): plain ionic diffusion coefficients without using ENC
       //
@@ -920,7 +922,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     double laplawfrhs_cur = 0.0;
-    my::GetLaplacianWeakFormRHS(laplawfrhs_cur, curint, vi);
+    my::get_laplacian_weak_form_rhs(laplawfrhs_cur, curint, vi);
 
     erhs[vi * my::numdofpernode_ + k] -=
         -rhsfac * DiffManager()->GetTransNum(k) * invfval * laplawfrhs_cur;
@@ -940,7 +942,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondDiff
     {
       // diffusive term second
       double laplawfrhs_gradphi(0.0);
-      my::GetLaplacianWeakFormRHS(
+      my::get_laplacian_weak_form_rhs(
           laplawfrhs_gradphi, gradphi[iscal], vi);  // compute once, reuse below!
 
       // formulation a:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i)
@@ -955,7 +957,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondDiff
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDiviConc(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_rhs_pot_equ_divi_conc(
     CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rtf,
     const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
     const double newman_const_b, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
@@ -967,7 +969,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
     {
       // diffusive term second
       double laplawf2(0.0);
-      my::GetLaplacianWeakFormRHS(laplawf2, gradphi, vi);  // compute once, reuse below!
+      my::get_laplacian_weak_form_rhs(laplawf2, gradphi, vi);  // compute once, reuse below!
 
       if (diffcondparams_->DiffusionCoeffBased())
       {
@@ -987,7 +989,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
     {
       // diffusive term second
       double laplawf2(0.0);
-      my::GetLaplacianWeakFormRHS(laplawf2, gradphi, vi);  // compute once, reuse below!
+      my::get_laplacian_weak_form_rhs(laplawf2, gradphi, vi);  // compute once, reuse below!
 
       erhs[vi * my::numdofpernode_ + my::numscal_] -=
           rhsfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetCond() *
@@ -1011,7 +1013,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
   {
     double laplawf = 0.0;
     // version a: (grad phi,  Di)
-    my::GetLaplacianWeakFormRHS(laplawf, curint, vi);
+    my::get_laplacian_weak_form_rhs(laplawf, curint, vi);
     erhs[vi * my::numdofpernode_ + my::numscal_] -= -rhsfac * invf * laplawf;
   }
 }
@@ -1103,7 +1105,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectionForFluxAcrossDC(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_for_flux_across_dc(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs)
 {

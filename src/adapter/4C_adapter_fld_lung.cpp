@@ -136,7 +136,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID)
 {
   if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();
@@ -214,7 +214,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
   if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();

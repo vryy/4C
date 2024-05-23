@@ -78,7 +78,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // set the pointer to the parameter list in element
-  so3_ele::SetParamsInterfacePtr(params);
+  so3_ele::set_params_interface_ptr(params);
 
 
   // what actions are available
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
     {
       if (la.Size() > 1)
       {
-        EvaluateCouplWithThr(params, discretization, la, elemat1_epetra, elemat2_epetra,
+        evaluate_coupl_with_thr(params, discretization, la, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra);
       }
       break;
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
       // it's a TSI problem
       if (la.Size() > 1)
       {
-        EvaluateCouplWithThr(params, discretization,
+        evaluate_coupl_with_thr(params, discretization,
             la,  // coupled TSI is considered, i.e. pass the compled location array
             elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       }
@@ -148,9 +148,9 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
  | here is the action for the coupling to the thermal field             |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -494,8 +494,8 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       INPAR::STR::StressType iocouplstress;
       if (this->IsParamsInterface())
       {
-        couplstressdata = this->StrParamsInterface().CouplingStressDataPtr();
-        iocouplstress = this->StrParamsInterface().GetCouplingStressOutputType();
+        couplstressdata = this->StrParamsInterface().coupling_stress_data_ptr();
+        iocouplstress = this->StrParamsInterface().get_coupling_stress_output_type();
       }
       else
       {
@@ -718,7 +718,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // Evaluate() is called the first time in structure_base_algorithm: at this
       // stage the coupling field is not yet known. Pass coupling vectors filled
       // with zeros
       // the size of the vectors is the length of the location vector/nsd_
@@ -786,7 +786,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
   }  // action
 
   return 0;
-}  // EvaluateCouplWithThr()
+}  // evaluate_coupl_with_thr()
 
 
 /*----------------------------------------------------------------------*
@@ -2430,7 +2430,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::GLtoEA(CORE::LINALG::Matrix<num
  | is called once in Initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::InitJacobianMappingSpecialForNurbs(
+void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_special_for_nurbs(
     DRT::Discretization& dis)
 {
   // get the material coordinates

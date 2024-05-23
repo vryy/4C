@@ -50,18 +50,18 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     //! apply contact contributions to the scatra residual
-    void ApplyContactToScatraResidual(Teuchos::RCP<Epetra_Vector> scatra_residual);
+    void apply_contact_to_scatra_residual(Teuchos::RCP<Epetra_Vector> scatra_residual);
 
     //! apply contact contributions to scatra sub matrix
-    virtual void ApplyContactToScatraScatra(
+    virtual void apply_contact_to_scatra_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) = 0;
 
     //! apply contact contributions to scatra-structure sub matrix
-    virtual void ApplyContactToScatraStructure(
+    virtual void apply_contact_to_scatra_structure(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) = 0;
 
     //! apply contact contributions to structure-scatra sub matrix
-    virtual void ApplyContactToStructureScatra(
+    virtual void apply_contact_to_structure_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) = 0;
 
    protected:
@@ -91,13 +91,13 @@ namespace SSI
         Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
-    void ApplyContactToScatraScatra(
+    void apply_contact_to_scatra_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
-    void ApplyContactToScatraStructure(
+    void apply_contact_to_scatra_structure(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
-    void ApplyContactToStructureScatra(
+    void apply_contact_to_structure_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
@@ -110,13 +110,13 @@ namespace SSI
         Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
-    void ApplyContactToScatraScatra(
+    void apply_contact_to_scatra_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
-    void ApplyContactToScatraStructure(
+    void apply_contact_to_scatra_structure(
         Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
-    void ApplyContactToStructureScatra(
+    void apply_contact_to_structure_scatra(
         Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 

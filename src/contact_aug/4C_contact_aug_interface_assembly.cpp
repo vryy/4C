@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* inter)
     : inter_(inter),
-      interface_data_ptr_(Inter().SharedInterfaceDataPtr().get()),
+      interface_data_ptr_(Inter().shared_interface_data_ptr().get()),
       idiscret_(Inter().Discret())
 {
   // empty
@@ -174,7 +174,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
+    assemble_policy>::assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
   Epetra_Vector sl_force_lmi_col(*IData().SDofColMap(), true);
@@ -198,7 +198,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     NodeDataContainer& augdata = cnode->AugData();
     const double& lmn = cnode->MoData().lm()[0];
 
-    isfilled = assemble_policy::Assemble_SlForceLmInactive(
+    isfilled = assemble_policy::assemble_sl_force_lm_inactive(
         inactive_scale * lmn * lmn / cn, augdata, sl_force_lmi_col);
   }
 
@@ -235,9 +235,9 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleInactiveDDMatrix(
-    CORE::LINALG::SparseMatrix& inactive_dd_matrix, const Epetra_Vector& cnVec,
-    const double inactive_scale) const
+void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
+    assemble_policy>::assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+    const Epetra_Vector& cnVec, const double inactive_scale) const
 {
   // loop over all active augmented slave nodes of the interface
   const int nummyinodes = IData().InActiveNodes()->NumMyElements();
@@ -263,7 +263,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     // add 2-nd order derivatives of the tributary area multiplied by the
     // square product of the inactive Lagrange multipliers and fac/cn
     {
-      assemble_policy::AssembleInactiveDDMatrix(scale, augdata, inactive_dd_matrix);
+      assemble_policy::assemble_inactive_dd_matrix(scale, augdata, inactive_dd_matrix);
     }
   }
 }
@@ -271,7 +271,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGLmLinMatrix(
+void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dg_lm_lin_matrix(
     CORE::LINALG::SparseMatrix& dGLmLinMatrix) const
 {
   // loop over proc's slave nodes of the interface for assembly
@@ -321,7 +321,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::AssembleDGGLinMatrix(CORE::LINALG::SparseMatrix& dGGLinMatrix,
+    assemble_policy>::assemble_dgg_lin_matrix(CORE::LINALG::SparseMatrix& dGGLinMatrix,
     const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -349,8 +349,8 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     // varied slave contributions
     {
       const Deriv1stMap& d_wgap_sl = augdata.GetDeriv1st_WGapSl();
-      const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
-      const Deriv1stMap& d_wgap_ma_c = augdata.GetDeriv1st_WGapMa_Complete();
+      const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
+      const Deriv1stMap& d_wgap_ma_c = augdata.get_deriv1st_w_gap_ma_complete();
 
       const double tmp = cn * a_inv;
 
@@ -372,8 +372,8 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     // varied master contributions
     {
       const Deriv1stMap& d_wgap_ma = augdata.GetDeriv1st_WGapMa();
-      const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
-      const Deriv1stMap& d_wgap_ma_c = augdata.GetDeriv1st_WGapMa_Complete();
+      const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
+      const Deriv1stMap& d_wgap_ma_c = augdata.get_deriv1st_w_gap_ma_complete();
 
       const double tmp = cn * a_inv;
 
@@ -397,7 +397,7 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGGLinMatrix(
+void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dgg_lin_matrix(
     CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -456,8 +456,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     // varied slave contributions
     {
       const Deriv1stMap& d_wgap_sl = augdata.GetDeriv1st_WGapSl();
-      const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
-      const Deriv1stMap& d_wgap_ma_c = augdata.GetDeriv1st_WGapMa_Complete();
+      const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
+      const Deriv1stMap& d_wgap_ma_c = augdata.get_deriv1st_w_gap_ma_complete();
 
       const double tmp = cn * a_inv;
 
@@ -480,8 +480,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     // varied master contributions
     {
       const Deriv1stMap& d_wgap_ma = augdata.GetDeriv1st_WGapMa();
-      const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
-      const Deriv1stMap& d_wgap_ma_c = augdata.GetDeriv1st_WGapMa_Complete();
+      const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
+      const Deriv1stMap& d_wgap_ma_c = augdata.get_deriv1st_w_gap_ma_complete();
 
       const double tmp = cn * a_inv;
 
@@ -522,8 +522,9 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDLmNWGapLinMatrix(
-    CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
+void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
+    assemble_policy>::assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+    const enum MapType map_type) const
 {
   // loop over all active augmented slave nodes of the interface
   const Epetra_Map& snode_rowmap = this->SlNodeRowMap(map_type);
@@ -543,10 +544,10 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const int rowId = ndof_rowmap.GID(i);
 
     // linearization of the weighted gap
-    const Deriv1stMap& d_wgap_sl_complete = cnode->AugData().GetDeriv1st_WGapSl_Complete();
+    const Deriv1stMap& d_wgap_sl_complete = cnode->AugData().get_deriv1st_w_gap_sl_complete();
     AssembleMapIntoMatrix(rowId, -1.0, d_wgap_sl_complete, dLmNWGapLinMatrix);
 
-    const Deriv1stMap& d_wgap_ma_complete = cnode->AugData().GetDeriv1st_WGapMa_Complete();
+    const Deriv1stMap& d_wgap_ma_complete = cnode->AugData().get_deriv1st_w_gap_ma_complete();
     AssembleMapIntoMatrix(rowId, 1.0, d_wgap_ma_complete, dLmNWGapLinMatrix);
   }
 
@@ -560,8 +561,8 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const dou
     CORE::LINALG::SparseMatrix& dGGLinMatrix) const
 {
   const Deriv1stMap& d_a = augdata.GetDeriv1st_Kappa();
-  const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
-  const Deriv1stMap& d_wgap_ma_c = augdata.GetDeriv1st_WGapMa_Complete();
+  const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
+  const Deriv1stMap& d_wgap_ma_c = augdata.get_deriv1st_w_gap_ma_complete();
 
   for (auto& d_a_var : d_a)
   {
@@ -595,8 +596,9 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::AssembleInactiveDDMatrix(const double scale,
-    const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& inactive_dd_matrix) const
+void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matrix(
+    const double scale, const NodeDataContainer& augdata,
+    CORE::LINALG::SparseMatrix& inactive_dd_matrix) const
 {
   const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_A();
   // sanity check
@@ -642,7 +644,7 @@ bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Assemble_SlForceLmInactive(
+bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_sl_force_lm_inactive(
     const double scale, const NodeDataContainer& augdata, Epetra_Vector& sl_force_lminactive) const
 {
   const Deriv1stMap& d_a = augdata.GetDeriv1st_A();

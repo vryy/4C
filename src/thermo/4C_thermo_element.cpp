@@ -67,13 +67,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(const int id, const
 /*----------------------------------------------------------------------*
  |                                                           dano 08/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
+void DRT::ELEMENTS::ThermoType::nodal_block_information(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
   nv = numdf;
-}  // NodalBlockInformation()
+}  // nodal_block_information()
 
 
 /*----------------------------------------------------------------------*
@@ -102,7 +102,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create(const int i
 /*----------------------------------------------------------------------*
  | setup element                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
+void DRT::ELEMENTS::ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["THERMO"];
@@ -160,7 +160,7 @@ void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
 
   defs["LINE3"] =
       INPUT::LineDefinition::Builder().AddIntVector("LINE3", 3).AddNamedInt("MAT").Build();
-}  // SetupElementDefinition()
+}  // setup_element_definition()
 
 
 DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
@@ -332,7 +332,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, cons
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lsurface);
+  set_parent_master_element(parent, lsurface);
   return;
 }  // ctor
 

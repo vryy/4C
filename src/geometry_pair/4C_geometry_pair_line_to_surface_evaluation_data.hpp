@@ -73,7 +73,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the strategy to be used for the surface normals.
      */
-    INPAR::GEOMETRYPAIR::SurfaceNormals GetSurfaceNormalStrategy() const
+    INPAR::GEOMETRYPAIR::SurfaceNormals get_surface_normal_strategy() const
     {
       return surface_normal_strategy_;
     }

@@ -64,12 +64,12 @@ namespace CORE::GEO
       /*!
       \brief Communicates the node positions
        */
-      void CommunicateNodePositions();
+      void communicate_node_positions();
 
       /*!
       \brief Communicate the node dofset number for single volumecells
        */
-      void CommunicateNodeDofSetNumbers(bool include_inner);
+      void communicate_node_dof_set_numbers(bool include_inner);
 
 
      protected:
@@ -77,17 +77,17 @@ namespace CORE::GEO
       /*!
       \brief Export data whether proc has finished to set node positions
        */
-      void exportCommunicationFinished(bool& procDone);
+      void export_communication_finished(bool& procDone);
 
       /*!
       \brief Export position data to neighbor proc and receive data from previous proc
        */
-      void exportNodePositionData();
+      void export_node_position_data();
 
       /*!
       \brief Distribute received node positions on my processor
        */
-      void distributeMyReceivedNodePositionData();
+      void distribute_my_received_node_position_data();
 
       /*!
       \brief set received node positions for node and distribute it to facets, vcs ...
@@ -112,7 +112,7 @@ namespace CORE::GEO
       /*!
       \brief distribute received dofset data for volumecells my processor
        */
-      void distributeDofSetData();
+      void distribute_dof_set_data();
 
       /*!
       \brief Pack the point coordinates

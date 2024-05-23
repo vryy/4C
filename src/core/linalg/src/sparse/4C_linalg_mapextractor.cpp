@@ -54,7 +54,7 @@ void CORE::LINALG::MultiMapExtractor::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
+void CORE::LINALG::MultiMapExtractor::check_for_valid_map_extractor() const
 {
   if (maps_.size() == 0)
   {

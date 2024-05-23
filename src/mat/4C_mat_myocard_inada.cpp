@@ -850,7 +850,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardInada::GetNumberOfInternalStateVariables() const { return 29; }
+int MyocardInada::get_number_of_internal_state_variables() const { return 29; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
@@ -891,7 +891,7 @@ void MyocardInada::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int MyocardInada::GetNumberOfIonicCurrents() const { return 11; }
+int MyocardInada::get_number_of_ionic_currents() const { return 11; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |

@@ -50,7 +50,7 @@ CORE::Dofsets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
+int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null)

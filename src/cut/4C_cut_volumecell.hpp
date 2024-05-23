@@ -80,7 +80,7 @@ namespace CORE::GEO
 
       void GetAllPoints(Mesh& mesh, PointSet& cut_points);
 
-      void CreateTet4IntegrationCells(Mesh& mesh, const std::vector<std::vector<Point*>>& tets,
+      void create_tet4_integration_cells(Mesh& mesh, const std::vector<std::vector<Point*>>& tets,
           const std::map<Facet*, std::vector<Point*>>& sides_xyz);
 
       void GetIntegrationCells(plain_integrationcell_set& cells);
@@ -89,30 +89,30 @@ namespace CORE::GEO
       \brief Construct the Gaussian quadrature rule by performing moment fitting over the
       volumecells
        */
-      void MomentFitGaussWeights(
+      void moment_fit_gauss_weights(
           Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and
       applying divergence theorem
        */
-      void DirectDivergenceGaussRule(Element* elem, Mesh& mesh, bool include_inner,
+      void direct_divergence_gauss_rule(Element* elem, Mesh& mesh, bool include_inner,
           INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation);
 
       /*!
       \brief Project the integration rule generated w.r to the global coordinates of the element to
       its local coordinate system
        */
-      void ProjectGaussPointsToLocalCoodinates();
+      void project_gauss_points_to_local_coodinates();
 
       /*!
       \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by
       momentfitting and boundarycells are by tessellation
        */
-      void GenerateBoundaryCells(Mesh& mesh, const CORE::GEO::CUT::Point::PointPosition posi,
+      void generate_boundary_cells(Mesh& mesh, const CORE::GEO::CUT::Point::PointPosition posi,
           Element* elem, int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
 
-      void GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
+      void generate_boundary_cells_level_set_side(Mesh& mesh,
           const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, Facet* facet, int BaseNos,
           INPAR::CUT::BCellGaussPts BCellgausstype);
 
@@ -122,7 +122,7 @@ namespace CORE::GEO
       cells note that the boundary cells of subsides with the same side id are stored now in one key
        */
       void GetBoundaryCells(std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
-      void GetBoundaryCellsToBeIntegrated(
+      void get_boundary_cells_to_be_integrated(
           std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
 
 
@@ -252,13 +252,13 @@ namespace CORE::GEO
       \brief Write Geometry of volumecell together with gauss points produced from moment fitting
       method into GMSH output
        */
-      void DumpGmshGaussPointsMomFit(const std::vector<std::vector<double>>& gauspts);
+      void dump_gmsh_gauss_points_mom_fit(const std::vector<std::vector<double>>& gauspts);
 
       /*!
       \brief Write Geometry of volumecell together with gauss points produced from tessellation into
       GMSH output
        */
-      void DumpGmshGaussPointsTessellation();
+      void dump_gmsh_gauss_points_tessellation();
 
       /*!
       \brief Write Geometry of volumecell as lines into GMSH output
@@ -301,7 +301,7 @@ namespace CORE::GEO
       /*!
       \brief | Find Position of the Volumecell based on the orientation of the cut_sides
       */
-      bool SetPositionCutSideBased();
+      bool set_position_cut_side_based();
 
       /*!
       \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
@@ -320,7 +320,7 @@ namespace CORE::GEO
       the integration cells resulting from Tessellation. For MomentFitting and DIrectDivergence this
       can't be used
        */
-      void integrateSpecificFunctionsTessellation();
+      void integrate_specific_functions_tessellation();
 
       template <CORE::FE::CellType distype>
       Teuchos::RCP<CORE::FE::GaussPoints> CreateProjected(CORE::GEO::CUT::IntegrationCell* ic);
@@ -357,7 +357,7 @@ namespace CORE::GEO
       \brief Generate internal gauss rule for every integration point on the facet when
       DirectDivergence method is used
        */
-      Teuchos::RCP<CORE::FE::GaussPoints> GenerateInternalGaussRule(
+      Teuchos::RCP<CORE::FE::GaussPoints> generate_internal_gauss_rule(
           Teuchos::RCP<CORE::FE::GaussPoints>& gp);
 
       /// the element this is a part of

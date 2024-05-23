@@ -129,35 +129,35 @@ namespace STR
     int MethodSteps() const override { return 1; }
 
     //! Give linear order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() const override
+    int method_order_of_accuracy_dis() const override
     {
-      return (fabs(MethodLinErrCoeffDis2()) < 1e-6) ? 3 : 2;
+      return (fabs(method_lin_err_coeff_dis2()) < 1e-6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() const override
+    int method_order_of_accuracy_vel() const override
     {
-      return (fabs(MethodLinErrCoeffVel1()) < 1e-6) ? 2 : 1;
+      return (fabs(method_lin_err_coeff_vel1()) < 1e-6) ? 2 : 1;
     }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const override
+    double method_lin_err_coeff_dis() const override
     {
-      if (MethodOrderOfAccuracyDis() == 2)
-        return MethodLinErrCoeffDis2();
+      if (method_order_of_accuracy_dis() == 2)
+        return method_lin_err_coeff_dis2();
       else
-        return MethodLinErrCoeffDis3();
+        return method_lin_err_coeff_dis3();
     }
 
     //! 2nd order linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis2() const
+    virtual double method_lin_err_coeff_dis2() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1.0 / 6.0 - beta_ + alphaf_ / 2.0 - alpham_ / 2.0;
     }
 
     //! 3rd order linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis3() const
+    virtual double method_lin_err_coeff_dis3() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1. / 24. - beta_ / 2. * (1. - 2 * alphaf_ + 2. * alpham_) -
@@ -165,23 +165,23 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const override
+    double method_lin_err_coeff_vel() const override
     {
-      if (MethodOrderOfAccuracyVel() == 1)
-        return MethodLinErrCoeffVel1();
+      if (method_order_of_accuracy_vel() == 1)
+        return method_lin_err_coeff_vel1();
       else
-        return MethodLinErrCoeffVel2();
+        return method_lin_err_coeff_vel2();
     }
 
     //! 1st order linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel1() const
+    virtual double method_lin_err_coeff_vel1() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1.0 / 2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! 2nd order linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel2() const
+    virtual double method_lin_err_coeff_vel2() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1. / 6. - gamma_ / 2. * (1. - 2 * alphaf_ + 2. * alpham_) -
@@ -219,12 +219,12 @@ namespace STR
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
-    void PredictConstDisConsistVelAcc() override;
+    void predict_const_dis_consist_vel_acc() override;
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
     //! \author mayr.mt
-    void PredictConstVelConsistAcc() override;
+    void predict_const_vel_consist_acc() override;
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
@@ -232,14 +232,14 @@ namespace STR
     void PredictConstAcc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
-    void EvaluateForceStiffResidual(Teuchos::ParameterList& params) final;
+    void evaluate_force_stiff_residual(Teuchos::ParameterList& params) final;
 
     //! Evaluate/define the residual force vector #fres_ for
-    //! relaxation solution with SolveRelaxationLinear
-    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) override;
+    //! relaxation solution with solve_relaxation_linear
+    void evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params) override;
 
     //! Evaluate residual #fres_
-    void EvaluateForceResidual() override;
+    void evaluate_force_residual() override;
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
@@ -249,8 +249,8 @@ namespace STR
     //!
     //! This update is carried out by computing the new #veln_ and #acc_ from scratch by using the
     //! newly updated #disn_.
-    //! This method is necessary for certain predictors (like #PredictConstDisConsistVelAcc)
-    void UpdateIterIncrementally() override;
+    //! This method is necessary for certain predictors (like #predict_const_dis_consist_vel_acc)
+    void update_iter_incrementally() override;
 
     //! Update iteration iteratively
     //!
@@ -259,7 +259,7 @@ namespace STR
     //! displacements #disi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual displacements #disi_ are blanked at these DOFs.
-    void UpdateIterIteratively() override;
+    void update_iter_iteratively() override;
 
     //! Update step
     void UpdateStepState() override;
@@ -294,7 +294,7 @@ namespace STR
 
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
-    void BuildResStiffNLMassRot(Teuchos::RCP<Epetra_Vector> fres_,
+    void build_res_stiff_nl_mass_rot(Teuchos::RCP<Epetra_Vector> fres_,
         Teuchos::RCP<Epetra_Vector> fextn_, Teuchos::RCP<Epetra_Vector> fintn_,
         Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_,
         Teuchos::RCP<CORE::LINALG::SparseOperator> mass_);

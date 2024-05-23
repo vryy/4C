@@ -90,7 +90,7 @@ namespace FLD
 
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
     /// During PrepareTimeStep() DC are projected from the master to the slave
-    void ProjectMasterToSlaveForOverlappingBC(
+    void project_master_to_slave_for_overlapping_bc(
         Teuchos::RCP<Epetra_Vector>& velnp,   ///> solution vector n+1
         Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
     );
@@ -100,13 +100,13 @@ namespace FLD
     );
 
     //! Preparation for including Dirichlet conditions in the condensation process
-    void IncludeDirichletInCondensation(
+    void include_dirichlet_in_condensation(
         const Teuchos::RCP<Epetra_Vector>& velnp,  ///> solution vector n+1
         const Teuchos::RCP<Epetra_Vector>& veln    ///> solution vector n
     );
 
     //! evaluation of matrix P with potential mesh relocation in ALE case
-    void EvaluateWithMeshRelocation(
+    void evaluate_with_mesh_relocation(
         Teuchos::RCP<Epetra_Vector>& dispnp);  ///> current ALE displacement vector
 
     //! Prepare matrix, shapederivatives and residual for meshtying
@@ -119,8 +119,8 @@ namespace FLD
             shapederivatives);  ///> shapederivatives established by the element routine
 
     //! Prepare matrix and residual for meshtying
-    void PrepareMeshtyingSystem(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
-                                    sysmat,  ///> sysmat established by the element routine
+    void prepare_meshtying_system(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+                                      sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                               ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp);  ///> current ALE displacement vector
@@ -139,13 +139,13 @@ namespace FLD
         CORE::LINALG::SolverParams& solver_params);
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
-    Teuchos::RCP<Epetra_Vector> AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);
+    Teuchos::RCP<Epetra_Vector> adapt_krylov_projector(Teuchos::RCP<Epetra_Vector> vec);
 
     //! Output: maps & projection matrix
     void OutputSetUp();
 
     //! Output: split sparse matrix
-    void OutputSparseMatrixSplit(Teuchos::RCP<CORE::LINALG::SparseOperator> conmat);
+    void output_sparse_matrix_split(Teuchos::RCP<CORE::LINALG::SparseOperator> conmat);
 
     //! Output: single blocks of the block matrix
     void OutputBlockMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> blockmatrix,
@@ -160,7 +160,7 @@ namespace FLD
 
     //! Replace matrix entries
     /// Replace computed identity matrix by a real identity matrix
-    void ReplaceMatrixEntries(
+    void replace_matrix_entries(
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Compute and update the increments of the slave node (including ALE case)
@@ -192,23 +192,24 @@ namespace FLD
     void MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
 
     //! Use the split of the multifield problem for the shape derivatives
-    void MultifieldSplitShape(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
+    void multifield_split_shape(
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
 
     //! Prepare condensation of the shape derivatives
-    void CondensationOperationBlockMatrixShape(
+    void condensation_operation_block_matrix_shape(
         Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
 
    private:
     //! Prepare condensation for sparse matrix (including ALE case)
-    void CondensationSparseMatrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
-                                      sysmat,  ///> sysmat established by the element routine
+    void condensation_sparse_matrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+                                        sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,  ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp);
 
     //! Prepare condensation for a block matrix (including ALE case)
-    void CondensationBlockMatrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
-                                     sysmat,  ///> sysmat established by the element routine
+    void condensation_block_matrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+                                       sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                               ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp);  ///> current velocity vector
@@ -226,14 +227,14 @@ namespace FLD
         std::vector<Teuchos::RCP<Epetra_Vector>>& splitvector);  ///> container for the split vector
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
-    void SplitVectorBasedOn3x3(
+    void split_vector_based_on3x3(
         Teuchos::RCP<Epetra_Vector> orgvector,  ///> original vector based on 3x3 blockmatrix
         Teuchos::RCP<Epetra_Vector> vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
     //! Condensation operation for a sparse matrix (including ALE case):
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
-    void CondensationOperationSparseMatrix(
+    void condensation_operation_sparse_matrix(
         const Teuchos::RCP<CORE::LINALG::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
@@ -250,7 +251,7 @@ namespace FLD
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
-    void CondensationOperationBlockMatrix(
+    void condensation_operation_block_matrix(
         const Teuchos::RCP<CORE::LINALG::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&

@@ -93,7 +93,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
+void SCATRA::MeshtyingStrategyStdElch::init_conv_check_strategy()
 {
   if (ElchTimInt()->MacroScale())
   {
@@ -105,6 +105,6 @@ void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
-}  // SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyStdElch::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

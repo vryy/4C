@@ -80,7 +80,7 @@ int CORE::COMM::ParObjectType::UniqueParObjectId()
   if (objectid_ == 0)
   {
     CORE::COMM::ParObjectFactory::Instance().Register(this);
-    // ParObjectFactory::Instance().FinalizeRegistration();
+    // ParObjectFactory::Instance().finalize_registration();
   }
   return objectid_;
 }
@@ -106,7 +106,7 @@ CORE::COMM::ParObjectFactory& CORE::COMM::ParObjectFactory::Instance()
 /*----------------------------------------------------------------------*/
 CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<char>& data)
 {
-  FinalizeRegistration();
+  finalize_registration();
 
   // mv ptr behind the size record
   const int* ptr = (const int*)(data.data());
@@ -135,7 +135,7 @@ CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<ch
 Teuchos::RCP<DRT::Element> CORE::COMM::ParObjectFactory::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  FinalizeRegistration();
+  finalize_registration();
   std::map<std::string, DRT::ElementType*>::iterator c = element_cache_.find(eletype);
   if (c != element_cache_.end())
   {
@@ -202,14 +202,14 @@ void CORE::COMM::ParObjectFactory::Register(ParObjectType* object_type)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::FinalizeRegistration() { ParObjectPreRegister::Finalize(); }
+void CORE::COMM::ParObjectFactory::finalize_registration() { ParObjectPreRegister::Finalize(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::COMM::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
 {
-  FinalizeRegistration();
+  finalize_registration();
 
   // find participating element types such that only those element types are initialized
 
@@ -258,7 +258,7 @@ void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  FinalizeRegistration();
+  finalize_registration();
 
   std::set<DRT::ElementType*>& ae = active_elements_[&dis];
 
@@ -272,10 +272,10 @@ void CORE::COMM::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::SetupElementDefinition(
+void CORE::COMM::ParObjectFactory::setup_element_definition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
-  FinalizeRegistration();
+  finalize_registration();
 
   // Here we want to visit all elements known to the factory.
   //
@@ -287,7 +287,7 @@ void CORE::COMM::ParObjectFactory::SetupElementDefinition(
     DRT::ElementType* eot = dynamic_cast<DRT::ElementType*>(pot);
     if (eot != nullptr)
     {
-      eot->SetupElementDefinition(definitions);
+      eot->setup_element_definition(definitions);
     }
   }
 }

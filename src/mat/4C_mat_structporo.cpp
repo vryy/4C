@@ -379,21 +379,21 @@ void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, cons
   couplstress(3) = -1.0 * J * press * C_inv_vec(2);
 }
 
-void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params, double press,
+void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref,
     double* W)
 {
   if (porosity == 0.0) FOUR_C_THROW("porosity equals zero!! Wrong initial porosity?");
 
-  ConstitutiveDerivatives(
+  constitutive_derivatives(
       params, press, J, porosity, params_->init_porosity_, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
 }
 
-void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params, double press,
+void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi, double* dW_dJ,
     double* dW_dphiref, double* W)
 {
-  params_->poro_law_->ConstitutiveDerivatives(
+  params_->poro_law_->constitutive_derivatives(
       params, press, J, porosity, refporosity, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
 }
 

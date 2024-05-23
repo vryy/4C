@@ -90,7 +90,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void SetParticlePositionsAndStates();
+    void set_particle_positions_and_states();
 
     /*!
      * \brief Write visualization files to disk

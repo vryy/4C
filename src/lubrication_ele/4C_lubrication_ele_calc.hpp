@@ -146,8 +146,9 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of prenp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
       virtual void Sysmat(DRT::Element* ele,      //!< the element we are dealing with
@@ -164,45 +165,45 @@ namespace DRT
       );
 
       //! Calculate the height of the lubrication at the Int point
-      virtual void CalcHeightAtIntPoint(double& heightint  //!< lubrication height at Int point
+      virtual void calc_height_at_int_point(double& heightint  //!< lubrication height at Int point
       );
 
       //! Calculate the heightDot (time derivative) of the film-thickness at the Int point
-      virtual void CalcHeightDotAtIntPoint(
+      virtual void calc_height_dot_at_int_point(
           double& heightdotint  //!< lubrication heightDot at Int point
       );
 
       //! Calculate the average velocity of the contacting bodies at the Int point
-      virtual void CalcAvrVelAtIntPoint(
+      virtual void calc_avr_vel_at_int_point(
           CORE::LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
       );
 
       //! Calculate the relative velocity of the contacting bodies at the Int point
-      virtual void CalcRelVelAtIntPoint(
+      virtual void calc_rel_vel_at_int_point(
           CORE::LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
       );
 
       //! read element coordinates
-      virtual void ReadElementCoordinates(const DRT::Element* ele);
+      virtual void read_element_coordinates(const DRT::Element* ele);
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsAtIntPoint(
+      double eval_shape_func_and_derivs_at_int_point(
           const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad                                            //!< id of current Gauss point
       );
 
       //! evaluate shape functions and their derivatives at current integration point
-      double EvalShapeFuncAndDerivsInParameterSpace();
+      double eval_shape_func_and_derivs_in_parameter_space();
 
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS();
+      virtual void set_internal_variables_for_mat_and_rhs();
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
-      virtual void CalcPFlowFacAtIntPoint(CORE::LINALG::Matrix<nsd_, 1>& pflowfac,
+      virtual void calc_p_flow_fac_at_int_point(CORE::LINALG::Matrix<nsd_, 1>& pflowfac,
           CORE::LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
-      virtual void CalcSFlowFacAtIntPoint(
+      virtual void calc_s_flow_fac_at_int_point(
           double& sflowfac, double& sflowfacderiv, const double heightint);
 
       /*========================================================================*/
@@ -210,7 +211,7 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate error of numerical solution with respect to analytical solution
-      void CalErrorComparedToAnalytSolution(
+      void cal_error_compared_to_analyt_solution(
           const DRT::Element* ele,                 //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
           CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
@@ -263,15 +264,15 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate linearization of the Laplacian (weak form) for element integration
-      virtual void GetLaplacianWeakForm(double& val, const int vi, const int ui);
+      virtual void get_laplacian_weak_form(double& val, const int vi, const int ui);
       //! calculate linearization of the Laplacian (weak form) for element integration
-      virtual void GetLaplacianWeakForm(
+      virtual void get_laplacian_weak_form(
           double& val, const int vi, const int ui, const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculate the Laplacian (weak form)
-      virtual void GetLaplacianWeakFormRHS(
+      virtual void get_laplacian_weak_form_rhs(
           double& val, const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
       //! calculate the Laplacian (weak form)
-      virtual void GetLaplacianWeakFormRHS(double& val,
+      virtual void get_laplacian_weak_form_rhs(double& val,
           const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
@@ -408,7 +409,8 @@ namespace DRT
       virtual ~LubricationEleInternalVariableManager() = default;
 
       // compute and set internal variables
-      void SetInternalVariables(CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+      void set_internal_variables(
+          CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
           CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
           CORE::LINALG::Matrix<NEN, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)

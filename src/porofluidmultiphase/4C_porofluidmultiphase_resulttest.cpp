@@ -218,10 +218,8 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
 
   if (quantity == "bloodvesselvolfrac")
   {
-    result =
-        (*porotimint_.MeshTyingStrategy()
-                ->BloodVesselVolumeFraction())[porotimint_.Discretization()->ElementRowMap()->LID(
-            element->Id())];
+    result = (*porotimint_.MeshTyingStrategy()->blood_vessel_volume_fraction())
+        [porotimint_.Discretization()->ElementRowMap()->LID(element->Id())];
   }
   else if (!quantity.compare(0, 13, "phasevelocity"))
   {
@@ -308,9 +306,9 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
     }
 
     // index should be in range [0, number_functions - 1]
-    if (idx < 0 || idx >= porotimint_.NumDomainIntFunctions())
+    if (idx < 0 || idx >= porotimint_.num_domain_int_functions())
       FOUR_C_THROW("detected wrong index %i, index should be in range [0,%i]", idx,
-          porotimint_.NumDomainIntFunctions() - 1);
+          porotimint_.num_domain_int_functions() - 1);
 
     // return the result
     result = (*porotimint_.DomainIntValues())[idx];

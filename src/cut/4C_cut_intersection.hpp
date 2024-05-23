@@ -35,7 +35,7 @@ namespace CORE::GEO
     enum IntersectionStatus
     {
       intersect_newton_failed = -2,      // if newton failed
-      intersect_unevaluated = -1,        // before ComputeEdgeSideIntersection has been called
+      intersect_unevaluated = -1,        // before compute_edge_side_intersection has been called
       intersect_no_cut_point = 0,        // no cut point was found
       intersect_single_cut_point = 1,    // one single cut point was found
       intersect_multiple_cut_points = 2  // parallel cases
@@ -115,7 +115,7 @@ namespace CORE::GEO
        *  passed the necessary input objects. Use the 2-nd (standard) Init()
        *  routine, instead. Anyhow, this Init() routine is the right one,
        *  if you want to intersect two edges. Just use the routine
-       *  ComputeEdgeSideIntersection() afterwards.
+       *  compute_edge_side_intersection() afterwards.
        *
        *  \param xyze_lineElement    (in) : global nodal coordinates of the edge element
        *  \param xyze_surfaceElement (in) : global nodal coordinates of the side element
@@ -196,7 +196,7 @@ namespace CORE::GEO
        *  See derived class for more information.
        *
        *  \author hiermeier \date 08/16 */
-      virtual IntersectionStatus ComputeEdgeSideIntersection(double& tolerance,
+      virtual IntersectionStatus compute_edge_side_intersection(double& tolerance,
           bool check_inside = true, std::vector<int>* touched_edges = nullptr) = 0;
 
       /** \brief Computes the intersection points of the edge with the specified side
@@ -207,10 +207,10 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       virtual bool Intersect(PointSet& cuts) = 0;
 
-      virtual ParallelIntersectionStatus HandleParallelIntersection(
+      virtual ParallelIntersectionStatus handle_parallel_intersection(
           PointSet& cuts, int id = -1, bool output = false) = 0;
 
-      virtual bool TriangulatedIntersection(PointSet& cuts) = 0;
+      virtual bool triangulated_intersection(PointSet& cuts) = 0;
 
       virtual bool HandleSpecialCases() = 0;
 
@@ -231,17 +231,17 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 01/17 */
       template <unsigned dimside>
-      void LocalSideCoordinates(std::vector<CORE::LINALG::Matrix<dimside, 1>>& side_rs_cuts)
+      void local_side_coordinates(std::vector<CORE::LINALG::Matrix<dimside, 1>>& side_rs_cuts)
       {
-        if (GetIntersectionStatus() < intersect_single_cut_point)
+        if (get_intersection_status() < intersect_single_cut_point)
           FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-              IntersectionStatus2String(GetIntersectionStatus()).c_str());
+              IntersectionStatus2String(get_intersection_status()).c_str());
 
         side_rs_cuts.clear();
         side_rs_cuts.reserve(NumCutPoints());
 
         for (unsigned i = 0; i < NumCutPoints(); ++i)
-          side_rs_cuts.push_back(CORE::LINALG::Matrix<dimside, 1>(LocalSideCoordinates(i), true));
+          side_rs_cuts.push_back(CORE::LINALG::Matrix<dimside, 1>(local_side_coordinates(i), true));
       }
 
       /** Access the final cut point global coordinates
@@ -251,9 +251,9 @@ namespace CORE::GEO
       template <unsigned probdim>
       void FinalPoints(std::vector<CORE::LINALG::Matrix<probdim, 1>>& xyz_cuts)
       {
-        if (GetIntersectionStatus() < intersect_single_cut_point)
+        if (get_intersection_status() < intersect_single_cut_point)
           FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-              IntersectionStatus2String(GetIntersectionStatus()).c_str());
+              IntersectionStatus2String(get_intersection_status()).c_str());
 
         xyz_cuts.clear();
         xyz_cuts.reserve(NumCutPoints());
@@ -264,7 +264,7 @@ namespace CORE::GEO
 
       virtual double* LocalCoordinates() = 0;
 
-      virtual double* LocalSideCoordinates(unsigned cp_id) = 0;
+      virtual double* local_side_coordinates(unsigned cp_id) = 0;
 
       virtual bool SurfaceWithinLimits(double tol = REFERENCETOL) const = 0;
 
@@ -273,7 +273,7 @@ namespace CORE::GEO
      protected:
       virtual unsigned NumCutPoints() const = 0;
 
-      virtual const IntersectionStatus& GetIntersectionStatus() const = 0;
+      virtual const IntersectionStatus& get_intersection_status() const = 0;
 
       inline void CheckInit() const
       {
@@ -427,7 +427,7 @@ namespace CORE::GEO
       }
 
       /// get the intersection status
-      const IntersectionStatus& GetIntersectionStatus() const override { return istatus_; }
+      const IntersectionStatus& get_intersection_status() const override { return istatus_; }
 
       /// get the local cut coordinates
       double* LocalCoordinates() override { return xsi_.A(); }
@@ -438,7 +438,7 @@ namespace CORE::GEO
        *  \param cp_id (in) : cut point id
        *
        *  \author hiermeier \date 01/17 */
-      double* LocalSideCoordinates(unsigned cp_id) override
+      double* local_side_coordinates(unsigned cp_id) override
       {
         if (NumCutPoints() < 2) return xsi_side_.A();
 
@@ -451,7 +451,7 @@ namespace CORE::GEO
        *  \param cp_id (in) : cut point id
        *
        *  \author hiermeier \date 01/17 */
-      const CORE::LINALG::Matrix<dimedge, 1>& LocalEdgeCoordinates(const unsigned& cp_id) const
+      const CORE::LINALG::Matrix<dimedge, 1>& local_edge_coordinates(const unsigned& cp_id) const
       {
         if (NumCutPoints() < 2) return xsi_edge_;
 
@@ -559,14 +559,14 @@ namespace CORE::GEO
       }
       double* FinalPoint(unsigned cp_id) override
       {
-        FinalPoint(LocalEdgeCoordinates(cp_id), x_);
+        FinalPoint(local_edge_coordinates(cp_id), x_);
         return x_.A();
       }
 
       // Remove all the edges from list of touching edges that are further away than 1e-14 (
       // TOPOLOGICAL_TOLERANCE ) distance from the point
       template <unsigned int dim, INPAR::CUT::CutFloattype floattype>
-      void FixDistantTouchingEdges(
+      void fix_distant_touching_edges(
           CORE::LINALG::Matrix<dim, 1>& p_coord, std::vector<int>& touching_edges)
       {
         bool signeddistance = false;
@@ -630,32 +630,32 @@ namespace CORE::GEO
        *  All feasible cut points are within the given element bounds.
        *
        *  \author hiermeier \date 08/16 */
-      IntersectionStatus ComputeEdgeSideIntersection(double& tolerance, bool check_inside = true,
+      IntersectionStatus compute_edge_side_intersection(double& tolerance, bool check_inside = true,
           std::vector<int>* touched_edges = nullptr) override
       {
-        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        switch (GetOptionsPtr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
-            return ComputeEdgeSideIntersectionT<INPAR::CUT::floattype_cln>(
+            return compute_edge_side_intersection_t<INPAR::CUT::floattype_cln>(
                 tolerance, check_inside, touched_edges);
           }
           case INPAR::CUT::floattype_double:
           {
-            return ComputeEdgeSideIntersectionT<INPAR::CUT::floattype_double>(
+            return compute_edge_side_intersection_t<INPAR::CUT::floattype_double>(
                 tolerance, check_inside, touched_edges);
           }
           default:
-            FOUR_C_THROW("Unexpected floattype for ComputeEdgeSideIntersectionT!");
+            FOUR_C_THROW("Unexpected floattype for compute_edge_side_intersection_t!");
         }
       }
 
       template <INPAR::CUT::CutFloattype floattype>
-      IntersectionStatus ComputeEdgeSideIntersectionT(
+      IntersectionStatus compute_edge_side_intersection_t(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
       {
         CheckInit();
-        TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeSideIntersection");
+        TEUCHOS_FUNC_TIME_MONITOR("compute_edge_side_intersection");
 
         const bool success = CheckParallelism(multiple_xsi_side_, multiple_xsi_edge_, tolerance);
 
@@ -782,7 +782,7 @@ namespace CORE::GEO
 
       // Try to find possible intersection points, if this intersection is between parallell size
       // and edge without using real ComputeIntersection
-      ParallelIntersectionStatus HandleParallelIntersection(
+      ParallelIntersectionStatus handle_parallel_intersection(
           PointSet& cuts, int id = -1, bool output = false) override;
 
       virtual void GenerateGmshDump();
@@ -791,7 +791,7 @@ namespace CORE::GEO
       bool HandleSpecialCases() override;
 
       // compute intersection by splitting quad4 into two triangles
-      bool TriangulatedIntersection(PointSet& cuts) override;
+      bool triangulated_intersection(PointSet& cuts) override;
 
       /** \brief Will return TRUE, if local side coordinates are within the side
        *  element parameter space bounds */
@@ -887,10 +887,10 @@ namespace CORE::GEO
 
      private:
       /// Do the bounding box overlap check for the class internal edge and side variables
-      bool CheckBoundingBoxOverlap();
+      bool check_bounding_box_overlap();
 
       /// Check if the edge \c ebb and surface \c sbb bounding boxes overlap
-      bool CheckBoundingBoxOverlap(BoundingBox& ebb, BoundingBox& sbb) const;
+      bool check_bounding_box_overlap(BoundingBox& ebb, BoundingBox& sbb) const;
 
       /** \brief Checks the side dimension and calls the corresponding method
        *
@@ -914,13 +914,13 @@ namespace CORE::GEO
        *  This is a quick check to skip cases which are definitely not parallel.
        *
        *  \author hiermeier \date 12/16 */
-      bool CheckAngleCriterionBetweenTwoEdges();
+      bool check_angle_criterion_between_two_edges();
 
       /** ToDo This method is currently unused, since this case should be treated by
        *  the Intersect() method.
        *
        *  \author hiermeier \date 12/16 */
-      bool CheckParallelismBetweenSideAndEdge(
+      bool check_parallelism_between_side_and_edge(
           std::vector<CORE::LINALG::Matrix<dimside, 1>>& side_rs_intersect,
           std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance);
 
@@ -929,10 +929,10 @@ namespace CORE::GEO
        *  This is a quick check to skip cases which are definitely not parallel.
        *
        *  \author hiermeier \date 12/16 */
-      bool CheckAngleCriterionBetweenSideNormalAndEdge();
+      bool check_angle_criterion_between_side_normal_and_edge();
 
       /// find the local coordinate of a given edge end point ( i.e. -1 or +1 )
-      bool FindLocalCoordinateOfEdgeEndPoint(
+      bool find_local_coordinate_of_edge_end_point(
           double& pos, const CORE::LINALG::Matrix<probdim, 1>& xyz, const double& tol) const;
 
       /** \brief Compute the intersection of an edge with a TRI3 surface element,
@@ -945,29 +945,31 @@ namespace CORE::GEO
        *  calculated intersection point is feasible!
        *
        *  \author hiermeier \date 08/16 */
-      bool ComputeEdgeTri3Intersection(int triangleid, KERNEL::PointOnSurfaceLoc& location)
+      bool compute_edge_tri3_intersection(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
-        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        switch (GetOptionsPtr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
-            return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_cln>(triangleid, location);
+            return compute_edge_tri3_intersection_t<INPAR::CUT::floattype_cln>(
+                triangleid, location);
           }
           case INPAR::CUT::floattype_double:
           {
-            return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_double>(triangleid, location);
+            return compute_edge_tri3_intersection_t<INPAR::CUT::floattype_double>(
+                triangleid, location);
           }
           default:
-            FOUR_C_THROW("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
+            FOUR_C_THROW("Unexpected floattype for compute_edge_tri3_intersection_t!");
         }
       }
 
       template <INPAR::CUT::CutFloattype floattype>
-      bool ComputeEdgeTri3IntersectionT(int triangleid, KERNEL::PointOnSurfaceLoc& location)
+      bool compute_edge_tri3_intersection_t(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
         if (triangleid < 0) FOUR_C_THROW("The triangle id has to be positive!");
 
-        TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeTri3Intersection");
+        TEUCHOS_FUNC_TIME_MONITOR("compute_edge_tri3_intersection");
         CORE::LINALG::Matrix<3, 1> xsi;
         if (xsi_.M() != 3)
           FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
@@ -990,33 +992,33 @@ namespace CORE::GEO
       }
 
       // Computes tri3 edge intersection used for quad4 -> 2 tri3 splits
-      IntersectionStatus ComputeEdgeTri3IntersectionQuad4Split(
+      IntersectionStatus compute_edge_tri3_intersection_quad4_split(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
-        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        switch (GetOptionsPtr()->geom_intersect_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
-            return ComputeEdgeTri3IntersectionQuad4SplitT<INPAR::CUT::floattype_cln>(
+            return compute_edge_tri3_intersection_quad4_split_t<INPAR::CUT::floattype_cln>(
                 triangleid, close_to_shared_edge);
           }
           case INPAR::CUT::floattype_double:
           {
-            return ComputeEdgeTri3IntersectionQuad4SplitT<INPAR::CUT::floattype_double>(
+            return compute_edge_tri3_intersection_quad4_split_t<INPAR::CUT::floattype_double>(
                 triangleid, close_to_shared_edge);
           }
           default:
-            FOUR_C_THROW("Unexpected floattype for ComputeEdgeTri3IntersectionQuad4SplitT!");
+            FOUR_C_THROW("Unexpected floattype for compute_edge_tri3_intersection_quad4_split_t!");
         }
       }
 
       template <INPAR::CUT::CutFloattype floattype>
-      IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
+      IntersectionStatus compute_edge_tri3_intersection_quad4_split_t(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
         if (triangleid < 0) FOUR_C_THROW("The triangle id has to be positive!");
 
-        TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeTri3Intersection");
+        TEUCHOS_FUNC_TIME_MONITOR("compute_edge_tri3_intersection");
         CORE::LINALG::Matrix<3, 1> xsi;
         if (xsi_.M() != 3)
           FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
@@ -1045,7 +1047,7 @@ namespace CORE::GEO
           istatus_ = intersect_newton_failed;
         // if is done during triangulation
         if (close_to_shared_edge)
-          *close_to_shared_edge = (ci.GetSideLocationTriangleSplit().WithinSide());
+          *close_to_shared_edge = (ci.get_side_location_triangle_split().WithinSide());
 
         return istatus_;
       }
@@ -1075,7 +1077,7 @@ namespace CORE::GEO
           double& tolerance, bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc,
           std::vector<int>& touched_edges, bool signeddistance = false)
       {
-        switch (GetOptionsPtr()->GeomDistance_Floattype())
+        switch (GetOptionsPtr()->geom_distance_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -1116,7 +1118,7 @@ namespace CORE::GEO
         {
           touched_edges.clear();
         }
-        FixDistantTouchingEdges<probdim, floattype>(point, touched_edges);
+        fix_distant_touching_edges<probdim, floattype>(point, touched_edges);
 
         return conv;
       }
@@ -1133,7 +1135,7 @@ namespace CORE::GEO
 
       // Transform IDs of the edges in the one of triangle in the splitted quad4 into the ids of
       // quad4 edges
-      void GetQuadEdgeIdsFromTri(std::vector<int>& quad4_touched_edges,
+      void get_quad_edge_ids_from_tri(std::vector<int>& quad4_touched_edges,
           const std::vector<int>& tri_touched_edges_ids, int tri_id)
       {
         // NOTE: Transformation follow from the transformation function in the cut_kernel
@@ -1183,7 +1185,7 @@ namespace CORE::GEO
           bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
-        switch (GetOptionsPtr()->GeomDistance_Floattype())
+        switch (GetOptionsPtr()->geom_distance_floattype())
         {
           case INPAR::CUT::floattype_cln:
           {
@@ -1235,10 +1237,10 @@ namespace CORE::GEO
         std::vector<int> tri_touched_edges;
         cd.GetTouchedSideEdges(tri_touched_edges);
 
-        GetQuadEdgeIdsFromTri(touched_edges, tri_touched_edges, tri3_id);
+        get_quad_edge_ids_from_tri(touched_edges, tri_touched_edges, tri3_id);
         extended_tri_tolerance_loc_triangle_split =
-            (cd.GetSideLocationTriangleSplit().WithinSide());
-        FixDistantTouchingEdges<3, floattype>(point, touched_edges);
+            (cd.get_side_location_triangle_split().WithinSide());
+        fix_distant_touching_edges<3, floattype>(point, touched_edges);
 
         return conv;
       }
@@ -1287,7 +1289,7 @@ namespace CORE::GEO
       void GetConnectivityInfo(const CORE::LINALG::Matrix<probdim, 1>& xreal,
           const std::vector<int>& touched_edges_ids, std::set<std::pair<Side*, Edge*>>& out);
 
-      bool RefinedBBOverlapCheck(int maxstep = 10);
+      bool refined_bb_overlap_check(int maxstep = 10);
 
      protected:
       static CORE::LINALG::Matrix<probdim, numNodesEdge> xyze_lineElement_;
@@ -1332,15 +1334,15 @@ namespace CORE::GEO
         switch (side_type)
         {
           case CORE::FE::CellType::quad4:
-            return CreateConcreteIntersection<edgeType, CORE::FE::CellType::quad4>(probdim);
+            return create_concrete_intersection<edgeType, CORE::FE::CellType::quad4>(probdim);
           case CORE::FE::CellType::quad8:
-            return CreateConcreteIntersection<edgeType, CORE::FE::CellType::quad8>(probdim);
+            return create_concrete_intersection<edgeType, CORE::FE::CellType::quad8>(probdim);
           case CORE::FE::CellType::quad9:
-            return CreateConcreteIntersection<edgeType, CORE::FE::CellType::quad9>(probdim);
+            return create_concrete_intersection<edgeType, CORE::FE::CellType::quad9>(probdim);
           case CORE::FE::CellType::tri3:
-            return CreateConcreteIntersection<edgeType, CORE::FE::CellType::tri3>(probdim);
+            return create_concrete_intersection<edgeType, CORE::FE::CellType::tri3>(probdim);
           case CORE::FE::CellType::line2:
-            return CreateConcreteIntersection<edgeType, CORE::FE::CellType::line2>(probdim);
+            return create_concrete_intersection<edgeType, CORE::FE::CellType::line2>(probdim);
           default:
             FOUR_C_THROW(
                 "Unsupported SideType! If meaningful, add your sideType here. \n"
@@ -1352,7 +1354,7 @@ namespace CORE::GEO
       }
 
       template <CORE::FE::CellType edgeType, CORE::FE::CellType sideType>
-      IntersectionBase* CreateConcreteIntersection(const int& probdim) const
+      IntersectionBase* create_concrete_intersection(const int& probdim) const
       {
         CORE::GEO::CUT::IntersectionBase* inter_ptr = nullptr;
         switch (probdim)

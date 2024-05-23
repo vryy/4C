@@ -54,11 +54,11 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
   const int reuse = belist.get("reuse", 0);
-  const bool create = !AllowReusePreconditioner(reuse, reset);
+  const bool create = !allow_reuse_preconditioner(reuse, reset);
   if (create)
   {
     ncall_ = 0;
-    preconditioner_ = CreatePreconditioner(belist, A != Teuchos::null, projector);
+    preconditioner_ = create_preconditioner(belist, A != Teuchos::null, projector);
   }
 
   b_ = b;
@@ -125,13 +125,13 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::AllowReusePreconditioner(
+bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::allow_reuse_preconditioner(
     const int reuse, const bool reset)
 {
   // first, check some parameters with information that has to be updated
   const Teuchos::ParameterList& linSysParams = Params().sublist("Belos Parameters");
 
-  bool bAllowReuse = CheckReuseStatusOfActiveSet(linSysParams);
+  bool bAllowReuse = check_reuse_status_of_active_set(linSysParams);
 
   const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
   if (create) bAllowReuse = false;
@@ -155,7 +155,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::AllowReusePre
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseStatusOfActiveSet(
+bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::check_reuse_status_of_active_set(
     const Teuchos::ParameterList& linSysParams)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
@@ -196,11 +196,11 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase>
-CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePreconditioner(
+CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditioner(
     Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   create_preconditioner");
 
   Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner;
 
@@ -231,7 +231,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
     }
     else
       FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
+          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown preconditioner for "
           "iterative solver chosen.");
 
     // decide whether we do what kind of scaling
@@ -249,7 +249,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
     }
     else
       FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown type of scaling "
+          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown type of scaling "
           "found in parameter list.");
 
     if (projector != Teuchos::null)
@@ -294,7 +294,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
     }
     else
       FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
+          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown preconditioner for "
           "block iterative solver chosen.");
   }
 

@@ -44,7 +44,7 @@ namespace MAT
       int MicroDisNum() const { return microdisnum_; };
 
       //! return specific micro-scale surface area A_s
-      double SpecificMicroScaleSurfaceArea() const { return A_s_; }
+      double specific_micro_scale_surface_area() const { return A_s_; }
 
      protected:
       //! @name material parameters
@@ -104,7 +104,7 @@ namespace MAT
      * @param[in] gp_id macro-scale Gauss point ID
      * @return mean concentration
      */
-    double EvaluateMeanConcentration(const int gp_id) const;
+    double evaluate_mean_concentration(const int gp_id) const;
 
     /*!
      * @brief evaluate mean concentration time derivative on micro scale
@@ -112,7 +112,7 @@ namespace MAT
      * @param[in] gp_id  macro-scale Gauss point ID
      * @return time derivative od mean concentration
      */
-    double EvaluateMeanConcentrationTimeDerivative(const int gp_id) const;
+    double evaluate_mean_concentration_time_derivative(const int gp_id) const;
 
     /*!
      * @brief update multi-scale scalar transport material
@@ -145,9 +145,9 @@ namespace MAT
     //!
     //! \param detF determinant of deformation gradient of macro dis at current Gauss point
     //! \return  specific area between micro and macro dis
-    double SpecificMicroScaleSurfaceArea(const double detF) const
+    double specific_micro_scale_surface_area(const double detF) const
     {
-      return Params()->SpecificMicroScaleSurfaceArea() * std::pow(detF, -1.0 / 3.0);
+      return Params()->specific_micro_scale_surface_area() * std::pow(detF, -1.0 / 3.0);
     }
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step

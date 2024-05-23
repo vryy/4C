@@ -59,11 +59,11 @@ namespace STR
 
    protected:
     //! build the implicit integrator
-    Teuchos::RCP<STR::Integrator> BuildImplicitIntegrator(
+    Teuchos::RCP<STR::Integrator> build_implicit_integrator(
         const STR::TIMINT::BaseDataSDyn& datasdyn) const;
 
     //! build the explicit integrator
-    Teuchos::RCP<STR::Integrator> BuildExplicitIntegrator(
+    Teuchos::RCP<STR::Integrator> build_explicit_integrator(
         const STR::TIMINT::BaseDataSDyn& datasdyn) const;
 
   };  // class Factory

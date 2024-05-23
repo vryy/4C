@@ -225,7 +225,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
 
 
 
-void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
+void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
@@ -310,7 +310,7 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
 
 
 
-void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
+void PostVtiWriter::write_element_result_step(std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)

@@ -47,29 +47,29 @@ namespace SCATRA
     void Setup() override;
 
     //! set initial thermodynamic pressure
-    void SetInitialThermPressure();
+    void set_initial_therm_pressure();
 
     //! predict thermodynamic pressure and time derivative
-    virtual void PredictThermPressure() = 0;
+    virtual void predict_therm_pressure() = 0;
 
     //! compute initial thermodyn. pressure time derivative
-    void ComputeInitialThermPressureDeriv();
+    void compute_initial_therm_pressure_deriv();
 
     //! compute initial total mass in domain
     void ComputeInitialMass();
 
     //! compute thermodynamic pressure and time derivative
-    virtual void ComputeThermPressure() = 0;
+    virtual void compute_therm_pressure() = 0;
 
     //! compute thermodyn. press. from mass cons. in domain
-    void ComputeThermPressureFromMassCons();
+    void compute_therm_pressure_from_mass_cons();
 
     //! compute values of thermodynamic pressure at intermediate time steps
     //! (required for generalized-alpha)
-    virtual void ComputeThermPressureIntermediateValues() = 0;
+    virtual void compute_therm_pressure_intermediate_values() = 0;
 
     //!  compute time derivative of thermodynamic pressure after solution
-    virtual void ComputeThermPressureTimeDerivative() = 0;
+    virtual void compute_therm_pressure_time_derivative() = 0;
 
     //! update thermodynamic pressure and time derivative
     virtual void UpdateThermPressure() = 0;
@@ -101,9 +101,10 @@ namespace SCATRA
      *
      * @param params parameter list
      */
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
+    void add_problem_specific_parameters_and_vectors(Teuchos::ParameterList& params) override;
 
-    virtual void AddThermPressToParameterList(Teuchos::ParameterList& params  //!< parameter list
+    virtual void add_therm_press_to_parameter_list(
+        Teuchos::ParameterList& params  //!< parameter list
         ) = 0;
 
     //! the parameter list for loma problems

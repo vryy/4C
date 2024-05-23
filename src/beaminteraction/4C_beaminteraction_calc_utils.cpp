@@ -253,11 +253,11 @@ namespace BEAMINTERACTION
           double start = 0.0;
           double end = filreflength;
           double filamentbspotinterval =
-              params->FilamentBspotIntervalGlobal(linkertypes[linkertype_i]);
+              params->filament_bspot_interval_global(linkertypes[linkertype_i]);
           std::pair<double, double> filamentbspotrangelocal =
-              params->FilamentBspotRangeLocal(linkertypes[linkertype_i]);
+              params->filament_bspot_range_local(linkertypes[linkertype_i]);
           std::pair<double, double> filamentbspotrangeglobal =
-              params->FilamentBspotRangeGlobal(linkertypes[linkertype_i]);
+              params->filament_bspot_range_global(linkertypes[linkertype_i]);
 
           // in case certain range of filament was specified
           if (filamentbspotrangelocal.first > 0.0 and filamentbspotrangelocal.first < 1.0)
@@ -280,9 +280,9 @@ namespace BEAMINTERACTION
 
           // set different filament binding spot interval for each filament dependent on its
           // reference length
-          if (params->FilamentBspotIntervalLocal(linkertypes[linkertype_i]) > 0.0)
+          if (params->filament_bspot_interval_local(linkertypes[linkertype_i]) > 0.0)
             filamentbspotinterval =
-                (end - start) * params->FilamentBspotIntervalLocal(linkertypes[linkertype_i]);
+                (end - start) * params->filament_bspot_interval_local(linkertypes[linkertype_i]);
 
           // get number of binding spots for current filament in bonds
           int numbspot = (start < filreflength and ((end - start) > 0.0))
@@ -485,7 +485,7 @@ namespace BEAMINTERACTION
         }
 
         // set element variables for binding spot position and status
-        beamele->SetPositionsOfBindingSpotType(linkertype, bspotposxi);
+        beamele->set_positions_of_binding_spot_type(linkertype, bspotposxi);
       }
     }
 
@@ -508,7 +508,7 @@ namespace BEAMINTERACTION
       beamele->GetPosOfBindingSpot(bspotpos, eledisp, linkertype, locbspotnum, *pbb);
 
       // get current triad at binding spot xi
-      beamele->GetTriadOfBindingSpot(bspottriad, eledisp, linkertype, locbspotnum);
+      beamele->get_triad_of_binding_spot(bspottriad, eledisp, linkertype, locbspotnum);
     }
 
     /*-----------------------------------------------------------------------------*
@@ -578,7 +578,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const DRT::Discretization& discret,
+    void fe_assemble_ele_force_stiff_into_system_vector_matrix(const DRT::Discretization& discret,
         std::vector<int> const& elegid, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
@@ -627,7 +627,7 @@ namespace BEAMINTERACTION
       auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
-        beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
+        beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
         return local_centerline_dof_indices.size();
       }
       else
@@ -648,7 +648,7 @@ namespace BEAMINTERACTION
       auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
-        beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
+        beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
         if (local_centerline_dof_indices.size() != n_centerline_dof)
           FOUR_C_THROW(
               "GetElementCenterlineGIDIndices: The size of the local_centerline_dof_indices (%d) "
@@ -687,7 +687,7 @@ namespace BEAMINTERACTION
 
       if (beamele != nullptr)
       {
-        beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
+        beamele->centerline_dof_indices_of_element(ele_centerline_dof_indices);
       }
       else
       {
@@ -824,7 +824,7 @@ namespace BEAMINTERACTION
       {
         // get the current absolute values for those Dofs relevant for centerline interpolation
         // initial values are added by element itself
-        beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
+        beam_element_ptr->extract_centerline_dof_values_from_element_state_vector(
             eledispvec, element_posdofvec_absolutevalues, true);
       }
       else
@@ -853,7 +853,7 @@ namespace BEAMINTERACTION
       if (beam_element_ptr != nullptr)
       {
         // get the current  values for those Dofs relevant for centerline interpolation
-        beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
+        beam_element_ptr->extract_centerline_dof_values_from_element_state_vector(
             eledispvec, element_posdofvec_values, false);
       }
       else
@@ -892,12 +892,12 @@ namespace BEAMINTERACTION
 
         // I_variations
         if (elei == 0)
-          cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+          cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
               cast_ele1->GetBindingSpotXi(
                   elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(elei)),
               eledisp);
         else
-          cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+          cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
               cast_ele2->GetBindingSpotXi(
                   elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(elei)),
               eledisp);
@@ -954,7 +954,7 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele1);
 
         // i) I_variations
-        cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+        cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
@@ -967,7 +967,7 @@ namespace BEAMINTERACTION
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
 
-        cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
+        cast_ele1->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
@@ -983,7 +983,7 @@ namespace BEAMINTERACTION
         // i) I_variations
         trafomatrix.shape(6, numdof_ele2);
 
-        cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+        cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
@@ -996,7 +996,7 @@ namespace BEAMINTERACTION
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
 
-        cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
+        cast_ele2->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
@@ -1073,7 +1073,7 @@ namespace BEAMINTERACTION
       // element 1:
       {
         // i) I_variations
-        cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+        cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
@@ -1089,7 +1089,7 @@ namespace BEAMINTERACTION
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
 
-        cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
+        cast_ele1->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
@@ -1104,7 +1104,8 @@ namespace BEAMINTERACTION
         // variations
         stiffmat_lin_Ivar.shape(numdof_ele1, numdof_ele1);
 
-        cast_ele1->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(stiffmat_lin_Ivar,
+        cast_ele1->get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
+            stiffmat_lin_Ivar,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp, bspotforce[0]);
 
@@ -1116,7 +1117,7 @@ namespace BEAMINTERACTION
         // i) I_variations
         trafomatrix.shape(6, numdof_ele2);
 
-        cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
+        cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
@@ -1132,7 +1133,7 @@ namespace BEAMINTERACTION
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
 
-        cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
+        cast_ele2->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
@@ -1147,7 +1148,8 @@ namespace BEAMINTERACTION
         // variations
         stiffmat_lin_Ivar.shape(numdof_ele2, numdof_ele2);
 
-        cast_ele2->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(stiffmat_lin_Ivar,
+        cast_ele2->get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
+            stiffmat_lin_Ivar,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp, bspotforce[1]);
 

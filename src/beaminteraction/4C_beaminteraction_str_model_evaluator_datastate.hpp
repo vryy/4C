@@ -109,14 +109,14 @@ namespace STR
       };
 
       /// get extended bin to ele map
-      std::map<int, std::set<int>> const& GetExtendedBinToRowEleMap() const
+      std::map<int, std::set<int>> const& get_extended_bin_to_row_ele_map() const
       {
         CheckInitSetup();
         return exbintorowelemap_;
       };
 
       /// get mutable extended bin to ele map
-      std::map<int, std::set<int>>& GetExtendedBinToRowEleMap()
+      std::map<int, std::set<int>>& get_extended_bin_to_row_ele_map()
       {
         CheckInitSetup();
         return exbintorowelemap_;
@@ -277,14 +277,14 @@ namespace STR
       }
 
       /// Return the restart coupling flag.
-      bool GetRestartCouplingFlag() const
+      bool get_restart_coupling_flag() const
       {
         CheckInitSetup();
         return is_restart_coupling_;
       }
 
       /// Set the restart coupling flag.
-      void SetRestartCouplingFlag(const bool is_restart_coupling)
+      void set_restart_coupling_flag(const bool is_restart_coupling)
       {
         is_restart_coupling_ = is_restart_coupling;
       }

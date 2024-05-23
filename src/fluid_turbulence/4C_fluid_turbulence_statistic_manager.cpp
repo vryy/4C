@@ -146,7 +146,7 @@ namespace FLD
 
       // do the time integration independent setup
       Setup();
-      if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+      if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
           CORE::FE::ShapeFunctionType::hdg)
       {
         TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&fluid);
@@ -534,7 +534,7 @@ namespace FLD
               std::cout << "\nSmagorinsky constant, effective viscosity, ... etc, ";
               std::cout << "all element-quantities \n";
             }
-            statistics_channel_->AddDynamicSmagorinskyQuantities();
+            statistics_channel_->add_dynamic_smagorinsky_quantities();
           }
           break;
         }
@@ -665,7 +665,7 @@ namespace FLD
                 "need statistics_ph_ to do a time sample for a flow over a backward-facing step");
 
           statistics_ph_->DoTimeSample(
-              myvelnp_, mystressmanager_->GetWallShearStressesWOAgg(myforce_));
+              myvelnp_, mystressmanager_->get_wall_shear_stresses_wo_agg(myforce_));
           break;
         }
         case loma_backward_facing_step:
@@ -772,7 +772,7 @@ namespace FLD
             }
             std::map<int, std::vector<double>>::iterator theonlyldval = (*liftdragvals).begin();
 
-            statistics_sqc_->DoLiftDragTimeSample(
+            statistics_sqc_->do_lift_drag_time_sample(
                 ((*theonlyldval).second)[0], ((*theonlyldval).second)[1]);
           }
           break;
@@ -969,9 +969,9 @@ namespace FLD
                     *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
                 CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
                     *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
-              statistics_channel_->AddModelParamsMultifractal(myvelaf_, myfsvelaf_, false);
+              statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, false);
             else
-              statistics_channel_->AddModelParamsMultifractal(myvelnp_, myfsvelaf_, false);
+              statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
             break;
           }
           case scatra_channel_flow_of_height_2:
@@ -981,9 +981,9 @@ namespace FLD
                     *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
                 CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
                     *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
-              statistics_channel_->AddModelParamsMultifractal(myvelaf_, myfsvelaf_, true);
+              statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, true);
             else
-              statistics_channel_->AddModelParamsMultifractal(myvelnp_, myfsvelaf_, false);
+              statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
             break;
           }
           default:
@@ -996,7 +996,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_ != Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_, myvelnp_, myscaaf_, myphinp_);
+        statistics_general_mean_->add_to_current_time_average(dt_, myvelnp_, myscaaf_, myphinp_);
 
     }  // end step in sampling period
 
@@ -1059,7 +1059,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_ != Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_, velnp, myscaaf_, myphinp_);
+        statistics_general_mean_->add_to_current_time_average(dt_, velnp, myscaaf_, myphinp_);
 
       if (discret_->Comm().MyPID() == 0)
       {
@@ -1151,7 +1151,7 @@ namespace FLD
 
           if (outputformat == write_multiple_records)
           {
-            statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+            statistics_channel_->time_average_means_and_output_of_statistics(step);
             statistics_channel_->ClearStatistics();
           }
 
@@ -1175,7 +1175,8 @@ namespace FLD
                 "need statistics_channel_ to do a time sample for a turbulent channel flow at low "
                 "Mach number");
 
-          if (outputformat == write_single_record) statistics_channel_->DumpScatraStatistics(step);
+          if (outputformat == write_single_record)
+            statistics_channel_->dump_scatra_statistics(step);
           break;
         }
         case decaying_homogeneous_isotropic_turbulence:
@@ -1213,11 +1214,11 @@ namespace FLD
 
           // write statistics only during sampling period
           if (outputformat == write_single_record)
-            statistics_hit_->DumpScatraStatistics(step);
+            statistics_hit_->dump_scatra_statistics(step);
           else if (outputformat == write_multiple_records)
           {
-            statistics_hit_->DumpScatraStatistics(step, true);
-            statistics_hit_->ClearScatraStatistics();
+            statistics_hit_->dump_scatra_statistics(step, true);
+            statistics_hit_->clear_scatra_statistics();
           }
           break;
         }
@@ -1266,7 +1267,7 @@ namespace FLD
             {
               if (output_inflow)
               {
-                statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                statistics_channel_->time_average_means_and_output_of_statistics(step);
                 statistics_channel_->ClearStatistics();
               }
             }
@@ -1304,7 +1305,7 @@ namespace FLD
                 {
                   if (output_inflow)
                   {
-                    statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                    statistics_channel_->time_average_means_and_output_of_statistics(step);
                     statistics_channel_->ClearStatistics();
                   }
                 }
@@ -1312,7 +1313,8 @@ namespace FLD
             }
             else
             {
-              if (outputformat == write_single_record) statistics_bfs_->DumpScatraStatistics(step);
+              if (outputformat == write_single_record)
+                statistics_bfs_->dump_scatra_statistics(step);
 
               // write statistics of inflow channel flow
               if (inflow_)
@@ -1321,14 +1323,14 @@ namespace FLD
                     "scatra_channel_flow_of_height_2")
                 {
                   if (outputformat == write_single_record)
-                    statistics_channel_->DumpScatraStatistics(step);
+                    statistics_channel_->dump_scatra_statistics(step);
                 }
                 else if (params_->sublist("TURBULENT INFLOW")
                              .get<std::string>("CANONICAL_INFLOW") == "channel_flow_of_height_2")
                 {
                   if (output_inflow)
                   {
-                    statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                    statistics_channel_->time_average_means_and_output_of_statistics(step);
                     statistics_channel_->ClearStatistics();
                   }
                 }
@@ -1378,7 +1380,7 @@ namespace FLD
                 "need statistics_ccy_ to do a time sample for a flow in a rotating circular "
                 "cylinder");
 
-          statistics_ccy_->TimeAverageMeansAndOutputOfStatistics(step);
+          statistics_ccy_->time_average_means_and_output_of_statistics(step);
           statistics_ccy_->ClearStatistics();
           break;
         }
@@ -1462,7 +1464,7 @@ namespace FLD
     {
       IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
                << IO::endl;
-      IO::cout << "TurbulenceStatisticManager: provided access to ScaTra time integration"
+      IO::cout << "turbulence_statistic_manager: provided access to ScaTra time integration"
                << IO::endl;
       IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
                << IO::endl;
@@ -1472,19 +1474,20 @@ namespace FLD
     scatradis_ = scatra_timeint->Discretization();
     scatraparams_ = scatra_timeint->ScatraParameterList();
     // and sublists from extraparams
-    scatraextraparams_ = scatra_timeint->ScatraExtraParameterList();
+    scatraextraparams_ = scatra_timeint->scatra_extra_parameter_list();
     // remark: this is not a good idea, since the sublists are copied and modifications
     //         during simulation are never seen in the statistics manager; moreover
     //         this would add the following sublists also to the parameter list in the
     //         scatra time integration
     // scatraparams_->sublist("TURBULENCE MODEL") =
-    // scatra_timeint->ScatraExtraParameterList()->sublist("TURBULENCE MODEL");
+    // scatra_timeint->scatra_extra_parameter_list()->sublist("TURBULENCE MODEL");
     // scatraparams_->sublist("SUBGRID VISCOSITY") =
-    // scatra_timeint->ScatraExtraParameterList()->sublist("SUBGRID VISCOSITY");
+    // scatra_timeint->scatra_extra_parameter_list()->sublist("SUBGRID VISCOSITY");
     // scatraparams_->sublist("MULTIFRACTAL SUBGRID SCALES") =
-    // scatra_timeint->ScatraExtraParameterList()->sublist("MULTIFRACTAL SUBGRID SCALES");
-    // scatraparams_->sublist("LOMA") = scatra_timeint->ScatraExtraParameterList()->sublist("LOMA");
-    scatratimeparams_ = scatra_timeint->ScatraTimeParameterList();
+    // scatra_timeint->scatra_extra_parameter_list()->sublist("MULTIFRACTAL SUBGRID SCALES");
+    // scatraparams_->sublist("LOMA") =
+    // scatra_timeint->scatra_extra_parameter_list()->sublist("LOMA");
+    scatratimeparams_ = scatra_timeint->scatra_time_parameter_list();
     // required vectors
     // remark: Although some of these field are already set for the fluid,
     //         we set set them here once more. They are required for integration
@@ -1506,7 +1509,7 @@ namespace FLD
 
     if (flow_ == scatra_channel_flow_of_height_2 or flow_ == loma_channel_flow_of_height_2)
     {
-      statistics_channel_->StoreScatraDiscretAndParams(
+      statistics_channel_->store_scatra_discret_and_params(
           scatradis_, scatraparams_, scatraextraparams_, scatratimeparams_);
     }
 
@@ -1607,7 +1610,7 @@ namespace FLD
           std::cout << "\n\n";
         }
 
-        statistics_general_mean_->ReadOldStatisticsScaTra(scatrareader);
+        statistics_general_mean_->read_old_statistics_sca_tra(scatrareader);
       }
     }
 

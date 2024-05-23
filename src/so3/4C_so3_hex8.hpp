@@ -77,20 +77,20 @@ namespace DRT
 
       int Initialize(DRT::Discretization& dis) override;
 
-      void NodalBlockInformation(
+      void nodal_block_information(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      void SetupElementDefinition(
+      void setup_element_definition(
           std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
           override;
 
      private:
       static SoHex8Type instance_;
 
-      std::string GetElementTypeString() const { return "SOLIDH8"; }
+      std::string get_element_type_string() const { return "SOLIDH8"; }
     };
 
     /*!
@@ -177,7 +177,7 @@ namespace DRT
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
 
-      virtual std::vector<double> ElementCenterRefeCoords();
+      virtual std::vector<double> element_center_refe_coords();
 
 
       /*!
@@ -361,15 +361,16 @@ namespace DRT
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
       /// Evaluate center coordinates in reference system
-      void soh8_ElementCenterRefeCoords(
+      void soh8_element_center_refe_coords(
           CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
               centercoord,  ///< center coordinates in reference system
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe)
           const;  ///< material coord. of element
 
       /// Evaluate Gauss-Point coordinates in reference system
-      void soh8_GaussPointRefeCoords(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
-                                         gpcoord,  ///< Gauss-Point coordinates in reference system
+      void soh8_gauss_point_refe_coords(
+          CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
+              gpcoord,  ///< Gauss-Point coordinates in reference system
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const&
               xrefe,      ///< material coord. of element
           int gp) const;  ///< current Gauss-Point
@@ -387,7 +388,7 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+      void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
@@ -509,7 +510,7 @@ namespace DRT
       /// Prestressing object
       Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
       // compute Jacobian mapping wrt to deformed configuration
-      virtual void UpdateJacobianMapping(
+      virtual void update_jacobian_mapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
@@ -632,7 +633,7 @@ namespace DRT
        * \param xcurr  [in] : Current nodal coordinates of the element
        * \param gp  [in] : Id of the Gauss point
        */
-      void ComputeDeformationGradient(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+      void compute_deformation_gradient(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
           const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xdisp,
           const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr, int gp);
 
@@ -646,7 +647,7 @@ namespace DRT
        * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
        * \param defgrd_mod   (out) : consistent modified deformation gradient
        */
-      void CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+      void calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
           CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod) const;
 
 
@@ -685,7 +686,7 @@ namespace DRT
        * \brief Determine a homogenized material density for multi-scale
        * analyses by averaging over the initial volume
        * */
-      void GetTemperatureForStructuralMaterial(
+      void get_temperature_for_structural_material(
           const CORE::LINALG::Matrix<NUMNOD_SOH8, 1>&
               shapefcts,  ///< shape functions of current Gauss point
           Teuchos::ParameterList&
@@ -702,7 +703,7 @@ namespace DRT
       };
 
       /// FDCheck constitutive tensor and/or use the approximation as elastic stiffness matrix
-      void EvaluateFiniteDifferenceMaterialTangent(
+      void evaluate_finite_difference_material_tangent(
           CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
           std::vector<double>& disp,  ///< current displacements

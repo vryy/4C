@@ -54,7 +54,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> Discretization() const = 0;
 
     //! add parameters specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) = 0;
+    virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
 
     //! return number of dofset associated with displacement dofs
     virtual int NdsDisp() const = 0;

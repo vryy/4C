@@ -82,13 +82,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get coordinates of all interacting points on element1 and element2
     */
-    void GetAllInteractingPointCoordsElement1(
+    void get_all_interacting_point_coords_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       coords = centerline_coords_gp_1_;
     }
 
-    void GetAllInteractingPointCoordsElement2(
+    void get_all_interacting_point_coords_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       coords = centerline_coords_gp_2_;
@@ -97,13 +97,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get forces at all interacting points on element1 and element2
     */
-    void GetForcesAtAllInteractingPointsElement1(
+    void get_forces_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       forces = forces_pot_gp_1_;
     }
 
-    void GetForcesAtAllInteractingPointsElement2(
+    void get_forces_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       forces = forces_pot_gp_2_;
@@ -112,13 +112,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Get moments at all interacting points on element1 and element2
     */
-    void GetMomentsAtAllInteractingPointsElement1(
+    void get_moments_at_all_interacting_points_element1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       moments = moments_pot_gp_1_;
     }
 
-    void GetMomentsAtAllInteractingPointsElement2(
+    void get_moments_at_all_interacting_points_element2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       moments = moments_pot_gp_2_;
@@ -137,7 +137,7 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential element pair to screen
      *
      *  \author grill */
-    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
+    void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods
@@ -160,7 +160,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateFpotandStiffpot_LargeSepApprox(
+    void evaluate_fpotand_stiffpot_large_sep_approx(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
@@ -171,7 +171,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateStiffpotAnalyticContributions_LargeSepApprox(
+    void evaluate_stiffpot_analytic_contributions_large_sep_approx(
         CORE::LINALG::Matrix<3, 1, double> const& dist, double const& norm_dist,
         double const& norm_dist_exp1, double q1q2_JacFac_GaussWeights,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateStiffpotAnalyticContributions_LargeSepApprox(
+    void evaluate_stiffpot_analytic_contributions_large_sep_approx(
         CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const& dist,
         Sacado::Fad::DFad<double> const& norm_dist, Sacado::Fad::DFad<double> const& norm_dist_exp1,
         double q1q2_JacFac_GaussWeights,
@@ -203,7 +203,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
+    void evaluate_fpotand_stiffpot_double_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
@@ -215,7 +215,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
+    void evaluate_stiffpot_analytic_contributions_double_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3, 1, double> const& dist, double const& norm_dist, double const& gap,
         double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
@@ -229,7 +229,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
+    void evaluate_stiffpot_analytic_contributions_double_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const& dist,
         Sacado::Fad::DFad<double> const& norm_dist, Sacado::Fad::DFad<double> const& gap,
         Sacado::Fad::DFad<double> const& gap_regularized, Sacado::Fad::DFad<double> const& gap_exp1,
@@ -248,7 +248,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
+    void evaluate_fpotand_stiffpot_single_length_specific_small_sep_approx(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
@@ -258,7 +258,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 03/19 */
-    bool EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
+    bool evaluate_full_disk_cylinder_potential(T& interaction_potential_GP,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
         CORE::LINALG::Matrix<3, 1, T> const& r_slave,
@@ -287,7 +287,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void ScaleStiffpotAnalyticContributionsIfRequired(double const& scalefactor,
+    void scale_stiffpot_analytic_contributions_if_required(double const& scalefactor,
         CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
         CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) const;
@@ -296,9 +296,9 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void ScaleStiffpotAnalyticContributionsIfRequired(Sacado::Fad::DFad<double> const& scalefactor,
-        CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
-        CORE::LINALG::SerialDenseMatrix& stiffmat21,
+    void scale_stiffpot_analytic_contributions_if_required(
+        Sacado::Fad::DFad<double> const& scalefactor, CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
         CORE::LINALG::SerialDenseMatrix& stiffmat22) const
     {
       // this is a dummy since for type FAD, no analytic linearization is required
@@ -309,7 +309,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void CalcStiffmatAutomaticDifferentiationIfRequired(
+    void calc_stiffmat_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> const& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> const& force_pot2,
         CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
@@ -324,7 +324,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void CalcStiffmatAutomaticDifferentiationIfRequired(
+    void calc_stiffmat_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
@@ -339,7 +339,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(
+    void add_stiffmat_contributions_xi_master_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> const& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> const& force_pot2,
         CORE::LINALG::Matrix<1, 3 * numnodes * numnodalvalues, double> const&
@@ -359,7 +359,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(
+    void add_stiffmat_contributions_xi_master_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
@@ -376,7 +376,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 02/19 */
-    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+    void calc_fpot_gausspoint_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
@@ -389,7 +389,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 02/19 */
-    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+    void calc_fpot_gausspoint_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -404,7 +404,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 02/19 */
-    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+    void calc_fpot_gausspoint_automatic_differentiation_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         double const& interaction_potential,
@@ -422,7 +422,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 04/19 */
-    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+    void evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_master,
@@ -451,7 +451,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 04/19 */
-    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+    void evaluate_stiffpot_analytic_contributions_single_length_specific_small_sep_approx_simple(
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
         CORE::LINALG::Matrix<1, numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
@@ -502,7 +502,7 @@ namespace BEAMINTERACTION
     \brief Compute coordinates of centerline point
     */
     template <typename T2>
-    void ComputeCenterlinePosition(CORE::LINALG::Matrix<3, 1, T>& r,
+    void compute_centerline_position(CORE::LINALG::Matrix<3, 1, T>& r,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const;
 
@@ -510,7 +510,7 @@ namespace BEAMINTERACTION
     \brief Compute tangent vector at centerline point
     */
     template <typename T2>
-    void ComputeCenterlineTangent(CORE::LINALG::Matrix<3, 1, T>& r_xi,
+    void compute_centerline_tangent(CORE::LINALG::Matrix<3, 1, T>& r_xi,
         const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
         const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const;
 
@@ -518,7 +518,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void SetAutomaticDifferentiationVariablesIfRequired(
+    void set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& ele2centerlinedofvec)
     {
@@ -529,7 +529,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void SetAutomaticDifferentiationVariablesIfRequired(
+    void set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -539,7 +539,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void SetAutomaticDifferentiationVariablesIfRequired(
+    void set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& ele2centerlinedofvec,
         double& xi_master)
@@ -551,7 +551,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 10/17 */
-    void SetAutomaticDifferentiationVariablesIfRequired(
+    void set_automatic_differentiation_variables_if_required(
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
             ele1centerlinedofvec,
         CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
@@ -567,7 +567,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 08/19 */
-    bool AreElementsMuchMoreSeparatedThanCutoffDistance();
+    bool are_elements_much_more_separated_than_cutoff_distance();
 
     //@}
 

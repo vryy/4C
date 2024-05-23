@@ -77,7 +77,7 @@ void MAT::StructPoroReactionECM::Setup(int numgp, INPUT::LineDefinition* linedef
 
   double dpsidphiref = 0.0;
   Teuchos::ParameterList params;
-  params_->poro_law_->ConstitutiveDerivatives(params, 0.0, 1.0, params_->init_porosity_,
+  params_->poro_law_->constitutive_derivatives(params, 0.0, 1.0, params_->init_porosity_,
       refporosity_, nullptr, nullptr, nullptr, &dpsidphiref, nullptr);
 
   const double initphi = params_->init_porosity_;
@@ -237,7 +237,7 @@ void MAT::StructPoroReactionECM::ChemPotential(
   // derivative of
   double dpsidphiref = 0.0;
 
-  params_->poro_law_->ConstitutiveDerivatives(
+  params_->poro_law_->constitutive_derivatives(
       params, press, J, porosity, refporosity_, nullptr, nullptr, nullptr, &dpsidphiref, nullptr);
 
   pot = 1.0 / Density() * psi - 1.0 / mat_->Density() * dpsidphiref - chempot_init_[gp];

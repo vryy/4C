@@ -67,7 +67,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 
   double numerator = oldgrp.getF().innerProduct(dir);
   double denominator =
-      computeDirectionalDerivative(dir, *egrp.getRequiredInterface()).innerProduct(dir);
+      compute_directional_derivative(dir, *egrp.getRequiredInterface()).innerProduct(dir);
 
   step = -numerator / denominator;
   utils_->out() << "          RELAX = " << std::setw(5) << step << "\n";
@@ -108,7 +108,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 }
 
 
-::NOX::Abstract::Vector& NOX::FSI::SDRelaxation::computeDirectionalDerivative(
+::NOX::Abstract::Vector& NOX::FSI::SDRelaxation::compute_directional_derivative(
     const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary

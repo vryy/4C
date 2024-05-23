@@ -334,7 +334,7 @@ void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
   this->SetupLatticeVectors();
 
   //  read Lattice orientation matrix from .dat file
-  this->SetupLatticeOrientation(linedef);
+  this->setup_lattice_orientation(linedef);
 
   // rotate lattice vectors according to lattice orientation
   for (int i = 0; i < slip_system_count_; i++)
@@ -975,7 +975,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
 
     // transform Miller-Bravais index notation of hexagonal lattices to Miller index notation of
     // cubic lattices
-    MAT::CrystalPlasticity::MillerBravaisToMiller(
+    MAT::CrystalPlasticity::miller_bravais_to_miller(
         slip_plane_normal_hex, slip_direction_hex, slip_plane_normal_, slip_direction_);
   }
   else if (lattice_type_ == "HCP" or lattice_type_ == "BCC" or lattice_type_ == "FCC")
@@ -1108,7 +1108,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
  | Read Lattice orientation matrix from .dat file                                    |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::SetupLatticeOrientation(INPUT::LineDefinition* linedef)
+void MAT::CrystalPlasticity::setup_lattice_orientation(INPUT::LineDefinition* linedef)
 {
   std::vector<double> fiber1;
   std::vector<double> fiber2;
@@ -1143,7 +1143,7 @@ void MAT::CrystalPlasticity::SetupLatticeOrientation(INPUT::LineDefinition* line
  | Transform Miller Bravais to Miller index notation                               |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::MillerBravaisToMiller(
+void MAT::CrystalPlasticity::miller_bravais_to_miller(
     const std::vector<CORE::LINALG::Matrix<4, 1>>& plane_normal_hex,
     const std::vector<CORE::LINALG::Matrix<4, 1>>& direction_hex,
     std::vector<CORE::LINALG::Matrix<3, 1>>& plane_normal,

@@ -69,7 +69,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const = 0;
 
     /// set relaxed fluid solution on structure (only for partitioned system)
-    virtual void SetRelaxedFluidSolution() = 0;
+    virtual void set_relaxed_fluid_solution() = 0;
 
     /// prepare timeloop of coupled problem
     virtual void PrepareTimeLoop() = 0;
@@ -135,7 +135,7 @@ namespace ADAPTER
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    virtual void UpdateFieldsAfterConvergence(
+    virtual void update_fields_after_convergence(
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) = 0;
 
     //! get the extractor
@@ -151,10 +151,10 @@ namespace ADAPTER
     virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() = 0;
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) = 0;
+    virtual void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) = 0;
 
     //! build the block null spaces
-    virtual void BuildArteryBlockNullSpace(
+    virtual void build_artery_block_null_space(
         Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) = 0;
   };
 }  // namespace ADAPTER

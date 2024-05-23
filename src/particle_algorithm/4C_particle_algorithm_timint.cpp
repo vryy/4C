@@ -39,10 +39,10 @@ PARTICLEALGORITHM::TimInt::~TimInt() = default;
 void PARTICLEALGORITHM::TimInt::Init()
 {
   // init dirichlet boundary condition handler
-  InitDirichletBoundaryCondition();
+  init_dirichlet_boundary_condition();
 
   // init temperature boundary condition handler
-  InitTemperatureBoundaryCondition();
+  init_temperature_boundary_condition();
 }
 
 void PARTICLEALGORITHM::TimInt::Setup(
@@ -63,7 +63,7 @@ void PARTICLEALGORITHM::TimInt::Setup(
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // set of particle types being excluded from time integration
   std::set<PARTICLEENGINE::TypeEnum> typesexludedfromtimeintegration;
@@ -76,7 +76,7 @@ void PARTICLEALGORITHM::TimInt::Setup(
   {
     // get reference to set of particle types subjected to dirichlet boundary conditions
     const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
-        dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
+        dirichletboundarycondition_->get_particle_types_subjected_to_dirichlet_bc_set();
 
     // particles subjected to dirichlet boundary conditions are not integrated in time
     for (PARTICLEENGINE::TypeEnum currtype : typessubjectedtodirichletbc)
@@ -88,42 +88,43 @@ void PARTICLEALGORITHM::TimInt::Setup(
     if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
-void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
+void PARTICLEALGORITHM::TimInt::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
   // insert dbc dependent states of all particle types
   if (dirichletboundarycondition_)
-    dirichletboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+    dirichletboundarycondition_->insert_particle_states_of_particle_types(particlestatestotypes);
 
   // insert tempbc dependent states of all particle types
   if (temperatureboundarycondition_)
-    temperatureboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+    temperatureboundarycondition_->insert_particle_states_of_particle_types(particlestatestotypes);
 }
 
 void PARTICLEALGORITHM::TimInt::SetInitialStates()
 {
   // add initial random noise to particle position
-  AddInitialRandomNoiseToPosition();
+  add_initial_random_noise_to_position();
 
   // set particle reference position
-  if (dirichletboundarycondition_) dirichletboundarycondition_->SetParticleReferencePosition();
+  if (dirichletboundarycondition_) dirichletboundarycondition_->set_particle_reference_position();
 
   // set particle reference position
-  if (temperatureboundarycondition_) temperatureboundarycondition_->SetParticleReferencePosition();
+  if (temperatureboundarycondition_)
+    temperatureboundarycondition_->set_particle_reference_position();
 
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)
-    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(0.0, true, true, true);
+    dirichletboundarycondition_->evaluate_dirichlet_boundary_condition(0.0, true, true, true);
 
   // evaluate temperature boundary condition
   if (temperatureboundarycondition_)
-    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(0.0);
+    temperatureboundarycondition_->evaluate_temperature_boundary_condition(0.0);
 }
 
 void PARTICLEALGORITHM::TimInt::SetCurrentTime(const double currenttime) { time_ = currenttime; }
 
-void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
+void PARTICLEALGORITHM::TimInt::init_dirichlet_boundary_condition()
 {
   // create dirichlet boundary condition handler
   dirichletboundarycondition_ =
@@ -135,13 +136,13 @@ void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
 
   // get reference to set of particle types subjected to dirichlet boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
-      dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
+      dirichletboundarycondition_->get_particle_types_subjected_to_dirichlet_bc_set();
 
   // no particle types are subjected to dirichlet boundary conditions
   if (typessubjectedtodirichletbc.empty()) dirichletboundarycondition_.reset();
 }
 
-void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
+void PARTICLEALGORITHM::TimInt::init_temperature_boundary_condition()
 {
   // create temperature boundary condition handler
   temperatureboundarycondition_ =
@@ -153,13 +154,13 @@ void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
 
   // get reference to set of particle types subjected to temperature boundary conditions
   const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtotempbc =
-      temperatureboundarycondition_->GetParticleTypesSubjectedToTemperatureBCSet();
+      temperatureboundarycondition_->get_particle_types_subjected_to_temperature_bc_set();
 
   // no particle types are subjected to temperature boundary conditions
   if (typessubjectedtotempbc.empty()) temperatureboundarycondition_.reset();
 }
 
-void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
+void PARTICLEALGORITHM::TimInt::add_initial_random_noise_to_position()
 {
   // init vector of initial position amplitude for each spatial direction
   std::vector<double> amplitude;
@@ -196,14 +197,14 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -249,14 +250,14 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // safety check
     if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) or
@@ -267,20 +268,20 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
   }
 }
 
-void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
+void PARTICLEALGORITHM::TimIntSemiImplicitEuler::pre_interaction_routine()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntSemiImplicitEuler::pre_interaction_routine");
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dt_, PARTICLEENGINE::Acceleration);
@@ -318,14 +319,14 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
 
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)
-    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, true, true);
+    dirichletboundarycondition_->evaluate_dirichlet_boundary_condition(time_, true, true, true);
 
   // evaluate temperature boundary condition
   if (temperatureboundarycondition_)
-    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
+    temperatureboundarycondition_->evaluate_temperature_boundary_condition(time_);
 }
 
-void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PostInteractionRoutine()
+void PARTICLEALGORITHM::TimIntSemiImplicitEuler::post_interaction_routine()
 {
   // nothing to do
 }
@@ -343,14 +344,14 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // modified velocity states
     if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
@@ -361,20 +362,20 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
   }
 }
 
-void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
+void PARTICLEALGORITHM::TimIntVelocityVerlet::pre_interaction_routine()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::pre_interaction_routine");
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
@@ -431,30 +432,30 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)
   {
-    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, false, true);
-    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(
+    dirichletboundarycondition_->evaluate_dirichlet_boundary_condition(time_, true, false, true);
+    dirichletboundarycondition_->evaluate_dirichlet_boundary_condition(
         time_ - dthalf_, false, true, false);
   }
 
   // evaluate temperature boundary condition
   if (temperatureboundarycondition_)
-    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
+    temperatureboundarycondition_->evaluate_temperature_boundary_condition(time_);
 }
 
-void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
+void PARTICLEALGORITHM::TimIntVelocityVerlet::post_interaction_routine()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::post_interaction_routine");
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+      particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
@@ -474,7 +475,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
 
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)
-    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, false, true, false);
+    dirichletboundarycondition_->evaluate_dirichlet_boundary_condition(time_, false, true, false);
 }
 
 FOUR_C_NAMESPACE_CLOSE

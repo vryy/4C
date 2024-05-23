@@ -512,9 +512,9 @@ bool MORTAR::ProjectorCalc<distype>::ProjectNodalNormal(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      f = EvaluateFNodalNormal(node, ele, eta);
+      f = evaluate_f_nodal_normal(node, ele, eta);
       if (abs(f) < MORTARCONVTOL) break;
-      df = EvaluateGradFNodalNormal(node, ele, eta);
+      df = evaluate_grad_f_nodal_normal(node, ele, eta);
       if (abs(df) < 1.0e-12)
       {
         xi[0] = 1.0e12;
@@ -560,7 +560,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectNodalNormal(
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectElementNormal(
+bool MORTAR::ProjectorCalc<distype>::project_element_normal(
     MORTAR::Node& node, MORTAR::Element& ele, double* xi)
 {
   bool ok = true;
@@ -574,9 +574,9 @@ bool MORTAR::ProjectorCalc<distype>::ProjectElementNormal(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      f = EvaluateFElementNormal(node, ele, eta);
+      f = evaluate_f_element_normal(node, ele, eta);
       if (abs(f) < MORTARCONVTOL) break;
-      df = EvaluateGradFElementNormal(node, ele, eta);
+      df = evaluate_grad_f_element_normal(node, ele, eta);
       if (abs(df) < 1.0e-12)
       {
         ok = false;
@@ -600,7 +600,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectElementNormal(
       // This iteration sometimes diverges, when the projection is far off.
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
-      // std::cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
+      // std::cout << "***WARNING*** project_element_normal:" << " Newton unconverged for NodeID "
       //     << node.Id() << " and MORTAR::ElementID " << ele.Id() << std::endl;
     }
 
@@ -614,7 +614,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectElementNormal(
   }
 
   else
-    FOUR_C_THROW("ProjectElementNormal: Called 2D version for 3D problem!");
+    FOUR_C_THROW("project_element_normal: Called 2D version for 3D problem!");
 
   return ok;
 }
@@ -678,9 +678,9 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      f = EvaluateFGaussPoint2D(gpx, gpn, ele, eta);
+      f = evaluate_f_gauss_point2_d(gpx, gpn, ele, eta);
       if (abs(f) < MORTARCONVTOL) break;
-      df = EvaluateGradFGaussPoint2D(gpn, ele, eta);
+      df = evaluate_grad_f_gauss_point2_d(gpn, ele, eta);
       if (abs(df) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
       eta[0] += (-f) / df;
     }
@@ -711,7 +711,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::CheckProjection4AUXPLANE(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxplane(
     MORTAR::Element& ele, double* ngp, double* globgp)
 {
   if (ele.Shape() == CORE::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
@@ -950,10 +950,10 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      EvaluateFGaussPoint3D(f, gpx, gpn, ele, eta, alpha);
+      evaluate_f_gauss_point3_d(f, gpx, gpn, ele, eta, alpha);
       conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
       if (conv <= MORTARCONVTOL) break;
-      EvaluateGradFGaussPoint3D(df, gpx, gpn, ele, eta, alpha);
+      evaluate_grad_f_gauss_point3_d(df, gpx, gpn, ele, eta, alpha);
 
       // safety check: if projection normal is parallel to the master element --> det can be zero
       double det = df.Determinant();
@@ -978,7 +978,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
       // Projection Check
       //      if (k==MORTARMAXITER-1)
       //      {
-      //        bool check = CheckProjection4AUXPLANE(ele, gpn,gpx);
+      //        bool check = check_projection4_auxplane(ele, gpn,gpx);
       //        if (check==false)
       //          FOUR_C_THROW("!!! STOP !!!   -->   Projection Error: Newton unconverged but GP on
       //          mele
@@ -1012,7 +1012,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectGaussPointAuxn3D(
+bool MORTAR::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
     const double* globgp, const double* auxn, MORTAR::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -1051,11 +1051,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectGaussPointAuxn3D(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      EvaluateFGaussPointAuxn3D(f, globgp, auxn, ele, eta, alpha);
+      evaluate_f_gauss_point_auxn3_d(f, globgp, auxn, ele, eta, alpha);
       conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
       // std::cout << "Iteration " << k << ": -> |f|=" << conv << std::endl;
       if (conv <= MORTARCONVTOL) break;
-      EvaluateGradFGaussPointAuxn3D(df, globgp, auxn, ele, eta, alpha);
+      evaluate_grad_f_gauss_point_auxn3_d(df, globgp, auxn, ele, eta, alpha);
 
       // solve deta = - inv(df) * f
       double jacdet = df.Invert();
@@ -1074,7 +1074,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectGaussPointAuxn3D(
     if (conv > MORTARCONVTOL)
     {
       //      std::cout << "res= " << conv << std::endl;
-      //      FOUR_C_THROW("ProjectGaussPointAuxn3D: Newton unconverged for GP"
+      //      FOUR_C_THROW("project_gauss_point_auxn3_d: Newton unconverged for GP"
       //          "at xi = (%f,%f,%f) onto MORTAR::ElementID %i", globgp[0], globgp[1],
       //          globgp[2], ele.Id());
       xi[0] = 1e12;
@@ -1103,10 +1103,10 @@ bool MORTAR::ProjectorCalc<distype>::ProjectGaussPointAuxn3D(
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3D(
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
     MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 3) FOUR_C_THROW("ProjectSNodeByMNormal3D is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1153,7 +1153,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3D(
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
-    double length = mele.ComputeUnitNormalAtXi(eta, unormal);
+    double length = mele.compute_unit_normal_at_xi(eta, unormal);
     for (int i = 0; i < 3; ++i) normalpart[i] = unormal[i] * alpha;
 
     for (int i = 0; i < 3; ++i) normal[i] = unormal[i] * length;
@@ -1260,7 +1260,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3D(
   // Newton iteration converged
   xi[0] = eta[0];
   xi[1] = eta[1];
-  mele.ComputeUnitNormalAtXi(eta, normal);
+  mele.compute_unit_normal_at_xi(eta, normal);
   dist = alpha;
 
   // bye bye
@@ -1272,11 +1272,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3D(
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) FOUR_C_THROW("ProjectSNodeByMNormal3D is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1316,7 +1316,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& sn
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
-    double length = mele.ComputeUnitNormalAtXi(eta, unormal);
+    double length = mele.compute_unit_normal_at_xi(eta, unormal);
     for (int i = 0; i < 3; ++i) normalpart[i] = unormal[i] * alpha;
 
     for (int i = 0; i < 3; ++i) normal[i] = unormal[i] * length;
@@ -1423,7 +1423,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& sn
   // Newton iteration converged
   xi[0] = eta[0];
   xi[1] = eta[1];
-  mele.ComputeUnitNormalAtXi(eta, normal);
+  mele.compute_unit_normal_at_xi(eta, normal);
   dist = alpha;
 
   // bye bye
@@ -1435,11 +1435,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& sn
  |  Project snode onto melement with master normal           farah 08/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) FOUR_C_THROW("ProjectSNodeByMNormal3DLin is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d_lin is only for 3D problems!");
 
   // start in the element center
   std::array<double, 2> eta = {0.0, 0.0};
@@ -1750,11 +1750,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Nod
  |  Project snode onto melement with master normal           farah 05/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) FOUR_C_THROW("ProjectSNodeByMNormal2DLin is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d_lin is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2038,10 +2038,10 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Nod
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2D(
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
     MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 2) FOUR_C_THROW("ProjectSNodeByMNormal2D is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2076,7 +2076,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2D(
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
-    double length = mele.ComputeUnitNormalAtXi(eta, unormal);
+    double length = mele.compute_unit_normal_at_xi(eta, unormal);
     for (int i = 0; i < 3; ++i) normalpart[i] = unormal[i] * alpha;
 
     for (int i = 0; i < 3; ++i) normal[i] = unormal[i] * length;
@@ -2177,7 +2177,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2D(
 
   // Newton iteration converged
   xi[0] = eta[0];
-  mele.ComputeUnitNormalAtXi(eta, normal);
+  mele.compute_unit_normal_at_xi(eta, normal);
   dist = alpha;
 
   // bye bye
@@ -2188,11 +2188,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2D(
  |  Project snode onto melement with master normal + Lin     farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) FOUR_C_THROW("ProjectSNodeByMNormal2D is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2227,7 +2227,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
-    double length = mele.ComputeUnitNormalAtXi(eta, unormal);
+    double length = mele.compute_unit_normal_at_xi(eta, unormal);
     for (int i = 0; i < 3; ++i) normalpart[i] = unormal[i] * alpha;
 
     for (int i = 0; i < 3; ++i) normal_k[i] = unormal[i] * length;
@@ -2331,7 +2331,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
   //**********************************************
   // Newton iteration converged
   xi[0] = eta[0];
-  double normallength = mele.ComputeUnitNormalAtXi(eta, normal);
+  double normallength = mele.compute_unit_normal_at_xi(eta, normal);
   dist = alpha;
 
 
@@ -2517,16 +2517,16 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal(
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal(
     MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ == 2)
   {
-    ProjectSNodeByMNormal2D(snode, mele, xi, normal, dist);
+    project_s_node_by_m_normal2_d(snode, mele, xi, normal, dist);
   }
   else if (ndim_ == 3)
   {
-    ProjectSNodeByMNormal3D(snode, mele, xi, normal, dist);
+    project_s_node_by_m_normal3_d(snode, mele, xi, normal, dist);
   }
   else
   {
@@ -2541,7 +2541,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal(
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -2549,11 +2549,13 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node&
 
   if (ndim_ == 2)
   {
-    success = ProjectSNodeByMNodalNormal2DLin(snode, mele, xi, normal, dist, normaltolineLin);
+    success =
+        project_s_node_by_m_nodal_normal2_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else if (ndim_ == 3)
   {
-    success = ProjectSNodeByMNodalNormal3DLin(snode, mele, xi, normal, dist, normaltolineLin);
+    success =
+        project_s_node_by_m_nodal_normal3_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else
   {
@@ -2567,13 +2569,13 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node&
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Node& snode,
+bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal_lin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
     std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ == 2)
   {
-    ProjectSNodeByMNormal2DLin(snode, mele, xi, normal, dist, normaltolineLin);
+    project_s_node_by_m_normal2_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else if (ndim_ == 3)
   {
@@ -2591,7 +2593,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Node& snod
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::EvaluateFNodalNormal(
+double MORTAR::ProjectorCalc<distype>::evaluate_f_nodal_normal(
     MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - xs ) x ns,
@@ -2620,7 +2622,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateFNodalNormal(
  |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::EvaluateGradFNodalNormal(
+double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
     MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
@@ -2647,7 +2649,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateGradFNodalNormal(
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::EvaluateFElementNormal(
+double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
     MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xis - xm ) x ( Nj * njs),
@@ -2662,7 +2664,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateFElementNormal(
 
   // collect necessary data (slave side)
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) FOUR_C_THROW("EvaluateFElementNormal: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("evaluate_f_element_normal: Null pointer!");
 
   CORE::LINALG::Matrix<n_, 1> val;
   CORE::LINALG::Matrix<ndim_, n_> coord;
@@ -2715,7 +2717,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateFElementNormal(
  |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::EvaluateGradFElementNormal(
+double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
     MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
 {
   if (ndim_ == 3) FOUR_C_THROW("This Projector is only for 2D Problems!");
@@ -2739,7 +2741,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateGradFElementNormal(
   CORE::LINALG::Matrix<ndim_, n_> coord;
 
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) FOUR_C_THROW("EvaluateGradFElementNormal: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("evaluate_grad_f_element_normal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
   if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
@@ -2800,7 +2802,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateGradFElementNormal(
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint2D(
+double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point2_d(
     const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
@@ -2831,7 +2833,7 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint2D(
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoint2D(
+double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point2_d(
     const double* gpn, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
@@ -2858,7 +2860,7 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoin
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(double* f,
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_d(double* f,
     const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta,
     const double& alpha)
 {
@@ -2884,7 +2886,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(do
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3D(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point3_d(
     CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, MORTAR::Element& ele,
     const double* eta, const double& alpha)
 {
@@ -2916,7 +2918,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3
  |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::EvaluateFGaussPointAuxn3D(double* f, const double* globgp,
+bool MORTAR::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, const double* globgp,
     const double* auxn, MORTAR::Element& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * auxn - globgp
@@ -2941,7 +2943,7 @@ bool MORTAR::ProjectorCalc<distype>::EvaluateFGaussPointAuxn3D(double* f, const 
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::EvaluateGradFGaussPointAuxn3D(
+bool MORTAR::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn3_d(
     CORE::LINALG::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
     MORTAR::Element& ele, const double* eta, const double& alpha)
 {

@@ -36,10 +36,10 @@ namespace DRT
     /*!
       This internal class keeps all the working arrays needed to
       calculate the interface stabilization for XFEM with fluid elements.
-      The method ElementXfemInterfaceHybridLM() provides a clean and fast element implementation
+      The method element_xfem_interface_hybrid_lm() provides a clean and fast element implementation
       for Mixed/Stress/Hybrid interface coupling, using either Cauchy stress-based or viscous
       stress-based Lagrange multipliers.
-      The method ElementXfemInterfaceNIT() provides a clean and fast element implementation
+      The method element_xfem_interface_nit() provides a clean and fast element implementation
       for interface coupling using Nitsche's method (only the cut element sided mortaring
       for xfluid and xfluidfluid applications).
       The method ElementXfemInterfaceNIT2() provides a clean and fast element implementation
@@ -131,8 +131,9 @@ namespace DRT
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override;
 
       /// evaluate the shape functions in the XFEM
-      int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+      int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override;
 
@@ -146,7 +147,7 @@ namespace DRT
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms,
           const CORE::FE::GaussIntegration& intpoints) override;
 
-      int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
+      int compute_error_interface(DRT::ELEMENTS::Fluid* ele,         ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -162,7 +163,7 @@ namespace DRT
 
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
       /// rhs
-      void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
+      void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -186,7 +187,7 @@ namespace DRT
           ) override;
 
       /// add Nitsche (NIT) interface condition to element matrix and rhs
-      void ElementXfemInterfaceNIT(DRT::ELEMENTS::Fluid* ele,        ///< fluid element
+      void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,     ///< fluid element
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -208,18 +209,18 @@ namespace DRT
           ) override;
 
       ///
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                            ///< discretization
-          const std::vector<int>& lm,                          ///< local map
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element vector
-          const CORE::FE::GaussIntegration& intpoints          ///< integration points
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+          DRT::Discretization& dis,                              ///< discretization
+          const std::vector<int>& lm,                            ///< local map
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,       ///< element vector
+          const CORE::FE::GaussIntegration& intpoints            ///< integration points
           ) override;
 
       ///
-      void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                            ///< discretization
-          const std::vector<int>& lm,                          ///< local map
-          CORE::LINALG::SerialDenseVector& elevec1_epetra      ///< element vector
+      void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
+          DRT::Discretization& dis,                              ///< discretization
+          const std::vector<int>& lm,                            ///< local map
+          CORE::LINALG::SerialDenseVector& elevec1_epetra        ///< element vector
           ) override;
 
      private:
@@ -234,7 +235,7 @@ namespace DRT
           Teuchos::RCP<CORE::MAT::Material> mat = Teuchos::null);
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point
-      void GetInterfaceJumpVectors(
+      void get_interface_jump_vectors(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
           Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
           CORE::LINALG::Matrix<nsd_, 1>&
@@ -259,7 +260,7 @@ namespace DRT
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point for
       //! previous time step
-      void GetInterfaceJumpVectorsOldState(
+      void get_interface_jump_vectors_old_state(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
           Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
           CORE::LINALG::Matrix<nsd_, 1>&
@@ -283,7 +284,7 @@ namespace DRT
       );
 
       //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-      double NIT_Compute_ViscPenalty_Stabfac(
+      double nit_compute_visc_penalty_stabfac(
           const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
                                                  ///< which the stabilization factor is computed
           const double inv_hk,                   ///< the inverse characteristic element length
@@ -293,10 +294,10 @@ namespace DRT
 
       //! get the constant which satisfies the trace inequality depending on the spatial dimension
       //! and polynomial order of the element
-      double NIT_getTraceEstimateConstant(const CORE::FE::CellType ele_distype);
+      double nit_get_trace_estimate_constant(const CORE::FE::CellType ele_distype);
 
       //! prepare coupling matrices, that include contributions from convective stabilization
-      void HybridLM_CreateSpecialContributionMatrices(
+      void hybrid_lm_create_special_contribution_matrices(
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           std::set<int>& begids,  ///< ids of intersecting boundary elements
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
@@ -319,7 +320,7 @@ namespace DRT
       );
 
       //! assemble side's interface force
-      void AssembleInterfaceForce(
+      void assemble_interface_force(
           Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
           DRT::Discretization& cutdis,             ///< cut discretization
           std::vector<int>& lm,                    ///< local dof map
@@ -331,7 +332,7 @@ namespace DRT
 
       //! build matrices from volume-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM-coupling \author kruse \date 06/14
-      void HybridLM_Build_VolBased(const std::vector<CORE::FE::GaussIntegration>& intpoints,
+      void hybrid_lm_build_vol_based(const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
@@ -353,7 +354,7 @@ namespace DRT
 
       //! evaluate matrices from volume-based terms for Cauchy stress-based mixed/hybrid LM coupling
       //! at current Gauss-point
-      void MHCS_Evaluate_VolBased(
+      void mhcs_evaluate_vol_based(
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
           const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
           CORE::LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
@@ -366,7 +367,7 @@ namespace DRT
 
       //! evaluate matrices from volume-based terms for viscous stress-based mixed/hybrid LM
       //! coupling at current Gauss-point \author kruse \date 06/14
-      void MHVS_Evaluate_VolBased(
+      void mhvs_evaluate_vol_based(
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
           CORE::LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
           CORE::LINALG::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
@@ -385,7 +386,7 @@ namespace DRT
 
       //! evaluate matrices from surface-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM coupling at current Gauss-point \author kruse \date 06/14
-      void HybridLM_Evaluate_SurfBased(
+      void hybrid_lm_evaluate_surf_based(
           Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
           const CORE::LINALG::Matrix<nen_, nen_>& bK_ss,
           CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
@@ -405,7 +406,7 @@ namespace DRT
           const bool is_MHVS);
 
       //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
-      void GetMaterialParametersVolumeCell(Teuchos::RCP<const CORE::MAT::Material> material,
+      void get_material_parameters_volume_cell(Teuchos::RCP<const CORE::MAT::Material> material,
           double& densaf,  // done
           double& viscaf,  // done
           double& gamma    // done
@@ -425,17 +426,17 @@ namespace DRT
 
       CORE::LINALG::Matrix<nsd_, nen_>
           evelaf_;  ///< element velocity at time t^n+af, implemented also in base class, not
-                    ///< accessable via ExtractValuesFromGlobalVector
+                    ///< accessable via extract_values_from_global_vector
       CORE::LINALG::Matrix<nen_, 1>
           epreaf_;  ///< element pressure at time t^n+af, implemented also in base class, not
-                    ///< accessable via ExtractValuesFromGlobalVector
+                    ///< accessable via extract_values_from_global_vector
 
       CORE::LINALG::Matrix<nsd_, nen_>
           eveln_;  ///< element velocity at time t^n, implemented also in base class, not accessable
-                   ///< via ExtractValuesFromGlobalVector
+                   ///< via extract_values_from_global_vector
       CORE::LINALG::Matrix<nen_, 1>
           epren_;  ///< element velocity at time t^n, implemented also in base
-                   ///< class, not accessable via ExtractValuesFromGlobalVector
+                   ///< class, not accessable via extract_values_from_global_vector
 
       CORE::LINALG::Matrix<nsd_, 1> ivelint_jump_;        ///< interface velocity jump at t^n+1
       CORE::LINALG::Matrix<nsd_, 1> itraction_jump_;      ///< interface traction jump at t^n+1

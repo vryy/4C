@@ -35,7 +35,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
+    std::string get_parameter_list_name() const override { return "CheapSIMPLE Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;
@@ -58,7 +58,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
-    std::string getParameterListName() const override { return "BGS Parameters"; }
+    std::string get_parameter_list_name() const override { return "BGS Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;

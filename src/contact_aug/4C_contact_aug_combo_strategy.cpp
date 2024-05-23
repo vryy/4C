@@ -49,12 +49,12 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
         CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(
             p_combo, strat_count.str());
 
-    CreateStrategyInterfaces(strat_type, ref_interfaces, strat_interfaces);
+    create_strategy_interfaces(strat_type, ref_interfaces, strat_interfaces);
 
     strategies.push_back(STRATEGY::Factory::BuildStrategy(strat_type, params, false, false, maxdof,
         strat_interfaces, dof_row_map, node_row_map, dim, comm, data));
 
-    CreateStrategyLinearSolvers(
+    create_strategy_linear_solvers(
         *strategies.back(), lin_solver_count.str(), params, cparams_interface, strat_lin_solvers);
 
     /// clear and increase strategy count string
@@ -70,7 +70,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
+void CONTACT::AUG::ComboStrategy::create_strategy_interfaces(
     const enum INPAR::CONTACT::SolvingStrategy strat_type,
     const plain_interface_set& ref_interfaces, plain_interface_set& strat_interfaces)
 {
@@ -85,7 +85,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
     const CONTACT::AUG::Interface& ref_interface = dynamic_cast<CONTACT::AUG::Interface&>(**cit);
 
     const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> idata_ptr =
-        ref_interface.SharedInterfaceDataPtr();
+        ref_interface.shared_interface_data_ptr();
     CONTACT::AUG::InterfaceDataContainer& idata = *idata_ptr;
 
     /* create a new interface by copying the data pointer from the reference
@@ -101,7 +101,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
+void CONTACT::AUG::ComboStrategy::create_strategy_linear_solvers(
     const CONTACT::AbstractStrategy& strategy, const std::string& lin_solver_id_str,
     const Teuchos::ParameterList& params, CONTACT::ParamsInterface* cparams_interface,
     plain_lin_solver_set& strat_lin_solvers)
@@ -124,7 +124,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
 
   DRT::Discretization* str_discret = cparams_interface->Get<DRT::Discretization>();
 
-  strat_lin_solvers.push_back(STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
+  strat_lin_solvers.push_back(STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));
 }
 
@@ -193,12 +193,12 @@ void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cpar
     }
     case MORTAR::eval_force_stiff:
     {
-      RunPostEvalForceStiff(cparams);
+      run_post_eval_force_stiff(cparams);
       break;
     }
     case MORTAR::eval_static_constraint_rhs:
     {
-      RunPostEvalStaticConstraintRHS(cparams);
+      run_post_eval_static_constraint_rhs(cparams);
       break;
     }
     default:
@@ -259,20 +259,20 @@ void CONTACT::AUG::ComboStrategy::UpdateActiveSet() { return Get().UpdateActiveS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvaluateRelMovPredict() { Get().EvaluateRelMovPredict(); }
+void CONTACT::AUG::ComboStrategy::evaluate_rel_mov_predict() { Get().evaluate_rel_mov_predict(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::ActiveSetSemiSmoothConverged() const
+bool CONTACT::AUG::ComboStrategy::active_set_semi_smooth_converged() const
 {
-  return Get().ActiveSetSemiSmoothConverged();
+  return Get().active_set_semi_smooth_converged();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::GetOldActiveRowNodes() const
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::get_old_active_row_nodes() const
 {
-  return Get().GetOldActiveRowNodes();
+  return Get().get_old_active_row_nodes();
 }
 
 /*----------------------------------------------------------------------------*
@@ -284,10 +284,10 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::GetOldSlipRowNodes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::SlNormalDoFRowMapPtr(
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::sl_normal_do_f_row_map_ptr(
     const bool& redist) const
 {
-  return Get().SlNormalDoFRowMapPtr(redist);
+  return Get().sl_normal_do_f_row_map_ptr(redist);
 }
 
 /*----------------------------------------------------------------------------*
@@ -299,17 +299,17 @@ const Epetra_Map& CONTACT::AUG::ComboStrategy::SlNormalDoFRowMap(const bool& red
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::SlTangentialDoFRowMapPtr(
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::ComboStrategy::sl_tangential_do_f_row_map_ptr(
     const bool& redist) const
 {
-  return Get().SlTangentialDoFRowMapPtr(redist);
+  return Get().sl_tangential_do_f_row_map_ptr(redist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::AUG::ComboStrategy::SlTangentialDoFRowMap(const bool& redist) const
+const Epetra_Map& CONTACT::AUG::ComboStrategy::sl_tangential_do_f_row_map(const bool& redist) const
 {
-  return Get().SlTangentialDoFRowMap(redist);
+  return Get().sl_tangential_do_f_row_map(redist);
 }
 
 /*----------------------------------------------------------------------------*
@@ -322,10 +322,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetRhsBlockPtrForNormCheck(
+Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::get_rhs_block_ptr_for_norm_check(
     const enum CONTACT::VecBlockType& bt) const
 {
-  return Get().GetRhsBlockPtrForNormCheck(bt);
+  return Get().get_rhs_block_ptr_for_norm_check(bt);
 }
 
 /*----------------------------------------------------------------------------*
@@ -346,10 +346,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixB
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetCondensedMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
+CONTACT::AUG::ComboStrategy::get_condensed_matrix_block_ptr(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const
 {
-  return Get().GetCondensedMatrixBlockPtr(kteff, timefac_np);
+  return Get().get_condensed_matrix_block_ptr(kteff, timefac_np);
 }
 
 /*----------------------------------------------------------------------------*
@@ -366,12 +367,12 @@ void CONTACT::AUG::ComboStrategy::EvalConstrRHS() { FOUR_C_THROW("Unnecessary in
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
+void CONTACT::AUG::ComboStrategy::update_active_set_semi_smooth(const bool firstStepPredictor)
 {
   FOUR_C_THROW(
       "Unnecessary in this Strategy. Furthermore, this method is "
       "deprecated in the AUG::Strategy framework and has been replaced by "
-      "CONTACT::AUG::UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& ).");
+      "CONTACT::AUG::update_active_set_semi_smooth( const CONTACT::ParamsInterface& ).");
 }
 
 /*----------------------------------------------------------------------*
@@ -391,14 +392,14 @@ void CONTACT::AUG::ComboStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::WasInContactLastIter() const
+bool CONTACT::AUG::ComboStrategy::was_in_contact_last_iter() const
 {
-  return Get().WasInContactLastIter();
+  return Get().was_in_contact_last_iter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::ComputeContactStresses() { Get().ComputeContactStresses(); }
+void CONTACT::AUG::ComboStrategy::compute_contact_stresses() { Get().compute_contact_stresses(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -411,12 +412,12 @@ void CONTACT::AUG::ComboStrategy::PostSetup(bool redistributed, bool init)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PostStoreDirichletStatus(
+void CONTACT::AUG::ComboStrategy::post_store_dirichlet_status(
     Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   no_dbc_.Assemble(*dbcmaps->CondMap(), data_);
 
-  Get().PostStoreDirichletStatus(dbcmaps);
+  Get().post_store_dirichlet_status(dbcmaps);
 }
 
 /*----------------------------------------------------------------------------*
@@ -492,18 +493,18 @@ void CONTACT::AUG::ComboStrategy::EvalForceStiff(CONTACT::ParamsInterface& cpara
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostEvalForceStiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   SwitchUpdate(cparams);
   RunPostEvalForce(cparams);
 
-  Get().AssembleContactStiff();
+  Get().assemble_contact_stiff();
   Get().PostEvalForceStiff(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
 {
   Get().SetCurrentEvalState(cparams);
   Get().InitEvalInterface(cparams);
@@ -511,13 +512,14 @@ void CONTACT::AUG::ComboStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterfa
   Get().Initialize(cparams.GetActionType());
   Get().AssembleGap();
 
-  Get().EvalConstraintForces();
+  Get().eval_constraint_forces();
   Get().ZeroizeLMForces();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostEvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::ComboStrategy::run_post_eval_static_constraint_rhs(
+    CONTACT::ParamsInterface& cparams)
 {
   //  switch_->Update( cparams );
 
@@ -569,18 +571,19 @@ void CONTACT::AUG::ComboStrategy::RunPostComputeX(const CONTACT::ParamsInterface
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RunPostApplyJacobianInverse(
+void CONTACT::AUG::ComboStrategy::run_post_apply_jacobian_inverse(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
     const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  Get().RunPostApplyJacobianInverse(cparams, rhs, result, xold, grp);
+  Get().run_post_apply_jacobian_inverse(cparams, rhs, result, xold, grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vector& str_rhs) const
+void CONTACT::AUG::ComboStrategy::remove_condensed_contributions_from_rhs(
+    Epetra_Vector& str_rhs) const
 {
-  Get().RemoveCondensedContributionsFromRhs(str_rhs);
+  Get().remove_condensed_contributions_from_rhs(str_rhs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -593,10 +596,10 @@ void CONTACT::AUG::ComboStrategy::CorrectParameters(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::ResetLagrangeMultipliers(
+void CONTACT::AUG::ComboStrategy::reset_lagrange_multipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
-  Get().ResetLagrangeMultipliers(cparams, xnew);
+  Get().reset_lagrange_multipliers(cparams, xnew);
 }
 
 /*----------------------------------------------------------------------------*
@@ -637,12 +640,12 @@ double CONTACT::AUG::ComboStrategy::GetPotentialValue(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::ComboStrategy::GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
+double CONTACT::AUG::ComboStrategy::get_linearized_potential_value_terms(const Epetra_Vector& dir,
     const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
-  return Get().GetLinearizedPotentialValueTerms(dir, mrt_type, linorder, lintype);
+  return Get().get_linearized_potential_value_terms(dir, mrt_type, linorder, lintype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -654,15 +657,15 @@ void CONTACT::AUG::ComboStrategy::WriteOutput(IO::DiscretizationWriter& writer) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvaluateReferenceState() { Get().EvaluateReferenceState(); }
+void CONTACT::AUG::ComboStrategy::evaluate_reference_state() { Get().evaluate_reference_state(); }
 
 /*----------------------------------------------------------------------*
  *  *----------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::DynRedistributeContact(
+bool CONTACT::AUG::ComboStrategy::dyn_redistribute_contact(
     const Teuchos::RCP<const Epetra_Vector>& dis, Teuchos::RCP<const Epetra_Vector> vel,
     const int nlniter)
 {
-  const bool is_redistributed = Get().DynRedistributeContact(dis, vel, nlniter);
+  const bool is_redistributed = Get().dyn_redistribute_contact(dis, vel, nlniter);
 
   // This function must be called manually, since the internal PostSetup
   // call will not effect this wrapper class.

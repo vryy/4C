@@ -82,7 +82,7 @@ MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
 /*----------------------------------------------------------------------*
  |  access method for calculating advanced reaction terms    vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_term(
     const int k,                       //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -99,14 +99,14 @@ double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceTerm(
   std::vector<double> phinp_mod(ModifyPhi(phinp, scale_phi));
 
   // call the real evaluation
-  return reaction_->CalcReaBodyForceTerm(
+  return reaction_->calc_rea_body_force_term(
       k, numscal, phinp_mod, constants, couprole, scale_reac, scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
+void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_deriv(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
@@ -124,7 +124,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
   std::vector<double> phinp_mod(ModifyPhi(phinp, scale_phi));
 
   // call the real evaluation
-  reaction_->CalcReaBodyForceDeriv(
+  reaction_->calc_rea_body_force_deriv(
       k, numscal, derivs, phinp_mod, constants, couprole, scale_reac, scale_phi);
 
   return;
@@ -134,7 +134,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
  |  helper for calculating advanced reaction term derivatives after additional    |
  |  variables (e.g. for monolithic coupling)                     kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDerivAddVariables(
+void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::calc_rea_body_force_deriv_add_variables(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -154,7 +154,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDerivAd
   }
 
   // call the real evaluation
-  reaction_->CalcReaBodyForceDerivAddVariables(
+  reaction_->calc_rea_body_force_deriv_add_variables(
       k, derivs, variables, constants, couprole, scale_reac, scale_phi);
 
   return;
@@ -194,7 +194,7 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::Initialize(int numscal,  //!< number
 /*----------------------------------------------------------------------*
  |  access method for calculating advanced reaction terms    vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::ReacStart::calc_rea_body_force_term(
     const int k,                       //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -211,15 +211,15 @@ double MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceTerm(
   std::vector<double> phinp_mod(ModifyPhi(phinp));
 
   // call the real evaluation
-  return reaction_->CalcReaBodyForceTerm(
+  return reaction_->calc_rea_body_force_term(
       k, numscal, phinp_mod, constants, couprole, scale_reac, scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceDeriv(int k,  //!< current scalar id
-    int numscal,                                                          //!< number of scalars
+void MAT::PAR::REACTIONCOUPLING::ReacStart::calc_rea_body_force_deriv(int k,  //!< current scalar id
+    int numscal,                                                              //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -238,7 +238,7 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceDeriv(int k,  //!< c
   std::vector<double> myderivs(derivs.size(), 0.0);
 
   // call reaction evaluation
-  reaction_->CalcReaBodyForceDeriv(
+  reaction_->calc_rea_body_force_deriv(
       k, numscal, myderivs, phinp_mod, constants, couprole, scale_reac, scale_phi);
 
   for (int toderive = 0; toderive < numscal; toderive++)
@@ -287,7 +287,7 @@ void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::Initialize(
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::calc_rea_body_force_term(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -314,7 +314,7 @@ double MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceTerm(
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceDeriv(
+void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::calc_rea_body_force_deriv(
     const int k,                       //!< current scalar id
     int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
@@ -364,7 +364,7 @@ void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::Initialize(
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::calc_rea_body_force_term(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -391,7 +391,7 @@ double MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceTerm(
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceDeriv(
+void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::calc_rea_body_force_deriv(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
@@ -442,8 +442,8 @@ void MAT::PAR::REACTIONCOUPLING::Constant::Initialize(int numscal,  //!< number 
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceTerm(int k,  //!< current scalar id
-    int numscal,                                                          //!< number of scalars
+double MAT::PAR::REACTIONCOUPLING::Constant::calc_rea_body_force_term(int k,  //!< current scalar id
+    int numscal,                                                              //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,  //!< vector containing values which are independent of the scalars (e.g.
@@ -458,8 +458,8 @@ double MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceTerm(int k,  //!< c
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceDeriv(int k,  //!< current scalar id
-    int numscal,                                                         //!< number of scalars
+void MAT::PAR::REACTIONCOUPLING::Constant::calc_rea_body_force_deriv(int k,  //!< current scalar id
+    int numscal,                                                             //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -490,7 +490,7 @@ void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::Initialize(int numscal,  //!< 
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::MichaelisMenten::calc_rea_body_force_term(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -517,7 +517,7 @@ double MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceTerm(
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceDeriv(
+void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::calc_rea_body_force_deriv(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
@@ -628,7 +628,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
+double MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term(
     const int k,                       //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -643,12 +643,15 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return CalcReaBodyForceTermInternal<1>(k, numscal, phinp, constants, couprole, scale_reac);
+      return calc_rea_body_force_term_internal<1>(
+          k, numscal, phinp, constants, couprole, scale_reac);
     case 2:
-      return CalcReaBodyForceTermInternal<2>(k, numscal, phinp, constants, couprole, scale_reac);
+      return calc_rea_body_force_term_internal<2>(
+          k, numscal, phinp, constants, couprole, scale_reac);
 
     case 3:
-      return CalcReaBodyForceTermInternal<3>(k, numscal, phinp, constants, couprole, scale_reac);
+      return calc_rea_body_force_term_internal<3>(
+          k, numscal, phinp, constants, couprole, scale_reac);
 
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
@@ -659,7 +662,7 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
+double MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term_internal(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
@@ -671,7 +674,7 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
 )
 {
   // copy phi vector in different format to be read by the function
-  BuildPhiVectorForFunction(phinp, numscal);
+  build_phi_vector_for_function(phinp, numscal);
 
   std::vector<std::pair<std::string, double>> variables_for_parser_evaluation = variables_;
 
@@ -695,8 +698,9 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTermInternal(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< current scalar id
-    int numscal,                                                           //!< number of scalars
+void MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv(
+    int k,                             //!< current scalar id
+    int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -709,13 +713,13 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return CalcReaBodyForceDerivInternal<1>(
+      return calc_rea_body_force_deriv_internal<1>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
     case 2:
-      return CalcReaBodyForceDerivInternal<2>(
+      return calc_rea_body_force_deriv_internal<2>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
     case 3:
-      return CalcReaBodyForceDerivInternal<3>(
+      return calc_rea_body_force_deriv_internal<3>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
@@ -725,7 +729,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_internal(
     int k,                             //!< current scalar id
     int numscal,                       //!< number of scalars
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
@@ -738,7 +742,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
 )
 {
   // copy phi vector in different format to be read by the function
-  BuildPhiVectorForFunction(phinp, numscal);
+  build_phi_vector_for_function(phinp, numscal);
 
   std::vector<std::pair<std::string, double>> constants_for_parser_evaluation = constants;
 
@@ -768,7 +772,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivInternal(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_add_variables(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -781,13 +785,13 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return CalcReaBodyForceDerivAddVariablesInternal<1>(
+      return calc_rea_body_force_deriv_add_variables_internal<1>(
           k, derivs, variables, constants, couprole, scale_reac);
     case 2:
-      return CalcReaBodyForceDerivAddVariablesInternal<2>(
+      return calc_rea_body_force_deriv_add_variables_internal<2>(
           k, derivs, variables, constants, couprole, scale_reac);
     case 3:
-      return CalcReaBodyForceDerivAddVariablesInternal<3>(
+      return calc_rea_body_force_deriv_add_variables_internal<3>(
           k, derivs, variables, constants, couprole, scale_reac);
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
@@ -797,7 +801,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesInternal(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_add_variables_internal(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -827,7 +831,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesIn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::add_additional_variables(
     const int k,                                                   //!< current scalar id
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
     const std::vector<double>& couprole                            //!< coupling role vector
@@ -836,11 +840,11 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
   switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
-      return AddAdditionalVariablesInternal<1>(k, variables, couprole);
+      return add_additional_variables_internal<1>(k, variables, couprole);
     case 2:
-      return AddAdditionalVariablesInternal<2>(k, variables, couprole);
+      return add_additional_variables_internal<2>(k, variables, couprole);
     case 3:
-      return AddAdditionalVariablesInternal<3>(k, variables, couprole);
+      return add_additional_variables_internal<3>(k, variables, couprole);
     default:
       FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
@@ -849,7 +853,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariablesInternal(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::add_additional_variables_internal(
     const int k,                                                   //!< current scalar id
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
     const std::vector<double>& couprole                            //!< coupling role vector
@@ -863,7 +867,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariablesInternal(
 /*---------------------------------------------------------------------------------/
  | helper for evaluation by function                                     vuong 08/16 |
 /--------------------------------------------------------------------------------- */
-void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
+void MAT::PAR::REACTIONCOUPLING::ByFunction::build_phi_vector_for_function(
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     int numscal                        //!< number of scalars
 )

@@ -483,7 +483,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
         if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
                 contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
             algo != INPAR::MORTAR::algorithm_gpts)
-          SetPoroParentElement(slavetype, mastertype, cele, ele);
+          set_poro_parent_element(slavetype, mastertype, cele, ele);
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
@@ -493,7 +493,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
           if (faceele->ParentElement() == nullptr) FOUR_C_THROW("face parent does not exist");
           if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id()) == -1)
             FOUR_C_THROW("vol dis does not have parent ele");
-          cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+          cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
         }
 
         //------------------------------------------------------------------
@@ -522,7 +522,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
        * Since this is the initial setup, we don't need redistribution here, just a proper extension
        * of the interface ghosting.
        */
-      interface->UpdateParallelLayoutAndDataStructures(false, true, maxdof, 0.0);
+      interface->update_parallel_layout_and_data_structures(false, true, maxdof, 0.0);
     }
     else
       interface->FillComplete(true, maxdof);
@@ -530,7 +530,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
     if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
             contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
         algo != INPAR::MORTAR::algorithm_gpts)
-      FindPoroInterfaceTypes(
+      find_poro_interface_types(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
   }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
@@ -650,7 +650,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
   // print initial parallel redistribution
   if (Comm().MyPID() == 0 && Comm().NumProc() > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
-  for (auto& interface : interfaces) interface->PrintParallelDistribution();
+  for (auto& interface : interfaces) interface->print_parallel_distribution();
 
   // create binary search tree
   for (auto& interface : interfaces) interface->CreateSearchTree();
@@ -665,15 +665,15 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
 bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter lists from GLOBAL::Problem
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
   const Teuchos::ParameterList& tsic = GLOBAL::Problem::Instance()->TSIContactParams();
-  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->structural_dynamic_params();
 
   // read Problem Type and Problem Dimension from GLOBAL::Problem
   const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
   const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
@@ -1007,7 +1007,8 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         problemtype == GLOBAL::ProblemType::poroscatra ||
         problemtype == GLOBAL::ProblemType::fpsi || problemtype == GLOBAL::ProblemType::fpsi_xfem)
     {
-      const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+      const Teuchos::ParameterList& porodyn =
+          GLOBAL::Problem::Instance()->poroelast_dynamic_params();
       if ((CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                   INPAR::MORTAR::shape_dual &&
               CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
@@ -1046,7 +1047,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       if ((dim != 3) && (dim != 2))
       {
         const Teuchos::ParameterList& porodyn =
-            GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+            GLOBAL::Problem::Instance()->poroelast_dynamic_params();
         if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
           FOUR_C_THROW("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
       }
@@ -1093,7 +1094,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   else if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_gpts)
   {
-    const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->ContactDynamicParams())
+    const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->contact_dynamic_params())
         .set("SYSTEM", "none");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
@@ -1172,7 +1173,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
            problemtype == GLOBAL::ProblemType::fpsi or
            problemtype == GLOBAL::ProblemType::poroscatra)
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     if (problemtype == GLOBAL::ProblemType::poroelast or problemtype == GLOBAL::ProblemType::fpsi)
       cparams.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
     else if (problemtype == GLOBAL::ProblemType::poroscatra)
@@ -1190,7 +1191,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
   else if (problemtype == GLOBAL::ProblemType::fpsi_xfem)
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::fpi);
     // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     double porotimefac =
@@ -1255,14 +1256,14 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
          ++i)
       dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy())
           .ContactInterfaces()[i]
-          ->CreateVolumeGhosting();
+          ->create_volume_ghosting();
   }
 
   // If Parent Elements are required, we need to reconnect them before contact restart!
   if ((GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
           GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) ||
       GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
-    ReconnectParentElements();
+    reconnect_parent_elements();
 
   // this is contact, thus we need the displacement state for restart
   // let strategy object do all the work
@@ -1274,7 +1275,7 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
+void CONTACT::Manager::postprocess_quantities(IO::DiscretizationWriter& output)
 {
   if (GetStrategy().IsNitsche()) return;
 
@@ -1342,7 +1343,7 @@ void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().ComputeContactStresses();
+  GetStrategy().compute_contact_stresses();
 
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
@@ -1544,7 +1545,7 @@ void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // *********************************************************************
   // poro contact
   // *********************************************************************
-  bool poro = GetStrategy().HasPoroNoPenetration();
+  bool poro = GetStrategy().has_poro_no_penetration();
   if (poro)
   {
     // output of poro no penetration lagrange multiplier!
@@ -1560,16 +1561,16 @@ void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Manager::PostprocessQuantitiesPerInterface(
+void CONTACT::Manager::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
-  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
+  GetStrategy().postprocess_quantities_per_interface(outputParams);
 }
 
 /*----------------------------------------------------------------------------------------------*
  |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
  *---------------------------------------------------------------------------------------------*/
-void CONTACT::Manager::ReconnectParentElements()
+void CONTACT::Manager::reconnect_parent_elements()
 {
   {
     const Epetra_Map* elecolmap = discret_.ElementColMap();
@@ -1591,12 +1592,13 @@ void CONTACT::Manager::ReconnectParentElements()
         int volgid = faceele->ParentElementId();
         if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
           FOUR_C_THROW(
-              "Manager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
+              "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!",
+              volgid);
 
         DRT::Element* vele = discret_.gElement(volgid);
         if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
-        faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+        faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
       }
     }
   }
@@ -1605,7 +1607,7 @@ void CONTACT::Manager::ReconnectParentElements()
 /*----------------------------------------------------------------------*
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::SetPoroParentElement(int& slavetype, int& mastertype,
+void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
     Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<DRT::Element>& ele)
 {
   // ints to communicate decision over poro bools between processors on every interface
@@ -1677,15 +1679,15 @@ void CONTACT::Manager::SetPoroParentElement(int& slavetype, int& mastertype,
   }
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
-  cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+  cele->set_parent_master_element(faceele->ParentElement(), faceele->FaceParentNumber());
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Find Physical Type (Poro or Structure) of Poro Interface  ager 11/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
-    bool& structslave, int& slavetype, int& mastertype)
+void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& poroslave,
+    bool& structmaster, bool& structslave, int& slavetype, int& mastertype)
 {
   // find poro and structure elements when a poro coupling condition is applied on an element
   // and restrict to pure poroelastic or pure structural interfaces' sides.
