@@ -120,7 +120,7 @@ void MAT::FluidPoroMultiPhaseReactions::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhaseReactions::Clear()
+void MAT::FluidPoroMultiPhaseReactions::clear()
 {
   paramsreac_ = nullptr;
   return;
@@ -154,7 +154,7 @@ void MAT::FluidPoroMultiPhaseReactions::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

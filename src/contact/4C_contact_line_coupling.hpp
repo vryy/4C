@@ -86,13 +86,13 @@ namespace CONTACT
      \brief Return center of auxiliary plane
 
      */
-    virtual double* Auxc() { return auxc_; }
+    virtual double* auxc() { return auxc_; }
 
     /*!
      \brief Return normal of auxiliary line
 
      */
-    virtual double* Auxn() { return auxn_; }
+    virtual double* auxn() { return auxn_; }
 
     /*!
      \brief Return normal of auxiliary plane
@@ -104,7 +104,7 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& comm() const;
 
     /*!
      \brief create integration lines
@@ -117,13 +117,13 @@ namespace CONTACT
      \brief Get interface discretization
 
      */
-    virtual DRT::Discretization& Discret() const { return idiscret_; };
+    virtual DRT::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& Dim() { return dim_; };
+    virtual const int& dim() { return dim_; };
 
     /*!
      \brief Get interface contact parameter list
@@ -214,7 +214,7 @@ namespace CONTACT
      \brief Return length of Auxn() before normalization
 
      */
-    virtual double& Lauxn() { return lauxn_; }
+    virtual double& lauxn() { return lauxn_; }
 
     /*!
      \brief Return vector of (projected) slave node vertex objects
@@ -262,7 +262,7 @@ namespace CONTACT
      \brief initialize internal variables
 
      */
-    virtual void Initialize();
+    virtual void initialize();
 
     /*!
      \brief calculate proper dual shape functions
@@ -462,19 +462,19 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& comm() const;
 
     /*!
      \brief Get interface discretization
 
      */
-    virtual DRT::Discretization& Discret() const { return idiscret_; };
+    virtual DRT::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& Dim() { return dim_; };
+    virtual const int& dim() { return dim_; };
 
     /*!
      \brief Get interface contact parameter list

@@ -33,7 +33,7 @@ DRT::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp, const bool
   // init the deformation gradient history
   CORE::LINALG::Matrix<3, 3> F(true);
   F(0, 0) = F(1, 1) = F(2, 2) = 1.0;
-  for (int i = 0; i < NGP(); ++i) MatrixtoStorage(i, F, FHistory());
+  for (int i = 0; i < num_gp(); ++i) MatrixtoStorage(i, F, FHistory());
 }
 
 /*----------------------------------------------------------------------*

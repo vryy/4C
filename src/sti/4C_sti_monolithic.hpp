@@ -122,7 +122,7 @@ namespace STI
     void prepare_time_step() override;
 
     //! evaluate time step using Newton-Raphson iteration
-    void Solve() override;
+    void solve() override;
 
     //! absolute tolerance for residual vectors
     const double restol_;

@@ -237,13 +237,13 @@ namespace MORTAR
     \brief Get communicator
 
     */
-    const Epetra_Comm& Comm() const;
+    const Epetra_Comm& comm() const;
 
     /*!
     \brief Return reference to slave treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Streenodesmap()
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap()
     {
       return streenodesmap_;
     }
@@ -252,7 +252,7 @@ namespace MORTAR
     \brief Return reference to master treenodesmap
 
     */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mtreenodesmap()
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap()
     {
       return mtreenodesmap_;
     }
@@ -267,7 +267,7 @@ namespace MORTAR
     \brief Return pointer to sroot-treenode
 
     */
-    Teuchos::RCP<BinaryTreeNode>& Sroot() { return sroot_; }
+    Teuchos::RCP<BinaryTreeNode>& sroot() { return sroot_; }
     //@}
 
     //! @name Evaluation methods

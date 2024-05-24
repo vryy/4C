@@ -129,14 +129,14 @@ namespace CORE::FE
     /// gauss point coordinates
     const double* Point(int point) const override
     {
-      Teuchos::RCP<GaussPoints> gp = Find(point);
+      Teuchos::RCP<GaussPoints> gp = find(point);
       return gp->Point(point);
     }
 
     /// gauss weight
     double Weight(int point) const override
     {
-      Teuchos::RCP<GaussPoints> gp = Find(point);
+      Teuchos::RCP<GaussPoints> gp = find(point);
       return gp->Weight(point);
       //     if ( gp_[0]==gp )
       //     {
@@ -160,7 +160,7 @@ namespace CORE::FE
     }
 
    private:
-    Teuchos::RCP<GaussPoints> Find(int& point) const
+    Teuchos::RCP<GaussPoints> find(int& point) const
     {
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
            ++i)

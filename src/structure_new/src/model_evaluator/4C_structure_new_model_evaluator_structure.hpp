@@ -486,22 +486,22 @@ namespace STR
       const Epetra_Vector& dis_np() const;
 
       //! structural stiffness block
-      CORE::LINALG::SparseMatrix& Stiff() const;
+      CORE::LINALG::SparseMatrix& stiff() const;
 
       //! modified stiffness block
       CORE::LINALG::SparseMatrix& stiff_ptc() const;
 
       //! structural mass matrix
-      CORE::LINALG::SparseOperator& Mass();
+      CORE::LINALG::SparseOperator& mass();
 
       //! structural mass matrix (read-only)
-      const CORE::LINALG::SparseOperator& Mass() const;
+      const CORE::LINALG::SparseOperator& mass() const;
 
       //! structural damping matrix
-      CORE::LINALG::SparseOperator& Damp();
+      CORE::LINALG::SparseOperator& damp();
 
       //! structural damping matrix
-      const CORE::LINALG::SparseOperator& Damp() const;
+      const CORE::LINALG::SparseOperator& damp() const;
 
       //! @}
 

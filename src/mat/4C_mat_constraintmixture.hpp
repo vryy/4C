@@ -414,7 +414,7 @@ namespace MAT
     );
 
     /// returns how much collagen has been degraded
-    void Degradation(double t, double& degr);
+    void degradation(double t, double& degr);
 
     /// function of elastin degradation (initial)
     void elastin_degradation(

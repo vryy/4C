@@ -66,7 +66,7 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     curr_ele() = nele;
 
     // 1. init internal data
-    Initialize();
+    initialize();
 
     // 2. create aux plane for master ele
     auxiliary_plane();  //--> build everything based on line element
@@ -117,18 +117,18 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  init internal variables                                  farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToSurfaceCoupling3d::Initialize()
+void CONTACT::LineToSurfaceCoupling3d::initialize()
 {
   // reset auxplane normal, center and length
-  Auxn()[0] = 0.0;
-  Auxn()[1] = 0.0;
-  Auxn()[2] = 0.0;
+  auxn()[0] = 0.0;
+  auxn()[1] = 0.0;
+  auxn()[2] = 0.0;
 
-  Auxc()[0] = 0.0;
-  Auxc()[1] = 0.0;
-  Auxc()[2] = 0.0;
+  auxc()[0] = 0.0;
+  auxc()[1] = 0.0;
+  auxc()[2] = 0.0;
 
-  Lauxn() = 0.0;
+  lauxn() = 0.0;
   get_deriv_auxn().clear();
   get_deriv_auxc().clear();
 
@@ -257,7 +257,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   A_tot += currcell->Area();
 
   // create an integrator for this cell
-  CONTACT::Integrator integrator(imortar_, currcell->Shape(), Comm());
+  CONTACT::Integrator integrator(imortar_, currcell->Shape(), comm());
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
@@ -285,7 +285,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
     double sxi[2] = {0.0, 0.0};
     double sprojalpha = 0.0;
     MORTAR::Projector::Impl(surface_element())
-        ->project_gauss_point_auxn3_d(globgp, Auxn(), surface_element(), sxi, sprojalpha);
+        ->project_gauss_point_auxn3_d(globgp, auxn(), surface_element(), sxi, sprojalpha);
 
     // project Gauss point onto slave (parent) element
     double psxi[2] = {0., 0.};
@@ -420,18 +420,18 @@ void CONTACT::LineToSurfaceCoupling3d::integrate_line()
 
   // create integrator object
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(sol, imortar_, int_line()->Shape(), Comm());
+      CONTACT::INTEGRATOR::BuildIntegrator(sol, imortar_, int_line()->Shape(), comm());
 
   // perform integration
   if (i_type() == LineToSurfaceCoupling3d::lts)
   {
     integrator->integrate_deriv_cell3_d_aux_plane_lts(
-        parent_element(), *line_element(), surface_element(), int_line(), Auxn(), Comm());
+        parent_element(), *line_element(), surface_element(), int_line(), auxn(), comm());
   }
   else if (i_type() == LineToSurfaceCoupling3d::stl)
   {
     integrator->integrate_deriv_cell3_d_aux_plane_stl(
-        parent_element(), *line_element(), surface_element(), int_line(), Auxn(), Comm());
+        parent_element(), *line_element(), surface_element(), int_line(), auxn(), comm());
   }
   else
     FOUR_C_THROW("wrong integration type for line coupling!");
@@ -1321,7 +1321,7 @@ void CONTACT::LineToSurfaceCoupling3d::create_integration_lines(
   }
 
   // create Integration Line
-  int_line() = Teuchos::rcp(new MORTAR::IntCell(parent_element().Id(), 2, coords, Auxn(),
+  int_line() = Teuchos::rcp(new MORTAR::IntCell(parent_element().Id(), 2, coords, auxn(),
       CORE::FE::CellType::line2, linvertex[0], linvertex[1],
       linvertex[1],  // dummy
       get_deriv_auxn()));
@@ -1472,7 +1472,7 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(MORTAR::Ver
               (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
   crossZ[2] = (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
               (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
-  double Zfac = crossZ[0] * Auxn()[0] + crossZ[1] * Auxn()[1] + crossZ[2] * Auxn()[2];
+  double Zfac = crossZ[0] * auxn()[0] + crossZ[1] * auxn()[1] + crossZ[2] * auxn()[2];
 
   // compute factor N
   std::array<double, 3> crossN = {0.0, 0.0, 0.0};
@@ -1482,7 +1482,7 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(MORTAR::Ver
               (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
   crossN[2] = (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
               (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
-  double Nfac = crossN[0] * Auxn()[0] + crossN[1] * Auxn()[1] + crossN[2] * Auxn()[2];
+  double Nfac = crossN[0] * auxn()[0] + crossN[1] * auxn()[1] + crossN[2] * auxn()[2];
 
   // slave edge vector
   std::array<double, 3> sedge = {0.0, 0.0, 0.0};
@@ -1492,18 +1492,18 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(MORTAR::Ver
   std::array<double, 3> crossdZ1 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdZ2 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdZ3 = {0.0, 0.0, 0.0};
-  crossdZ1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
-                (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
-  crossdZ1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
-                (mv2->Coord()[0] - mv1->Coord()[0]) * Auxn()[2];
-  crossdZ1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * Auxn()[1] -
-                (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[0];
-  crossdZ2[0] = Auxn()[1] * (sv1->Coord()[2] - mv1->Coord()[2]) -
-                Auxn()[2] * (sv1->Coord()[1] - mv1->Coord()[1]);
-  crossdZ2[1] = Auxn()[2] * (sv1->Coord()[0] - mv1->Coord()[0]) -
-                Auxn()[0] * (sv1->Coord()[2] - mv1->Coord()[2]);
-  crossdZ2[2] = Auxn()[0] * (sv1->Coord()[1] - mv1->Coord()[1]) -
-                Auxn()[1] * (sv1->Coord()[0] - mv1->Coord()[0]);
+  crossdZ1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[2] -
+                (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[1];
+  crossdZ1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[0] -
+                (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[2];
+  crossdZ1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[1] -
+                (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[0];
+  crossdZ2[0] = auxn()[1] * (sv1->Coord()[2] - mv1->Coord()[2]) -
+                auxn()[2] * (sv1->Coord()[1] - mv1->Coord()[1]);
+  crossdZ2[1] = auxn()[2] * (sv1->Coord()[0] - mv1->Coord()[0]) -
+                auxn()[0] * (sv1->Coord()[2] - mv1->Coord()[2]);
+  crossdZ2[2] = auxn()[0] * (sv1->Coord()[1] - mv1->Coord()[1]) -
+                auxn()[1] * (sv1->Coord()[0] - mv1->Coord()[0]);
   crossdZ3[0] = (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
                 (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossdZ3[1] = (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -1515,18 +1515,18 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(MORTAR::Ver
   std::array<double, 3> crossdN1 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdN2 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdN3 = {0.0, 0.0, 0.0};
-  crossdN1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[2] -
-                (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[1];
-  crossdN1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * Auxn()[0] -
-                (mv2->Coord()[0] - mv1->Coord()[0]) * Auxn()[2];
-  crossdN1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * Auxn()[1] -
-                (mv2->Coord()[1] - mv1->Coord()[1]) * Auxn()[0];
-  crossdN2[0] = Auxn()[1] * (sv2->Coord()[2] - sv1->Coord()[2]) -
-                Auxn()[2] * (sv2->Coord()[1] - sv1->Coord()[1]);
-  crossdN2[1] = Auxn()[2] * (sv2->Coord()[0] - sv1->Coord()[0]) -
-                Auxn()[0] * (sv2->Coord()[2] - sv1->Coord()[2]);
-  crossdN2[2] = Auxn()[0] * (sv2->Coord()[1] - sv1->Coord()[1]) -
-                Auxn()[1] * (sv2->Coord()[0] - sv1->Coord()[0]);
+  crossdN1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[2] -
+                (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[1];
+  crossdN1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[0] -
+                (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[2];
+  crossdN1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[1] -
+                (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[0];
+  crossdN2[0] = auxn()[1] * (sv2->Coord()[2] - sv1->Coord()[2]) -
+                auxn()[2] * (sv2->Coord()[1] - sv1->Coord()[1]);
+  crossdN2[1] = auxn()[2] * (sv2->Coord()[0] - sv1->Coord()[0]) -
+                auxn()[0] * (sv2->Coord()[2] - sv1->Coord()[2]);
+  crossdN2[2] = auxn()[0] * (sv2->Coord()[1] - sv1->Coord()[1]) -
+                auxn()[1] * (sv2->Coord()[0] - sv1->Coord()[0]);
   crossdN3[0] = (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
                 (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
   crossdN3[1] = (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
@@ -1704,10 +1704,10 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_plane()
     FOUR_C_THROW("auxiliary_plane called for unknown element type");
 
   // compute element center via shape fct. interpolation
-  surface_element().LocalToGlobal(loccenter, Auxc(), 0);
+  surface_element().LocalToGlobal(loccenter, auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = surface_element().compute_unit_normal_at_xi(loccenter, auxn_surf());
+  lauxn() = surface_element().compute_unit_normal_at_xi(loccenter, auxn_surf());
   //
   //  // compute aux normal linearization
   //  surface_element().DerivUnitNormalAtXi(loccenter, get_deriv_auxn());
@@ -1748,9 +1748,9 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   // auxiliary center
   get_deriv_auxc().resize(3, linsize_ * 10);
 
-  Auxc()[0] = 0.0;
-  Auxc()[1] = 0.0;
-  Auxc()[2] = 0.0;
+  auxc()[0] = 0.0;
+  auxc()[1] = 0.0;
+  auxc()[2] = 0.0;
 
   std::vector<CORE::GEN::Pairedvector<int, double>> dauxn(3, 100);
 
@@ -1762,9 +1762,9 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
-    Auxn()[0] += 0.5 * mycnode->MoData().n()[0];
-    Auxn()[1] += 0.5 * mycnode->MoData().n()[1];
-    Auxn()[2] += 0.5 * mycnode->MoData().n()[2];
+    auxn()[0] += 0.5 * mycnode->MoData().n()[0];
+    auxn()[1] += 0.5 * mycnode->MoData().n()[1];
+    auxn()[2] += 0.5 * mycnode->MoData().n()[2];
 
     for (_CI p = mycnode->Data().GetDerivN()[0].begin(); p != mycnode->Data().GetDerivN()[0].end();
          ++p)
@@ -1777,7 +1777,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
       (dauxn[2])[p->first] += 0.5 * (p->second);
 
     // new aux center
-    for (int dim = 0; dim < Dim(); ++dim) Auxc()[dim] += 0.5 * mycnode->xspatial()[dim];
+    for (int d = 0; d < dim(); ++d) auxc()[d] += 0.5 * mycnode->xspatial()[d];
 
     (get_deriv_auxc()[0])[mycnode->Dofs()[0]] += 0.5;
     (get_deriv_auxc()[1])[mycnode->Dofs()[1]] += 0.5;
@@ -1817,15 +1817,15 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
 
   std::array<double, 3> finalauxn = {0.0, 0.0, 0.0};
   finalauxn[0] =
-      tanplane(0, 0) * Auxn()[0] + tanplane(0, 1) * Auxn()[1] + tanplane(0, 2) * Auxn()[2];
+      tanplane(0, 0) * auxn()[0] + tanplane(0, 1) * auxn()[1] + tanplane(0, 2) * auxn()[2];
   finalauxn[1] =
-      tanplane(1, 0) * Auxn()[0] + tanplane(1, 1) * Auxn()[1] + tanplane(1, 2) * Auxn()[2];
+      tanplane(1, 0) * auxn()[0] + tanplane(1, 1) * auxn()[1] + tanplane(1, 2) * auxn()[2];
   finalauxn[2] =
-      tanplane(2, 0) * Auxn()[0] + tanplane(2, 1) * Auxn()[1] + tanplane(2, 2) * Auxn()[2];
+      tanplane(2, 0) * auxn()[0] + tanplane(2, 1) * auxn()[1] + tanplane(2, 2) * auxn()[2];
 
   // lin tangent
   std::vector<CORE::GEN::Pairedvector<int, double>> dnmap_unit(3, linsize_ * 10);
-  for (int i = 0; i < Dim(); ++i)
+  for (int i = 0; i < dim(); ++i)
   {
     dnmap_unit[i][mycnode->Dofs()[i]] += 1;
     dnmap_unit[i][mycnode2->Dofs()[i]] -= 1;
@@ -1904,34 +1904,34 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
 
   //-----------------------------
   for (_CI p = tplanex[0].begin(); p != tplanex[0].end(); ++p)
-    get_deriv_auxn()[0][p->first] += Auxn()[0] * p->second;
+    get_deriv_auxn()[0][p->first] += auxn()[0] * p->second;
   for (_CI p = tplanex[1].begin(); p != tplanex[1].end(); ++p)
-    get_deriv_auxn()[0][p->first] += Auxn()[1] * p->second;
+    get_deriv_auxn()[0][p->first] += auxn()[1] * p->second;
   for (_CI p = tplanex[2].begin(); p != tplanex[2].end(); ++p)
-    get_deriv_auxn()[0][p->first] += Auxn()[2] * p->second;
+    get_deriv_auxn()[0][p->first] += auxn()[2] * p->second;
 
   for (_CI p = tplaney[0].begin(); p != tplaney[0].end(); ++p)
-    get_deriv_auxn()[1][p->first] += Auxn()[0] * p->second;
+    get_deriv_auxn()[1][p->first] += auxn()[0] * p->second;
   for (_CI p = tplaney[1].begin(); p != tplaney[1].end(); ++p)
-    get_deriv_auxn()[1][p->first] += Auxn()[1] * p->second;
+    get_deriv_auxn()[1][p->first] += auxn()[1] * p->second;
   for (_CI p = tplaney[2].begin(); p != tplaney[2].end(); ++p)
-    get_deriv_auxn()[1][p->first] += Auxn()[2] * p->second;
+    get_deriv_auxn()[1][p->first] += auxn()[2] * p->second;
 
   for (_CI p = tplanez[0].begin(); p != tplanez[0].end(); ++p)
-    get_deriv_auxn()[2][p->first] += Auxn()[0] * p->second;
+    get_deriv_auxn()[2][p->first] += auxn()[0] * p->second;
   for (_CI p = tplanez[1].begin(); p != tplanez[1].end(); ++p)
-    get_deriv_auxn()[2][p->first] += Auxn()[1] * p->second;
+    get_deriv_auxn()[2][p->first] += auxn()[1] * p->second;
   for (_CI p = tplanez[2].begin(); p != tplanez[2].end(); ++p)
-    get_deriv_auxn()[2][p->first] += Auxn()[2] * p->second;
+    get_deriv_auxn()[2][p->first] += auxn()[2] * p->second;
 
 
-  Auxn()[0] = finalauxn[0];
-  Auxn()[1] = finalauxn[1];
-  Auxn()[2] = finalauxn[2];
+  auxn()[0] = finalauxn[0];
+  auxn()[1] = finalauxn[1];
+  auxn()[2] = finalauxn[2];
 
-  auxn_surf()[0] = -Auxn()[0];
-  auxn_surf()[1] = -Auxn()[1];
-  auxn_surf()[2] = -Auxn()[2];
+  auxn_surf()[0] = -auxn()[0];
+  auxn_surf()[1] = -auxn()[1];
+  auxn_surf()[2] = -auxn()[2];
 
   return true;
 }
@@ -1963,12 +1963,12 @@ bool CONTACT::LineToSurfaceCoupling3d::project_slave()
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                        (mycnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                        (mycnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
     snodeids[0] = mycnode->Id();
@@ -2075,57 +2075,57 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
     // (1) slave node coordinates part
     for (_CI p = mnodelin[i][0].begin(); p != mnodelin[i][0].end(); ++p)
     {
-      currlin[i][0][p->first] += (1.0 - Auxn()[0] * Auxn()[0]) * p->second;
-      currlin[i][1][p->first] -= (Auxn()[0] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] -= (Auxn()[0] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] += (1.0 - auxn()[0] * auxn()[0]) * p->second;
+      currlin[i][1][p->first] -= (auxn()[0] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] -= (auxn()[0] * auxn()[2]) * p->second;
     }
     for (_CI p = mnodelin[i][1].begin(); p != mnodelin[i][1].end(); ++p)
     {
-      currlin[i][0][p->first] -= (Auxn()[0] * Auxn()[1]) * p->second;
-      currlin[i][1][p->first] += (1.0 - Auxn()[1] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] -= (Auxn()[1] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] -= (auxn()[0] * auxn()[1]) * p->second;
+      currlin[i][1][p->first] += (1.0 - auxn()[1] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] -= (auxn()[1] * auxn()[2]) * p->second;
     }
     for (_CI p = mnodelin[i][2].begin(); p != mnodelin[i][2].end(); ++p)
     {
-      currlin[i][0][p->first] -= (Auxn()[2] * Auxn()[0]) * p->second;
-      currlin[i][1][p->first] -= (Auxn()[2] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] += (1.0 - Auxn()[2] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] -= (auxn()[2] * auxn()[0]) * p->second;
+      currlin[i][1][p->first] -= (auxn()[2] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] += (1.0 - auxn()[2] * auxn()[2]) * p->second;
     }
 
     // (2) slave element center coordinates (Auxc()) part
     for (_CI p = get_deriv_auxc()[0].begin(); p != get_deriv_auxc()[0].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[0] * auxn()[k] * (p->second);
 
     for (_CI p = get_deriv_auxc()[1].begin(); p != get_deriv_auxc()[1].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[1] * auxn()[k] * (p->second);
 
     for (_CI p = get_deriv_auxc()[2].begin(); p != get_deriv_auxc()[2].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[2] * auxn()[k] * (p->second);
 
     // (3) slave element normal (Auxn()) part
-    double xdotn = (mrtrmnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                   (mrtrmnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                   (mrtrmnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    double xdotn = (mrtrmnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                   (mrtrmnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                   (mrtrmnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     for (_CI p = linauxn[0].begin(); p != linauxn[0].end(); ++p)
     {
       currlin[i][0][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[0] - Auxc()[0]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[0] - auxc()[0]) * auxn()[k] * (p->second);
     }
 
     for (_CI p = linauxn[1].begin(); p != linauxn[1].end(); ++p)
     {
       currlin[i][1][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[1] - Auxc()[1]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[1] - auxc()[1]) * auxn()[k] * (p->second);
     }
 
     for (_CI p = linauxn[2].begin(); p != linauxn[2].end(); ++p)
     {
       currlin[i][2][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[2] - Auxc()[2]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrmnode->xspatial()[2] - auxc()[2]) * auxn()[k] * (p->second);
     }
   }
 
@@ -2154,12 +2154,12 @@ bool CONTACT::LineToSurfaceCoupling3d::project_master()
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                        (mycnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                        (mycnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
     mnodeids[0] = mycnode->Id();
@@ -2252,57 +2252,57 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
     // (1) slave node coordinates part
     for (_CI p = nodelin[i][0].begin(); p != nodelin[i][0].end(); ++p)
     {
-      currlin[i][0][p->first] += (1.0 - Auxn()[0] * Auxn()[0]) * p->second;
-      currlin[i][1][p->first] -= (Auxn()[0] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] -= (Auxn()[0] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] += (1.0 - auxn()[0] * auxn()[0]) * p->second;
+      currlin[i][1][p->first] -= (auxn()[0] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] -= (auxn()[0] * auxn()[2]) * p->second;
     }
     for (_CI p = nodelin[i][1].begin(); p != nodelin[i][1].end(); ++p)
     {
-      currlin[i][0][p->first] -= (Auxn()[0] * Auxn()[1]) * p->second;
-      currlin[i][1][p->first] += (1.0 - Auxn()[1] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] -= (Auxn()[1] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] -= (auxn()[0] * auxn()[1]) * p->second;
+      currlin[i][1][p->first] += (1.0 - auxn()[1] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] -= (auxn()[1] * auxn()[2]) * p->second;
     }
     for (_CI p = nodelin[i][2].begin(); p != nodelin[i][2].end(); ++p)
     {
-      currlin[i][0][p->first] -= (Auxn()[2] * Auxn()[0]) * p->second;
-      currlin[i][1][p->first] -= (Auxn()[2] * Auxn()[1]) * p->second;
-      currlin[i][2][p->first] += (1.0 - Auxn()[2] * Auxn()[2]) * p->second;
+      currlin[i][0][p->first] -= (auxn()[2] * auxn()[0]) * p->second;
+      currlin[i][1][p->first] -= (auxn()[2] * auxn()[1]) * p->second;
+      currlin[i][2][p->first] += (1.0 - auxn()[2] * auxn()[2]) * p->second;
     }
 
     // (2) slave element center coordinates (Auxc()) part
     for (_CI p = get_deriv_auxc()[0].begin(); p != get_deriv_auxc()[0].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[0] * auxn()[k] * (p->second);
 
     for (_CI p = get_deriv_auxc()[1].begin(); p != get_deriv_auxc()[1].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[1] * auxn()[k] * (p->second);
 
     for (_CI p = get_deriv_auxc()[2].begin(); p != get_deriv_auxc()[2].end(); ++p)
-      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
+      for (int k = 0; k < 3; ++k) currlin[i][k][p->first] += auxn()[2] * auxn()[k] * (p->second);
 
     // (3) slave element normal (Auxn()) part
-    double xdotn = (mrtrsnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                   (mrtrsnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                   (mrtrsnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    double xdotn = (mrtrsnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                   (mrtrsnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                   (mrtrsnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     for (_CI p = linauxn[0].begin(); p != linauxn[0].end(); ++p)
     {
       currlin[i][0][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[0] - Auxc()[0]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[0] - auxc()[0]) * auxn()[k] * (p->second);
     }
 
     for (_CI p = linauxn[1].begin(); p != linauxn[1].end(); ++p)
     {
       currlin[i][1][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[1] - Auxc()[1]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[1] - auxc()[1]) * auxn()[k] * (p->second);
     }
 
     for (_CI p = linauxn[2].begin(); p != linauxn[2].end(); ++p)
     {
       currlin[i][2][p->first] -= xdotn * (p->second);
       for (int k = 0; k < 3; ++k)
-        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[2] - Auxc()[2]) * Auxn()[k] * (p->second);
+        currlin[i][k][p->first] -= (mrtrsnode->xspatial()[2] - auxc()[2]) * auxn()[k] * (p->second);
     }
   }
 
@@ -2312,7 +2312,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::comm() const { return idiscret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -2330,7 +2330,7 @@ CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(DRT::Discretizatio
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::comm() const { return idiscret_.Comm(); }
 
 /*----------------------------------------------------------------------*
  |  eval                                                     farah 07/16|
@@ -2461,7 +2461,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
   // build gap function at current GP
-  for (int i = 0; i < Dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
+  for (int i = 0; i < dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
   // build directional derivative of slave GP normal (non-unit)
   CORE::GEN::Pairedvector<int, double> dmap_nxsl_gp(linsize);
@@ -2742,9 +2742,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
-          for (int dim = 0; dim < Dim(); ++dim)
+          for (int d = 0; d < dim(); ++d)
           {
-            sgpxold[dim] += p->second * csnode->xspatial()[dim];
+            sgpxold[d] += p->second * csnode->xspatial()[d];
           }
           sgpxoldlinx[csnode->Dofs()[0]] += p->second;
           sgpxoldliny[csnode->Dofs()[1]] += p->second;
@@ -2764,9 +2764,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
           if (!mnode) FOUR_C_THROW("Cannot find node with gid");
           Node* cmnode = dynamic_cast<Node*>(mnode);
 
-          for (int dim = 0; dim < Dim(); ++dim)
+          for (int d = 0; d < dim(); ++d)
           {
-            mgpxold[dim] += p->second * cmnode->xspatial()[dim];
+            mgpxold[d] += p->second * cmnode->xspatial()[d];
           }
           mgpxoldlinx[cmnode->Dofs()[0]] += p->second;
           mgpxoldliny[cmnode->Dofs()[1]] += p->second;
@@ -2776,8 +2776,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     }
 
     // create slip
-    for (int dim = 0; dim < Dim(); ++dim)
-      jump[dim] = mgpx[dim] - mgpxold[dim] - (sgpx[dim] - sgpxold[dim]);
+    for (int d = 0; d < dim(); ++d) jump[d] = mgpx[d] - mgpxold[d] - (sgpx[d] - sgpxold[d]);
 
     CORE::LINALG::SerialDenseMatrix tanplane(3, 3);
     tanplane(0, 0) = 1 - (value[0] * value[0]);

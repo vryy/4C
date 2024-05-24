@@ -207,22 +207,22 @@ namespace FSI
     //! @name Newton solve building blocks
 
     //! outer iteration loop, restarts inner Newton-Raphson iterations when fluid dofsets changes
-    void Solve();
+    void solve();
 
     //! inner iteration loop (Newton-Raphson scheme) - return "true" if converged or "false" if
     //! unconverged or in case of changing fluid dof maps
-    bool Newton();
+    bool newton();
 
     //! update the global step-increment, evaluate the single fields with
     //! x^n+1 with x^n+1 = x_n + stepinc and return if the fluid dofsets
     //! between the two last iterations changed and a Newton restart is necessary
-    bool Evaluate();
+    bool evaluate();
 
     //! compute all norms used for convergence check
     void build_covergence_norms();
 
     //! check convergence of Newton iteration
-    bool Converged();
+    bool converged();
 
     //! apply damping on newton scheme
     void apply_newton_damping();

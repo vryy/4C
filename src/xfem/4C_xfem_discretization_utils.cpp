@@ -358,7 +358,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     }
   }
 
-  Redistribute(targetdis, targetnoderowvec, targetnodecolvec);
+  redistribute(targetdis, targetnoderowvec, targetnodecolvec);
 
   // ------------------------------------------------------------------------
   // remove all nodes from the condnodecol and condnoderow sets, which also
@@ -429,7 +429,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     sourcedis->ReplaceConditions(*conditername, src_conds);
   }
   // re-partioning
-  Redistribute(sourcedis, othernoderowvec, othernodecolvec);
+  redistribute(sourcedis, othernoderowvec, othernodecolvec);
 
 
   return;
@@ -437,7 +437,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Discretization> dis,
+void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<DRT::Discretization> dis,
     std::vector<int>& noderowvec, std::vector<int>& nodecolvec) const
 {
   dis->CheckFilledGlobally();

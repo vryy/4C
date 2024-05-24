@@ -1238,7 +1238,7 @@ namespace DRT
           const;
 
       //! lump mass matrix
-      void Lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
+      void lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
 
       template <typename T>
       void calculate_clcurvature(CORE::LINALG::Matrix<3, 1, T>& r_s,

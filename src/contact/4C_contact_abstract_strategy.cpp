@@ -587,8 +587,8 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
       Teuchos::RCP<Epetra_Map> selfcontact_lmmap =
           Interfaces()[i]->UpdateLagMultSets(offset_if, redistributed, *refdofrowmap);
 
-      Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = Data().g_self_contact_ref_dof_row_map_ptr();
-      Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = Data().g_self_contact_lm_dof_row_map_ptr();
+      Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = data().g_self_contact_ref_dof_row_map_ptr();
+      Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = data().g_self_contact_lm_dof_row_map_ptr();
       gsc_lmdofmap_ptr = CORE::LINALG::MergeMap(selfcontact_lmmap, gsc_lmdofmap_ptr);
       gsc_refdofmap_ptr = CORE::LINALG::MergeMap(refdofrowmap, gsc_refdofmap_ptr);
 
@@ -919,7 +919,7 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
 
   // Create timing reports?
   bool doAccurateTimeMeasurements =
-      CORE::UTILS::IntegralValue<bool>(Data().SContact(), "TIMING_DETAILS");
+      CORE::UTILS::IntegralValue<bool>(data().SContact(), "TIMING_DETAILS");
 
   if (doAccurateTimeMeasurements)
   {
@@ -1320,9 +1320,9 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
 
   // check for plausibility before storing
   if (maxall == 0.0 && minall == 1.0e12)
-    Data().unbalance_time_factors().push_back(1.0);
+    data().unbalance_time_factors().push_back(1.0);
   else
-    Data().unbalance_time_factors().push_back(maxall / minall);
+    data().unbalance_time_factors().push_back(maxall / minall);
 
   // obtain info whether there is an unbalance in element distribution
   bool eleunbalance = false;
@@ -1365,9 +1365,9 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   int leleunbalance = (int)(eleunbalance);
   Comm().SumAll(&leleunbalance, &geleunbalance, 1);
   if (geleunbalance > 0)
-    Data().unbalance_element_factors().push_back(1);
+    data().unbalance_element_factors().push_back(1);
   else
-    Data().unbalance_element_factors().push_back(0);
+    data().unbalance_element_factors().push_back(0);
 
   // debugging output
   // std::cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " <<
@@ -2629,10 +2629,10 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
 
         for (int k = 0; k < Dim(); ++k)
         {
-          txiz += frinode->Data().txi()[k] * frinode->MoData().lm()[k];
-          tetaz += frinode->Data().teta()[k] * frinode->MoData().lm()[k];
-          jumptxi += frinode->Data().txi()[k] * frinode->FriData().jump()[k];
-          jumpteta += frinode->Data().teta()[k] * frinode->FriData().jump()[k];
+          txiz += frinode->data().txi()[k] * frinode->MoData().lm()[k];
+          tetaz += frinode->data().teta()[k] * frinode->MoData().lm()[k];
+          jumptxi += frinode->data().txi()[k] * frinode->FriData().jump()[k];
+          jumpteta += frinode->data().teta()[k] * frinode->FriData().jump()[k];
         }
 
         // total tangential component

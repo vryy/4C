@@ -247,17 +247,17 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     NodePtr parse_pow(Lexer& lexer);
     NodePtr parse_term(Lexer& lexer);
     NodePtr parse_expr(Lexer& lexer);
-    NodePtr Parse(Lexer& lexer);
+    NodePtr parse(Lexer& lexer);
 
     //! given symbolic expression
     std::string symbolicexpression_;
 
     //! evaluates the parsed expression
-    T Evaluate(const std::map<std::string, T>& variable_values,
+    T evaluate(const std::map<std::string, T>& variable_values,
         const std::map<std::string, double>& constants = {}) const;
 
     //! recursively extract corresponding number out of a syntax tree node
-    T Interpret(const SyntaxTreeNode<T>& node) const;
+    T interpret(const SyntaxTreeNode<T>& node) const;
 
     //! syntax tree root
     NodePtr expr_;
@@ -469,7 +469,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     lexer.Lexan();
 
     //! create syntax tree equivalent to funct
-    expr_ = Parse(lexer);
+    expr_ = parse(lexer);
   }
 
   /*----------------------------------------------------------------------*/
@@ -487,7 +487,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   template <class T>
   T Parser<T>::EvaluateExpression(const std::map<std::string, T>& variable_values) const
   {
-    return Evaluate(variable_values);
+    return evaluate(variable_values);
   }
 
 
@@ -496,12 +496,12 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   T Parser<T>::EvaluateDerivative(const std::map<std::string, T2>& variable_values,
       const std::map<std::string, double>& constants) const
   {
-    return Evaluate(variable_values, constants);
+    return evaluate(variable_values, constants);
   }
 
 
   template <class T>
-  T Parser<T>::Evaluate(const std::map<std::string, T>& variable_values,
+  T Parser<T>::evaluate(const std::map<std::string, T>& variable_values,
       const std::map<std::string, double>& constants) const
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -546,7 +546,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     FOUR_C_ASSERT(expr_ != nullptr, "Internal error");
 
     //! evaluate syntax tree of function depending on set variables
-    auto result = this->Interpret(*expr_);
+    auto result = this->interpret(*expr_);
 
     //! set variable_values_ and constant_values_ as nullptr again for safety reasons
     variable_values_ = nullptr;
@@ -747,7 +747,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   \brief Parse entity
   */
   template <class T>
-  auto Parser<T>::Parse(Lexer& lexer) -> NodePtr
+  auto Parser<T>::parse(Lexer& lexer) -> NodePtr
   {
     NodePtr lhs;
 
@@ -807,7 +807,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   \brief Recursively extract corresponding number out of a syntax tree node
   */
   template <class T>
-  T Parser<T>::Interpret(const SyntaxTreeNode<T>& node) const
+  T Parser<T>::interpret(const SyntaxTreeNode<T>& node) const
   {
     T res = 0;  // the result
 
@@ -824,8 +824,8 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
         T rhs;
 
         // recursively visit branches and obtain sub-results
-        lhs = Interpret(*node.lhs_);
-        rhs = Interpret(*node.rhs_);
+        lhs = interpret(*node.lhs_);
+        rhs = interpret(*node.rhs_);
 
         // evaluate the node operator
         switch (node.v_.op)
@@ -899,7 +899,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
       case SyntaxTreeNode<T>::lt_function:
       {
         T arg;
-        arg = Interpret(*node.lhs_);
+        arg = interpret(*node.lhs_);
         if (node.function_ == "acos")
           res = acos(arg);
         else if (node.function_ == "asin")
@@ -930,7 +930,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
         {
           T arg2;
           // recursively visit branches and obtain sub-results
-          arg2 = Interpret(*node.rhs_);
+          arg2 = interpret(*node.rhs_);
           res = atan2(arg, arg2);
         }
         else if (node.function_ == "fabs")

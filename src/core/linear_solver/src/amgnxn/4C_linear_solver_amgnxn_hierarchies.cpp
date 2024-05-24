@@ -53,7 +53,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Hierarchies(Teuchos::RCP<AMGNXN::Block
     FOUR_C_THROW("Something wrong");
 
   // Setput
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ Teuchos::RCP<std::vector<double>> CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetN
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
+void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::Hierarchies::Setup");
 
@@ -598,7 +598,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::MonolithicHierarchy(
   //
   //</ParameterList>
 
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -610,7 +610,7 @@ int CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::GetNumLevels() { return nu
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::Setup()
+void CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MonolithicHierarchy::Setup()");
 

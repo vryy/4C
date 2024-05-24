@@ -259,13 +259,13 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNXN::Blocked
       muelu_params_(muelu_params),
       is_setup_flag_(false)
 {
-  Setup();
+  setup();
 }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
+void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::CoupledAmg::Setup");
 

@@ -244,7 +244,7 @@ bool CORE::GEO::CUT::Facet::is_planar(Mesh& mesh, const std::vector<Point*>& poi
   CORE::LINALG::Matrix<3, 1> b2;
   CORE::LINALG::Matrix<3, 1> b3;
 
-  unsigned i = Normal(points, x1, x2, x3, b1, b2, b3);
+  unsigned i = normal(points, x1, x2, x3, b1, b2, b3);
   if (i == 0)  // all on one line is ok
   {
     is_planar_computed_ = true;
@@ -444,7 +444,7 @@ void CORE::GEO::CUT::Facet::get_nodal_ids(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Facet::Equals(
+bool CORE::GEO::CUT::Facet::equals(
     const std::vector<Point*>& my_points, const std::vector<Point*>& facet_points)
 {
   if (my_points.size() != facet_points.size() or holes_.size() > 0) return false;
@@ -971,7 +971,7 @@ bool CORE::GEO::CUT::Facet::Equals(CORE::FE::CellType distype)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CORE::GEO::CUT::Facet::Normal(const std::vector<Point*>& points,
+unsigned CORE::GEO::CUT::Facet::normal(const std::vector<Point*>& points,
     CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
     CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2, CORE::LINALG::Matrix<3, 1>& b3)
 {

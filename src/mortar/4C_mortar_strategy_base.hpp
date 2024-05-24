@@ -374,7 +374,7 @@ namespace MORTAR
      *
      * \author hiermeier
      * \date 05/16 */
-    MORTAR::StratDataContainer& Data() { return *data_ptr_; };
+    MORTAR::StratDataContainer& data() { return *data_ptr_; };
 
     /*! return the read-only mortar data container
      *
@@ -382,7 +382,7 @@ namespace MORTAR
      *
      * \author hiermeier
      * \date 05/16 */
-    const MORTAR::StratDataContainer& Data() const { return *data_ptr_; };
+    const MORTAR::StratDataContainer& data() const { return *data_ptr_; };
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)

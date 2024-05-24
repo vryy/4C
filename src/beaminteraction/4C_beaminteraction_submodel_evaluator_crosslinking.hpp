@@ -480,7 +480,7 @@ namespace BEAMINTERACTION
           std::vector<Teuchos::RCP<T>>& recv) const;
 
       // wait for all communication to finish
-      void Wait(
+      void wait(
           CORE::COMM::Exporter& exporter, std::vector<MPI_Request>& request, int length) const;
 
       /// debug feature to check bindevent structs

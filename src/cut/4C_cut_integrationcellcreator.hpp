@@ -41,7 +41,7 @@ namespace CORE::GEO
        *  creation process
        *
        *  This is done after a successful initiation of the volume cells.*/
-      void Execute(Mesh& mesh);
+      void execute(Mesh& mesh);
 
       /// fill the point1 boundary cell
       bool create_point1_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
@@ -75,7 +75,7 @@ namespace CORE::GEO
           const plain_facet_set& facets, int axis, double r);
 
       /// add the volume cell information during the Create<Shape>Cell calls
-      void Add(VolumeCell* vc, CORE::FE::CellType shape, const std::vector<Point*>& points)
+      void add(VolumeCell* vc, CORE::FE::CellType shape, const std::vector<Point*>& points)
       {
         Volume& v = cells_[vc];
         std::vector<Ic>& cells = v.domain_;

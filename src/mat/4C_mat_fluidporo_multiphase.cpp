@@ -208,7 +208,7 @@ MAT::FluidPoroMultiPhase::FluidPoroMultiPhase(MAT::PAR::FluidPoroMultiPhase* par
 /*----------------------------------------------------------------------*
  | reset everything                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::Clear()
+void MAT::FluidPoroMultiPhase::clear()
 {
   paramsporo_ = nullptr;
   return;
@@ -269,7 +269,7 @@ void MAT::FluidPoroMultiPhase::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

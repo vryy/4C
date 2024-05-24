@@ -658,7 +658,7 @@ CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::get_face(
 /*----------------------------------------------------------------------*
  | reset maps for output                                    kruse 04/15 |
  *----------------------------------------------------------------------*/
-void XFEM::XfemEdgeStab::Reset()
+void XFEM::XfemEdgeStab::reset()
 {
   ghost_penalty_stab_.clear();
   edge_based_stab_.clear();

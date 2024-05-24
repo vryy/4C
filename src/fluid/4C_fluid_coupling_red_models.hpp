@@ -264,7 +264,7 @@ namespace FLD
       /*!
       \brief calculate area at outflow boundary
       */
-      double Area(double& density, double& viscosity, int condid);
+      double area(double& density, double& viscosity, int condid);
 
 
 

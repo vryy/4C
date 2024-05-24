@@ -151,7 +151,7 @@ namespace FSI
 
     CORE::LINALG::Matrix<9, 2> calc_dop(DRT::Element& ele);
 
-    std::vector<int> Search(
+    std::vector<int> search(
         DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
     //! Spatial dimension of the problem

@@ -514,7 +514,7 @@ namespace CORE::LINALG
     /*!
        Used by public Split, does not call Complete() on output matrix.
      */
-    void Split2x2(BlockSparseMatrixBase& Abase) const;
+    void split2x2(BlockSparseMatrixBase& Abase) const;
 
     /// Split matrix in MxN blocks
     /*!
@@ -597,7 +597,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatr
 
   // perform matrix splitting
   if (domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
-    this->Split2x2(*blockA);
+    this->split2x2(*blockA);
   else if (domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
     this->split_mx_n(*blockA);
   else

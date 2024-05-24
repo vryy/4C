@@ -75,7 +75,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
       return false;
     }
   }
-  creator.Execute(mesh);
+  creator.execute(mesh);
   return true;
 }
 
@@ -119,7 +119,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
   // if the create process was successful, we can finally create the integration cell
   if (success)
   {
-    creator.Execute(mesh);
+    creator.execute(mesh);
   }
 
   return success;
@@ -127,7 +127,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IntegrationCellCreator::Execute(Mesh& mesh)
+void CORE::GEO::CUT::IntegrationCellCreator::execute(Mesh& mesh)
 {
   for (std::map<VolumeCell*, Volume>::iterator it = cells_.begin(); it != cells_.end(); ++it)
   {
@@ -223,7 +223,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_line2_cell(
         "reach this point!");
 
   // add the actual cell
-  Add(cell, CORE::FE::CellType::line2, line_corner_points);
+  add(cell, CORE::FE::CellType::line2, line_corner_points);
 
   return true;
 }
@@ -259,7 +259,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create2_d_cell(
   if (pg.NumSurfaces() != 1) FOUR_C_THROW("There shouldn't be more than one surface cycle!");
 
   const Cycle& vol_cycle = (*pg.sbegin());
-  Add(cell, celltype, vol_cycle());
+  add(cell, celltype, vol_cycle());
 
   return true;
 }
@@ -353,7 +353,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
     /* We create no TET4 cell, if the position calculation failed or the cell
      * is planar. */
     if (not invalid_pos and bot_distance->Distance() > 0)
-      Add(cell, CORE::FE::CellType::tet4, points);
+      add(cell, CORE::FE::CellType::tet4, points);
 
     return true;
   }
@@ -376,7 +376,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
       if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
     }
 
-    Add(cell, CORE::FE::CellType::tet4, points);
+    add(cell, CORE::FE::CellType::tet4, points);
     return true;
   }
   else
@@ -558,7 +558,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
         if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
       }
 
-      Add(cell, CORE::FE::CellType::hex8, rpoints);
+      add(cell, CORE::FE::CellType::hex8, rpoints);
       return true;
     }
     else if (distance_counter == 4)
@@ -574,7 +574,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
         if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
       }
 
-      Add(cell, CORE::FE::CellType::hex8, points);
+      add(cell, CORE::FE::CellType::hex8, points);
       return true;
     }
     else
@@ -771,7 +771,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
         if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
       }
 
-      Add(cell, CORE::FE::CellType::wedge6, rpoints);
+      add(cell, CORE::FE::CellType::wedge6, rpoints);
       return true;
     }
     else if (distance_counter == 3)
@@ -797,7 +797,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
         if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
       }
 
-      Add(cell, CORE::FE::CellType::wedge6, points);
+      add(cell, CORE::FE::CellType::wedge6, points);
       return true;
     }
     else
@@ -926,7 +926,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
       /* We create no PYRAMID5 cell, if the position calculation failed or the cell
        * is planar. */
       if ((not invalid_pos) and (bot_distance->Distance() > 0))
-        Add(cell, CORE::FE::CellType::pyramid5, points);
+        add(cell, CORE::FE::CellType::pyramid5, points);
       return true;
     }
     else if (bot_distance->Distance() < 0)
@@ -959,7 +959,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
       }
 
       // cell->NewPyramid5Cell( mesh, points );
-      Add(cell, CORE::FE::CellType::pyramid5, points);
+      add(cell, CORE::FE::CellType::pyramid5, points);
       return true;
     }
     else
@@ -1244,7 +1244,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       add_side(cell, f, CORE::FE::CellType::tri3, side);
 
       // cell->NewWedge6Cell( mesh, points );
-      Add(cell, CORE::FE::CellType::wedge6, points);
+      add(cell, CORE::FE::CellType::wedge6, points);
     }
     else if (f->Equals(CORE::FE::CellType::quad4))
     {
@@ -1313,7 +1313,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       add_side(cell, f, CORE::FE::CellType::quad4, side);
 
       // cell->NewHex8Cell( mesh, points );
-      Add(cell, CORE::FE::CellType::hex8, points);
+      add(cell, CORE::FE::CellType::hex8, points);
     }
     else
       return false;

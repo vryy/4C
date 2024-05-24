@@ -487,7 +487,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
     if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
 
     // get found elements from other discr.
-    fluidaleelemap_[gid] = Search(*aleele, CurrentDOPs);
+    fluidaleelemap_[gid] = search(*aleele, CurrentDOPs);
   }  // end node loop
 
   Teuchos::RCP<Epetra_Map> FSIfluidnodes = CORE::Conditions::ConditionNodeColMap(
@@ -662,7 +662,7 @@ CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::calc_dop(DRT::Element& ele)
 /*----------------------------------------------------------------------*
  |  Perform searching procedure                              farah 05/16|
  *----------------------------------------------------------------------*/
-std::vector<int> FSI::VolCorrector::Search(
+std::vector<int> FSI::VolCorrector::search(
     DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements

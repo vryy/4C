@@ -35,13 +35,13 @@ namespace CORE::LINALG
       }
     }
 
-    bool IsUsed(unsigned row, unsigned col) const { return blocks_[Position(row, col)] != nullptr; }
+    bool IsUsed(unsigned row, unsigned col) const { return blocks_[position(row, col)] != nullptr; }
 
     bool IsUsed(unsigned pos) const { return blocks_[pos] != nullptr; }
 
     void Clear(unsigned row, unsigned col)
     {
-      int p = Position(row, col);
+      int p = position(row, col);
       delete blocks_[p];
       blocks_[p] = nullptr;
     }
@@ -49,13 +49,13 @@ namespace CORE::LINALG
     void AddView(unsigned row, unsigned col, value_type& matrix)
     {
       Clear(row, col);
-      int p = Position(row, col);
+      int p = position(row, col);
       blocks_[p] = new value_type(matrix, true);
     }
 
     value_type* operator()(unsigned row, unsigned col)
     {
-      int p = Position(row, col);
+      int p = position(row, col);
       value_type* b = blocks_[p];
       if (b == nullptr)
       {
@@ -67,7 +67,7 @@ namespace CORE::LINALG
 
     const value_type* operator()(unsigned row, unsigned col) const
     {
-      const value_type* b = blocks_[Position(row, col)];
+      const value_type* b = blocks_[position(row, col)];
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (b == nullptr) FOUR_C_THROW("null block access");
 #endif
@@ -168,7 +168,7 @@ namespace CORE::LINALG
       {
         for (unsigned int ic = 0; ic < bcols; ++ic)
         {
-          int p = matrix.Position(ir, ic);
+          int p = matrix.position(ir, ic);
           value_type* b = matrix.blocks_[p];
           stream << "[" << ir << "," << ic << "] = ";
           if (b == nullptr)
@@ -185,7 +185,7 @@ namespace CORE::LINALG
     }
 
    private:
-    int Position(unsigned row, unsigned col) const
+    int position(unsigned row, unsigned col) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (row >= brows or col >= bcols) FOUR_C_THROW("block index out of range");

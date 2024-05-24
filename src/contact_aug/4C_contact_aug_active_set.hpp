@@ -95,7 +95,7 @@ namespace CONTACT
       void update_maps(const CONTACT::ParamsInterface& cparams);
 
       /// Merge the active set status of different contact interfaces
-      Status Merge(const std::vector<Status>& istatus) const;
+      Status merge(const std::vector<Status>& istatus) const;
 
       /// Perform a sanity check
       void sanity_check(const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const;

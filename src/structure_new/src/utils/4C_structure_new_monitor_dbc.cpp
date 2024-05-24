@@ -157,7 +157,7 @@ void STR::MonitorDbc::Setup()
       GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc");
   const std::string filename_only_prefix(
       GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix());
-  IO::create_directory(full_dirpath, Comm().MyPID());
+  IO::create_directory(full_dirpath, comm().MyPID());
   // ... create files paths ...
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
@@ -216,7 +216,7 @@ void STR::MonitorDbc::create_reaction_maps(const DRT::Discretization& discret,
 void STR::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
     const std::vector<std::string>& full_restart_filepaths, int restart_step) const
 {
-  if (Comm().MyPID() != 0) return;
+  if (comm().MyPID() != 0) return;
 
   if (full_restart_filepaths.size() != full_filepaths_.size())
     FOUR_C_THROW(
@@ -307,7 +307,7 @@ void STR::MonitorDbc::write_results_to_file(const std::string& full_filepath,
     const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
-  if (Comm().MyPID() != 0) return;
+  if (comm().MyPID() != 0) return;
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
@@ -324,7 +324,7 @@ void STR::MonitorDbc::write_results_to_screen(
     const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
-  if (Comm().MyPID() != 0) return;
+  if (comm().MyPID() != 0) return;
 
   IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 << " \n";
   write_condition_header(IO::cout.os(), OS_WIDTH);
@@ -342,7 +342,7 @@ std::vector<std::string> STR::MonitorDbc::create_file_paths(
 {
   std::vector<std::string> full_filepaths(rconds.size());
 
-  if (Comm().MyPID() != 0) return full_filepaths;
+  if (comm().MyPID() != 0) return full_filepaths;
 
   size_t i = 0;
   for (const Teuchos::RCP<CORE::Conditions::Condition>& rcond : rconds)
@@ -358,7 +358,7 @@ void STR::MonitorDbc::clear_files_and_write_header(
     const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
     std::vector<std::string>& full_filepaths, bool do_write_condition_header)
 {
-  if (Comm().MyPID() != 0) return;
+  if (comm().MyPID() != 0) return;
 
   size_t i = 0;
   for (const Teuchos::RCP<CORE::Conditions::Condition>& rcond : rconds)
@@ -414,7 +414,7 @@ void STR::MonitorDbc::write_results(std::ostream& os, const int col_width, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& STR::MonitorDbc::Comm() const { return discret_ptr_->Comm(); }
+const Epetra_Comm& STR::MonitorDbc::comm() const { return discret_ptr_->Comm(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

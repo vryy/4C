@@ -123,7 +123,7 @@ void MAT::MatList::setup_mat_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Clear()
+void MAT::MatList::clear()
 {
   params_ = nullptr;
   mat_.clear();
@@ -167,7 +167,7 @@ void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
 void MAT::MatList::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  Clear();
+  clear();
 
   std::vector<char>::size_type position = 0;
 

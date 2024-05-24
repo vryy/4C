@@ -97,20 +97,20 @@ namespace CONTACT
       void DoPredictor(const ::NOX::Solver::Generic& solver);
 
      private:
-      static bool Activated(const Teuchos::ParameterList& plot_params);
+      static bool activated(const Teuchos::ParameterList& plot_params);
 
       Plot();
 
-      void Init(const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat);
+      void init(const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat);
 
-      void Setup();
+      void setup();
 
-      void Execute(const ::NOX::Solver::Generic& solver);
+      void execute(const ::NOX::Solver::Generic& solver);
 
       void lin_space(
           const double a, const double b, const unsigned n, std::vector<double>& res) const;
 
-      const CONTACT::AUG::Strategy& Strategy() const;
+      const CONTACT::AUG::Strategy& strategy() const;
 
       void get_support_points(enum INPAR::CONTACT::PlotSupportType stype,
           CORE::LINALG::SerialDenseMatrix& support_mat_x);

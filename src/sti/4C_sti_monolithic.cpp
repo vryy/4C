@@ -1489,7 +1489,7 @@ void STI::Monolithic::prepare_time_step()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Monolithic::Solve()
+void STI::Monolithic::solve()
 {
   // initialize counter for Newton-Raphson iterations
   iter_ = 0;

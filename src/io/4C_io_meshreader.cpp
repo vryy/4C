@@ -85,7 +85,7 @@ void IO::MeshReader::ReadAndPartition()
   graph_.resize(element_readers_.size());
 
   read_mesh_from_dat_file(max_node_id);
-  Rebalance();
+  rebalance();
   create_inline_mesh(max_node_id);
 
   // last check if there are enough nodes
@@ -114,7 +114,7 @@ void IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::MeshReader::Rebalance()
+void IO::MeshReader::rebalance()
 {
   TEUCHOS_FUNC_TIME_MONITOR("IO::MeshReader::Rebalance");
 
@@ -229,7 +229,7 @@ void IO::MeshReader::create_inline_mesh(int& max_node_id)
     comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
     domain_reader.create_partitioned_mesh(max_node_id);
-    domain_reader.Complete();
+    domain_reader.complete();
     max_node_id = domain_reader.MyDis()->NodeRowMap()->MaxAllGID() + 1;
   }
 }

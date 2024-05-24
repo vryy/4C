@@ -261,7 +261,7 @@ void CORE::GEO::CutWizard::Cut(
   //--------------------------------------
   // write statistics and output to screen and files
   //--------------------------------------
-  Output(include_inner);
+  output(include_inner);
 }
 
 /*-------------------------------------------------------------*
@@ -736,7 +736,7 @@ bool CORE::GEO::CutWizard::safety_checks(bool is_prepare_cut_call)
 /*------------------------------------------------------------------------------------------------*
  * write statistics and output to screen and files
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CutWizard::Output(bool include_inner)
+void CORE::GEO::CutWizard::output(bool include_inner)
 {
   if (gmsh_output_) dump_gmsh_num_dof_sets(include_inner);
 

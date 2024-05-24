@@ -646,7 +646,7 @@ namespace CONTACT
     the input parameter is set to TRUE.
 
     */
-    void Setup(bool redistributed);
+    void setup(bool redistributed);
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)

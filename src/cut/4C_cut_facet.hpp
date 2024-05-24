@@ -104,13 +104,13 @@ namespace CORE::GEO
         }
       }
 
-      bool Equals(const std::vector<Point*>& facet_points) { return Equals(points_, facet_points); }
+      bool Equals(const std::vector<Point*>& facet_points) { return equals(points_, facet_points); }
 
       bool Equals(CORE::FE::CellType distype);
 
       bool CornerEquals(const std::vector<Point*>& facet_points)
       {
-        return Equals(corner_points_, facet_points);
+        return equals(corner_points_, facet_points);
       }
 
       /*! \brief Check whether the parent side is a cut side */
@@ -300,7 +300,7 @@ namespace CORE::GEO
 
       void get_nodal_ids(Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids);
 
-      unsigned Normal(const std::vector<Point*>& points, CORE::LINALG::Matrix<3, 1>& x1,
+      unsigned normal(const std::vector<Point*>& points, CORE::LINALG::Matrix<3, 1>& x1,
           CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
           CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2,
           CORE::LINALG::Matrix<3, 1>& b3);
@@ -309,7 +309,7 @@ namespace CORE::GEO
 
       bool is_line(const std::vector<Point*>& points, Point* p1, Point* p2);
 
-      bool Equals(const std::vector<Point*>& my_points, const std::vector<Point*>& facet_points);
+      bool equals(const std::vector<Point*>& my_points, const std::vector<Point*>& facet_points);
 
       std::vector<Point*> points_;
 

@@ -1167,7 +1167,7 @@ void MAT::SuperElasticSMA::StrainEnergy(
 /*---------------------------------------------------------------------*
  | return Kronecker delta (public)                    hemmler 09/16 |
  *---------------------------------------------------------------------*/
-int MAT::SuperElasticSMA::Kron(int i, int j)
+int MAT::SuperElasticSMA::kron(int i, int j)
 {
   if (i == j) return 1;
   return 0;
@@ -1176,10 +1176,10 @@ int MAT::SuperElasticSMA::Kron(int i, int j)
 /*---------------------------------------------------------------------*
  | return fourth order deviatoric identity tensor (public) hemmler 09/16 |
  *---------------------------------------------------------------------*/
-double MAT::SuperElasticSMA::Idev(int i, int j, int k, int l)
+double MAT::SuperElasticSMA::idev(int i, int j, int k, int l)
 {
-  return Kron(i, j) * (Kron(i, k) * Kron(k, l) - 1.0 / 3.0 * Kron(k, l)) +
-         0.5 * (1 - Kron(i, j)) * Kron(i, k) * Kron(j, l);
+  return kron(i, j) * (kron(i, k) * kron(k, l) - 1.0 / 3.0 * kron(k, l)) +
+         0.5 * (1 - kron(i, j)) * kron(i, k) * kron(j, l);
   // return kron(i,j) * ( kron(i,k) * kron(k,l)-1.0/3.0 * kron(k,l) )  + ( 1 - kron(i,j) ) *
   // kron(i,k) * kron(j,l);
 }  // Idev()

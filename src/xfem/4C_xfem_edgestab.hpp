@@ -134,7 +134,7 @@ namespace XFEM
         DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
     // reset maps for output
-    void Reset();
+    void reset();
 
     std::map<int, int> ghost_penalty_stab_;  ///< map of face elements stabilized with ghost penalty
     std::map<int, int>

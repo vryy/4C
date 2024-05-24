@@ -44,10 +44,10 @@ void MeshLoader::create_side(
     case CORE::FE::CellType::quad4:
     {
       CORE::LINALG::SerialDenseMatrix xyz(3, 4);
-      Fill(cut_nodes_, nid1, &xyz(0, 0));
-      Fill(cut_nodes_, nid2, &xyz(0, 1));
-      Fill(cut_nodes_, nid3, &xyz(0, 2));
-      Fill(cut_nodes_, nid4, &xyz(0, 3));
+      fill(cut_nodes_, nid1, &xyz(0, 0));
+      fill(cut_nodes_, nid2, &xyz(0, 1));
+      fill(cut_nodes_, nid3, &xyz(0, 2));
+      fill(cut_nodes_, nid4, &xyz(0, 3));
 
       std::vector<int> nids;
       nids.reserve(4);
@@ -72,14 +72,14 @@ void MeshLoader::create_element(int eid, int nid1, int nid2, int nid3, int nid4,
     case CORE::FE::CellType::hex8:
     {
       CORE::LINALG::SerialDenseMatrix xyz(3, 8);
-      Fill(nodes_, nid1, &xyz(0, 0));
-      Fill(nodes_, nid2, &xyz(0, 1));
-      Fill(nodes_, nid3, &xyz(0, 2));
-      Fill(nodes_, nid4, &xyz(0, 3));
-      Fill(nodes_, nid5, &xyz(0, 4));
-      Fill(nodes_, nid6, &xyz(0, 5));
-      Fill(nodes_, nid7, &xyz(0, 6));
-      Fill(nodes_, nid8, &xyz(0, 7));
+      fill(nodes_, nid1, &xyz(0, 0));
+      fill(nodes_, nid2, &xyz(0, 1));
+      fill(nodes_, nid3, &xyz(0, 2));
+      fill(nodes_, nid4, &xyz(0, 3));
+      fill(nodes_, nid5, &xyz(0, 4));
+      fill(nodes_, nid6, &xyz(0, 5));
+      fill(nodes_, nid7, &xyz(0, 6));
+      fill(nodes_, nid8, &xyz(0, 7));
 
       std::vector<int> nids;
       nids.reserve(8);
@@ -100,7 +100,7 @@ void MeshLoader::create_element(int eid, int nid1, int nid2, int nid3, int nid4,
   }
 }
 
-void MeshLoader::Fill(std::map<int, std::vector<double>>& nodes, int nid, double* values)
+void MeshLoader::fill(std::map<int, std::vector<double>>& nodes, int nid, double* values)
 {
   if (nodes.find(nid) == nodes.end())
   {

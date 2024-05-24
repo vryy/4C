@@ -506,7 +506,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   for (int idpast = 0; idpast < numpast - firstiter; idpast++)
   {
     double degr = 0.0;
-    Degradation((numpast - 1 - idpast) * dt, degr);
+    degradation((numpast - 1 - idpast) * dt, degr);
     intdegr += degr * dt;
   }
   massprodbasal_ =
@@ -562,12 +562,12 @@ void MAT::ConstraintMixture::Update()
       int eraseiter = 0;
       history_->at(eraseiter).get_time(&deptime, &depdt);
       double degrad = 0.0;
-      Degradation(acttime - deptime, degrad);
+      degradation(acttime - deptime, degrad);
       while (degrad < params_->degtol_ && eraseiter < sizehistory)
       {
         eraseiter += 1;
         history_->at(eraseiter).get_time(&deptime, &depdt);
-        Degradation(acttime - deptime, degrad);
+        degradation(acttime - deptime, degrad);
       }
       if (eraseiter > 0)
       {
@@ -699,7 +699,7 @@ void MAT::ConstraintMixture::Update()
     double newdt = 0.0;
     history_->at(0).get_time(&newtime, &newdt);
     double degrad = 0.0;
-    Degradation(deptime - newtime, degrad);
+    degradation(deptime - newtime, degrad);
     if (degrad < params_->degtol_)
     {
       for (int iter = 0; iter < sizehistory - 1; iter++)
@@ -810,12 +810,12 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     history_->back().get_time(&acttime, &tempdt);
     if (acttime == 0.0 || time <= acttime) acttime = time;
     double degrad = 0.0;
-    Degradation(acttime - temptime, degrad);
+    degradation(acttime - temptime, degrad);
     while (degrad < params_->degtol_ && minindex_ < sizehistory - 1)
     {
       minindex_ += 1;
       history_->at(minindex_).get_time(&temptime, &tempdt);
-      Degradation(acttime - temptime, degrad);
+      degradation(acttime - temptime, degrad);
     }
   }
 
@@ -851,7 +851,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
             history_->at(idpast + 1).get_time(&timeloc, &dtloc);
             degrdt = dtloc;
           }
-          Degradation(time - degrtime, degr);
+          degradation(time - degrtime, degr);
           intdegr += degr * degrdt;
         }
         massprodbasal_ =
@@ -1354,7 +1354,7 @@ void MAT::ConstraintMixture::evaluate_fiber_family(const CORE::LINALG::Matrix<NU
                      (1.0 - idpast / (sizehistory - 1.0)) / sqrt(I4);
 
     double qdegrad = 0.0;
-    Degradation(time - deptime, qdegrad);
+    degradation(time - deptime, qdegrad);
     if (params_->degoption_ == "ExpVar")
     {
       double vardegrad;
@@ -2028,7 +2028,7 @@ void MAT::ConstraintMixture::mass_function(
 /*----------------------------------------------------------------------*
  |  Degradation                                   (private)        10/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Degradation(double t, double& degr)
+void MAT::ConstraintMixture::degradation(double t, double& degr)
 {
   if (params_->degoption_ == "Lin")  // heaviside step function
   {
@@ -2537,7 +2537,7 @@ void MAT::ConstraintMixture::evaluate_implicit_single(CORE::LINALG::Matrix<3, 3>
   const int firstiter = 0;
   double currmassdens = 0.0;
   double qdegrad = 0.0;
-  Degradation(0.0, qdegrad);
+  degradation(0.0, qdegrad);
   double density = params_->density_;
   // store actual collagen stretches, do not change anymore
   CORE::LINALG::Matrix<4, 1> actcollstretch(true);
@@ -2776,7 +2776,7 @@ void MAT::ConstraintMixture::grad_stress_d_mass(
 {
   double density = params_->density_;
   double qdegrad = 0.0;
-  Degradation(0.0, qdegrad);
+  degradation(0.0, qdegrad);
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I

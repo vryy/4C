@@ -225,7 +225,7 @@ namespace ADAPTER
     void update_period();
 
     //! Indicate error and determine new step size
-    void Indicate(bool& accepted,  //!< true=accepted, false=not accepted
+    void indicate(bool& accepted,  //!< true=accepted, false=not accepted
         double& stpsiznew          //!< step size prediction for next step or step repetition
     );
 

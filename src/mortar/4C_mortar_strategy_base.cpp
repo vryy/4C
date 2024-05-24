@@ -58,14 +58,14 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
       data_ptr_(data_ptr)
 {
   // *** set data container variables
-  Data().ProbDofsPtr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
-  Data().ProbNodesPtr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
-  Data().CommPtr() = comm;
-  Data().SContact() = params;
-  Data().Dim() = spatialDim;
-  Data().AlphaF() = alphaf;
-  Data().MaxDof() = maxdof;
-  Data().SysType() = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
+  data().ProbDofsPtr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
+  data().ProbNodesPtr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
+  data().CommPtr() = comm;
+  data().SContact() = params;
+  data().Dim() = spatialDim;
+  data().AlphaF() = alphaf;
+  data().MaxDof() = maxdof;
+  data().SysType() = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
 }
 
 /*----------------------------------------------------------------------*
@@ -75,15 +75,15 @@ void MORTAR::StrategyBase::set_time_integration_info(
 {
   // Get weight for contribution from last time step
 
-  Data().SetDynType(dyntype);
+  data().SetDynType(dyntype);
   switch (dyntype)
   {
     case INPAR::STR::dyna_statics:
-      Data().SetDynParameterN(0.0);
+      data().SetDynParameterN(0.0);
       break;
     case INPAR::STR::dyna_genalpha:
     case INPAR::STR::dyna_onesteptheta:
-      Data().SetDynParameterN(time_fac);
+      data().SetDynParameterN(time_fac);
       break;
     default:
       FOUR_C_THROW(
@@ -92,11 +92,11 @@ void MORTAR::StrategyBase::set_time_integration_info(
   }
 
   // Check if we only want to compute the contact force at the time endpoint
-  if (CORE::UTILS::IntegralValue<int>(Data().SContact(), "CONTACTFORCE_ENDTIME"))
+  if (CORE::UTILS::IntegralValue<int>(data().SContact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
   {
-    alphaf_ = Data().GetDynParameterN();
+    alphaf_ = data().GetDynParameterN();
   }
 }
 

@@ -211,25 +211,25 @@ namespace CORE::GEN
       {
         case DataType::vector:
         {
-          Clear(vector_data_, id);
+          clear(vector_data_, id);
 
           break;
         }
         case DataType::unordered_map:
         {
-          Clear(unordered_map_data_, id);
+          clear(unordered_map_data_, id);
 
           break;
         }
         case DataType::time_monitor:
         {
-          Clear(time_monitor_data_, id);
+          clear(time_monitor_data_, id);
 
           break;
         }
         case DataType::any:
         {
-          Clear(any_data_, id);
+          clear(any_data_, id);
 
           break;
         }
@@ -248,7 +248,7 @@ namespace CORE::GEN
 
    private:
     /// helper function to clear content
-    void Clear(std::vector<AnyData>& any_data_vec, const int id)
+    void clear(std::vector<AnyData>& any_data_vec, const int id)
     {
       // clear all entries
       if (id < 0)

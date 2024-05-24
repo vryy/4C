@@ -720,7 +720,7 @@ namespace XFEM
 
    private:
     // build the whole object which then can be used
-    void Create();
+    void create();
 
     ///
     void update_level_set_field();

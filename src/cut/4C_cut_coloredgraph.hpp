@@ -156,7 +156,7 @@ namespace CORE::GEO
             std::vector<std::vector<int>>& isolated_components);
 
        private:
-        void Fill(const std::vector<int>& split_trace, Graph& used, plain_int_set& free,
+        void fill(const std::vector<int>& split_trace, Graph& used, plain_int_set& free,
             Graph& connection, int seed, Graph& c);
 
         std::map<int, plain_int_set> graph_;

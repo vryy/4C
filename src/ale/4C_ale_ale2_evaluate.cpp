@@ -679,13 +679,13 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 
     /*---------------------- geometric part of stiffness matrix kg ---*/
-    if (stiffmatrix) Kg(*stiffmatrix, boplin, stress, fac, nd, numeps);
+    if (stiffmatrix) kg(*stiffmatrix, boplin, stress, fac, nd, numeps);
 
     /*------------------ elastic+displacement stiffness matrix keu ---*/
-    if (stiffmatrix) Keu(*stiffmatrix, b_cure, C, fac, nd, numeps);
+    if (stiffmatrix) keu(*stiffmatrix, b_cure, C, fac, nd, numeps);
 
     /*--------------- nodal forces fi from integration of stresses ---*/
-    if (not pseudolinear and force) Fint(stress, b_cure, *force, fac, nd);
+    if (not pseudolinear and force) fint(stress, b_cure, *force, fac, nd);
 
 
   }  // for (int ip=0; ip<totngp; ++ip)
@@ -997,7 +997,7 @@ void DRT::ELEMENTS::Ale2::def_grad(CORE::LINALG::SerialDenseVector& F,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::Kg(CORE::LINALG::SerialDenseMatrix& estif,
+void DRT::ELEMENTS::Ale2::kg(CORE::LINALG::SerialDenseMatrix& estif,
     const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseMatrix& stress,
     const double fac, const int nd, const int numeps)
 {
@@ -1013,7 +1013,7 @@ void DRT::ELEMENTS::Ale2::Kg(CORE::LINALG::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::Keu(CORE::LINALG::SerialDenseMatrix& estif,
+void DRT::ELEMENTS::Ale2::keu(CORE::LINALG::SerialDenseMatrix& estif,
     const CORE::LINALG::SerialDenseMatrix& b_cure, const CORE::LINALG::SerialDenseMatrix& C,
     const double fac, const int nd, const int numeps)
 {
@@ -1028,7 +1028,7 @@ void DRT::ELEMENTS::Ale2::Keu(CORE::LINALG::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::Fint(const CORE::LINALG::SerialDenseMatrix& stress,
+void DRT::ELEMENTS::Ale2::fint(const CORE::LINALG::SerialDenseMatrix& stress,
     const CORE::LINALG::SerialDenseMatrix& b_cure, CORE::LINALG::SerialDenseVector& intforce,
     const double fac, const int nd)
 

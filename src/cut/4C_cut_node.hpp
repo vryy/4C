@@ -46,10 +46,10 @@ namespace CORE::GEO
 
      private:
       /// compare routine for plain_volumecell_sets
-      bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const;
+      bool compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2) const;
 
       /// compare routine for volumecells based on point ids
-      bool Compare(VolumeCell* vc1, VolumeCell* vc2) const;
+      bool compare(VolumeCell* vc1, VolumeCell* vc2) const;
     };
 
     /*----------------------------------------------------------------------------*/

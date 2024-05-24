@@ -372,7 +372,7 @@ namespace DRT
       );
 
       /// Return stress at Gauss point
-      void Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>*
+      void stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>*
                       elestress,                  ///< store the stress herein
           const INPAR::STR::StressType iostress,  ///< stress type
           const int gp,                           ///< Gauss point index
@@ -386,7 +386,7 @@ namespace DRT
       );
 
       /// Return strain at Gauss point
-      void Strain(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>*
+      void strain(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>*
                       elestrain,                  ///< store the strain herein
           const INPAR::STR::StrainType iostrain,  ///< strain type
           const int gp,                           ///< Gauss point index

@@ -121,7 +121,7 @@ namespace IO
     /*!
     \brief Rebalance discretizations built in read_mesh_from_dat_file()
     */
-    void Rebalance();
+    void rebalance();
 
     /*!
     \brief Create inline mesh

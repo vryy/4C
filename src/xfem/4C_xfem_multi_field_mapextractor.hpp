@@ -617,7 +617,7 @@ namespace XFEM
       return *(interface_couplings_[dis_id]);
     }
 
-    inline const Epetra_Comm& Comm() const
+    inline const Epetra_Comm& comm() const
     {
       if (comm_.is_null()) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
 
@@ -632,8 +632,8 @@ namespace XFEM
      *
      *  \param num_dis_vec (in): number of wrapped discretizations
      *  \param full        (in): TRUE initiates a reset of all class variables */
-    void Reset(unsigned num_dis_vec) { Reset(num_dis_vec, true); }
-    void Reset(unsigned num_dis_vec, bool full);
+    void reset(unsigned num_dis_vec) { reset(num_dis_vec, true); }
+    void reset(unsigned num_dis_vec, bool full);
 
     /// get the row node/DoF maps of the wrapped discretizations
     void get_dof_and_node_maps();

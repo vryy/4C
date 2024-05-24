@@ -134,7 +134,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   MIXTURE::MixtureConstituent::UnpackConstituent(position, data);
-  Initialize();
+  initialize();
 
   anisotropy_extension_.UnpackAnisotropy(data, position);
 
@@ -159,7 +159,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::register_anisotropy
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Initialize()
+void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::initialize()
 {
   full_constrained_mixture_fiber_.clear();
   std::shared_ptr<const RemodelFiberMaterial<double>> material =
@@ -182,7 +182,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::ReadElement(
     int numgp, INPUT::LineDefinition* linedef)
 {
   MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
-  Initialize();
+  initialize();
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Setup(

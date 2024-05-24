@@ -108,7 +108,7 @@ namespace MIXTURE
     [[nodiscard]] CORE::LINALG::Matrix<6, 6> evaluate_current_cmat(int gp, int eleGID) const;
     [[nodiscard]] double evaluate_initial_deposition_stretch(double time) const;
 
-    void Initialize();
+    void initialize();
 
     /// my material parameters
     MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params_;

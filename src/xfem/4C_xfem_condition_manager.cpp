@@ -329,14 +329,14 @@ void XFEM::ConditionManager::Setup()
     levelset_coupl_[lc]->Setup();
   }
 
-  Create();
+  create();
 
   issetup_ = true;
 }
 
 
 
-void XFEM::ConditionManager::Create()
+void XFEM::ConditionManager::create()
 {
   numglobal_coupling_sides_ = 0;
   mesh_coupl_start_gid_.reserve(mesh_coupl_.size());

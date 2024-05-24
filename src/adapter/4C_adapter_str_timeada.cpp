@@ -230,7 +230,7 @@ int ADAPTER::StructureTimeAda::Integrate()
         evaluate_local_error_dis();
 
         // check whether step passes
-        Indicate(accepted, stpsiznew);
+        indicate(accepted, stpsiznew);
       }
 
       // adjust step-size and prepare repetition of current step
@@ -399,7 +399,7 @@ void ADAPTER::StructureTimeAda::evaluate_local_error_dis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void ADAPTER::StructureTimeAda::Indicate(bool& accepted, double& stpsiznew)
+void ADAPTER::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = stm_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();

@@ -760,7 +760,7 @@ void FSI::MonolithicXFEM::Timeloop()
 
     // outer iteration loop when active fluid dofsets change
     // calls inner Newton-Raphson iterations within each outer iteration
-    Solve();
+    solve();
 
     // TODO: check this function
     // TODO: erst update und dann prepare output? oder anders rum?
@@ -829,7 +829,7 @@ void FSI::MonolithicXFEM::prepare_time_step()
  | outer iteration loop, restarts inner Newton-Raphson iterations       |
  | when fluid dofsets changes                              schott 08/14 |
  *----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::Solve()
+void FSI::MonolithicXFEM::solve()
 {
   // initialize outer loop iteration index which allows for restarts of the Newton scheme in case of
   // changing fluid maps
@@ -849,7 +849,7 @@ void FSI::MonolithicXFEM::Solve()
     //--------------------------------------------------------
     // call the inner Newton loop and check for convergence
     //--------------------------------------------------------
-    if (Newton())  // stop since the main inner Newton loop converged
+    if (newton())  // stop since the main inner Newton loop converged
     {
       if (Comm().MyPID() == 0)
       {
@@ -954,7 +954,7 @@ void FSI::MonolithicXFEM::Output()
  | return "true" if converged or                                        |
  | "false" if unconverged or in case of changing fluid dof maps         |
  *----------------------------------------------------------------------*/
-bool FSI::MonolithicXFEM::Newton()
+bool FSI::MonolithicXFEM::newton()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Newton");
 
@@ -1012,7 +1012,7 @@ bool FSI::MonolithicXFEM::Newton()
   // We want to make sure, that the loop is entered at least once!
   // We exit the loop if either the convergence criteria are met (checked in
   // Converged() method) OR the maximum number of inner iterations is exceeded!
-  while ((iter_ + (iter_outer_ - 1)) <= itermin_ or ((not Converged()) and (iter_ <= itermax_)))
+  while ((iter_ + (iter_outer_ - 1)) <= itermin_ or ((not converged()) and (iter_ <= itermax_)))
   {
     //    std::cout << "Evaluate-Call " << "iter_ " << iter_ << "/" << itermax_ << std::endl;
 
@@ -1041,7 +1041,7 @@ bool FSI::MonolithicXFEM::Newton()
     // system
     //    solver_ = Teuchos::null;
 
-    const bool changed_fluid_dofsets = Evaluate();
+    const bool changed_fluid_dofsets = evaluate();
 
 
     //-------------------
@@ -1277,7 +1277,7 @@ bool FSI::MonolithicXFEM::Newton()
   /*----------------------------------------------------------------------*/
   // print converged/non-converged info
   /*----------------------------------------------------------------------*/
-  if (Converged())
+  if (converged())
   {
     if (Comm().MyPID() == 0)
     {
@@ -1407,7 +1407,7 @@ void FSI::MonolithicXFEM::build_covergence_norms()
  * between the two last iterations changed and
  * a Newton restart is necessary                            schott 08/14
  *----------------------------------------------------------------------*/
-bool FSI::MonolithicXFEM::Evaluate()
+bool FSI::MonolithicXFEM::evaluate()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Evaluate");
 
@@ -1657,7 +1657,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 /*----------------------------------------------------------------------*
  | check convergence of Newton iteration (public)          schott 08/14 |
  *----------------------------------------------------------------------*/
-bool FSI::MonolithicXFEM::Converged()
+bool FSI::MonolithicXFEM::converged()
 {
   // check for single norms (increment, residual)
   bool convinc = false;   // increment converged?

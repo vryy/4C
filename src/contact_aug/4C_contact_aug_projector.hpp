@@ -106,7 +106,7 @@ namespace CONTACT
       /// constructor
       Projector() : iter_(0), rel_sol_tolerance_(0.0){/* empty */};
 
-      void Setup();
+      void setup();
 
       /** \brief Get the jacobian for the GP projection
        *

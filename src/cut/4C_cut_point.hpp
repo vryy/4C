@@ -376,10 +376,10 @@ namespace CORE::GEO
      private:
       // find the unique line that matches the filter criteria
       template <class Filter>
-      Line* Find(Filter& filter, bool unique = true);
+      Line* find(Filter& filter, bool unique = true);
 
       template <class Filter>
-      void Find(Filter& filter, plain_line_set& cut_lines);
+      void find(Filter& filter, plain_line_set& cut_lines);
 
       unsigned pid_;
       PointPosition position_;

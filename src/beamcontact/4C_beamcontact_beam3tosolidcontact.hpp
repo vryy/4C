@@ -584,7 +584,7 @@ namespace CONTACT
     \brief Find projection of surface edges on beam and projection of beam center line on surface
     (CPP)
     */
-    void Projection(
+    void projection(
         const int& fixed_par, TYPEBTS& xi1, TYPEBTS& xi2, TYPEBTS& eta, bool& proj_allowed);
 
     /*!

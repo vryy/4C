@@ -44,7 +44,7 @@ bool CORE::GEO::CUT::Cmp::operator()(
   // CORE::GEO::CUT::Cmp::operator()" );
 
   // call Compare function for two plain_volumecell_sets
-  return Compare(s1, s2);
+  return compare(s1, s2);
 }
 
 
@@ -65,14 +65,14 @@ bool CORE::GEO::CUT::Cmp::Compare(const std::set<plain_volumecell_set, Cmp>& set
   std::set<plain_volumecell_set, Cmp>::iterator it2 = set2.begin();
   const plain_volumecell_set& s2 = *it2;
 
-  return Compare(s1, s2);
+  return compare(s1, s2);
 }
 
 /*------------------------------------------------------------------------------*
   | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Cmp::Compare(
+bool CORE::GEO::CUT::Cmp::compare(
     const plain_volumecell_set& s1, const plain_volumecell_set& s2) const
 {
   // take the first vc in plain_volumecell_set. In case of linear elements
@@ -86,7 +86,7 @@ bool CORE::GEO::CUT::Cmp::Compare(
   plain_volumecell_set::const_iterator it2 = s2.begin();
   VolumeCell* vc2 = *it2;
 
-  return Compare(vc1, vc2);
+  return compare(vc1, vc2);
 }
 
 
@@ -94,7 +94,7 @@ bool CORE::GEO::CUT::Cmp::Compare(
   | Operator () to compare two volume cells via the ids of their points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
+bool CORE::GEO::CUT::Cmp::compare(VolumeCell* vc1, VolumeCell* vc2) const
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets ---
   // CORE::GEO::CUT::Cmp::Compare(vc,vc)" );

@@ -124,7 +124,7 @@ namespace STI
 
     //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling
     //! iteration (partitioned algorithm)
-    virtual void Solve() = 0;
+    virtual void solve() = 0;
 
     //! update scatra and thermo fields after time step evaluation
     void Update() override;

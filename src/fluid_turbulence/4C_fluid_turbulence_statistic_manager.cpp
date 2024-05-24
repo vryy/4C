@@ -102,7 +102,7 @@ namespace FLD
       flow_ = channel_flow_of_height_2;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -114,7 +114,7 @@ namespace FLD
       flow_ = loma_channel_flow_of_height_2;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -126,7 +126,7 @@ namespace FLD
       flow_ = scatra_channel_flow_of_height_2;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -145,7 +145,7 @@ namespace FLD
         flow_ = scatra_forced_homogeneous_isotropic_turbulence;
 
       // do the time integration independent setup
-      Setup();
+      setup();
       if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
           CORE::FE::ShapeFunctionType::hdg)
       {
@@ -185,7 +185,7 @@ namespace FLD
       flow_ = taylor_green_vortex;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -197,7 +197,7 @@ namespace FLD
       flow_ = lid_driven_cavity;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -209,7 +209,7 @@ namespace FLD
       flow_ = loma_lid_driven_cavity;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -221,7 +221,7 @@ namespace FLD
       flow_ = backward_facing_step;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -239,7 +239,7 @@ namespace FLD
       flow_ = periodic_hill;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -251,7 +251,7 @@ namespace FLD
       flow_ = loma_backward_facing_step;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -281,7 +281,7 @@ namespace FLD
       flow_ = backward_facing_step2;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -311,7 +311,7 @@ namespace FLD
       flow_ = square_cylinder;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -323,7 +323,7 @@ namespace FLD
       flow_ = square_cylinder_nurbs;
 
       // do the time integration independent setup
-      Setup();
+      setup();
     }
     else if (fluid.special_flow_ == "rotating_circular_cylinder_nurbs")
     {
@@ -331,7 +331,7 @@ namespace FLD
       const bool withscatra = false;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -344,7 +344,7 @@ namespace FLD
       const bool withscatra = true;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -356,14 +356,14 @@ namespace FLD
       flow_ = time_averaging;
 
       // do the time integration independent setup
-      Setup();
+      setup();
     }
     else if (fluid.special_flow_ == "blood_fda_flow")
     {
       flow_ = blood_fda_flow;
 
       // do the time integration independent setup
-      Setup();
+      setup();
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
@@ -375,7 +375,7 @@ namespace FLD
       flow_ = no_special_flow;
 
       // do the time integration independent setup
-      Setup();
+      setup();
     }
 
     // allocate one instance of the flow independent averaging procedure
@@ -411,7 +411,7 @@ namespace FLD
     Time integration independent setup called by Constructor (private)
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::Setup()
+  void TurbulenceStatisticManager::setup()
   {
     Teuchos::ParameterList* modelparams = &(params_->sublist("TURBULENCE MODEL"));
 

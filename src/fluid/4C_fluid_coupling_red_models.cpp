@@ -335,7 +335,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
           double density = 0.0;
           double viscosity = 0.0;
           double area = 0.0;
-          area = mapiter->second->FluidCouplingBc::Area(density, viscosity, condID);
+          area = mapiter->second->FluidCouplingBc::area(density, viscosity, condID);
           (*map3_dnp_)[CouplingVariable.str()] =
               mapiter->second->FluidCouplingBc::PressureCalculation(time, dta, condID);
           (*map3_dnp_)[CouplingVariable.str()] /= area;
@@ -762,7 +762,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> d
     double viscosity = 0.0;
     double time = 0.0;
     double flowrate = this->FlowRateCalculation(time, dt_3d, condid);
-    double area = this->Area(density, viscosity, condid);
+    double area = this->area(density, viscosity, condid);
     if (flowrate == 0.0)
     {
       FOUR_C_THROW(
@@ -854,7 +854,7 @@ void FLD::UTILS::FluidCouplingBc::read_restart(IO::DiscretizationReader& reader,
 /*!
 
 */
-double FLD::UTILS::FluidCouplingBc::Area(double& density, double& viscosity, int condid)
+double FLD::UTILS::FluidCouplingBc::area(double& density, double& viscosity, int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -1095,15 +1095,11 @@ void FLD::UTILS::FluidCouplingBc::InflowBoundary(
   std::vector<CORE::Conditions::Condition*> cond3D;
   discret_3_d_->GetCondition("Art_3D_redD_CouplingCond", cond3D);
 
-  double area = 0.0;
   double density = 0.0;
   double viscosity = 0.0;
 
-  area = Area(density, viscosity, condid_);
-  velocity_ = flowrate / area;
-
-  return;
-}  // FluidCouplingBc::InflowBoundary
+  velocity_ = flowrate / area(density, viscosity, condid_);
+}
 
 
 
@@ -1178,7 +1174,7 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
   double density = 0.0;
   double viscosity = 0.0;
 
-  area = this->Area(density, viscosity, condid_);
+  area = this->area(density, viscosity, condid_);
 
   double Dflowrate = this->FlowRateCalculation(time, dt_f3_, condid_);
   alfa_ = fabs(area / Dflowrate);

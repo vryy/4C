@@ -142,7 +142,7 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
   fint_np().PutScalar(0.0);
 
   // reset stiffness matrix
-  Stiff().Zero();
+  stiff().Zero();
 
   // reset modified stiffness matrix
   stiff_ptc().Zero();
@@ -258,8 +258,8 @@ bool STR::MODELEVALUATOR::Structure::assemble_force(
 bool STR::MODELEVALUATOR::Structure::assemble_jacobian(
     CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  int err = Stiff().Scale(timefac_np);
-  GState().AssignModelBlock(jac, Stiff(), Type(), STR::MatBlockType::displ_displ);
+  int err = stiff().Scale(timefac_np);
+  GState().AssignModelBlock(jac, stiff(), Type(), STR::MatBlockType::displ_displ);
 
   // add the visco and mass contributions
   Int().add_visco_mass_contributions(jac);
@@ -470,7 +470,7 @@ void STR::MODELEVALUATOR::Structure::material_damping_contributions(
   // set the discretization state
   Discret().set_state(0, "velocity", GState().GetVelNp());
   // reset damping matrix
-  Damp().Zero();
+  damp().Zero();
   // add the stiffness matrix as well (also for the ApplyForce case!)
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
   // set damping matrix
@@ -496,7 +496,7 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(
   Discret().set_state(0, "velocity", GState().GetVelNp());
   Discret().set_state(0, "acceleration", GState().GetAccNp());
   // reset the mass matrix
-  Mass().Zero();
+  mass().Zero();
   // set mass matrix
   eval_mat[1] = GState().GetMassMatrix();
   // set inertial vector if necessary
@@ -530,14 +530,14 @@ void STR::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
   if (masslin_type_ == INPAR::STR::ml_none and !TimInt().GetDataSDynPtr()->NeglectInertia())
   {
     // calculate the inertial force at t_{n+1}
-    Mass().Multiply(false, *GState().GetAccNp(), finertial_np());
+    mass().Multiply(false, *GState().GetAccNp(), finertial_np());
   }
 
   // calculate the viscous/damping force at t_{n+1}
   if (EvalData().GetDampingType() != INPAR::STR::damp_none)
   {
-    if (not Damp().Filled()) Damp().Complete();
-    Damp().Multiply(false, *GState().GetVelNp(), fvisco_np());
+    if (not damp().Filled()) damp().Complete();
+    damp().Multiply(false, *GState().GetVelNp(), fvisco_np());
   }
 }
 
@@ -547,7 +547,7 @@ void STR::MODELEVALUATOR::Structure::fill_complete()
 {
   if (not stiff_ptr_->Filled()) stiff_ptr_->Complete();
 
-  if (not Mass().Filled()) Mass().Complete();
+  if (not mass().Filled()) mass().Complete();
 }
 
 /*----------------------------------------------------------------------------*
@@ -560,8 +560,8 @@ void STR::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
   const double& dampm = TimInt().GetDataSDyn().get_damping_mass_factor();
 
   // damping matrix with initial stiffness
-  Damp().Add(Stiff(), false, dampk, 0.0);
-  Damp().Add(Mass(), false, dampm, 1.0);
+  damp().Add(stiff(), false, dampk, 0.0);
+  damp().Add(mass(), false, dampm, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1554,7 +1554,7 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy(
     Teuchos::RCP<Epetra_Vector> linear_momentum =
         CORE::LINALG::CreateVector(*GState().DofRowMapView(), true);
 
-    Mass().Multiply(false, *velnp, *linear_momentum);
+    mass().Multiply(false, *velnp, *linear_momentum);
 
     linear_momentum->Dot(*velnp, &kinetic_energy_times2);
 
@@ -1914,7 +1914,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
+CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff() const
 {
   check_init();
   FOUR_C_ASSERT(stiff_ptr_, "nullptr!");
@@ -1934,7 +1934,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff_ptc() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
+CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::mass()
 {
   check_init();
   FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
@@ -1944,7 +1944,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
+const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::mass() const
 {
   check_init();
   FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
@@ -1954,7 +1954,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
+CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::damp()
 {
   check_init();
   FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");
@@ -1964,7 +1964,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
+const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::damp() const
 {
   check_init();
   FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");

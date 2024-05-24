@@ -260,7 +260,7 @@ namespace MAT
     Teuchos::RCP<std::vector<double>> xi_s_curr_;
 
     //! Calculates the kronecker delta. Returns 1 for i==j otherwise 0
-    virtual int Kron(int i, int j);
+    virtual int kron(int i, int j);
 
     //! Returns the pullback of the 4th order tensor in voigt notation
     virtual void pullback4th_tensor_voigt(const double jacobian,
@@ -268,7 +268,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 6>* cmatLag);
 
     //! Returns the 4th order identity tensor in tensor notation
-    virtual double Idev(int i, int j, int k, int l);
+    virtual double idev(int i, int j, int k, int l);
 
     //! Returns the residual of the local Newton step
     virtual CORE::LINALG::Matrix<2, 1> compute_local_newton_residual(

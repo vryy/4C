@@ -111,7 +111,7 @@ namespace CORE::LINALG
     DownwindMatrix operator=(const DownwindMatrix& old);
 
     /// setup phase of downwinding
-    void Setup(const Epetra_CrsMatrix& A);
+    void setup(const Epetra_CrsMatrix& A);
 
     /// sets an index in the Bey&Wittum method
     void set_f(

@@ -446,11 +446,11 @@ namespace CORE::COMM
     /*!
     \brief Get PID
     */
-    inline int MyPID() const { return myrank_; }
+    inline int my_pid() const { return myrank_; }
     /*!
     \brief Get no. of processors
     */
-    inline int NumProc() const { return numproc_; }
+    inline int num_proc() const { return numproc_; }
 
     /*!
     \brief Get sendplan_

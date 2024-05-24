@@ -133,7 +133,7 @@ namespace MAT
     void setup_mat_map() override;
 
     /// clear everything
-    void Clear();
+    void clear();
 
     /// my material parameters
     MAT::PAR::MatListChemoReac* paramsreachemo_;

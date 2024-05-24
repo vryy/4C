@@ -40,7 +40,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::NewPoint(const double* x, Ed
 
     if (points_.size() % 1000 == 0)  // split the node starting from level 0
     {
-      Split(0);
+      split(0);
     }
   }
 
@@ -308,7 +308,7 @@ Teuchos::RCP<CORE::GEO::CUT::Point> CORE::GEO::CUT::OctTreeNode::create_point(
   if (not IsLeaf())
   {
     // call recursively create_point for the child where the Point shall lie in
-    Teuchos::RCP<Point> p = Leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
+    Teuchos::RCP<Point> p = leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
     // add the pointer not only in the leaf but also on the current level
     AddPoint(x, p);
     return p;
@@ -336,7 +336,7 @@ void CORE::GEO::CUT::OctTreeNode::AddPoint(const double* x, Teuchos::RCP<Point> 
 /*-----------------------------------------------------------------------------------------*
  * get the leaf where the point with the given coordinates lies in
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::Leaf(const double* x)
+CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::leaf(const double* x)
 {
   // navigate to the right one of the 8 children nodes
   //
@@ -367,7 +367,7 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::Leaf(const double* x)
 /*-----------------------------------------------------------------------------------------*
  * split the current boounding box (tree-node)
  *-----------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::OctTreeNode::Split(int level)
+void CORE::GEO::CUT::OctTreeNode::split(int level)
 {
   // We must not end up with a OctTreeNode that holds just nodes from the
   // cutter mesh. However, there is no real way to test this right now.
@@ -408,7 +408,7 @@ void CORE::GEO::CUT::OctTreeNode::Split(int level)
       // always have the outmost point in each box
       double x[3];
       bb_->CornerPoint(i, x);
-      Leaf(x)->bb_->AddPoint(x);
+      leaf(x)->bb_->AddPoint(x);
     }
 
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
@@ -416,12 +416,12 @@ void CORE::GEO::CUT::OctTreeNode::Split(int level)
       Teuchos::RCP<Point> p = *i;
       double x[3];
       p->Coordinates(x);
-      Leaf(x)->AddPoint(x, p);
+      leaf(x)->AddPoint(x, p);
     }
 
     for (int i = 0; i < 8; ++i)
     {
-      nodes_[i]->Split(level + 1);
+      nodes_[i]->split(level + 1);
     }
   }
 }

@@ -190,7 +190,7 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
   // Decide whether to choose a default type or parse a xml file
   std::string amgnxn_type = amglist.get<std::string>("AMGNXN_TYPE", "AMG(BGS)");
   if (amgnxn_type == "TSI: AMG(BGS)")
-    Params_TSI_AMG_BGS(smoo_params_);
+    params_tsi_amg_bgs(smoo_params_);
   else if (amgnxn_type == "XML")
   {
     // Parse the whole file
@@ -268,7 +268,7 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AmGnxnInterface::Params_TSI_AMG_BGS(Teuchos::ParameterList& params)
+void CORE::LINEAR_SOLVER::AmGnxnInterface::params_tsi_amg_bgs(Teuchos::ParameterList& params)
 {
   // This is a pre-defined AMG(BGS) preconditioner
   // TODO Add the possibility to the user of tuning some of the

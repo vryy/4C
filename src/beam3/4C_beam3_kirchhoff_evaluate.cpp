@@ -285,7 +285,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix             (private) meier 01/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::Lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Beam3k::lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   FOUR_C_THROW("Lumped mass matrix not implemented yet!!!");
 }

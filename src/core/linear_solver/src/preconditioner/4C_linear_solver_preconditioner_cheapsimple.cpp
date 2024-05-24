@@ -72,13 +72,13 @@ CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimpleBlockPreconditio
   //  bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
   //  if (!myrank && cstr) cout << "\n**********\nCONSTRAINT SIMPLER\n**********\n\n";
 
-  Setup(A, predict_list, correct_list);
+  setup(A, predict_list, correct_list);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -422,7 +422,7 @@ int CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::ApplyInverse(
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simpler(CORE::LINALG::ANA::Vector& vx,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::simpler(CORE::LINALG::ANA::Vector& vx,
     CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
@@ -456,7 +456,7 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simpler(CORE::LINALG::
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simple(CORE::LINALG::ANA::Vector& vx,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::simple(CORE::LINALG::ANA::Vector& vx,
     CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {

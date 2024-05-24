@@ -81,7 +81,7 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
   if (targetpid_ >= comm_->NumProc()) FOUR_C_THROW("Chosen target processor does not exist.");
 
   // prepare the file handle
-  if (OnPid() and writetofile_)
+  if (on_pid() and writetofile_)
   {
     std::stringstream fname;
     fname << fileprefix << ".p" << std::setfill('0') << std::setw(2) << comm_->MyPID() << ".log";
@@ -90,7 +90,7 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
   }
 
   // prepare the very first line of output
-  if (OnPid() and prefixgroup_id_) buffer_ << group_id_ << ": ";
+  if (on_pid() and prefixgroup_id_) buffer_ << group_id_ << ": ";
 
   // setup mystream
   blackholestream_ = new Teuchos::oblackholestream;
@@ -148,7 +148,7 @@ void IO::Pstream::close()
   group_id_ = -2;
 
   // flush the buffer
-  if (writetoscreen_ and OnPid() and buffer_.str().size() > 0)
+  if (writetoscreen_ and on_pid() and buffer_.str().size() > 0)
     std::cout << buffer_.str() << std::flush;
   buffer_.str(std::string());
 }
@@ -161,7 +161,7 @@ void IO::Pstream::flush()
 {
   if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
-  if (OnPid() and writetoscreen_ and buffer_.str().size() > 0)
+  if (on_pid() and writetoscreen_ and buffer_.str().size() > 0)
   {
     std::cout << buffer_.str();
     std::flush(std::cout);
@@ -175,7 +175,7 @@ void IO::Pstream::flush()
 /*----------------------------------------------------------------------*
  * return whether this is a target processor                  wic 11/12 *
  *----------------------------------------------------------------------*/
-bool IO::Pstream::OnPid()
+bool IO::Pstream::on_pid()
 {
   if (targetpid_ < 0) return true;
   return (comm_->MyPID() == targetpid_);

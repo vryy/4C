@@ -311,11 +311,11 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
 void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
     const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat)
 {
-  if (not Activated(plot_params)) return;
+  if (not activated(plot_params)) return;
 
   Teuchos::RCP<Plot> contact_plot = Teuchos::rcp(new Plot);
-  contact_plot->Init(plot_params, strat);
-  contact_plot->Setup();
+  contact_plot->init(plot_params, strat);
+  contact_plot->setup();
 
   Teuchos::ParameterList& p_sol_opt = nox_params.sublist("Solver Options");
 
@@ -327,7 +327,7 @@ void CONTACT::AUG::Plot::Create(Teuchos::ParameterList& nox_params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::Plot::Activated(const Teuchos::ParameterList& plot_params)
+bool CONTACT::AUG::Plot::activated(const Teuchos::ParameterList& plot_params)
 {
   bool is_active = false;
 
@@ -379,7 +379,7 @@ CONTACT::AUG::Plot::Plot()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Init(
+void CONTACT::AUG::Plot::init(
     const Teuchos::ParameterList& plot_params, const CONTACT::AbstractStrategy* strat)
 {
   strat_ = dynamic_cast<const CONTACT::AUG::Strategy*>(strat);
@@ -441,7 +441,7 @@ void CONTACT::AUG::Plot::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Setup()
+void CONTACT::AUG::Plot::setup()
 {
   if (type_ == INPAR::CONTACT::PlotType::scalar) opt_.resolution_x_ = 1;
 
@@ -581,7 +581,7 @@ enum CONTACT::AUG::WGapGradientType CONTACT::AUG::Plot::convert_plot_func_name2_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CONTACT::AUG::Strategy& CONTACT::AUG::Plot::Strategy() const
+const CONTACT::AUG::Strategy& CONTACT::AUG::Plot::strategy() const
 {
   if (not strat_) FOUR_C_THROW("No augmented strategy has been provided!");
 
@@ -630,7 +630,7 @@ void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
     {
       if (*curr_step_np_ == do_plot_.step_ and solver.getNumIterations() == do_plot_.iter_)
       {
-        Execute(solver);
+        execute(solver);
         return;
       }
       break;
@@ -647,7 +647,7 @@ void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
                 nln_solver->getStatus() == ::NOX::StatusTest::Failed) and
             *curr_step_np_ == do_plot_.step_)
         {
-          Execute(solver);
+          execute(solver);
         }
       }
       break;
@@ -665,7 +665,7 @@ void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
+void CONTACT::AUG::Plot::execute(const ::NOX::Solver::Generic& solver)
 {
   // get the reference group
   const NOX::NLN::CONSTRAINT::Group* ref_grp = get_reference_group(solver);

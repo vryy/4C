@@ -101,7 +101,7 @@ CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
       [=]()
       {
         std::unique_ptr<CONTACT::AUG::Strategy::FdDebug> instance(new FdDebug);
-        instance->Init(strat, delta);
+        instance->init(strat, delta);
         return instance;
       });
 
@@ -110,7 +110,7 @@ CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::Init(Strategy* strat, const double delta)
+void CONTACT::AUG::Strategy::FdDebug::init(Strategy* strat, const double delta)
 {
   if (not strat) FOUR_C_THROW("nullptr pointer!");
 

@@ -237,7 +237,7 @@ inline DRT::Node** DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
  | get the material from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Material()
+inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Thermo<so3_ele, distype>::material()
     const
 {
   return so3_ele::Material();
@@ -248,7 +248,7 @@ inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Thermo<so3_ele, disty
  | get the node Ids from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Id() const
+inline int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::id() const
 {
   return so3_ele::Id();
 }

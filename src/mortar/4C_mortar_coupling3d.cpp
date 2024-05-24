@@ -105,7 +105,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   has_proj_status();
 
   // do triangulation (+linearization) of clip polygon
-  Triangulation(projpar, tol);
+  triangulation(projpar, tol);
 
   return true;
 }
@@ -2691,7 +2691,7 @@ bool MORTAR::Coupling3d::has_proj_status()
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double tol)
+bool MORTAR::Coupling3d::triangulation(std::map<int, double>& projpar, double tol)
 {
   // number of nodes
   const int nsrows = SlaveElement().num_node();
