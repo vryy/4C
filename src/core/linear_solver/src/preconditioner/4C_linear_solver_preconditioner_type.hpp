@@ -69,13 +69,6 @@ namespace CORE::LINEAR_SOLVER
     virtual void Setup(
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
 
-    /// Finish calculation after linear solve.
-    /*!
-      This is empty in most cases, however some preconditioners might want to
-      scale the solution.
-    */
-    virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) {}
-
     /// linear operator used for preconditioning
     virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
 

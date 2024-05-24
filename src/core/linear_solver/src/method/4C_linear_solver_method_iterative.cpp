@@ -102,10 +102,6 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   Belos::ReturnType ret = newSolver->solve();
 
-  numiters_ = newSolver->getNumIters();
-
-  if (preconditioner_ != Teuchos::null) preconditioner_->Finish(a_.get(), x_.get(), b_.get());
-
   int my_error = 0;
   if (ret != Belos::Converged) my_error = 1;
   int glob_error = 0;
@@ -115,6 +111,8 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
     std::cout << std::endl
               << "CORE::LINEAR_SOLVER::BelosSolver: WARNING: Iterative solver did not converge!"
               << std::endl;
+
+  numiters_ = newSolver->getNumIters();
 
   ncall_ += 1;
 
